@@ -5,7 +5,7 @@
       <input type="checkbox" id="hamburger"/>
 
       <div id='poolsdropdown'>
-        <a href='https://www.curve.fi'>☰</a>
+        <a href='https://www.curve.fi'>[{{currentPool}}]</a>
         <div class='dropdown'>
             <a @click="changePools('compound')">Compound</a>
             <a @click="changePools('usdt')">USDT</a>
@@ -43,10 +43,13 @@
     components: {
       BalancesInfo,
     },
+    computed: {
+      ...getters,
+    },
     methods: {
       changePools(pool) {
         changeContract(pool)
       }
-    }
+    },
   }
 </script>

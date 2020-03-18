@@ -1,0 +1,38 @@
+<template>
+  <div class="blue window half-width info">
+    <fieldset id="lp-info-currency">
+      <legend>Currency reserves</legend>
+      <ul id='balances-info'>
+          <li v-for='(currency, i) in Object.keys(currencies)'><b>{{currency | capitalize}}:</b> <span>{{bal_info[i] | toFixed2}}</span></li>
+          <li><b>{{totalCurrencies(currencies) | capitalize}}:</b> <span>{{balTotal | toFixed2}}</span></li>
+      </ul>
+      <p><b>Fee:</b> <span id='fee-info'>{{fee}}</span>%</p>
+      <p><b>Admin fee:</b> <span id='admin-fee-info'>{{admin_fee}}</span>%</p>
+    </fieldset>
+    <fieldset id="lp-info-container" v-show='totalShare > 0'>
+      <legend>My share:</legend>
+      <ul id='lp-info'>
+          <li v-for='(currency, i) in Object.keys(currencies)'><b>{{currency | capitalize}}:</b> <span>{{l_info[i] | toFixed2}}</span></li>
+          <li><b>{{totalCurrencies(currencies) | capitalize}}:</b> <span>{{totalShare | toFixed2}}</span></li>
+      </ul>
+    </fieldset>
+  </div>
+</template>
+
+<script>
+  import { getters } from '../contract'
+  import * as helpers from '../utils/helpers'
+
+  console.log(helpers)
+
+  export default {
+    computed: {
+      ...getters,
+    },
+    methods: {
+      totalCurrencies(currencies) {
+        return helpers.totalCurrencies(currencies)
+      }
+    }
+  }
+</script>

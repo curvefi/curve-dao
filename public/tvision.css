@@ -1,0 +1,555 @@
+html {
+  background: #a5a4ce;
+  font-family: System, monospace;
+  font-size: 10pt
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+.window {
+  position: relative;
+  cursor: default;
+  margin: 2em auto; width: 80%;
+  background: #3465a4; color: white;
+  border: 6px double white;
+  padding: 1em;
+  box-shadow:
+    0   0   0   3px #3465a4,
+    1em 1em 3px 0 rgba(0,0,0,.5);
+  max-width: 640px;
+}
+
+.window.error {
+    background: red;
+    box-shadow:
+        0   0   0   3px red,
+        1em 1em 3px 0 rgba(0,0,0,.5);
+    display: none;
+}
+
+.window.white {
+  background: silver;
+  color: black;
+  border-color: white;
+  box-shadow:
+    0   0   0   3px silver,
+    1em 1em 3px 0 rgba(0,0,0,.5);
+}
+
+.window.half-width {
+  width: 80%;
+}
+
+.window :link {
+  color: inherit;
+  font-weight: bolder;
+  text-decoration: none;
+}
+
+.window :link:hover {
+  text-decoration: underline;
+}
+
+.window h1 {
+  text-align: center;
+}
+
+
+.window.blue p {
+  /*color: white; text-shadow: 0 0 2px white;*/
+}
+
+button {
+  margin:0;padding:0;border:none;
+  cursor: pointer;
+}
+
+button,
+.button,
+.button:link {
+  display: inline-block;
+  font-weight: bolder;
+  color: white;
+  font-family: inherit;
+  font-size: inherit;
+  background: green;
+  padding: 0 1em;
+  box-shadow: .5em .5em 3px rgba(0,0,0,.5);
+  position: relative;
+  transition: .2s all ease-in;
+  border: 1px outset green;
+}
+
+button.full-width,
+.button.full-width {
+  display: block;
+  text-align: center;
+}
+
+button:before,
+.button:before {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  content: "";
+  position: absolute;
+  /*background: rgba(255,255,0,.5); /* DEBUG CLICK AREA */
+}
+
+button:hover,
+.button:active,
+.button:focus,
+.button:hover
+{
+  transform: translate3d(.25em,.25em,10em);
+  box-shadow: 0 0 0 rgba(0,0,0,.5);
+  background: limegreen;
+}
+
+button:hover:before,
+.button:hover:before,
+button:focus:before,
+.button:focus:before
+{
+  top: -1em;
+  left: -1em;
+}
+
+.button.pressed {
+    box-shadow: none;
+    left: 0.25em;
+    top: 0.25em;
+    margin-right: 0.25em;
+    background: gray;
+    border: 1px outset #707070;
+}
+
+button:first-letter,
+.button:first-letter {
+  color: yellow;
+}
+
+input, textarea {
+  background: blue;
+  color: aqua;
+  width: 100%;
+  max-width: 100%;
+  font-size: 12pt;
+}
+
+input {
+  padding: 1px 0 1px 0;
+  border-radius: 0;
+}
+
+input:disabled {
+  background: #505070;
+  color: #d0d0d0;
+  border: 2px solid #505070;
+}
+
+input[type=radio],
+input[type=checkbox] {
+  display: none;
+}
+
+input[type=radio] + label[for]:before,
+input[type=checkbox] + label[for]:before {
+  text-align:center;
+  display: inline-block;
+  height: 1em; width: 2em;
+}
+
+input[type=radio] + label[for]:before {
+  content: "( ) ";
+  cursor: pointer;
+}
+
+input[type=checkbox] + label[for]:before {
+  content: "[ ] ";
+  cursor: pointer;
+}
+
+input[type=radio]:checked + label[for]:before {
+  content: "(•) ";
+  cursor: pointer;
+}
+
+input[type=checkbox]:checked + label[for]:before {
+  content: "[X] ";
+  cursor: pointer;
+}
+
+.window > textarea {
+  width: 100%;
+  border: none;
+}
+
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-menu-bar {
+  top: 0; left: 0; right: 0;
+  background: silver;
+  font-weight: bolder;
+  text-align: center;
+}
+
+.top-menu-bar a, .poolsdialog a .top-menu-bar .icon-container {
+  margin: 0 1em;
+  text-decoration: none;
+  color: black;
+  padding: 0 1em;
+}
+
+.top-menu-bar a:visited, .poolsdialog a:visited {
+    color: black;
+}
+
+.top-menu-bar a:hover, .poolsdialog div.selected, .poolsdialog div.selected a, .poolsdialog div.selected a:visited {
+    background-color: #505050;
+    color: #c0c0c0;
+}
+
+.top-menu-bar a.selected, .top-menu-bar a.router-link-exact-active, .poolsdialog div:hover, .poolsdialog div:hover a, .poolsdialog div:hover a:visited {
+    background-color: blue;
+    color: white;
+}
+
+.poolsdialog div a {
+    display: block;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .top-menu-bar a, .top-menu-bar .icon-container {
+    display: block;
+    margin: 0;
+    padding: 0.5em 0;
+  }
+}
+
+div.add-liquidity input {
+    margin-bottom: 0.5em;
+}
+
+strong:before, strong:after { content: "*"; }
+i:before, i:after { content: "/"; }
+
+.trade-buttons {
+    text-align: center;
+}
+
+p[id^='chart'] {
+    background-color: white;
+    border: 1px solid gray;
+}
+
+p.exchange-rate {
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+#exchange-rate {
+    color: #006000;
+    font-weight: bold;
+}
+
+.info {
+  display: flex;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .info {
+    flex-direction: column;
+  }
+}
+
+.info > fieldset {
+  flex: 1;
+  padding: 1em;
+  border: 0;
+}
+
+.info > div,
+.info > div fieldset {
+  height: 100%;
+}
+
+div.info table {
+    width: 100%;
+}
+
+div.info table td {
+    vertical-align: top;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  div.info table td {
+    display: block;
+  }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .top-menu-bar > #poolsdropdown {
+    display: none;
+  }
+  #lp-info-container {
+    margin-top: 1em;
+  }
+  .border-menu {
+    display: block;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .top-menu-bar a {
+    display: none;
+  }
+  #hamburger:checked ~ a, #hamburger:checked ~ div, #hamburger:checked ~ div > a {
+    display: block;
+  }
+  /*fix selector priority*/
+  .top-menu-bar.top-menu-bar #poolsdropdown:hover .dropdown {
+    display: none;
+  }
+  #poolsdropdown > a:after {
+    content: " Pools";
+  }
+}
+
+@media only screen and (max-device-width : 640px) {
+  span.poolstext, .pools {
+    width: auto;
+  }
+  
+  span.pooltext {
+    display: inline-block;
+  }
+
+  span.pools {
+    display: block;
+  }
+}
+
+.icon-container {
+  height: 15px;
+  position: relative;
+}
+
+.border-menu { 
+    position: relative;         
+    border-radius: 2px; 
+    height: 10px; 
+    width: 10px;
+    cursor: pointer;
+    height: 20px;
+    padding: 6px;
+    text-align: left;
+}
+.border-menu:before { 
+    border-bottom: 10px double black;
+    border-top: 3px solid black;    
+    content:"";
+    height: 4px; 
+    position: absolute; 
+    width:30px;
+}
+
+@media only screen and (min-device-width : 480px) {
+  .border-menu {
+    display: none;
+  }
+}
+
+.poolsdialog legend {
+  text-align: center;
+}
+
+.poolsdialog a {
+  display: inline-block;
+}
+.poolsdialog > div {
+  cursor: pointer;
+}
+.poolsdialog > div > span{
+  padding-right: 2em;
+}
+/* fixing selector priority */
+.window .poolsdialog a:hover {
+  text-decoration: none;
+}
+
+#poolsdropdown {
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+}
+
+.top-menu-bar #poolsdropdown:hover {
+  background-color: blue;
+  color: white;
+}
+
+.top-menu-bar #poolsdropdown:hover .dropdown {
+  display: block;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  min-width: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c0c0c0;
+  z-index: 1;
+  box-shadow: 0 0 0 3px silver, 1em 1em 3px 0 rgba(0,0,0,.5);
+}
+
+#poolsdropdown > a {
+  margin: 0;
+}
+
+.dropdown > a {
+  display: block;
+  margin: 0;
+  padding-left: 0.5em;
+  text-align: left;
+}
+
+.simple-error, .success, .info-message {
+  margin: 1em auto 0 auto;
+  padding: 1em;
+  color: white;
+  width: 80%;
+}
+
+.simple-error {
+  background: red;
+}
+
+.info-message {
+  background: gray;
+}
+
+.success {
+  background: green;
+}
+
+.pooltext {
+  display: inline-block;
+  width: 12%;
+}
+
+.pools {
+  display: inline-block;
+  width: 60%;
+}
+
+.loading {
+  display: inline-block;
+  overflow: hidden;
+  height: 1.3em;
+  margin-top: -0.3em;
+  line-height: 1.5em;
+  vertical-align: text-bottom;
+}
+
+.loading::after {
+  display: inline-table;
+  white-space: pre;
+  text-align: left;
+}
+
+.loading.line::after {
+  content: "/\A–\A\\\A|";
+  text-align: center;
+  animation: spin 1s steps(4) infinite;
+}
+
+@keyframes spin  { 
+  to { 
+    transform: translateY( -6.0em); 
+  }
+}
+
+.text-center {
+  text-align: center;
+}
+
+.lp-info-container {
+  display: none;
+}
+
+.loading.matrix::after {
+  content:"░ ░░░░\A░░ ░░░\A░░░ ░░\A░░░░ ░";
+  animation: spin .5s steps(4) infinite alternate;
+}
+
+.loading.matrix {
+  font-size: 3em;
+  background: transparent;
+  border: none;
+  margin: 0.5em;
+}
+
+.maxbalance {
+  padding: 0.3em;
+  text-align: right;
+  font-size: 0.95em;
+}
+
+fieldset:nth-child(1) .maxbalance {
+  cursor: pointer;
+}
+
+fieldset:nth-child(1) .maxbalance:hover {
+  text-decoration: underline;
+}
+
+fieldset:nth-child(2) .maxbalance {
+  visibility: hidden;
+}
+
+.icon {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+.ethicon {
+  filter: invert(0.4) sepia(1) saturate(0.8) hue-rotate(223deg);
+}
+
+.poolsdialog.donations > div {
+  margin-bottom: 3px;
+}
+
+.poolsdialog.donations > div > a {
+  display: flex;
+  align-items: center;
+  white-space: pre-wrap;
+}
+
+.donations a {
+  word-break: normal;
+}
+
+.blue.window.info, .donations .text {
+  word-break: break-word;
+}
+
+.donations .icon {
+  margin-left: 1em;
+  margin-right: 1em;
+}

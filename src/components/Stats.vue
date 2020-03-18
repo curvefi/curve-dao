@@ -1,0 +1,115 @@
+<template>
+	<div class="window white">
+        <fieldset>
+            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr | toFixed2}}</span>% APY]</legend>
+			<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
+        </fieldset>
+        <p>Recent daily APY: <span id="daily-apr">{{daily_apr | toFixed2}}</span>%</p>
+        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr | toFixed2}}</span>%</p>
+    </div>
+</template>
+
+<script>
+    import * as helpers from '../utils/helpers'
+    import { getters, contract as currentContract } from '../contract'
+    import LineChart from './common/LineChart.vue'
+    import Highcharts from 'highcharts'
+	import {Chart} from 'highcharts-vue'
+	import stockInit from 'highcharts/modules/stock'
+
+	stockInit(Highcharts)
+
+
+	export default {
+		components: {
+			LineChart,
+			highcharts: Chart,
+		},
+		watch: {
+			currentPool(val) {
+				this.mounted();
+			}
+		},
+		data: () => ({
+			apr: '',
+			daily_apr: '',
+			weekly_apr: '',
+			chartdata: {
+                rangeSelector: {
+		            selected: 1
+		        },
+	            yAxis: {
+	            	opposite: false,
+	            	title: {
+	            		text: 'Profit [%]',
+	            	},
+	            	labels: {
+	            		formatter() {
+	            			return (Math.floor(this.value * 100) / 100).toFixed(2);
+	            		}
+	            	},
+	            	tickPixelInterval: 10,
+	            },
+		        series: [{
+		        	name: 'Virtual growth of liquidity share',
+		        	lineWidth: 2,
+		        	data: []
+		        }],
+		        tooltip: {
+	                valueDecimals: 5,
+	                pointFormatter() {
+                		let value = Math.floor(this.y * 100000) / 100000 + '%';
+	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+	                }
+	            },
+			},
+			options: {
+				tooltips: {
+				    mode: 'point',
+				    intersect: false,
+				    backgroundColor: 'red'
+				}
+			}
+		}),
+        computed: {
+          ...getters,
+        },
+        created() {
+            this.$watch(()=>currentContract.initializedContracts, val => {
+                if(val) this.mounted();
+            })
+        },
+        mounted() {
+            if(currentContract.initializedContracts) this.mounted();
+        },
+
+		methods: {
+			async mounted() {
+				let res = await fetch(`https://${this.currentPool}.curve.fi/stats.json`);
+				let json = await res.json()
+
+				this.apr = json.apr;
+				this.daily_apr = json.daily_apr;
+				this.weekly_apr = json.weekly_apr;
+		        var data = json.data
+		        var step_size = Math.max(Math.round(data.length / 500), 1);
+		        var start_profit = data[0][1]
+		        var chartData = [];
+		        for (let i = 0; i < data.length; i++) {
+		            if ((i % step_size == 0) | (i == data.length - 1)) {
+		                var el = data[i];
+		                chartData.push([
+		                    el[0] * 1000,
+		                    (el[1] / start_profit - 1) * 100
+		                ]);
+		            }
+		        }
+		        this.chartdata.series[0].data = chartData;
+			},
+		}
+	}
+</script>
+
+<style>
+	
+</style>

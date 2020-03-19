@@ -64,8 +64,6 @@ const router = new VueRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  console.log(from, to)
-  console.log(currentContract)
   let subdomain = window.location.hostname.split('.')[0]
   if(subdomain == 'y') subdomain = 'iearn'
   if(!['compound', 'usdt', 'iearn', 'busd' , 'y'].includes(subdomain)) subdomain = 'compound'

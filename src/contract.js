@@ -105,6 +105,7 @@ export const getters = {
 	initializedContracts: () => state.initializedContracts,
 	showSlippage: () => state.showSlippage,
 	slippage: () => state.slippage,
+	N_COINS: () => state.N_COINS,
 }
 
 

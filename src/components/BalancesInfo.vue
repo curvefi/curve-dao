@@ -43,8 +43,6 @@
   import { getters } from '../contract'
   import * as helpers from '../utils/helpers'
 
-  console.log(helpers)
-
   export default {
     computed: {
       ...getters,

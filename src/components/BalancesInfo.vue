@@ -5,11 +5,11 @@
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span :class="{'loading line': !bal_info[i]}"> {{bal_info[i] | toFixed2}}</span>
+            <span :class="{'loading line': bal_info && !bal_info[i]}"> {{bal_info[i] | toFixed2}}</span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
-            <span :class="{'loading line': !balTotal}"> {{balTotal | toFixed2}}</span>
+            <span :class="{'loading line': !total}"> {{total | toFixed2}}</span>
           </li>
       </ul>
       <p>
@@ -40,17 +40,11 @@
 </template>
 
 <script>
-  import { getters, allCurrencies } from '../contract'
+  import { getters, allCurrencies, contract as currentContract } from '../contract'
   import * as helpers from '../utils/helpers'
 
   export default {
-    props: ['pool'],
-    computed: {
-      ...getters,
-      allCurrencies() {
-        return allCurrencies[this.pool] || this.currencies
-      }
-    },
+    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies'],
     methods: {
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)

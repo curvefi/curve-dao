@@ -100,12 +100,10 @@ const router = new VueRouter({
 const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
-  if(to.name == 'Root') return next();
-  console.log(to)
+  if(['RootIndex', 'Donate'].includes(to.name)) return next();
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]
   else subdomain = window.location.hostname.split('.')[0]
-  console.log(subdomain, "SUBDOMAIN")
 /*  if(window.location.hostname.split('.').length > 1) subdomain = window.location.hostname.split('.')[0]
   else subdomain = to.path.split('/')[1]*/
   if(subdomain == 'y') subdomain = 'iearn'

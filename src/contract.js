@@ -90,6 +90,8 @@ const state = Vue.observable({
 
 	default_account: '',
 
+	error: false,
+
 })
 
 export let contract = state
@@ -108,29 +110,28 @@ export const getters = {
 	showSlippage: () => state.showSlippage,
 	slippage: () => state.slippage,
 	N_COINS: () => state.N_COINS,
+	error: () => state.error
 }
 
 
 export async function init() {
 	try {
-        let networkId = await window.web3.eth.net.getId();
+        let networkId = await web3.eth.net.getId();
         if(networkId != 1) {
-            $('#error-window').text('Error: wrong network type. Please switch to mainnet');
-            $('#error-window').show();
+            this.error = 'Error: wrong network type. Please switch to mainnet';
         }
     }
     catch(err) {
         console.error(err);
-        $('#error-window').text('There was an error connecting. Please refresh page');
-        $('#error-window').show();
+        this.error = 'There was an error connecting. Please refresh page';
     }
     if(state.currentContract == 'compound') {
-	    state.old_swap = new window.web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
-	    state.old_swap_token = new window.web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
+	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
+	    state.old_swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
     }
 
     state.swap = new web3.eth.Contract(allabis[state.currentContract].swap_abi, state.swap_address);
-    state.swap_token = new window.web3.eth.Contract(allabis[state.currentContract].ERC20_abi, state.token_address);
+    state.swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, state.token_address);
 
     state.coins = []
     state.underlying_coins = []
@@ -138,9 +139,9 @@ export async function init() {
         var addr = await state.swap.methods.coins(i).call();
         let coin_abi = allabis[state.currentContract].cERC20_abi
         if(['iearn', 'busd'].includes(state.currentContract)) coin_abi = allabis[state.currentContract].yERC20_abi
-        state.coins.push(new window.web3.eth.Contract(coin_abi, addr));
+        state.coins.push(new web3.eth.Contract(coin_abi, addr));
         var underlying_addr = await state.swap.methods.underlying_coins(i).call();
-        state.underlying_coins.push(new window.web3.eth.Contract(allabis[state.currentContract].ERC20_abi, underlying_addr));
+        state.underlying_coins.push(new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, underlying_addr));
     }
 }
 

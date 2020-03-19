@@ -36,7 +36,15 @@
         <div class="error window half-width info" id="error-window"></div>
         <router-view/>
     </div>
-    <balances-info v-show="!['Stats', 'FAQ', 'Donate', 'Root', 'CombinedStats'].includes($route.name)"/>
+    <balances-info
+    :bal_info = 'bal_info'
+    :total = 'balTotal'
+    :l_info = 'l_info'
+    :totalShare = 'totalShare'
+    :fee = 'fee'
+    :admin_fee = 'admin_fee'
+    :currencies = 'currencies'
+    v-show="!['Stats', 'FAQ', 'Donate', 'Root', 'CombinedStats'].includes($route.name)"/>
   </div>
 </template>
 
@@ -49,6 +57,9 @@
       BalancesInfo,
     },
     computed: {
+      allGetters() {
+        return getters;
+      },
       ...getters,
       poolMenu() {
         return poolMenu;

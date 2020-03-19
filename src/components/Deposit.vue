@@ -91,7 +91,6 @@
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
 	        	})
-	        	console.log(this.inputs, "INPUTS")
                 common.update_fee_info();
                 await this.handle_sync_balances();
                 await common.calc_slippage(this.inputs, true);

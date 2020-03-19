@@ -31,7 +31,9 @@
         <div class="blue window">
             <h1><img src="../../assets/logo.svg" alt="🌀 Curve" height="50"></h1>
         </div>
-        <div class="error window half-width info" id="error-window"></div>
+        <div class="error window half-width info" id="error-window" v-show='error'>
+          {{error}}
+        </div>
         <router-view/>
     </div>
   </div>

@@ -12221,4 +12221,4 @@ yERC20_abi: [{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":
 
 }
 
-export default {compound, usdt, iearn, busd}
+export default {compound, usdt, iearn, busd, susd}

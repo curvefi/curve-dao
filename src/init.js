@@ -39,12 +39,12 @@ const web3Modal = new Web3Modal({
 });
 
 async function init() {
-    console.log("INIT")
 	//try catch for checking cancel dialog
 	const provider = await web3Modal.connect();
 
 	const web3 = new Web3(provider);
 	window.web3 = web3;
+    window.web3provider = web3;
 
 	await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];

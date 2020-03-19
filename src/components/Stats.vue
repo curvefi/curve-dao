@@ -1,12 +1,14 @@
 <template>
-	<div class="window white">
-        <fieldset>
-            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr*100 | toFixed2}}</span>% APY]</legend>
-			<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
-        </fieldset>
-        <p>Recent daily APY: <span id="daily-apr">{{daily_apr*100 | toFixed2}}</span>%</p>
-        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr*100 | toFixed2}}</span>%</p>
-    </div>
+	<div>
+		<div :class="{'window white': !pool}">
+	        <fieldset>
+	            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr*100 | toFixed2}}</span>% APY]</legend>
+				<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
+	        </fieldset>
+	        <p>Recent daily APY: <span id="daily-apr">{{daily_apr*100 | toFixed2}}</span>%</p>
+	        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr*100 | toFixed2}}</span>%</p>
+	    </div>
+	</div>
 </template>
 
 <script>

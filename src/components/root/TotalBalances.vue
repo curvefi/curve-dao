@@ -31,7 +31,9 @@
 			    let swapContracts = {}
 			    let promises = []
 			    let infuraProvider = new Web3(abis.infura_url)
-			    for(let [key, contract] of Object.entries(abis.default)) {
+			    let pools = abis.default
+			    delete pools.susd
+			    for(let [key, contract] of Object.entries(pools)) {
 			        tokenContracts[key] = new infuraProvider.eth.Contract(contract.ERC20_abi, contract.token_address);
 			        swapContracts[key] = new infuraProvider.eth.Contract(contract.swap_abi, contract.swap_address);
 			        let totalSupply = cBN(await tokenContracts[key].methods.totalSupply().call())

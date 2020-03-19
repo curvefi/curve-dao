@@ -217,7 +217,7 @@
                 var j = this.to_currency;
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
                 let maxSlippage = this.maxSlippage / 100;
-                if(this.maxInputSlippage) maxSlippage = maxInputSlippage / 100;
+                if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (b >= 0.001) {
                     var dx = Math.floor(this.fromInput * currentContract.coin_precisions[i]);
                     var min_dy = Math.floor(this.toInput * (1-maxSlippage) * currentContract.coin_precisions[j]);

@@ -5,7 +5,7 @@
                 <legend>Currencies:</legend>
                 <ul>
                     <li v-for='(currency, i) in Object.keys(currencies)'>
-                        <label :for="'currency_'+i">{{currencies[currency]}} (in {{currency | capitalize}})</label>
+                        <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="currency != 'usdt'"> (in {{currency | capitalize}}) </span></label>
                         <input 
 	                        type="text" 
 	                        :id="'currency_'+i" 
@@ -36,7 +36,7 @@
 
             <p style="text-align: center">
                 <button id="add-liquidity" @click='handle_add_liquidity'>Deposit</button>
-                <button id="migrate-new" @click='handle_migrate_new'>Migrate</button>
+                <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound'">Migrate</button>
                 <Slippage/>
             </p>
         </div>
@@ -73,6 +73,9 @@
         created() {
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
+            })
+            this.$watch(()=>currentContract.currentContract, val => {
+                this.mounted();
             })
         },
         computed: {

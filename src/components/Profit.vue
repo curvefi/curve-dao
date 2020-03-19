@@ -46,6 +46,9 @@
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
+            this.$watch(()=>currentContract.currentContract, val => {
+                this.mounted();
+            })
         },
         mounted() {
             if(currentContract.initializedContracts) this.mounted();
@@ -63,14 +66,18 @@
 			TRANSFER_TOPIC: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
 			version: 1,
 		}),
+        computed: {
+          ...getters,
+        },
 		methods: {
             async mounted() {
                 common.update_fee_info();
                 this.BN = web3.utils.toBN
                 this.CURVE = currentContract.swap_address;
                 this.CURVE_TOKEN = currentContract.token_address;
-
-                let res = await fetch('https://compound.curve.fi/stats.json');
+				let subdomain = this.currentPool
+				if(subdomain == 'iearn') subdomain = 'y'
+                let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
                 this.priceData = await res.json();
                 for(let i = 0; i < currentContract.N_COINS; i++) {
 			        let symbol = await currentContract.coins[i].methods.symbol().call()
@@ -112,6 +119,9 @@
 			    if(curr == 'cUSDC') {
 			        return value.div(this.BN(1e14)).toNumber();
 			    }
+		        if(curr == 'USDT') {
+        			return value.divRound(this.BN(1e4)).toNumber();
+    			}
 			},
 
 			findClosest(timestamp) {
@@ -201,16 +211,36 @@
 			    return exchangeRate;
 			},
 
+			async calculateAmount(cTokens, block) {
+			    let amount = 0;
+			    for(let i = 0; i < currentContract.N_COINS; i++) {
+			            const tokens = this.BN(cTokens[i]);
+			            if(tokens == 0) continue;
+			            const tokenIndex = Object.values(this.ADDRESSES)[i]
+			            let curr = Object.keys(this.ADDRESSES)[i]
+			            let exchangeRate = await this.getExchangeRate(block, currentContract.coins[i]._address, '')
+			            let usd;
+			          	if(currentContract.currentContract == 'usdt' && i ==2) {
+      		            	usd = BN(tokens).div(BN(1e4)).toNumber();
+			          	}
+			          	else {
+			            	usd = this.fromNative(curr, this.BN(exchangeRate).mul(this.BN(tokens)))
+			          	}
+			            amount += usd;
+			    }
+			    return amount;
+			},
+
             async getDeposits() {
 			    let default_account = currentContract.default_account.substr(2).toLowerCase();
 
 			    let depositUsdSum = 0;
 
 			    let fromBlock = '0x91c86f';
-			    if(localStorage.getItem('pversion') == this.version && localStorage.getItem('ClastDepositBlock') && localStorage.getItem('ClastAddress') == default_account) {
-			        let block = +localStorage.getItem('ClastDepositBlock')
+			    if(localStorage.getItem(this.currentPool + 'dversion') == this.version && localStorage.getItem(this.currentPool + 'lastDepositBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
+			        let block = +localStorage.getItem(this.currentPool + 'lastDepositBlock')
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
-			        depositUsdSum += +localStorage.getItem('ClastDeposits')
+			        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
 			    }
 
 			    const poolTokensReceivings = await web3.eth.getPastLogs({
@@ -234,21 +264,10 @@
 			        const receipt = await web3.eth.getTransactionReceipt(hash);
 			        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
 			        console.log(timestamp)
-			        let cDAI = 0;
-			        let cUSDC = 0;
 			        let addliquidity = receipt.logs.filter(log=>log.topics[0] == '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768')
 			        if(addliquidity.length) {
-			            let cTokens = (web3.eth.abi.decodeParameters(['uint256[2]','uint256[2]', 'uint256', 'uint256'], addliquidity[0].data))[0]
-			            for(let i = 0; i < 2; i++) {
-			                const tokenIndex = Object.values(this.ADDRESSES)[i];
-			                const tokens = this.BN(cTokens[i])
-			                if(tokens == 0) continue;
-			                let curr = Object.keys(this.ADDRESSES)[tokenIndex]
-			                let exchangeRate = await this.getExchangeRate(receipt.blockNumber, currentContract.coins[i]._address , '')
-			                const usd = this.fromNative(curr, this.BN(exchangeRate).mul(this.BN(tokens)))
-			                depositUsdSum += usd;
-			                
-			            }
+			            let cTokens = (web3.eth.abi.decodeParameters([`uint256[${currentContract.N_COINS}]`,`uint256[${currentContract.N_COINS}]`, 'uint256', 'uint256'], addliquidity[0].data))[0]
+			            depositUsdSum += await this.calculateAmount(cTokens, receipt.blockNumber)
 			        }
 			        if(!addliquidity.length) {
 			            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
@@ -258,35 +277,21 @@
 			        }
 			    }
 			    console.timeEnd('timer')
-			    localStorage.setItem('ClastDepositBlock', lastBlock);
-			    localStorage.setItem('ClastAddress', default_account)
-			    localStorage.setItem('ClastDeposits', depositUsdSum);
-			    localStorage.setItem('pversion', this.version);
+			    localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
+			    localStorage.setItem(this.currentPool + 'lastAddress', default_account)
+			    localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
+			    localStorage.setItem(this.currentPool + 'dversion', this.version);
 			    return depositUsdSum;
-			},
-
-			async calculateAmount(cTokens, block) {
-			    let amount = 0;
-			    for(let i = 0; i < 2; i++) {
-			            const tokens = this.BN(cTokens[i]);
-			            if(tokens == 0) continue;
-			            const tokenIndex = Object.values(this.ADDRESSES)[i]
-			            let curr = Object.keys(this.ADDRESSES)[i]
-			            let exchangeRate = await this.getExchangeRate(block, currentContract.coins[i]._address, '')
-			            const usd = this.fromNative(curr, this.BN(exchangeRate).mul(this.BN(tokens)))
-			            amount += usd;
-			    }
-			    return amount;
 			},
 
 			async getWithdrawals(address) {
 			    let default_account = currentContract.default_account.substr(2).toLowerCase();
 			    let withdrawals = 0;
 			    let fromBlock = '0x91c86f';
-			    if(localStorage.getItem('pwversion') == this.version && localStorage.getItem('ClastWithdrawalBlock') && localStorage.getItem('ClastAddress') == default_account) {
-			        let block = +localStorage.getItem('ClastWithdrawalBlock')
+			    if(localStorage.getItem(this.currentPool + 'wversion') == this.version && localStorage.getItem(this.currentPool + 'lastWithdrawalBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
+			        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
-			        withdrawals += +localStorage.getItem('ClastWithdrawals')
+			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
 			    }
 			    const logs = await web3.eth.getPastLogs({
 			        fromBlock: fromBlock,
@@ -323,15 +328,15 @@
 			            let tokens = +transfer[0].data
 			            let exchangeRate = this.findClosest(timestamp)[1]
 			            withdrawals += tokens*exchangeRate/1e16
-			            localStorage.setItem('ClastWithdrawalBlock', lastBlock);
-			            localStorage.setItem('ClastWithdrawals', withdrawals);
+			            localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
+			            localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
 			        }
 
 
 			    }
-			    localStorage.setItem('ClastWithdrawalBlock', lastBlock);
-			    localStorage.setItem('ClastWithdrawals', withdrawals);
-			    localStorage.setItem('pwversion', this.version);
+			    localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
+			    localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
+			    localStorage.setItem(this.currentPool + 'wversion', this.version);
 			    return withdrawals;
 			},
 

@@ -1,11 +1,11 @@
 <template>
 	<div class="window white">
         <fieldset>
-            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr | toFixed2}}</span>% APY]</legend>
+            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr*100 | toFixed2}}</span>% APY]</legend>
 			<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
         </fieldset>
-        <p>Recent daily APY: <span id="daily-apr">{{daily_apr | toFixed2}}</span>%</p>
-        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr | toFixed2}}</span>%</p>
+        <p>Recent daily APY: <span id="daily-apr">{{daily_apr*100 | toFixed2}}</span>%</p>
+        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr*100 | toFixed2}}</span>%</p>
     </div>
 </template>
 
@@ -80,12 +80,14 @@
             })
         },
         mounted() {
-            if(currentContract.initializedContracts) this.mounted();
+            this.mounted();
         },
 
 		methods: {
 			async mounted() {
-				let res = await fetch(`https://${this.currentPool}.curve.fi/stats.json`);
+				let subdomain = this.currentPool
+				if(subdomain == 'iearn') subdomain = 'y'
+				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 
 				this.apr = json.apr;

@@ -19,7 +19,7 @@
             <legend>Currencies:</legend>
             <ul>
                 <li v-for='(currency, i) in Object.keys(currencies)'>
-                    <label :for="'currency_'+i">{{currencies[currency]}} (in {{currency | capitalize}})</label>
+                    <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="currency != 'usdt'">(in {{currency | capitalize}})</span></label>
                     <input type="text" 
                     :id="'currency_'+i" 
                     name="from_cur" 
@@ -34,7 +34,7 @@
 
         <p style="text-align: center">
             <button id="remove-liquidity" @click='handle_remove_liquidity'>Withdraw</button>
-            <button id="migrate-new" @click='handle_migrate_new'>Migrate</button>
+            <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound'">Migrate</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </p>
     </div>
@@ -79,6 +79,9 @@
         	})
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
+            })
+            this.$watch(()=>currentContract.currentContract, val => {
+                this.mounted();
             })
         },
         computed: {

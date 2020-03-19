@@ -24,7 +24,7 @@ const currencies = {
 		usdc: 'cUSDC',
 		usdt: 'USDT'
 	},
-	y: {
+	iearn: {
 		dai: 'yDAI',
 		usdc: 'yUSDC',
 		usdt: 'yUSDT',
@@ -36,6 +36,13 @@ const currencies = {
 		usdt: 'yUSDT',
 		busd: 'ybUSD'
 	},
+}
+
+export const poolMenu = {
+	compound: 'Compound',
+	usdt: 'USDT',
+	iearn: 'Y',
+	busd: 'bUSD'
 }
 
 const state = Vue.observable({
@@ -126,7 +133,9 @@ export async function init() {
     state.underlying_coins = []
     for (let i = 0; i < state.N_COINS; i++) {
         var addr = await state.swap.methods.coins(i).call();
-        state.coins.push(new window.web3.eth.Contract(allabis[state.currentContract].cERC20_abi, addr));
+        let coin_abi = allabis[state.currentContract].cERC20_abi
+        if(['iearn', 'busd'].includes(state.currentContract)) coin_abi = allabis[state.currentContract].yERC20_abi
+        state.coins.push(new window.web3.eth.Contract(coin_abi, addr));
         var underlying_addr = await state.swap.methods.underlying_coins(i).call();
         state.underlying_coins.push(new window.web3.eth.Contract(allabis[state.currentContract].ERC20_abi, underlying_addr));
     }
@@ -135,6 +144,7 @@ export async function init() {
 export async function changeContract(pool) {
 	//re-init contract with different pool
 	if(!(pool in allabis)) return;
+	state.initializedContracts = false;
 	state.currentContract = pool;
 	state.currencies = currencies[pool]
 	state.N_COINS = allabis[pool].N_COINS;

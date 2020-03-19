@@ -37,6 +37,19 @@
                         </li>
                     </ul>
                 </fieldset>
+                <div class='clearfix'></div>
+                <div id='max_slippage'><span>Max slippage:</span> 
+                    <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
+                    <label for="slippage05">0.5%</label>
+
+                    <input id="slippage1" type="radio" name="slippage" checked value='0.01' @click='maxSlippage = 1; customSlippageDisabled = true'>
+                    <label for="slippage1">1%</label>
+
+                    <input id="custom_slippage" type="radio" name="slippage" value='-' @click='customippageDisabled = false'>
+                    <label for="custom_slippage" @click='customSlippageDisabled = false'>
+                        <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
+                    </label>
+                </div>
                 <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
                 <ul>
                     <li>
@@ -75,6 +88,9 @@
             exchangeRate: 'Not available',
             bgColor: '#505070',
             fromBgColor: 'blue',
+            maxSlippage: 1,
+            maxInputSlippage: '',
+            customSlippageDisabled: true,
         }),
         created() {
             this.$watch(()=>currentContract.initializedContracts, val => {
@@ -202,9 +218,11 @@
                 var i = this.from_currency
                 var j = this.to_currency;
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
+                let maxSlippage = this.maxSlippage / 100;
+                if(this.maxInputSlippage) maxSlippage = maxInputSlippage / 100;
                 if (b >= 0.001) {
                     var dx = Math.floor(this.fromInput * currentContract.coin_precisions[i]);
-                    var min_dy = Math.floor(this.toInput * 0.99 * currentContract.coin_precisions[j]);
+                    var min_dy = Math.floor(this.toInput * (1-maxSlippage) * currentContract.coin_precisions[j]);
                     dx = cBN(dx.toString()).toFixed(0);
                     if (this.inf_approval)
                         await common.ensure_underlying_allowance(i, currentContract.max_allowance)
@@ -213,7 +231,7 @@
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     await currentContract.swap.methods.exchange_underlying(i, j, dx, min_dy).send({
                             from: currentContract.default_account,
-                            gas: 1200000,
+                            gas: 1600000,
                         });
                     
                     await common.update_rates();

@@ -8,10 +8,12 @@ import Stats from '../components/Stats.vue'
 import FAQ from '../views/FAQ.vue'
 import Donate from '../views/Donate.vue'
 import Profit from '../components/Profit.vue'
+import init from '../init'
+import { getters, contract as currentContract , setCurrencies, changeContract} from '../contract'
 
 Vue.use(VueRouter)
 
-const routes = [
+let routes = [
   {
     path: '/',
     name: 'Index',
@@ -52,20 +54,38 @@ const routes = [
     name: 'Profit',
     component: Profit
   },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
 ]
+
 
 const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+router.beforeEach(async (to, from, next) => {
+  console.log(from, to)
+  console.log(currentContract)
+  let subdomain = window.location.hostname.split('.')[0]
+  if(subdomain == 'y') subdomain = 'iearn'
+  if(!['compound', 'usdt', 'iearn', 'busd' , 'y'].includes(subdomain)) subdomain = 'compound'
+
+  if(currentContract.currentContract != subdomain && !['Stats', 'FAQ', 'Donate'].includes(to.name)) {
+    changeContract(subdomain)
+    currentContract.currentContract = subdomain
+    next();
+  }
+  else if(!['Stats', 'FAQ', 'Donate'].includes(to.name)) {
+    next();
+    if(!currentContract.initializedContracts) {
+      await init();
+    }
+  }
+  else next();
+})
+
+router.afterEach(async (to, from, next) => {
+
 })
 
 export default router

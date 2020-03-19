@@ -106,7 +106,12 @@ export async function update_rates(version = 'new') {
 
             Vue.set(currentContract.c_rates, i, 1 / currentContract.coin_precisions[i]);
         }
-        else {        
+        else if(['iearn', 'busd'].includes(currentContract.currentContract)) { 
+            var rate = parseInt(await currentContract.coins[i].methods.getPricePerFullShare().call()) / 1e18 / currentContract.coin_precisions[i];
+            Vue.set(currentContract.c_rates, i, rate);
+
+        }
+        else {
             var rate = parseInt(await currentContract.coins[i].methods.exchangeRateStored().call()) / 1e18 / currentContract.coin_precisions[i];
             var supply_rate = parseInt(await currentContract.coins[i].methods.supplyRatePerBlock().call());
             var old_block = parseInt(await currentContract.coins[i].methods.accrualBlockNumber().call());

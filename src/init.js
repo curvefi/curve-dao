@@ -39,6 +39,7 @@ const web3Modal = new Web3Modal({
 });
 
 async function init() {
+    console.log("INIT")
 	//try catch for checking cancel dialog
 	const provider = await web3Modal.connect();
 

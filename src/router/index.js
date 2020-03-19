@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import PoolApp from '../components/PoolApp.vue'
 import Swap from '../components/Swap.vue'
 import Deposit from '../components/Deposit.vue'
 import Withdraw from '../components/Withdraw.vue'
@@ -8,6 +9,10 @@ import Stats from '../components/Stats.vue'
 import FAQ from '../views/FAQ.vue'
 import Donate from '../views/Donate.vue'
 import Profit from '../components/Profit.vue'
+import RootApp from '../components/root/RootApp.vue'
+import Root from '../components/root/Root.vue'
+import CombinedStats from '../components/root/CombinedStats.vue'
+
 import init from '../init'
 import { getters, contract as currentContract , setCurrencies, changeContract} from '../contract'
 
@@ -15,44 +20,73 @@ Vue.use(VueRouter)
 
 let routes = [
   {
+    path: '/',
+    name: 'Root',
+    component: RootApp,
+    children: [
+      {
+        name: 'RootIndex',
+        path: '',
+        component: Root
+      },
+      {
+        name: 'CombinedStats',
+        path: 'combinedstats',
+        component: CombinedStats,
+      },
+      {
+        name: 'Donate',
+        path: 'donate',
+        component: Donate,
+      }
+    ]
+  },
+  {
     path: '/:pool/',
     name: 'Index',
-    component: Swap
-  },
-  {
-    path: '/:pool/deposit',
-    name: 'Deposit',
-    component: Deposit
-  },
-  {
-    path: '/:pool/withdraw',
-    name: 'Withdraw',
-    component: Withdraw
-  },
-  {
-    path: '/:pool/withdraw_old',
-    name: 'WithdrawOld',
-    component: WithdrawOld
-  },
-  {
-    path: '/:pool/stats',
-    name: 'Stats',
-    component: Stats
-  },
-  {
-    path: '/:pool/faq',
-    name: 'FAQ',
-    component: FAQ
-  },
-  {
-    path: '/:pool/donate',
-    name: 'Donate',
-    component: Donate
-  },
-  {
-    path: '/:pool/profit',
-    name: 'Profit',
-    component: Profit
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'Swap',
+        component: Swap
+      },
+      {
+        path: 'deposit',
+        name: 'Deposit',
+        component: Deposit
+      },
+      {
+        path: 'withdraw',
+        name: 'Withdraw',
+        component: Withdraw
+      },
+      {
+        path: 'withdraw_old',
+        name: 'WithdrawOld',
+        component: WithdrawOld
+      },
+      {
+        path: 'stats',
+        name: 'Stats',
+        component: Stats
+      },
+      {
+        path: 'faq',
+        name: 'FAQ',
+        component: FAQ
+      },
+      {
+        path: 'donate',
+        name: 'Donate',
+        component: Donate
+      },
+      {
+        path: 'profit',
+        name: 'Profit',
+        component: Profit
+      },
+    ]
   },
 ]
 
@@ -66,6 +100,7 @@ const router = new VueRouter({
 const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
+  if(to.name == 'Root') return next();
   console.log(to)
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]

@@ -38,6 +38,8 @@ const currencies = {
 	},
 }
 
+export const allCurrencies = currencies
+
 export const poolMenu = {
 	compound: 'Compound',
 	usdt: 'USDT',

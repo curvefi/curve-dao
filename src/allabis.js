@@ -1,4 +1,4 @@
-var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b'
+export var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b'
 
 var compound = {
 N_COINS: 2,

@@ -30,6 +30,7 @@
 				this.mounted();
 			}
 		},
+		props: ['pool'],
 		data: () => ({
 			apr: '',
 			daily_apr: '',
@@ -85,7 +86,7 @@
 
 		methods: {
 			async mounted() {
-				let subdomain = this.currentPool
+				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()

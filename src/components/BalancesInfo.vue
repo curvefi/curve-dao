@@ -40,12 +40,16 @@
 </template>
 
 <script>
-  import { getters } from '../contract'
+  import { getters, allCurrencies } from '../contract'
   import * as helpers from '../utils/helpers'
 
   export default {
+    props: ['pool'],
     computed: {
       ...getters,
+      allCurrencies() {
+        return allCurrencies[this.pool] || this.currencies
+      }
     },
     methods: {
       totalCurrencies(currencies) {

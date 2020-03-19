@@ -48,3 +48,9 @@ export function formatDate(date) {
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
   return monthNames[date.getMonth()] + String(date.getDate()).padStart(2, '0');
 }
+
+export function formatNumber(number) {
+  return number.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+}
+
+Vue.filter('formatNumber', formatNumber)

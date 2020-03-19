@@ -38,6 +38,7 @@
                     </ul>
                 </fieldset>
                 <div class='clearfix'></div>
+                <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
                 <div id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
                     <label for="slippage05">0.5%</label>
@@ -50,7 +51,6 @@
                         <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
                     </label>
                 </div>
-                <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
                 <ul>
                     <li>
                         <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
@@ -99,12 +99,10 @@
         },
         watch: {
             from_currency(val, oldval) {
-                if(val != oldval) 
-                    this.from_cur_handler()
+                this.from_cur_handler()
             },
             to_currency(val, oldval) {
-                if(val != oldval) 
-                    this.to_cur_handler()
+                this.to_cur_handler()
             }
         },
         computed: {

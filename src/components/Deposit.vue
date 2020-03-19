@@ -5,7 +5,7 @@
                 <legend>Currencies:</legend>
                 <ul>
                     <li v-for='(currency, i) in Object.keys(currencies)'>
-                        <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="currency != 'usdt'"> (in {{currency | capitalize}}) </span></label>
+                        <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="!(currency == 'usdt' && currentPool == 'usdt')"> (in {{currency | capitalize}}) </span></label>
                         <input 
 	                        type="text" 
 	                        :id="'currency_'+i" 
@@ -75,7 +75,7 @@
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, val => {
-                this.mounted();
+            	if(currentContract.initializedContracts) this.mounted();
             })
         },
         computed: {
@@ -86,6 +86,12 @@
         },
         methods: {
             async mounted() {
+	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
+	        	this.bgColors = Array(currentContract.N_COINS).fill({
+	        		backgroundColor: '#707070',
+	        		color: '#d0d0d0',
+	        	})
+	        	console.log(this.inputs, "INPUTS")
                 common.update_fee_info();
                 await this.handle_sync_balances();
                 await common.calc_slippage(this.inputs, true);

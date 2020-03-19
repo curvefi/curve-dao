@@ -12,7 +12,7 @@
 	    	Bonus: <span>{{(slippage*100).toFixed(3)}}</span>%
 	    </p>
         <p class='simple-error' id='nobalance-warning' v-show='show_nobalance'>
-        	Warning! Not enough balance for <span>{{show_nobalance_i}}</span> token in the contract
+        	Warning! Not enough balance for {{noBalanceText}} token in the contract
         </p>
 	</div>
 </template>
@@ -23,6 +23,11 @@
     	props: ['show_nobalance','show_nobalance_i'],
         computed: {
           ...getters,
+          noBalanceText() {
+          	if(!this.show_nobalance) return '';
+          	let kv = Object.entries(this.currencies)[this.show_nobalance_i]
+          	return kv[1] + " (in " + kv[0] + ")";
+          }
         },
     }
 </script>

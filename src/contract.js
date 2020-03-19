@@ -159,6 +159,10 @@ export async function changeContract(pool) {
 	state.underlying_coins = new Array(allabis[pool].underlying_coins);
 	state.balances = new Array(allabis[pool].balances);
 	state.wallet_balances = new Array(allabis[pool].wallet_balances);
+	state.bal_info = []
+	state.l_info = []
+	state.total = 0
+	state.totalShare = 0
 	web3Init();
 }
 

@@ -19,7 +19,7 @@
             <legend>Currencies:</legend>
             <ul>
                 <li v-for='(currency, i) in Object.keys(currencies)'>
-                    <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="currency != 'usdt'">(in {{currency | capitalize}})</span></label>
+                    <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="!(currency == 'usdt' && currentPool == 'usdt')">(in {{currency | capitalize}})</span></label>
                     <input type="text" 
                     :id="'currency_'+i" 
                     name="from_cur" 
@@ -61,7 +61,7 @@
     			backgroundColor: '#707070',
     			color: '#d0d0d0',
     		},
-    		inputs: ['0.00', '0.00'],
+    		inputs: [],
     		inputStyles: [],
     		wallet_balances: [],
     		balances: [],
@@ -73,15 +73,11 @@
     		amounts: [],
     	}),
         created() {
-        	this.inputStyles = Array(currentContract.N_COINS).fill({
-        		backgroundColor: '#707070',
-        		color: '#d0d0d0',
-        	})
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, val => {
-                this.mounted();
+                if(currentContract.initializedContracts) this.mounted();
             })
         },
         computed: {
@@ -92,6 +88,11 @@
         },
         methods: {
             async mounted() {
+	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
+	        	this.inputStyles = Array(currentContract.N_COINS).fill({
+	        		backgroundColor: '#707070',
+	        		color: '#d0d0d0',
+	        	})
                 common.update_fee_info();
                 await common.update_rates();
             	await this.update_balances();

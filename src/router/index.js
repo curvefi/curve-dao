@@ -15,42 +15,42 @@ Vue.use(VueRouter)
 
 let routes = [
   {
-    path: '/',
+    path: '/:pool/',
     name: 'Index',
     component: Swap
   },
   {
-    path: '/deposit',
+    path: '/:pool/deposit',
     name: 'Deposit',
     component: Deposit
   },
   {
-    path: '/withdraw',
+    path: '/:pool/withdraw',
     name: 'Withdraw',
     component: Withdraw
   },
   {
-    path: '/withdraw_old',
+    path: '/:pool/withdraw_old',
     name: 'WithdrawOld',
     component: WithdrawOld
   },
   {
-    path: '/stats',
+    path: '/:pool/stats',
     name: 'Stats',
     component: Stats
   },
   {
-    path: '/faq',
+    path: '/:pool/faq',
     name: 'FAQ',
     component: FAQ
   },
   {
-    path: '/donate',
+    path: '/:pool/donate',
     name: 'Donate',
     component: Donate
   },
   {
-    path: '/profit',
+    path: '/:pool/profit',
     name: 'Profit',
     component: Profit
   },
@@ -63,8 +63,16 @@ const router = new VueRouter({
   routes
 })
 
+const pools = ['compound','usdt','y','iearn','busd']
+
 router.beforeEach(async (to, from, next) => {
-  let subdomain = window.location.hostname.split('.')[0]
+  console.log(to)
+  let subdomain;
+  if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]
+  else subdomain = window.location.hostname.split('.')[0]
+  console.log(subdomain, "SUBDOMAIN")
+/*  if(window.location.hostname.split('.').length > 1) subdomain = window.location.hostname.split('.')[0]
+  else subdomain = to.path.split('/')[1]*/
   if(subdomain == 'y') subdomain = 'iearn'
   if(!['compound', 'usdt', 'iearn', 'busd' , 'y'].includes(subdomain)) subdomain = 'compound'
 

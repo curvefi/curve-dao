@@ -45,15 +45,21 @@
     import yProfitMixin from './yProfitMixin'
 
     let mixins = [ProfitMixin]
-    let pool = window.location.hostname.split('.')[0]
+    const pools = ['compound','usdt','y','iearn','busd']
+    let pool;
+    if(pools.includes(window.location.pathname.split('/')[1])) pool = window.location.pathname.split('/')[1]
+    else pool = window.location.hostname.split('.')[0]
     if(['iearn', 'y', 'busd'].includes(pool)) mixins.push(yProfitMixin)
-
+    console.log(mixins, "MIXINS")
 	export default {
         created() {
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, val => {
+                this.deposits = ''
+                this.withdrawals = ''
+                this.available = ''
                 this.mounted();
             })
         },

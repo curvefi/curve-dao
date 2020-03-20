@@ -9,6 +9,7 @@ import Onboard from 'bnc-onboard'
 
 import * as common from './utils/common.js'
 import * as currentContract from './contract.js'
+import { infura_url } from './allabis.js'
 
 
 /*const providerOptions = {
@@ -95,10 +96,11 @@ async function init() {
 
     });
 
-    await onboard.walletSelect(localStorage.getItem('selectedWallet'));
-    await onboard.walletCheck();
+    let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
+    if(userSelectedWallet) await onboard.walletCheck();
+    else window.web3 = new Web3(infura_url)
 
-	await currentContract.init();
+	  await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
 

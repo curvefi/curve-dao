@@ -81,8 +81,8 @@
             from_currency: 0,
             to_currency: 1,
             inf_approval: true,
-            fromInput: '',
-            toInput: '',
+            fromInput: 0,
+            toInput: 0,
             maxBalance: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
             exchangeRate: 'Not available',
@@ -91,6 +91,7 @@
             maxSlippage: 1,
             maxInputSlippage: '',
             customSlippageDisabled: true,
+            test: null,
         }),
         created() {
             this.$watch(()=>currentContract.initializedContracts, val => {
@@ -129,6 +130,7 @@
                         let amount = Math.floor(
                                 100 * parseFloat(balance) / currentContract.coin_precisions[this.to_currency]
                             ) / 100
+
                         this.disabled = false;
                     })
                     .catch(err => {

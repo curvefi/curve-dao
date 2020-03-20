@@ -6,12 +6,16 @@ var cBN = (val) => new BigNumber(val);
 
 export default {
 	data: () => ({
-		fromBlock: '0x91c86f',
 		addliquidityTopic: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 		removeliquidityTopic: '0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
 		removeliquidityImbalanceTopic: '0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
 	}),
 	computed: {
+		fromBlock() {
+			if(this.currentPool == 'compound') return '0x91c86f'
+			if(this.currentPool == 'usdt') return '0x904a9c'
+			return '0x909964'
+		},
 		decodeParameters() {
 			return [`uint256[${this.N_COINS}]`,`uint256[${this.N_COINS}]`, 'uint256', 'uint256']
 		},
@@ -55,15 +59,20 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	            const exchangeRate = await web3.eth.call({
-	                to: this.ADDRESSES[curr],
-	                data: '0xbd6d894d',
-	            });
-	            available += this.fromNativeCurrent(curr,
-	                this.BN(exchangeRate)
-	                .mul(this.BN(prices[i]))
-	                .div(this.BN(1e8))
-	            );
+	             if(curr == 'USDT') {
+	                available += this.fromNativeCurrent(curr, prices[i])
+	            }
+	            else {
+		            const exchangeRate = await web3.eth.call({
+		                to: this.ADDRESSES[curr],
+		                data: '0xbd6d894d',
+		            });
+		            available += this.fromNativeCurrent(curr,
+		                this.BN(exchangeRate)
+		                .mul(this.BN(prices[i]))
+		                .div(this.BN(1e8))
+		            );
+	        	}
 	        }
 	        return available
 	    },
@@ -185,6 +194,11 @@ export default {
 		            return exchangeRatePast.exchangeRate;
 		        }
 
+		        if(web3.utils.isBN(exchangeRateFuture.exchangeRate)) {
+		        	exchangeRateFuture.exchangeRate = exchangeRateFuture.exchangeRate.toNumber()
+		        	exchangeRatePast.exchangeRate = exchangeRatePast.exchangeRate.toNumber()
+		        }
+
 		        exchangeRate = (exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber)*(exchangeRateFuture.exchangeRate-(exchangeRatePast.exchangeRate))
 		        exchangeRate = exchangeRate / ((exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber))
 		        exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
@@ -222,7 +236,8 @@ export default {
 		},
 
 	    async getDeposits() {
-		    let default_account = currentContract.default_account.substr(2).toLowerCase();
+		    let default_account = currentContract.default_account
+		    default_account = default_account.substr(2).toLowerCase();
 
 		    let depositUsdSum = 0;
 
@@ -275,7 +290,8 @@ export default {
 		},
 
 		async getWithdrawals(address) {
-		    let default_account = currentContract.default_account.substr(2).toLowerCase();
+		    let default_account = currentContract.default_account
+		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version && localStorage.getItem(this.currentPool + 'lastWithdrawalBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
@@ -334,7 +350,8 @@ export default {
 		},
 
 		async getAvailable(curr) {
-		    let default_account = currentContract.default_account.substr(2).toLowerCase();
+		    let default_account = currentContract.default_account
+		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method
 		    const balanceOfCurveContract = await web3.eth.call({

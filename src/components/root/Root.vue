@@ -4,32 +4,32 @@
 	        <fieldset class='poolsdialog'>
 	            <legend>Curve pools</legend>
 	            <div :class="{selected: activePoolLink == 0}">
-	                <router-link to='/compound'>0.  
+	                <a href='/compound'>0.  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[0]}}</span>%</span>
-	                </router-link>
+	                </a>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
-	                <router-link to='/usdt'>1.  
+	                <a href='/usdt'>1.  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[1]}}</span>%</span>
-	                </router-link>
+	                </a>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
-	                <router-link to='/y'>2.  
+	                <a href='/y'>2.  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[2]}}</span>%</span>
-	                </router-link>
+	                </a>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
-	                <router-link to='/busd'>3.  
+	                <a href='/busd'>3.  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[3]}}</span>%</span>
-	                </router-link>
+	                </a>
 	            </div>
 	        </fieldset>
 	    </div>

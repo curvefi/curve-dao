@@ -11,7 +11,7 @@ import * as common from './utils/common.js'
 import * as currentContract from './contract.js'
 
 
-const providerOptions = {
+/*const providerOptions = {
     walletconnect: {
         package: WalletConnectProvider, // required
         options: {
@@ -32,23 +32,23 @@ const providerOptions = {
           key: "pk_live_190B10CE18F47DCD" // required
         }
     }
-};
+};*/
 
-const web3Modal = new Web3Modal({
+/*const web3Modal = new Web3Modal({
   network: "mainnet", // optional
   cacheProvider: true, // optional
   providerOptions // required
-});
+});*/
 
 async function init() {
 	//try catch for checking cancel dialog
-	const provider = await web3Modal.connect();
+	//const provider = await web3Modal.connect();
 
-	const web3 = new Web3(provider);
+	/*const web3 = new Web3(provider);
 	window.web3 = web3;
-    window.web3provider = web3;
+  window.web3provider = web3;*/
 
-   /* const onboard = Onboard({
+    const onboard = Onboard({
       dappId: '4d8f5839-dd6d-4ced-8d7c-e3d332b90b4e',       // [String] The API key created by step one above
       networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.
       subscriptions: {
@@ -96,7 +96,7 @@ async function init() {
     });
 
     await onboard.walletSelect(localStorage.getItem('selectedWallet'));
-    await onboard.walletCheck();*/
+    await onboard.walletCheck();
 
 	await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];

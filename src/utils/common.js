@@ -194,7 +194,8 @@ export async function handle_migrate_new(page) {
 export async function calc_slippage(values, deposit) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
     let slippage = 0;
-    var real_values = values;
+    var real_values = values.map(v=>+v);
+    console.log(values)
     var Sr = real_values.reduce((a,b) => a+b, 0);
 
     var values = real_values.map((x,i) => cBN(Math.floor(x / currentContract.c_rates[i]).toString()).toFixed(0,1));
@@ -219,6 +220,7 @@ export async function calc_slippage(values, deposit) {
         slippage = Sr / Sv;
     slippage = slippage - 1;
     slippage = slippage || 0
+    console.log(slippage)
     currentContract.slippage = slippage;
     currentContract.showSlippage = true;
 }

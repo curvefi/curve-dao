@@ -6,6 +6,8 @@ import '../public/tvision.css'
 
 Vue.config.productionTip = false
 
+console.log(process.env)
+
 
 //adding Sentry as soon as possible
 /*Sentry.init({ 

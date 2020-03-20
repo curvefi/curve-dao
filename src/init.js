@@ -103,8 +103,10 @@ async function init() {
     await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
-
-  	await common.update_fee_info();
+    if(window.location.href.includes('withdraw_old')) 
+      await common.update_fee_info('old')
+  	else 
+      await common.update_fee_info();
   	currentContract.contract.initializedContracts = true;
   }
   catch(err) {

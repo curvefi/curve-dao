@@ -86,6 +86,8 @@
         },
         methods: {
             async mounted() {
+            	currentContract.showSlippage = false
+        		currentContract.slippage = 0
 	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
 	        	this.bgColors = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',

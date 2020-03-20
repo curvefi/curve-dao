@@ -89,7 +89,7 @@
         },
         methods: {
             async mounted() {
-                common.update_fee_info('old');
+                await common.update_fee_info('old');
                 await common.update_rates('old');
             	await this.update_balances();
             	this.handle_change_share();

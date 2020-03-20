@@ -125,6 +125,7 @@ export async function update_rates(version = 'new') {
 }
 
 export async function update_fee_info(version = 'new') {
+    console.log("UPDATE FEE INFO", version)
     var swap_abi_stats = abis.swap_abi;
     var swap_address_stats = currentContract.swap_address;
     var swap_stats = currentContract.swap;
@@ -165,9 +166,14 @@ export async function update_fee_info(version = 'new') {
             currentContract.totalShare = 0;
             for (let i=0; i < currentContract.N_COINS; i++) {
                 var val = balances[i] * currentContract.c_rates[i] * token_balance / token_supply;
+                console.log(val, "VALUES")
                 currentContract.totalShare += val;
                 Vue.set(currentContract.l_info, i, val)
             }
+        }
+        else {
+            currentContract.totalShare = 0;
+            //no need to set other values as v-show check is done based on totalShare
         }
     }
 }

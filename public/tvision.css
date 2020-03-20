@@ -603,3 +603,10 @@ fieldset:nth-child(2) .maxbalance {
   transform: none;
   box-shadow: none;
 }
+
+button.bn-onboard-custom:first-letter {
+  color: inherit;
+}
+button.bn-onboard-custom {
+  box-shadow: none;
+}

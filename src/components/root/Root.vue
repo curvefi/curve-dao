@@ -4,32 +4,32 @@
 	        <fieldset class='poolsdialog'>
 	            <legend>Curve pools</legend>
 	            <div :class="{selected: activePoolLink == 0}">
-	                <a href='/compound'>0.  
+	                <router-link to = '/compound'>0.  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[0]}}</span>%</span>
-	                </a>
+	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
-	                <a href='/usdt'>1.  
+	                <router-link to = '/usdt'>1.  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[1]}}</span>%</span>
-	                </a>
+	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
-	                <a href='/y'>2.  
+	                <router-link to = '/y'>2.  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[2]}}</span>%</span>
-	                </a>
+	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
-	                <a href='/busd'>3.  
+	                <router-link to = '/busd'>3.  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
 	                    <span class='apr'>Daily APY: <span>{{apy[3]}}</span>%</span>
-	                </a>
+	                </router-link>
 	            </div>
 	        </fieldset>
 	    </div>
@@ -116,10 +116,17 @@
 		data: () => ({
 			activePoolLink: 0,
 			pools: ['compound','usdt','y','busd'],
-			apy: []
+			apy: [],
 		}),
 		mounted() {
-			document.addEventListener('keydown', e => {
+			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
+	        this.getAPY()
+		},
+		beforeDestroy() {
+			document.removeEventListener('keydown', this.handle_pool_change);
+		},
+		methods: {
+			handle_pool_change(e) {
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
 	                e.preventDefault();
 	                this.activePoolLink--;
@@ -138,10 +145,7 @@
 	                e.preventDefault();
 	                this.$router.push('/'+pools[this.activePoolLink])
 	            }
-	        })
-	        this.getAPY()
-		},
-		methods: {
+			},
 			async getAPY() {
 	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi']        
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))

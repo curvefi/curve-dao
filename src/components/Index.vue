@@ -3,7 +3,6 @@
 </template>
 
 <script>
-	import BigNumber from "./bignumber.mjs"
 
 </script>
 

@@ -1,0 +1,31 @@
+<div class='blue window half-width info'>
+    <fieldset id='profit-info'>
+        <legend>Profit</legend>
+        <ul id='profit'>
+            <li>
+            	<b>Deposits:</b> 
+            	<span :class="{'loading line': deposits == -1}">
+                	<span v-show='deposits != -1'> {{deposits/100 | toFixed2}} </span>
+            	</span>
+        	</li>
+            <li>
+            	<b>Withdrawals:</b> 
+            	<span :class="{'loading line': withdrawals == -1}">
+            		<span v-show='withdrawals != -1'> {{withdrawals/100 | toFixed2}} </span>
+            	</span>
+            </li>
+            <li>
+            	<b>Available:</b> 
+            	<span :class="{'loading line': available == -1}">
+            		<span v-show='available != -1'> {{(available/100) || '0.00'}} </span>
+            	</span>
+            </li>
+            <li>
+            	<b>Profit:</b>
+            	<span :class="{'loading line': available == -1}">
+            		<span v-show='available != -1 '> {{(available + withdrawals - deposits)/100 | toFixed2}}</span>
+            	</span>
+            </li>
+        </ul>
+    </fieldset>
+</div>

@@ -11,8 +11,9 @@
 
     import ProfitBaseMixin from './ProfitBaseMixin'
     import ProfitMixin from './ProfitMixin'
+    import yProfitMixin from './yProfitMixin'
 
 	export default {
-        mixins: [ProfitBaseMixin, ProfitMixin],
+        mixins: [ProfitBaseMixin, ProfitMixin, yProfitMixin],
 	}
 </script>

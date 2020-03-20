@@ -9,9 +9,12 @@ import Stats from '../components/Stats.vue'
 import FAQ from '../views/FAQ.vue'
 import Donate from '../views/Donate.vue'
 import Profit from '../components/Profit.vue'
+import ProfitRouter from '../components/ProfitRouter.vue'
 import RootApp from '../components/root/RootApp.vue'
 import Root from '../components/root/Root.vue'
 import CombinedStats from '../components/root/CombinedStats.vue'
+
+import Index from '../components/Index.vue'
 
 import init from '../init'
 import { getters, contract as currentContract , setCurrencies, changeContract} from '../contract'
@@ -84,7 +87,7 @@ let routes = [
       {
         path: 'profit',
         name: 'Profit',
-        component: Profit
+        component: ProfitRouter
       },
     ]
   },
@@ -100,7 +103,7 @@ const router = new VueRouter({
 const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
-  if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
+  //if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
   if(['RootIndex', 'Donate'].includes(to.name)) return next();
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]

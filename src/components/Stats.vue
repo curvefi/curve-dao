@@ -47,6 +47,11 @@
 			daily_apr: '',
 			weekly_apr: '',
 			chartdata: {
+				chart: {
+					panning: true,
+					zoomType: 'x',
+			        panKey: 'ctrl'
+				},
                 rangeSelector: {
 		            selected: 1
 		        },
@@ -58,14 +63,25 @@
 	            	labels: {
 	            		formatter() {
 	            			return (Math.floor(this.value * 100) / 100).toFixed(2);
-	            		}
+	            		},
+		            	style: {
+		            		color: 'black'
+		            	}
 	            	},
 	            	tickPixelInterval: 10,
+	            },
+	            xAxis: {
+	            	labels: {	
+		            	style: {
+		            		color: 'black'
+		            	}
+	            	}
 	            },
 		        series: [{
 		        	name: 'Virtual growth of liquidity share',
 		        	lineWidth: 2,
-		        	data: []
+		        	data: [],
+		        	color: '#0b0a57'
 		        }],
 		        tooltip: {
 	                valueDecimals: 5,
@@ -74,13 +90,6 @@
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
-			},
-			options: {
-				tooltips: {
-				    mode: 'point',
-				    intersect: false,
-				    backgroundColor: 'red'
-				}
 			},
 			loading: true,
 		}),

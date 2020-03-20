@@ -88,8 +88,8 @@
         },
         methods: {
             async mounted() {
-            	currentContract.showSlippage = false
-        		currentContract.slippage = 0
+            	currentContract.showSlippage = false;
+        		currentContract.slippage = 0;
 	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
 	        	this.inputStyles = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',
@@ -178,6 +178,8 @@
 			    common.update_fee_info();
 			},
 			handle_change_share() {
+            	currentContract.showSlippage = false;
+        		currentContract.slippage = 0;
 				this.shareStyles.backgroundColor = 'blue'
 				this.shareStyles.color = 'aqua'
 			    if (this.share == '---') {

@@ -100,6 +100,7 @@ const router = new VueRouter({
 const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
+  if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
   if(['RootIndex', 'Donate'].includes(to.name)) return next();
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]

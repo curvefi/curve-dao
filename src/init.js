@@ -42,7 +42,7 @@ import { infura_url } from './allabis.js'
 });*/
 
 const onboard = Onboard({
-  dappId: '4d8f5839-dd6d-4ced-8d7c-e3d332b90b4e',       // [String] The API key created by step one above
+  dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
   networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.
   subscriptions: {
     wallet: wallet => {
@@ -55,8 +55,8 @@ const onboard = Onboard({
         { walletName: "metamask" },
         {
           walletName: "trezor",
-          appUrl: "localhost",
-          email: "test@example.com",
+          appUrl: "https://beta.curve.fi",
+          email: "info@curve.fi",
           rpcUrl:
             "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
         },

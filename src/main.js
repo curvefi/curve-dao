@@ -1,6 +1,13 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import VueMeta from 'vue-meta'
+
+Vue.use(VueMeta, {
+  // optional pluginOptions
+  refreshOnceOnNavigation: true
+})
+
 
 import '../public/tvision.css'
 

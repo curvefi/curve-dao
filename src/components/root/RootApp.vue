@@ -43,6 +43,23 @@
   import { getters, contract as currentContract, changeContract, poolMenu } from '../../contract'
 
   export default {
+    metaInfo: {
+      title: 'Curve.fi',
+      meta: [
+        {'property': 'og:title', 'content': 'curve.fi'},
+        {'property': 'og:url', 'content': 'https://curve.fi'},
+        {'property': 'og:type', 'content': 'website'},
+        {'property': 'og:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
+        {'property': 'og:image', 'content': '/curve.png'},
+        {'name': 'twitter:card', 'content': 'summary_large_image'},
+        {'name': 'twitter:title', 'content': 'curve.fi'},
+        {'name': 'twitter:site', 'content': '@CurveFinance'},
+        {'name': 'twitter:creator', 'content': '@CurveFinance'},
+        {'name': 'twitter:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
+        {'name': 'twitter:url', 'content': 'https://curve.fi'},
+        {'name': 'twitter:image', 'content': '/curve.png'},
+      ]
+    },
     components: {
       
     },

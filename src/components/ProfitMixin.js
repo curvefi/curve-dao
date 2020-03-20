@@ -51,7 +51,7 @@ export default {
 	            promises.push(this.getAvailable(curr))
 	        }
 	        let prices = await Promise.all(promises);
-
+	        
 	        this.available = await this.calculateAvailable(prices);
 	    },
 

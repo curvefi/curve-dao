@@ -122,7 +122,6 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   else {
-    console.log("HERERE")
     currentContract.currentContract = subdomain;
     return next();
   }

@@ -167,9 +167,9 @@
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 			        await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
 			    }
-			    if(share_val != '---') {
+			    if(this.share_val != '---') {
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
-			            this.handle_change_amounts(i)();
+			            this.handle_change_amounts(i);
 			        }
 			    }
 			    await this.update_balances();

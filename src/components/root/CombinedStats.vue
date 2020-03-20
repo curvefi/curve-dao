@@ -1,8 +1,9 @@
 <template>
 	<div>
+	    <total-balances/>
+
 		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
 		      <p class='text-center'><a href='https://compound.curve.fi'>{{currency}}.curve.fi</a></p>
-
 		      <stats :pool= 'currency'/>
 		      <balances-info 
 			      :bal_info = 'bal_infos[currency]'
@@ -22,14 +23,24 @@
 	import Stats from '../Stats.vue'
 	import BalancesInfo from '../BalancesInfo.vue'
 	import Web3 from 'web3'
+	import TotalBalances from './TotalBalances.vue'
+
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
     import * as allabis from '../../allabis'
     let contracts = allabis.default;
 
 	export default {
+		metaInfo: {
+	      title: 'Curve.fi - Stats',
+	      meta: [
+	      	{'property': 'og:url', 'content': 'https://curve.fi/combinedstats'},
+	      	{'name': 'twitter:url', 'content': 'https://curve.fi/combinedstats'},
+	      ]
+	    },
 		components: {
 			Stats,
-			BalancesInfo
+			BalancesInfo,
+			TotalBalances,
 		},
 		data: () => ({
 			contracts: [],

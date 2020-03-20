@@ -88,9 +88,9 @@
           ...getters,
         },
         created() {
-            this.$watch(()=>currentContract.initializedContracts, val => {
+/*            this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
-            })
+            })*/
             this.$watch(()=>currentContract.currentContract, val => {
             	if(currentContract.initializedContracts) this.mounted();
             })
@@ -105,7 +105,6 @@
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
-				console.log("HEREEEEEEEEEEE")
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 

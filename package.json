@@ -23,6 +23,7 @@
     "squarelink": "^1.1.4",
     "vue": "^2.6.11",
     "vue-chartjs": "^3.5.0",
+    "vue-meta": "^2.3.3",
     "vue-router": "^3.1.5",
     "web3": "^1.2.6",
     "web3modal": "^1.1.0"

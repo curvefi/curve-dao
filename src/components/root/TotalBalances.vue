@@ -40,7 +40,7 @@
 			        let price = cBN(await swapContracts[key].methods.get_virtual_price().call())
 			        total = total.plus(totalSupply.multipliedBy(price).div(1e36))
 			    }
-			    this.total = total.toFixed(2);
+			    this.total = total.toFixed(0);
 			},
 		}
 

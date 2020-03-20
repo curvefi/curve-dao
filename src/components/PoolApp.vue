@@ -5,7 +5,7 @@
       <input type="checkbox" id="hamburger"/>
 
       <div id='poolsdropdown'>
-        <button class='simplebutton' :class="{'loading line': !initializedContracts}">[{{poolMenu[currentPool]}}]</button>
+        <button class='simplebutton' :class="{'loading line': !initializedContracts && !['Stats', 'FAQ', 'Donate'].includes($route.name)}">[{{poolMenu[currentPool]}}]</button>
         <div class='dropdown'>
            <!--  <a :href="'//compound.localhost:8080'+$route.path" :class="{selected: currentPool == 'compound'}" @click="changePools('compound')">Compound</a>
             <a :href="'//usdt.localhost:8080'+$route.path" :class="{selected: currentPool == 'usdt'}" @click="changePools('usdt')">USDT</a>

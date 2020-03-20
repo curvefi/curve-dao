@@ -67,7 +67,7 @@
 
 <script>
     import * as common from '../utils/common.js'
-    import { getters, contract as currentContract } from '../contract'
+    import { getters, contract as currentContract, gas as contractGas} from '../contract'
     import * as helpers from '../utils/helpers'
 
     import BigNumber from 'bignumber.js'
@@ -231,7 +231,7 @@
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     await currentContract.swap.methods.exchange_underlying(i, j, dx, min_dy).send({
                             from: currentContract.default_account,
-                            gas: 1600000,
+                            gas: contractGas.swap[this.currentPool],
                         });
                     
                     await common.update_rates();

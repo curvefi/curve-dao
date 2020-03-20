@@ -47,6 +47,15 @@ export const poolMenu = {
 	busd: 'bUSD'
 }
 
+export const gas = {
+	swap: {
+		compound: 1200000,
+		usdt: 1200000,
+		iearn: 1600000,
+		busd: 1600000,
+	}
+}
+
 const state = Vue.observable({
 	currentContract: 'compound',
 	currencies: currencies.compound,

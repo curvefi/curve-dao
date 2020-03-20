@@ -5,7 +5,7 @@
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span :class="{'loading line': bal_info && !bal_info[i]}"> {{bal_info[i] | toFixed2}}</span>
+            <span :class="{'loading line': !bal_info || !bal_info[i]}"> {{bal_info && bal_info[i] | toFixed2}}</span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
@@ -15,12 +15,12 @@
       <p>
         <b>Fee:</b> 
         <span id='fee-info' :class="{'loading line': !fee}">
-          <span v-show = 'fee'> {{fee.toFixed(3)}}</span>
+          <span v-show = 'fee'> {{fee && fee.toFixed(3)}}</span>
         </span>%
       </p>
       <p>
         <b>Admin fee:</b> 
-        <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee.toFixed(3)}}</span>%
+        <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee && admin_fee.toFixed(3)}}</span>%
       </p>
     </fieldset>
     <fieldset id="lp-info-container" v-show='totalShare > 0'>
@@ -28,7 +28,7 @@
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{l_info[i] | toFixed2}}</span></li>
+            <span> {{l_info && l_info[i] | toFixed2}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
 

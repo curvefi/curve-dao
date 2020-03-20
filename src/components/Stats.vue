@@ -2,12 +2,20 @@
 	<div>
 		<div :class="{'window white': !pool}">
 	        <fieldset>
-	            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr*100 | toFixed2}}</span>% APY]</legend>
-	            <div class='loading matrix' v-show='!chartdata.series[0].data.length'></div>
-				<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
+	            <legend>Average liquidity provider profit [
+		            	<span id="apr-profit" :class="{'loading line': loading}">
+		            		<span v-show='!loading'> {{apr*100 | toFixed2}}%</span>
+	            	</span> APY ]
+	        	</legend>
+	            <div class='loading matrix' v-show='loading'></div>
+				<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='!loading'></highcharts>
 	        </fieldset>
-	        <p>Recent daily APY: <span id="daily-apr">{{daily_apr*100 | toFixed2}}</span>%</p>
-	        <p>Recent weekly APY: <span id="weekly-apr">{{weekly_apr*100 | toFixed2}}</span>%</p>
+	        <p>Recent daily APY: <span id="daily-apr" :class="{'loading line': loading}">
+	        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
+	    	</span></p>
+	        <p>Recent weekly APY: <span id="weekly-apr" :class="{'loading line': loading}">
+	        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
+	    	</span></p>
 	    </div>
 	</div>
 </template>
@@ -73,7 +81,8 @@
 				    intersect: false,
 				    backgroundColor: 'red'
 				}
-			}
+			},
+			loading: true,
 		}),
         computed: {
           ...getters,
@@ -92,6 +101,7 @@
 
 		methods: {
 			async mounted() {
+				this.loading = true;
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
@@ -116,6 +126,7 @@
 		            }
 		        }
 		        this.chartdata.series[0].data = chartData;
+		        this.loading = false;
 			},
 		}
 	}

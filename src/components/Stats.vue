@@ -90,6 +90,7 @@
 			async mounted() {
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
+				if(subdomain == 'susd') subdomain = 'synthetix'
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 

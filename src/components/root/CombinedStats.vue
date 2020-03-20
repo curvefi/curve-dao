@@ -55,7 +55,12 @@
         },
         computed: {
           allCurrencies() {
-          	return allCurrencies
+          	return Object.assign(allCurrencies, {
+          		susd: {
+          			susd: 'sUSD',
+          			ycurve: 'yCurve'
+          		}
+          	})
           }
         },
         mounted() {

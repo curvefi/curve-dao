@@ -1,6 +1,8 @@
 import Vue from 'vue'
 
 Vue.filter('capitalize', function (value) {
+  if(value == 'susd') return 'sUSD';
+  if(value == 'ycurve') return 'yCurve';
 	return value.toUpperCase();
 })
 

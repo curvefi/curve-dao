@@ -3,6 +3,7 @@
 		<div :class="{'window white': !pool}">
 	        <fieldset>
 	            <legend>Average liquidity provider profit [<span id="apr-profit">{{apr*100 | toFixed2}}</span>% APY]</legend>
+	            <div class='loading matrix' v-show='!chartdata.series[0].data.length'></div>
 				<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='chartdata.series[0].data.length'></highcharts>
 	        </fieldset>
 	        <p>Recent daily APY: <span id="daily-apr">{{daily_apr*100 | toFixed2}}</span>%</p>
@@ -81,6 +82,9 @@
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
+            this.$watch(()=>currentContract.currentContract, val => {
+            	if(currentContract.initializedContracts) this.mounted();
+            })
         },
         mounted() {
             this.mounted();
@@ -91,6 +95,7 @@
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
+				console.log("HEREEEEEEEEEEE")
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 
@@ -117,5 +122,8 @@
 </script>
 
 <style>
-	
+	.loading.matrix {
+		display: flex;
+		justify-content: center;
+	}
 </style>

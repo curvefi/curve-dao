@@ -110,7 +110,7 @@ router.beforeEach(async (to, from, next) => {
   if(subdomain == 'y') subdomain = 'iearn'
   if(!['compound', 'usdt', 'iearn', 'busd' , 'y'].includes(subdomain)) subdomain = 'compound'
 
-  if(currentContract.currentContract != subdomain && !['Stats', 'FAQ', 'Donate'].includes(to.name)) {
+  if((currentContract.currentContract != subdomain && !['Stats', 'FAQ', 'Donate'].includes(to.name)) || ['Stats', 'FAQ', 'Donate'].includes(from.name)) {
     changeContract(subdomain)
     currentContract.currentContract = subdomain
     next();
@@ -121,7 +121,11 @@ router.beforeEach(async (to, from, next) => {
       await init();
     }
   }
-  else next();
+  else {
+    console.log("HERERE")
+    currentContract.currentContract = subdomain;
+    return next();
+  }
 })
 
 router.afterEach(async (to, from, next) => {

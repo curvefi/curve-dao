@@ -237,6 +237,11 @@
                     await common.update_rates();
                     common.update_fee_info();
                     this.from_cur_handler();
+                    let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
+                    let amount = Math.floor(
+                            100 * parseFloat(balance) / currentContract.coin_precisions[i]
+                        ) / 100
+                    this.maxBalance = amount;
                 }
             }
         }

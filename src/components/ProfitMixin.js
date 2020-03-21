@@ -29,31 +29,42 @@ export default {
 	},
 	methods: {
 		async mounted() {
-	        common.update_fee_info();
-	        this.BN = web3.utils.toBN
-	        this.CURVE = currentContract.swap_address;
-	        this.CURVE_TOKEN = currentContract.token_address;
+			try {			
+		        common.update_fee_info();
+		        this.BN = web3.utils.toBN
+		        this.CURVE = currentContract.swap_address;
+		        this.CURVE_TOKEN = currentContract.token_address;
 
 
-			let subdomain = this.currentPool
-			if(subdomain == 'iearn') subdomain = 'y'
-	        let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
-	        this.priceData = await res.json();
-	        for(let i = 0; i < currentContract.N_COINS; i++) {
-		        let symbol = await currentContract.coins[i].methods.symbol().call()
-		        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
-		    }
+				let subdomain = this.currentPool
+				if(subdomain == 'iearn') subdomain = 'y'
+		        let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
+		        this.priceData = await res.json();
+		        for(let i = 0; i < currentContract.N_COINS; i++) {
+			        let symbol = await currentContract.coins[i].methods.symbol().call()
+			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
+			    }
 
-		    this.deposits = await this.getDeposits();
-		    this.withdrawals = await this.getWithdrawals();
-		    let available = 0;
-	        let promises = [];
-	        for(let curr of Object.keys(this.ADDRESSES)) {
-	            promises.push(this.getAvailable(curr))
-	        }
-	        let prices = await Promise.all(promises);
-	        
-	        this.available = await this.calculateAvailable(prices);
+			    this.deposits = await this.getDeposits();
+			    this.withdrawals = await this.getWithdrawals();
+			    let available = 0;
+		        let promises = [];
+		        for(let curr of Object.keys(this.ADDRESSES)) {
+		            promises.push(this.getAvailable(curr))
+		        }
+		        let prices = await Promise.all(promises);
+		        
+		        this.available = await this.calculateAvailable(prices);
+			}
+			catch(err) {
+				localStorage.removeItem(this.currentPool + 'dversion')
+				localStorage.removeItem(this.currentPool + 'lastDepositBlock')
+				localStorage.removeItem(this.currentPool + 'lastAddress')
+				localStorage.removeItem(this.currentPool + 'lastDeposits')
+				localStorage.removeItem(this.currentPool + 'wversion')
+				localStorage.removeItem(this.currentPool + 'lastWithdrawalBlock')
+				localStorage.removeItem(this.currentPool + 'lastWithdrawals')
+			}
 	    },
 
 	    async calculateAvailable(prices) {

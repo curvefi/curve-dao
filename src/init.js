@@ -1,10 +1,10 @@
 import Web3 from "web3";
-import Web3Modal from "web3modal";
+/*import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 import BurnerConnectProvider from "@burner-wallet/burner-connect-provider";
-
+*/
 import Onboard from 'bnc-onboard'
 
 import * as common from './utils/common.js'

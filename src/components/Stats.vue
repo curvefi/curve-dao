@@ -23,7 +23,6 @@
 <script>
     import * as helpers from '../utils/helpers'
     import { getters, contract as currentContract } from '../contract'
-    import LineChart from './common/LineChart.vue'
     import Highcharts from 'highcharts'
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
@@ -33,7 +32,6 @@
 
 	export default {
 		components: {
-			LineChart,
 			highcharts: Chart,
 		},
 		watch: {

@@ -2,6 +2,9 @@ process.env.VUE_APP_VERSION = require('./package.json').version
 
 const HtmlCriticalWebpackPlugin = require("html-critical-webpack-plugin");
 
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+    .BundleAnalyzerPlugin;
+
 const path = require('path')
 
 module.exports = {
@@ -22,7 +25,8 @@ module.exports = {
 		      penthouse: {
 		        blockJSRequests: false,
 		      }
-		    })
+		    }),
+		    new BundleAnalyzerPlugin(),
 		]
 	},
     // options...

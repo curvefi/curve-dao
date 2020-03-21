@@ -44,8 +44,8 @@ export default {
 		        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
 		    }
 
-		    this.deposits = await makeCancelable(this.getDeposits());
-		    this.withdrawals = await makeCancelable(this.getWithdrawals());
+		    this.deposits = await this.getDeposits();
+		    this.withdrawals = await this.getWithdrawals();
 		    let available = 0;
 	        let promises = [];
 	        for(let curr of Object.keys(this.ADDRESSES)) {
@@ -53,14 +53,7 @@ export default {
 	        }
 	        let prices = await Promise.all(promises);
 	        
-	        this.available = await makeCancelable(this.calculateAvailable(prices));
-	    },
-
-	    beforeDestroy() {
-	    	console.log("HEREEEEEEE")
-	    	this.deposits.cancel()
-	    	this.withdrawals.cancel();
-	    	this.available.cancel();
+	        this.available = await this.calculateAvailable(prices);
 	    },
 
 	    async calculateAvailable(prices) {
@@ -76,6 +69,8 @@ export default {
 		                data: '0xbd6d894d',
 		            });
 		            available += this.fromNativeCurrent(curr,
+
+
 		                this.BN(exchangeRate)
 		                .mul(this.BN(prices[i]))
 		                .div(this.BN(1e8))
@@ -217,6 +212,7 @@ export default {
 		},
 
 		async calculateAmount(cTokens, block, type) {
+			if(this.cancel) return;
 		    let amount = 0;
 		    for(let i = 0; i < currentContract.N_COINS; i++) {
 		            const tokens = this.BN(cTokens[i]);
@@ -274,6 +270,7 @@ export default {
 		    const txs = poolTokensReceivings.map(e => e.transactionHash);
 		    console.time('timer')
 		    for (const hash of txs) {
+		    	if(this.cancel) return;
 		        const receipt = await web3.eth.getTransactionReceipt(hash);
 		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
@@ -290,10 +287,10 @@ export default {
 		        }
 		    }
 		    console.timeEnd('timer')
-		    localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
-		    localStorage.setItem(this.currentPool + 'lastAddress', default_account)
-		    localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
-		    localStorage.setItem(this.currentPool + 'dversion', this.version);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastAddress', default_account)
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'dversion', this.version);
 		    return depositUsdSum;
 		},
 
@@ -350,9 +347,9 @@ export default {
 
 
 		    }
-		    localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
-		    localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
-		    localStorage.setItem(this.currentPool + 'wversion', this.version);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'wversion', this.version);
 		    console.log("WITHDRAWALS", withdrawals)
 		    return withdrawals;
 		},

@@ -45,7 +45,7 @@ let routes = [
     ]
   },
   {
-    path: '/:pool/',
+    path: '/:pool(compound|usdt|y|iearn|busd)/',
     name: 'Index',
     component: PoolApp,
     children: [

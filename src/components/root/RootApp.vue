@@ -5,7 +5,7 @@
       <input type="checkbox" id="hamburger"/>
 
       <div id='poolsdropdown'>
-        <!-- <button class='simplebutton' :class="{'loading line': !initializedContracts}">[{{poolMenu[currentPool]}}]</button> -->
+        <button class='simplebutton'>☰</button>
         <div class='dropdown'>
            <!--  <a :href="'//compound.localhost:8080'+$route.path" :class="{selected: currentPool == 'compound'}" @click="changePools('compound')">Compound</a>
             <a :href="'//usdt.localhost:8080'+$route.path" :class="{selected: currentPool == 'usdt'}" @click="changePools('usdt')">USDT</a>
@@ -16,6 +16,8 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
+            <p>____________</p>
+            <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
         </div>
       </div>
 
@@ -41,6 +43,7 @@
 
 <script>
   import { getters, contract as currentContract, changeContract, poolMenu } from '../../contract'
+  import init from '../../init'
 
   export default {
     metaInfo: {
@@ -72,7 +75,20 @@
     methods: {
       changePools(pool) {
         changeContract(pool)
+      },
+      async changeAccounts() {
+        localStorage.removeItem('selectedWallet')
+        currentContract.totalShare = 0
+        init(false)
       }
     },
   }
 </script>
+
+<style>
+  .dropdown p {
+    color: black;
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+</style>

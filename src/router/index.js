@@ -1,18 +1,18 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import PoolApp from '../components/PoolApp.vue'
-import Swap from '../components/Swap.vue'
-import Deposit from '../components/Deposit.vue'
-import Withdraw from '../components/Withdraw.vue'
-import WithdrawOld from '../components/WithdrawOld.vue'
-import Stats from '../components/Stats.vue'
-import FAQ from '../views/FAQ.vue'
-import Donate from '../views/Donate.vue'
-import Profit from '../components/Profit.vue'
-import ProfitRouter from '../components/ProfitRouter.vue'
-import RootApp from '../components/root/RootApp.vue'
-import Root from '../components/root/Root.vue'
-import CombinedStats from '../components/root/CombinedStats.vue'
+const PoolApp = () => import('../components/PoolApp.vue')
+const Swap = () => import('../components/Swap.vue')
+const Deposit = () => import('../components/Deposit.vue')
+const Withdraw = () => import('../components/Withdraw.vue')
+const WithdrawOld = () => import('../components/WithdrawOld.vue')
+const Stats = () => import('../components/Stats.vue')
+const FAQ = () => import('../views/FAQ.vue')
+const Donate = () => import('../views/Donate.vue')
+const Profit = () => import('../components/Profit.vue')
+const ProfitRouter = () => import('../components/ProfitRouter.vue')
+const RootApp = () => import('../components/root/RootApp.vue')
+const Root = () => import('../components/root/Root.vue')
+const CombinedStats = () => import('../components/root/CombinedStats.vue')
 
 import Index from '../components/Index.vue'
 

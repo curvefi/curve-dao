@@ -1,5 +1,6 @@
 import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
+import { makeCancelable } from '../utils/helpers'
 
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
@@ -43,8 +44,8 @@ export default {
 		        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
 		    }
 
-		    this.deposits = await this.getDeposits();
-		    this.withdrawals = await this.getWithdrawals();
+		    this.deposits = await makeCancelable(this.getDeposits());
+		    this.withdrawals = await makeCancelable(this.getWithdrawals());
 		    let available = 0;
 	        let promises = [];
 	        for(let curr of Object.keys(this.ADDRESSES)) {
@@ -52,7 +53,14 @@ export default {
 	        }
 	        let prices = await Promise.all(promises);
 	        
-	        this.available = await this.calculateAvailable(prices);
+	        this.available = await makeCancelable(this.calculateAvailable(prices));
+	    },
+
+	    beforeDestroy() {
+	    	console.log("HEREEEEEEE")
+	    	this.deposits.cancel()
+	    	this.withdrawals.cancel();
+	    	this.available.cancel();
 	    },
 
 	    async calculateAvailable(prices) {

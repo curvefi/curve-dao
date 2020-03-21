@@ -70,11 +70,11 @@ const onboard = Onboard({
         { walletName: "status" },
         {
           walletName: "portis",
-          apiKey: "d7d72646-709a-45ab-aa43-8de5307ae0df"
+          apiKey: "a3bb2525-5101-4a9c-b300-febc6319c3b4"
         },
         { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
         { walletName: "torus" },
-        { walletName: "squarelink", apiKey: "87288b677f8cfb09a986" },
+        { walletName: "squarelink", apiKey: "db2074f87c34f247593c" },
         { walletName: "authereum" },
         { walletName: "trust" },
         {

@@ -3,8 +3,10 @@ process.env.VUE_APP_VERSION = require('./package.json').version
 const CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = {
-	chainWebpack(config) {
-		config.plugin('CompressionPlugin').use(CompressionPlugin)
+	configureWebpack: {
+		plugins: [
+			new CompressionPlugin({ deleteOriginalAssets: true })
+		]
 	},
     // options...
     devServer: {

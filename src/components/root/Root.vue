@@ -151,7 +151,6 @@
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
 	            for(let i = 0; i < stats.length; i++) {
 	                let json = await stats[i].json();
-	                console.log(json);
 	                var weekly_apr = json['daily_apr'];
 	                this.apy.push((weekly_apr*100).toFixed(2))
 	            }

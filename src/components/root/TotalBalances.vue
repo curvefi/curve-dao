@@ -13,7 +13,6 @@
 	import Web3 from 'web3'
 	import * as abis from '../../allabis'
 	import helpers from '../../utils/helpers'
-	console.log(abis)
 	import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
 

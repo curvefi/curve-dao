@@ -91,6 +91,10 @@ let routes = [
       },
     ]
   },
+  {
+    path: '*',
+    redirect: '/'
+  }
 ]
 
 

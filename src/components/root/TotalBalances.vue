@@ -30,7 +30,7 @@
 			    let swapContracts = {}
 			    let promises = []
 			    let infuraProvider = new Web3(abis.infura_url)
-			    let pools = abis.default
+			    let pools = Object.assign({},abis.default)
 			    delete pools.susd
 			    for(let [key, contract] of Object.entries(pools)) {
 			        tokenContracts[key] = new infuraProvider.eth.Contract(contract.ERC20_abi, contract.token_address);

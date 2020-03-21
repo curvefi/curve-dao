@@ -3,7 +3,7 @@
 	    <total-balances/>
 
 		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
-		      <p class='text-center'><a href='https://compound.curve.fi'>{{currency}}.curve.fi</a></p>
+		      <p class='text-center'><a href='https://compound.curve.fi'>{{currency == 'iearn' ? 'y' : currency}}.curve.fi</a></p>
 		      <stats :pool= 'currency'/>
 		      <balances-info 
 			      :bal_info = 'bal_infos[currency]'
@@ -28,6 +28,7 @@
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
     import * as allabis from '../../allabis'
     let contracts = allabis.default;
+    console.log(contracts, "CONTRACTS")
 
 	export default {
 		metaInfo: {
@@ -156,6 +157,7 @@
 
 			async update_fee_info(version = 'new') {
 				for(let [key, contract] of Object.entries(contracts)) {
+					console.log(key, "KEY")
 					this.bal_infos[key] = []
 					this.l_infos[key] = []
 					var balances = new Array(contract.N_COINS);
@@ -204,6 +206,9 @@
 				                total += val;
 				            }
 				            this.totalShares.push(total)
+				        }
+				        else {
+				        	this.totalShares.push(0)
 				        }
 				    }
 				}

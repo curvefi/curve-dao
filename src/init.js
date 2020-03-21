@@ -41,7 +41,7 @@ import { infura_url } from './allabis.js'
   providerOptions // required
 });*/
 
-const onboard = Onboard({
+export const onboard = Onboard({
   dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
   networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.
   subscriptions: {
@@ -88,7 +88,7 @@ const onboard = Onboard({
 
 });
 
-async function init() {
+async function init(init = true) {
 	//try catch for checking cancel dialog
 	//const provider = await web3Modal.connect();
 
@@ -97,10 +97,11 @@ async function init() {
   window.web3provider = web3;*/
   try {
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
+    console.log(userSelectedWallet)
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
 
-    await currentContract.init();
+    if(init) await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
     if(window.location.href.includes('withdraw_old')) 

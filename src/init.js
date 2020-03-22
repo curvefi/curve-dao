@@ -50,9 +50,15 @@ export const onboard = Onboard({
        localStorage.setItem('selectedWallet', wallet.name)
     },
     network: network => {
-      if(network != 1)
+      if(network != 1) {
         currentContract.contract.error = 'Error: wrong network type. Please switch to mainnet';
-        window.web3 = new Web3(infura_url)
+        currentContract.contract.totalShare = 0
+        init(false)
+      }
+      else {
+        currentContract.contract.error = ''
+        init()
+      }
     },
     address: account => {
       init(false)
@@ -105,9 +111,9 @@ async function init(init = true) {
   window.web3provider = web3;*/
   try {
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
-    console.log(userSelectedWallet)
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
+
 
     if(init) await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];

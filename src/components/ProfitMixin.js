@@ -285,7 +285,7 @@ export default {
 		        const receipt = await web3.eth.getTransactionReceipt(hash);
 		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
-		        let addliquidity = receipt.logs.filter(log=>log.topics[0] == '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768')
+		        let addliquidity = receipt.logs.filter(log=>log.topics[0] == this.addliquidityTopic)
 		        if(addliquidity.length) {
 		            let cTokens = (web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
 		            depositUsdSum += await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')

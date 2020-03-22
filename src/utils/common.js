@@ -101,6 +101,7 @@ export async function update_rates(version = 'new') {
         old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
         rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
         */
+
         if(allabis[currentContract.currentContract].tethered && allabis[currentContract.currentContract].tethered[i] &&
             allabis[currentContract.currentContract].use_lending && !allabis[currentContract.currentContract].use_lending[i]) {
 

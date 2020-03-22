@@ -82,10 +82,10 @@
   }
 </script>
 
-<style>
-  .dropdown p {
-    color: black;
-    margin-top: 0;
-    margin-bottom: 15px;
+<style scoped>
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    #poolsdropdown {
+      display: none;
+    }
   }
 </style>

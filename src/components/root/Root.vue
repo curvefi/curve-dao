@@ -158,3 +158,12 @@
 		}
 	}
 </script>
+
+<style scoped>
+    .poolsdialog a {
+      text-align: center;
+    }
+    .pools {
+      width: 100%;
+    }
+</style>

@@ -14,6 +14,7 @@ export default {
 	methods: {
 
 	    async calculateAvailable(prices) {
+		    if(this.cancel) throw new Error('cancel');
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]

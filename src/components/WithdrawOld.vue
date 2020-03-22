@@ -131,9 +131,14 @@
 			},
 			async handle_remove_liquidity() {
 			    var deadline = Math.floor((new Date()).getTime() / 1000) + currentContract.trade_timeout;
-			    for (let i = 0; i < currentContract.N_COINS; i++)
+                let min_amounts = []
+			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        Vue.set(this.amounts, i, cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
-			    var min_amounts = this.amounts.map(x => cBN(Math.floor(0.97 * x).toString()).toFixed(0,1));
+                    min_amounts[i] = cBN(0.97).multipliedBy(this.share/100).multipliedBy(cBN(this.balances[i]))
+                    .multipliedBy(cBN(this.token_balance))
+                    .div(cBN(this.token_supply))
+                    .toFixed(0,1)
+                }
 			    var txhash;
 			    if (this.share == '---') {
 			        await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, deadline).send({from: currentContract.default_account, gas: 1000000});

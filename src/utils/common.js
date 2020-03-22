@@ -138,7 +138,6 @@ export async function update_fee_info(version = 'new') {
     }
 
     await update_rates();
-    currentContract.total = 0;
     var promises = [];
     let infuraProvider = new Web3(currentContract.infura_url)
     let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
@@ -150,6 +149,7 @@ export async function update_fee_info(version = 'new') {
     }
     let resolves = await Promise.all(promises)
     let balances = []
+    currentContract.total = 0;
     resolves.forEach((balance, i) => {
         balances[i] = +balance;
         Vue.set(currentContract.bal_info, i, balances[i] * currentContract.c_rates[i]);

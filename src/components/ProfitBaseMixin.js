@@ -12,16 +12,19 @@ export default {
             if(val) this.mounted();
         })
         this.$watch(()=>currentContract.currentContract, val => {
-            this.deposits = -1
-            this.withdrawals = -1
-            this.available = -1
+            this.nullifyAmounts()
             this.mounted();
         })
     },
     mounted() {
         this.$watch(()=>currentContract.default_account, val => {
-            //cancel previous promises
-            if(val) this.mounted();
+            this.cancel = true;
+            if(val) setTimeout(()=>{
+                this.cancel = false;
+                this.nullifyAmounts();
+                this.clearCache();
+                this.mounted();
+            }, 300);
         })
         if(currentContract.initializedContracts) this.mounted();
     },
@@ -46,5 +49,22 @@ export default {
     },
     beforeDestroy() {
         this.cancel = true;
+    },
+    methods: {
+        nullifyAmounts() {
+            this.deposits = -1
+            this.withdrawals = -1
+            this.available = -1
+        },
+        clearCache() {
+            localStorage.removeItem(this.currentPool + 'dversion');
+            localStorage.removeItem(this.currentPool + 'lastDepositBlock');
+            localStorage.removeItem(this.currentPool + 'dlastAddress');
+            localStorage.removeItem(this.currentPool + 'wlastAddress');
+            localStorage.removeItem(this.currentPool + 'lastDeposits');
+            localStorage.removeItem(this.currentPool + 'wversion');
+            localStorage.removeItem(this.currentPool + 'lastWithdrawalBlock');
+            localStorage.removeItem(this.currentPool + 'lastWithdrawals');
+        },
     }
 }

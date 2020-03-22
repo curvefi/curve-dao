@@ -57,14 +57,7 @@ export default {
 		        this.available = await this.calculateAvailable(prices);
 			}
 			catch(err) {
-				localStorage.removeItem(this.currentPool + 'dversion')
-				localStorage.removeItem(this.currentPool + 'lastDepositBlock')
-				localStorage.removeItem(this.currentPool + 'dlastAddress')
-				localStorage.removeItem(this.currentPool + 'wlastAddress')
-				localStorage.removeItem(this.currentPool + 'lastDeposits')
-				localStorage.removeItem(this.currentPool + 'wversion')
-				localStorage.removeItem(this.currentPool + 'lastWithdrawalBlock')
-				localStorage.removeItem(this.currentPool + 'lastWithdrawals')
+				this.clearCache();
 			}
 	    },
 
@@ -224,7 +217,7 @@ export default {
 		},
 
 		async calculateAmount(cTokens, block, type) {
-			if(this.cancel) return;
+			if(this.cancel) throw new Error('cancel');
 		    let amount = 0;
 		    for(let i = 0; i < currentContract.N_COINS; i++) {
 		            const tokens = this.BN(cTokens[i]);
@@ -282,7 +275,7 @@ export default {
 		    const txs = poolTokensReceivings.map(e => e.transactionHash);
 		    console.time('timer')
 		    for (const hash of txs) {
-		    	if(this.cancel) return;
+		    	if(this.cancel) throw new Error('cancel');
 		        const receipt = await web3.eth.getTransactionReceipt(hash);
 		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
@@ -332,6 +325,7 @@ export default {
 
 
 		    for(let log of logs) {
+		    	if(this.cancel) throw new Error('cancel');
 		        const receipt = await web3.eth.getTransactionReceipt(log.transactionHash);
 		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
@@ -367,6 +361,7 @@ export default {
 		},
 
 		async getAvailable(curr) {
+		    if(this.cancel) throw new Error('cancel');
 		    let default_account = currentContract.default_account
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];

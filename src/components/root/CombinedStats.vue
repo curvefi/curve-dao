@@ -1,5 +1,9 @@
 <template>
 	<div>
+		<div class="error window half-width info" id="error-window" v-show='error'>
+          {{error}}
+        </div>
+
 	    <total-balances/>
 
 		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
@@ -73,6 +77,9 @@
           			ycurve: 'yCurve'
           		}
           	})
+          },
+          error() {
+          	return currentContract.error
           }
         },
         mounted() {

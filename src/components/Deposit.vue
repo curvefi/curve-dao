@@ -71,6 +71,9 @@
     		bgColors: [],
     	}),
         created() {
+            this.$watch(()=>currentContract.default_account, val => {
+                if(val) this.mounted();
+            })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })

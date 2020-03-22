@@ -59,7 +59,8 @@ export default {
 			catch(err) {
 				localStorage.removeItem(this.currentPool + 'dversion')
 				localStorage.removeItem(this.currentPool + 'lastDepositBlock')
-				localStorage.removeItem(this.currentPool + 'lastAddress')
+				localStorage.removeItem(this.currentPool + 'dlastAddress')
+				localStorage.removeItem(this.currentPool + 'wlastAddress')
 				localStorage.removeItem(this.currentPool + 'lastDeposits')
 				localStorage.removeItem(this.currentPool + 'wversion')
 				localStorage.removeItem(this.currentPool + 'lastWithdrawalBlock')
@@ -257,7 +258,7 @@ export default {
 		    let depositUsdSum = 0;
 
 		    let fromBlock = this.fromBlock;
-		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version && localStorage.getItem(this.currentPool + 'lastDepositBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
+		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version && localStorage.getItem(this.currentPool + 'lastDepositBlock') && localStorage.getItem(this.currentPool + 'dlastAddress') == default_account) {
 		        let block = +localStorage.getItem(this.currentPool + 'lastDepositBlock')
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
@@ -299,7 +300,7 @@ export default {
 		    }
 		    console.timeEnd('timer')
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
-		    !this.cancel && localStorage.setItem(this.currentPool + 'lastAddress', default_account)
+		    !this.cancel && localStorage.setItem(this.currentPool + 'dlastAddress', default_account)
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dversion', this.version);
 		    return depositUsdSum;
@@ -310,6 +311,7 @@ export default {
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    let fromBlock = this.fromBlock;
+		    console.log(localStorage.getItem(this.currentPool + 'wversion') == this.version, localStorage.getItem(this.currentPool + 'lastWithdrawalBlock'), localStorage.getItem(this.currentPool + 'wlastAddress'), default_account)
 		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version && localStorage.getItem(this.currentPool + 'lastWithdrawalBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
 		        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
@@ -352,14 +354,13 @@ export default {
 		            let tokens = +transfer[0].data
 		            let exchangeRate = this.findClosest(timestamp)[1]
 		            withdrawals += tokens*exchangeRate/1e16
-		            localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
-		            localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
 		        }
 
 
 		    }
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'wlastAddress', withdrawals);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wversion', this.version);
 		    console.log("WITHDRAWALS", withdrawals)
 		    return withdrawals;

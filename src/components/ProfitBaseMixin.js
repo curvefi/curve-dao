@@ -19,6 +19,10 @@ export default {
         })
     },
     mounted() {
+        this.$watch(()=>currentContract.default_account, val => {
+            //cancel previous promises
+            if(val) this.mounted();
+        })
         if(currentContract.initializedContracts) this.mounted();
     },
 	data: () => ({

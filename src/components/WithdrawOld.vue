@@ -77,6 +77,9 @@
         		backgroundColor: '#707070',
         		color: '#d0d0d0',
         	})
+            this.$watch(()=>currentContract.default_account, val => {
+                if(val) this.mounted();
+            })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })

@@ -27,7 +27,6 @@ body {
     box-shadow:
         0   0   0   3px red,
         1em 1em 3px 0 rgba(0,0,0,.5);
-    display: none;
 }
 
 .window.white {

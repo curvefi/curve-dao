@@ -89,6 +89,7 @@ const state = Vue.observable({
 	total: 0,
 	l_info: [],
 	totalShare: 0,
+	showShares: false,
 
 	slippage: 0,
 	showSlippage: false,
@@ -119,7 +120,8 @@ export const getters = {
 	showSlippage: () => state.showSlippage,
 	slippage: () => state.slippage,
 	N_COINS: () => state.N_COINS,
-	error: () => state.error
+	error: () => state.error,
+	showShares: () => state.showShares
 }
 
 

@@ -17,7 +17,7 @@ import '../public/tvision.css'
 Vue.config.productionTip = false
 
 //adding Sentry as soon as possible
-Sentry.init({ 
+/*Sentry.init({ 
   dsn: 'https://5494f535e0244513a301f2912f5d899f@sentry.io/4169463',
   integrations: [
     new CaptureConsole({
@@ -25,7 +25,7 @@ Sentry.init({
     }),
     new VueIntegration({Vue, attachProps: true})
   ],
-});
+});*/
 
 
 new Vue({

@@ -23,7 +23,7 @@
         <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee && admin_fee.toFixed(3)}}</span>%
       </p>
     </fieldset>
-    <fieldset id="lp-info-container" v-show='totalShare > 0'>
+    <fieldset id="lp-info-container" v-show='showShares'>
       <legend>My share:</legend>
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
@@ -49,6 +49,9 @@
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)
       }
+    },
+    computed: {
+      showShares: getters.showShares,
     }
   }
 </script>

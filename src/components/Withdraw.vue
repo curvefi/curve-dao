@@ -157,9 +157,14 @@
 		        }
 			},
 			async handle_remove_liquidity() {
-			    for (let i = 0; i < currentContract.N_COINS; i++)
+				let min_amounts = []
+			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        Vue.set(this.amounts, i, cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
-			    var min_amounts = this.amounts.map(x => cBN(Math.floor(0.97 * x).toString()).toFixed(0,1));
+			    	min_amounts[i] = cBN(0.97).multipliedBy(this.share/100).multipliedBy(cBN(this.balances[i]))
+						            .multipliedBy(cBN(this.token_balance))
+						            .div(cBN(this.token_supply))
+						            .toFixed(0,1)
+			    }
 			    var txhash;
 			    if (this.share == '---') {
 			        var token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();
@@ -172,7 +177,7 @@
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 			        await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
 			    }
-			    if(this.share_val != '---') {
+			    if(this.share != '---') {
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
 			            this.handle_change_amounts(i);
 			        }

@@ -169,9 +169,11 @@ export async function update_fee_info(version = 'new') {
                 currentContract.totalShare += val;
                 Vue.set(currentContract.l_info, i, val)
             }
+            currentContract.showShares = true;
         }
         else {
             currentContract.totalShare = 0;
+            currentContract.showShares = false;
             //no need to set other values as v-show check is done based on totalShare
         }
     }

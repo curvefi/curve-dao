@@ -52,16 +52,18 @@ export const onboard = Onboard({
     network: network => {
       if(network != 1) {
         currentContract.contract.error = 'Error: wrong network type. Please switch to mainnet';
-        currentContract.contract.totalShare = 0
-        init(false)
+        currentContract.contract.showShares = false
+        window.web3 = new Web3(infura_url)
       }
       else {
         currentContract.contract.error = ''
-        init()
+        currentContract.contract.showShares = true;
       }
     },
     address: account => {
-      init(false)
+      if(currentContract.contract.default_account)
+        common.update_fee_info()
+      currentContract.contract.default_account = account;
     }
   },
   walletSelect: {
@@ -125,7 +127,7 @@ async function init(init = true) {
   	currentContract.contract.initializedContracts = true;
   }
   catch(err) {
-    console.error(err, "THE ERROR")
+    console.error(err)
   }
 
 }

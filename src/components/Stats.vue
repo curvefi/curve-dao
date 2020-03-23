@@ -119,6 +119,7 @@
 		methods: {
 			async mounted() {
 				this.loading = true;
+				this.loadingDaily = true;
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'

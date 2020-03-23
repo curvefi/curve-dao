@@ -16,6 +16,11 @@
 	        <p>Recent weekly APY: <span id="weekly-apr" :class="{'loading line': loading}">
 	        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
 	    	</span></p>
+	    	<fieldset>
+	    		<legend>Daily APY %</legend>
+				<div class='loading matrix' v-show='loadingDaily'></div>
+	    		<highcharts :constructor-type="'stockChart'" :options="chartdataDaily" v-if='!loadingDaily'></highcharts>
+	    	</fieldset>
 	    </div>
 	</div>
 </template>
@@ -57,6 +62,9 @@
 	            	opposite: false,
 	            	title: {
 	            		text: 'Profit [%]',
+	            		style: {
+	            			color: 'black'
+	            		}
 	            	},
 	            	labels: {
 	            		formatter() {
@@ -89,7 +97,9 @@
 	                }
 	            },
 			},
+			chartdataDaily: null,
 			loading: true,
+			loadingDaily: true,
 		}),
         computed: {
           ...getters,
@@ -133,6 +143,39 @@
 		        }
 		        this.chartdata.series[0].data = chartData;
 		        this.loading = false;
+
+		        this.chartdataDaily = JSON.parse(JSON.stringify(this.chartdata))
+		        this.chartdataDaily.yAxis = Object.assign({}, this.chartdata.yAxis, {
+        			type: 'logarithmic',
+        			title: {
+        				text: 'Daily APY [%]',
+        				style: {
+        					color: 'black'
+        				}
+        			}
+		        })
+		        this.chartdataDaily.tooltip = Object.assign({}, this.chartdata.tooltip, {
+					pointFormatter() {
+                		let value = Math.floor(this.y * 100) / 100 + '%';
+	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+	                }
+	            })
+		        this.chartdataDaily.series[0].name = 'Daily APY'
+		        chartData = [];
+		        let day2 = this.findClosest(data[0][0] + 86400, data)
+		        for(let i = day2[0]; i < data[data.length-1][0]; i+=1000) {
+		        	var el = this.findClosest(i, data)
+					let profit = (el[1] / (this.findClosest(el[0]-86400, data))[1]) ** 365 -1		        	
+		        	chartData.push([
+		        		el[0] * 1000,
+		        		profit * 100
+		        	])
+		        }
+		        this.chartdataDaily.series[0].data = chartData;
+		        this.loadingDaily = false;
+			},
+			findClosest(timestamp, data) {
+				return data.find(d=>d[0] - timestamp > 0)
 			},
 		}
 	}

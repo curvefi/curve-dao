@@ -16,11 +16,7 @@
 	        <p>Recent weekly APY: <span id="weekly-apr" :class="{'loading line': loading}">
 	        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
 	    	</span></p>
-	    	<fieldset>
-	    		<legend>Daily APY %</legend>
-				<div class='loading matrix' v-show='loadingDaily'></div>
-	    		<highcharts :constructor-type="'stockChart'" :options="chartdataDaily" v-if='!loadingDaily'></highcharts>
-	    	</fieldset>
+	    	<daily-chart :data='data' v-if='!pool'/>
 	    </div>
 	</div>
 </template>
@@ -31,6 +27,7 @@
     import Highcharts from 'highcharts'
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
+	import DailyChart from './common/DailyAPYChart.vue'
 
 	stockInit(Highcharts)
 
@@ -38,6 +35,7 @@
 	export default {
 		components: {
 			highcharts: Chart,
+			DailyChart,
 		},
 		watch: {
 			currentPool(val) {
@@ -46,6 +44,7 @@
 		},
 		props: ['pool'],
 		data: () => ({
+			data: [],
 			apr: '',
 			daily_apr: '',
 			weekly_apr: '',
@@ -130,6 +129,7 @@
 				this.daily_apr = json.daily_apr;
 				this.weekly_apr = json.weekly_apr;
 		        var data = json.data
+		        this.data = data;
 		        var step_size = Math.max(Math.round(data.length / 500), 1);
 		        var start_profit = data[0][1]
 		        var chartData = [];
@@ -144,39 +144,6 @@
 		        }
 		        this.chartdata.series[0].data = chartData;
 		        this.loading = false;
-
-		        this.chartdataDaily = JSON.parse(JSON.stringify(this.chartdata))
-		        this.chartdataDaily.yAxis = Object.assign({}, this.chartdata.yAxis, {
-        			type: 'logarithmic',
-        			title: {
-        				text: 'Daily APY [%]',
-        				style: {
-        					color: 'black'
-        				}
-        			}
-		        })
-		        this.chartdataDaily.tooltip = Object.assign({}, this.chartdata.tooltip, {
-					pointFormatter() {
-                		let value = Math.floor(this.y * 100) / 100 + '%';
-	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-	                }
-	            })
-		        this.chartdataDaily.series[0].name = 'Daily APY'
-		        chartData = [];
-		        let day2 = this.findClosest(data[0][0] + 86400, data)
-		        for(let i = day2[0]; i < data[data.length-1][0]; i+=1000) {
-		        	var el = this.findClosest(i, data)
-					let profit = (el[1] / (this.findClosest(el[0]-86400, data))[1]) ** 365 -1		        	
-		        	chartData.push([
-		        		el[0] * 1000,
-		        		profit * 100
-		        	])
-		        }
-		        this.chartdataDaily.series[0].data = chartData;
-		        this.loadingDaily = false;
-			},
-			findClosest(timestamp, data) {
-				return data.find(d=>d[0] - timestamp > 0)
 			},
 		}
 	}

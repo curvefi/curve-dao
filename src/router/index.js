@@ -13,6 +13,7 @@ const ProfitRouter = () => import('../components/ProfitRouter.vue')
 const RootApp = () => import('../components/root/RootApp.vue')
 const Root = () => import('../components/root/Root.vue')
 const CombinedStats = () => import('../components/root/CombinedStats.vue')
+const StatsDaily = () => import('../components/root/StatsDaily.vue')
 
 import Index from '../components/Index.vue'
 
@@ -41,6 +42,11 @@ let routes = [
         name: 'Donate',
         path: 'donate',
         component: Donate,
+      },
+      {
+        name: 'StatsDaily',
+        path: 'statsdaily',
+        component: StatsDaily
       }
     ]
   },
@@ -108,7 +114,7 @@ const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
   //if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
-  if(['RootIndex', 'Donate'].includes(to.name)) return next();
+  if(['RootIndex', 'Donate', 'StatsDaily'].includes(to.name)) return next();
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]
   else subdomain = window.location.hostname.split('.')[0]

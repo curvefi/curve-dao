@@ -23,7 +23,7 @@
 
       <router-link to="/">This FAQ</router-link>
       <router-link to="/combinedstats">Stats</router-link>
-      <router-link to="/statsdaily">Daily stats</router-link>
+      <router-link to="/dailystats">Daily stats</router-link>
       <a href="https://twitter.com/CurveFinance">#Twitter</a>
       <a href="https://t.me/curvefi">@Telegram</a>
       <a href="https://www.duneanalytics.com/curve">Dune Analytics</a>

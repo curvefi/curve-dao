@@ -456,7 +456,7 @@ div.info table td {
   width: 60%;
 }
 
-.loading {
+.highcharts-loading-inner, .loading {
   display: inline-block;
   overflow: hidden;
   height: 1.3em;
@@ -465,7 +465,7 @@ div.info table td {
   vertical-align: text-bottom;
 }
 
-.loading::after {
+.highcharts-loading-inner::after, .loading::after {
   display: inline-table;
   white-space: pre;
   text-align: left;
@@ -491,16 +491,20 @@ div.info table td {
   display: none;
 }
 
-.loading.matrix::after {
+.highcharts-loading-inner::after, .loading.matrix::after {
   content:"░ ░░░░\A░░ ░░░\A░░░ ░░\A░░░░ ░";
   animation: spin .5s steps(4) infinite alternate;
 }
 
-.loading.matrix {
+.highcharts-loading-inner, .loading.matrix {
   font-size: 3em;
   background: transparent;
   border: none;
   margin: 0.5em;
+}
+
+.highcharts-loading-inner {
+  transform: translateY(-50%);
 }
 
 .maxbalance {
@@ -608,4 +612,9 @@ button.bn-onboard-custom:first-letter {
 }
 button.bn-onboard-custom {
   box-shadow: none;
+}
+
+.loading.matrix {
+  display: flex;
+  justify-content: center;
 }

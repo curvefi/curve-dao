@@ -8,7 +8,7 @@
 	            	</span> APY ]
 	        	</legend>
 	            <div class='loading matrix' v-show='loading'></div>
-				<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='!loading'></highcharts>
+				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 	        </fieldset>
 	        <p>Recent daily APY: <span id="daily-apr" :class="{'loading line': loading}">
 	        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
@@ -98,7 +98,7 @@
 			},
 			chartdataDaily: null,
 			loading: true,
-			loadingDaily: true,
+			chart: null,
 		}),
         computed: {
           ...getters,
@@ -112,13 +112,13 @@
             })
         },
         mounted() {
+        	this.chart = this.$refs.highcharts.chart;
+	        this.chart.showLoading();
             this.mounted();
         },
-
 		methods: {
 			async mounted() {
 				this.loading = true;
-				this.loadingDaily = true;
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
@@ -142,16 +142,15 @@
 		                ]);
 		            }
 		        }
-		        this.chartdata.series[0].data = chartData;
+		        this.chart.hideLoading();
+		        this.chart.addSeries({
+		        	name: 'Virtual growth of liquidity share',
+		        	lineWidth: 2,
+		        	data: chartData,
+		        	color: '#0b0a57'
+		        })
 		        this.loading = false;
 			},
 		}
 	}
 </script>
-
-<style>
-	.loading.matrix {
-		display: flex;
-		justify-content: center;
-	}
-</style>

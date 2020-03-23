@@ -45,7 +45,7 @@ let routes = [
       },
       {
         name: 'StatsDaily',
-        path: 'statsdaily',
+        path: 'dailystats',
         component: StatsDaily
       }
     ]

@@ -1,8 +1,7 @@
 <template>
 	<fieldset>
 		<legend>Daily APY %</legend>
-		<div class='loading matrix' v-show='loading'></div>
-		<highcharts :constructor-type="'stockChart'" :options="chartdata" v-if='!loading'></highcharts>
+		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 	</fieldset>
 </template>
 
@@ -12,6 +11,12 @@
 	import stockInit from 'highcharts/modules/stock'
 
 	stockInit(Highcharts)
+
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+		}
+	})
 
 	export default {
 		props: ['data'],
@@ -23,7 +28,7 @@
 				chart: {
 					panning: true,
 					zoomType: 'x',
-			        panKey: 'ctrl'
+			        panKey: 'ctrl',
 				},
                 rangeSelector: {
 		            selected: 1
@@ -68,28 +73,38 @@
 	                }
 	            },
 			},
-			loading: true,
+			chart: null,
 		}),
 		watch: {
 			'data.length'(val) {
 				this.mounted()
 			}
 		},
+		mounted() {	
+			this.chart = this.$refs.highcharts.chart;
+	        this.chart.showLoading();
+		},
 		methods: {
+			loaded() {
+				this.loading = false;
+			},
 			async mounted() {
-				this.loading = true;
 		        let chartData = [];
 		        for(let i = 1440; i < this.data.length; i+=300) {
 		        	var el = this.data[i];
-		        	console.log(el[1],this.data[i-288][1])
 		        	let profit = (el[1] / this.data[i-1440][1]) ** 365 - 1
 		        	chartData.push([
 		        		el[0] * 1000,
 		        		profit * 100,
 		        	])
 		        }
-
-		        this.chartdata.series[0].data = chartData;
+		        this.chart.addSeries({
+		        	name: 'Daily APY',
+		        	lineWidth: 2,
+		        	data: chartData,
+		        	color: '#0b0a57'
+		        })
+		        this.chart.hideLoading();
 		        this.loading = false;
 			},
 		}

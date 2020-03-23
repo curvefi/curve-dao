@@ -7,7 +7,10 @@
 	    <total-balances/>
 
 		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
-		      <p class='text-center'><a href='https://compound.curve.fi'>{{currency == 'iearn' ? 'y' : currency}}.curve.fi</a></p>
+		      <p class='text-center'>
+		      	<router-link :to="currency" v-show="currency != 'susd'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
+		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
+		      </p>
 		      <stats :pool= 'currency'/>
 		      <balances-info 
 			      :bal_info = 'bal_infos[currency]'
@@ -32,7 +35,6 @@
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
     import * as allabis from '../../allabis'
     let contracts = allabis.default;
-    console.log(contracts, "CONTRACTS")
 
 	export default {
 		metaInfo: {
@@ -80,7 +82,7 @@
           },
           error() {
           	return currentContract.error
-          }
+          },
         },
         mounted() {
             if(currentContract.initializedContracts) this.mounted();
@@ -93,6 +95,11 @@
 				this.admin_fees = Array.from(4).fill(0)
 				await this.init_contracts();
 				await this.update_fee_info();
+			},
+			poolLink(pool) {
+				if(pool == 'iearn') return 'y'
+				if(pool == 'susd') return 'https://iearn.finance/pool'
+				return pool
 			},
 			async init_contracts() {
 			    for(let [key, contract] of Object.entries(contracts)) {
@@ -164,7 +171,6 @@
 
 			async update_fee_info(version = 'new') {
 				for(let [key, contract] of Object.entries(contracts)) {
-					console.log(key, "KEY")
 					this.bal_infos[key] = []
 					this.l_infos[key] = []
 					var balances = new Array(contract.N_COINS);

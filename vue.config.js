@@ -10,7 +10,7 @@ module.exports = {
 	},
 	configureWebpack: {
 		plugins: [
-			new HtmlCriticalWebpackPlugin({
+			/*new HtmlCriticalWebpackPlugin({
 		      base: path.join(path.resolve(__dirname), 'dist/'),
 		      src: 'index.html',
 		      dest: 'index.html',
@@ -22,7 +22,7 @@ module.exports = {
 		      penthouse: {
 		        blockJSRequests: false,
 		      }
-		    })
+		    })*/
 		]
 	},
     // options...

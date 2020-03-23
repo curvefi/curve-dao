@@ -112,6 +112,7 @@ async function init(init = true) {
 	window.web3 = web3;
   window.web3provider = web3;*/
   try {
+    currentContract.contract.initializedContracts = false;
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)

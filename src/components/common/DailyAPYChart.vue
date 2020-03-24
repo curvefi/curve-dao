@@ -48,7 +48,8 @@
 	            		},
 		            	style: {
 		            		color: 'black'
-		            	}
+		            	},
+		            	padding: 30,
 	            	},
 	            	tickPixelInterval: 10,
 	            },
@@ -103,7 +104,8 @@
 		        	lineWidth: 2,
 		        	data: chartData,
 		        	color: '#0b0a57'
-		        })
+		        }, true)
+		        this.chart.redraw();
 		        this.chart.hideLoading();
 		        this.loading = false;
 			},

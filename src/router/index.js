@@ -14,6 +14,7 @@ const RootApp = () => import('../components/root/RootApp.vue')
 const Root = () => import('../components/root/Root.vue')
 const CombinedStats = () => import('../components/root/CombinedStats.vue')
 const StatsDaily = () => import('../components/root/StatsDaily.vue')
+const ChartGraph = () => import('../components/graphs/Chart.vue')
 
 import Index from '../components/Index.vue'
 
@@ -23,6 +24,11 @@ import { getters, contract as currentContract , setCurrencies, changeContract} f
 Vue.use(VueRouter)
 
 let routes = [
+  {
+    path: '/chartgraph',
+    name: 'ChartGraph',
+    component: ChartGraph,
+  },
   {
     path: '/',
     name: 'Root',

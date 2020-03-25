@@ -69,7 +69,7 @@ let calc = ({
 
 	function get_y(i, j, x, _xp) {
 
-	    if(! ((i != j) && (i >= 0) && (j >= 0) && (i < N_COINS) && (j < N_COINS))) throw new Error('get y assert failed')
+	    //if(! ((i != j) && (i >= 0) && (j >= 0) && (i < N_COINS) && (j < N_COINS))) throw new Error('get y assert failed')
 
 	    let D = get_D(_xp)
 	    let c = fcopy(D)
@@ -77,7 +77,7 @@ let calc = ({
 	    let Ann = BN(A).times(BN(N_COINS))
 
 	    let _x = ZERO
-	    for (let _i = 0; i < N_COINS; i++) {
+	    for (let _i = 0; _i < N_COINS; _i++) {
 	        if (_i == i)
 	            _x = x
 	        else if (_i != j)
@@ -127,9 +127,9 @@ let calc = ({
 
 	function get_dy_underlying(i, j, dx) {
 		let precisions = PRECISION_MUL.map(p=>BN(p));
+		rates = rates.map((r,i) => BN(r).times(precisions[i]))
 		let xp = _xp(rates);
-		console.log(xp.map(x=>+x), "xp")
-		let x = xp[i].plus(BN(dx).times(precisions[i]));
+		let x = xp[i].plus(BN(dx)).times(precisions[i]);
 		let y = get_y(i, j, x, xp);
 		let dy = (xp[j].minus(y)).div(precisions[j])
 		return dy;

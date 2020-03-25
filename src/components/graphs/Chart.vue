@@ -81,6 +81,7 @@
 				let data = require('../../jsons/compound-30m.json');
 				let N_COINS = 2;
 				let PRECISION_MUL = [1, 1000000000000]
+				let COIN_PRECISIONS = [1e18, 1e6]
 				let USE_LENDING = [true, true]
 				let LENDING_PRECISION = 10 ** 18
 				const PRECISION = 10 ** 18
@@ -126,20 +127,50 @@
 					timestamp,
 				}
 
+				let backthen = {
+				    "A": 900,
+				    "fee": 4000000,
+				    "admin_fee": 4000000,
+				    "supply": 7.267255607935256e+23,
+				    "virtual_price": 1006852215150595300,
+				    "timestamp": 1584291599,
+				    "balances": [
+				      196432500571782,
+				      3300071302423743
+				    ],
+				    "rates": [
+				      2.037255586806981e+26,
+				      210068692819438
+				    ],
+				    "volume": {
+				      "0-1": [
+				        7.457819316127888e+21,
+				        7813068889
+				      ]
+				    },
+				    "prices": {
+				      "0-1": [
+				        0.9502120652613583,
+				        0.9553191996987546,
+				        0.9558984125801876,
+				        0.9561538089038809,
+				        0.9560588329908627
+				      ]
+				    }
+				  }
 
 				let calc = stableswap_fns({
-					...now,
+					...data[619],
 					...compound,
 				});
 
 				let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
 				console.log(+get_dy_underlying, "get_dy_underlying")
-
 				data = data.map(v=> {
-	/*				if(v.prices[pair]) {
+					if(v.prices[pair]) {
 						return v
 					}
-					else {*/
+					else {
 						let calc = stableswap_fns({
 							...v,
 							...compound,
@@ -147,11 +178,11 @@
 						let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
 						let calcprice = get_dy_underlying
 						console.log(+calcprice)
-						v.prices[pair] = [+calcprice]
+						v.prices[pair] = [+(calcprice.div(1e6))]
 						v.volume[pair] = [0]
-						console.log(v)
+						if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 						return v;
-					//}
+					}
 				})
 
 

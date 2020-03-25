@@ -25,11 +25,6 @@ Vue.use(VueRouter)
 
 let routes = [
   {
-    path: '/chartgraph',
-    name: 'ChartGraph',
-    component: ChartGraph,
-  },
-  {
     path: '/',
     name: 'Root',
     component: RootApp,
@@ -61,6 +56,11 @@ let routes = [
     name: 'Index',
     component: PoolApp,
     children: [
+      {
+        path: '/chartgraph',
+        name: 'ChartGraph',
+        component: ChartGraph,
+      },
       {
         path: '',
         name: 'Swap',

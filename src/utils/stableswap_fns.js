@@ -58,10 +58,10 @@ let calc = ({
 		    let d7 = d5.plus(d6)
 		    D = d4.idiv(d7);
 		    if (D.gt(Dprev))
-		        if ((D.minus(Dprev)).lte(1))
+		        if ((D.minus(Dprev)).lte(BN(1)))
 		            break
 		    else
-		        if ((Dprev.minus(D)).lte(1))
+		        if ((Dprev.minus(D)).lte(BN(1)))
 		            break
 	    }
 		return D
@@ -108,10 +108,10 @@ let calc = ({
 	        y = y2.idiv(y4)
 
 	        if (y.gt(y_prev))
-	            if ((y.minus(y_prev)).lte(1))
+	            if ((y.minus(y_prev)).lte(BN(1)))
 	                break
 	        else
-	            if ((y_prev.minus(y)).lte(1))
+	            if ((y_prev.minus(y)).lte(BN(1)))
 	                break
         }
 	    return y
@@ -126,8 +126,9 @@ let calc = ({
 	}
 
 	function get_dy_underlying(i, j, dx) {
-		let xp = _xp(rates);
 		let precisions = PRECISION_MUL.map(p=>BN(p));
+		let xp = _xp(rates);
+		console.log(xp.map(x=>+x), "xp")
 		let x = xp[i].plus(BN(dx).times(precisions[i]));
 		let y = get_y(i, j, x, xp);
 		let dy = (xp[j].minus(y)).div(precisions[j])
@@ -135,7 +136,8 @@ let calc = ({
 	}
 
 	return {
-		get_dy_underlying
+		get_dy_underlying,
+		_xp,
 	}
 }
 

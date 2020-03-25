@@ -27,6 +27,9 @@
 				},
 				chart: {
 					height: 600,
+					panning: true,
+					zoomType: 'x',
+			        panKey: 'ctrl'
 				},
 				title: {
 					text: 'Price',
@@ -75,7 +78,7 @@
 		methods: {
 
 			async mounted() {
-				let data = require('../../jsons/compound-10m.json');
+				let data = require('../../jsons/compound-30m.json');
 				let N_COINS = 2;
 				let PRECISION_MUL = [1, 1000000000000]
 				let USE_LENDING = [true, true]

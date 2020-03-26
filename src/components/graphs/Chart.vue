@@ -1,6 +1,7 @@
 <template>
 	<div class='window white'>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+		<depth/>
 	</div>
 </template>
 
@@ -8,6 +9,7 @@
 	import Highcharts from 'highcharts'
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
+	import Depth from './Depth.vue'
 
 	import stableswap_fns from '../../utils/stableswap_fns'
 
@@ -18,6 +20,7 @@
 	export default {
 		components: {
 			highcharts: Chart,
+			Depth,
 		},
 		data: () => ({
 		loading: true,	
@@ -68,7 +71,7 @@
 			  		split: true,
 			  	},
 			  	series: []
-	    	}
+	    	},
 		}),
 		created() {
 			this.$watch(()=>contract.initializedContracts, val => {

@@ -21,6 +21,8 @@ let calc = ({
 	const ZERO = BN(0);
 	const ONE = BN(1);
 
+	const FEE_DENOMINATOR = 10 ** 10;
+
 	function _stored_rates() {
 		let result = PRECISION_MUL;
 		let use_lending = USE_LENDING;
@@ -125,19 +127,32 @@ let calc = ({
 		return result;
 	}
 
-	function get_dy_underlying(i, j, dx) {
+	function get_dy_underlying(i, j, dx, usefee = false) {
+		let precisions = PRECISION_MUL.map(p=>BN(p));
+		let currentRates = rates.map((r,i) => BN(r).times(precisions[i]))
+		let xp = _xp(currentRates);
+		let x = xp[i].plus(BN(dx).times(precisions[i]));
+		let y = get_y(i, j, x, xp);
+		let dy = (xp[j].minus(y)).div(precisions[j])
+		let _fee = BN(fee).times(dy).div(FEE_DENOMINATOR)
+		if(!usefee) _fee = ZERO
+		return dy.minus(_fee);
+	}
+
+/*	function get_dx_underlying(i, j, dy) {
 		let precisions = PRECISION_MUL.map(p=>BN(p));
 		rates = rates.map((r,i) => BN(r).times(precisions[i]))
 		let xp = _xp(rates);
-		let x = xp[i].plus(BN(dx)).times(precisions[i]);
-		let y = get_y(i, j, x, xp);
-		let dy = (xp[j].minus(y)).div(precisions[j])
-		return dy;
-	}
+		let y = xp[j].minus(BN(dy)).times(precisions[j]);
+		let x = get_y(j, i, y, xp);
+		let dx = (x.minus(xp[i])).div(precisions[i])
+		return dx;
+	}*/
 
 	return {
 		get_dy_underlying,
 		_xp,
+		//get_dx_underlying,
 	}
 }
 

@@ -57,8 +57,8 @@ let routes = [
     component: PoolApp,
     children: [
       {
-        path: '/chartgraph',
-        name: 'ChartGraph',
+        path: '/trade',
+        name: 'Trade',
         component: ChartGraph,
       },
       {

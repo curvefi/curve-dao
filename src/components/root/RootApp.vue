@@ -22,6 +22,7 @@
       </div>
 
       <router-link to="/">This FAQ</router-link>
+      <router-link to="/trade">Trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
       <a href="https://twitter.com/CurveFinance">#Twitter</a>

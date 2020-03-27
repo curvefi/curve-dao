@@ -1,6 +1,7 @@
 <template>
-	<div class='window white'>
-		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+	<div class = 'tradeview'>
+		<select-pool />
+ 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth/>
 	</div>
 </template>
@@ -10,10 +11,13 @@
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 	import Depth from './Depth.vue'
-
+	import SelectPool from './SelectPool.vue'
+	import EventBus from './EventBus'
 	import stableswap_fns from '../../utils/stableswap_fns'
 
-	import { contract } from '../../contract'
+	import { contract, allCurrencies, LENDING_PRECISION, PRECISION } from '../../contract'
+
+	import abis from '../../allabis'
 
 	stockInit(Highcharts)
 
@@ -21,12 +25,125 @@
 		components: {
 			highcharts: Chart,
 			Depth,
+			SelectPool,
 		},
 		data: () => ({
 		loading: true,	
 			chartdata: {
+				plotOptions: {
+					series: {
+						point: {
+							events: {
+								click: function() {
+									EventBus.$emit('changeTime', this.index)
+								}
+							}
+						}
+					}
+				},
 				rangeSelector: {
-					selected: 1,
+					selected: 4,
+					allButtonsEnabled: true,
+					 buttons: [{
+                        type: 'minute',
+                        count: 10,
+                        text: '1m',
+                        dataGrouping: {
+		                    forced: true,
+		                    units: [['minute', [1]]]
+		                }
+                    }, 
+                    {
+                        type: 'minute',
+                        count: 50,
+                        text: '5m',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['minute', [5]]]
+		                }
+                    },
+                    {
+                    	type: 'minute',
+                    	count: 150,
+                    	text: '15m',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['minute', [15]]]
+		                }
+                    },
+                    {
+                        type: 'minute',
+                        count: 300,
+                        text: '30m',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['minute', [30]]]
+		                }
+                    }, 
+                    {
+                        type: 'hour',
+                        count: 10,
+                        text: '1h',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['hour', [1]]]
+		                }
+                    }, 
+                    {
+                        type: 'hour',
+                        count: 20,
+                        text: '2h',
+                        dataGrouping: {
+		                    forced: true,
+		                    units: [['hour', [2]]]
+		                }
+                    },
+                    {
+                        type: 'hour',
+                        count: 40,
+                        text: '4h',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['hour', [4]]]
+		                }
+                    },
+                    {
+                        type: 'hour',
+                        count: 60,
+                        text: '6h',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['hour', [6]]]
+		                }
+                    },
+                    {
+                        type: 'day',
+                        count: 10,
+                        text: '1d',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['day', [1]]]
+		                }
+                    },
+                    {
+                        type: 'day',
+                        count: 30,
+                        text: '3d',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['day', [3]]]
+		                }
+                    },
+                    {
+                    	type: 'week',
+                    	count: 10,
+                    	text: '1w',
+                        dataGrouping: {
+	                 	   forced: true,
+		                    units: [['week', [1]]]
+		                }
+                    }
+                    ]
 				},
 				chart: {
 					height: 600,
@@ -36,9 +153,6 @@
 				},
 				title: {
 					text: 'Price',
-				},
-				rangeSelector: {
-				    selected: 1
 				},
 				yAxis: [{
 						labels: {
@@ -70,36 +184,63 @@
 			  	tooltip: {
 			  		split: true,
 			  	},
-			  	series: []
+			  	series: [],
 	    	},
+		  	pair: {
+		  		idx: '0-1',
+		  		val: 'DAI-USDC'
+		  	},
+		  	pool: 'compound',
+		  	interval: 5,
+		  	chart: null,
 		}),
 		created() {
+			EventBus.$on('selected', this.selectPool);
+		},
+		mounted() {
+			console.log(this.pool)
+			this.chart = this.$refs.highcharts.chart;
 			this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
             })
 		},
+		beforeDestroy() {
+			EventBus.$off('selected', this.selectPool)
+		},
 		methods: {
 
-			async mounted() {
-				let data = require('../../jsons/compound-30m.json');
-				let N_COINS = 2;
-				let PRECISION_MUL = [1, 1000000000000]
-				let COIN_PRECISIONS = [1e18, 1e6]
-				let USE_LENDING = [true, true]
-				let LENDING_PRECISION = 10 ** 18
-				const PRECISION = 10 ** 18
+			selectPool(pool, pair, interval) {
+				console.log("SELECT POOL")
+				this.pool = pool;
+				this.pair = pair;
+				this.interval = interval;
+				console.log(pool, pair, interval)
+				console.log(this.chart.series)
+				if(this.chart.series.length) {
+					//calling remove changes indexes of chart series, we have two series, so removing them both with index 0
+					this.chart.series[0].remove()
+					this.chart.series[0].remove()
+				}
+				this.mounted();
+			},
 
-				let compound = {
-					N_COINS,
-					PRECISION_MUL,
-					USE_LENDING,
+			async mounted() {
+
+				let data = require(`../../jsons/${this.pool}-${this.interval}m.json`);
+
+				let poolConfig = {
+					N_COINS: abis[this.pool].N_COINS,
+					PRECISION_MUL: abis[this.pool].coin_precisions.map(p=>1e18/p),
+					USE_LENDING: abis[this.pool].USE_LENDING,
 					LENDING_PRECISION,
 					PRECISION,
 				}
 
-				let pair = "0-1" //DAI -> USDC
+				let fromCurrency = this.pair.idx.split('-')[0]
+				let toCurrency = this.pair.idx.split('0')[1]
 
-				let A = await contract.swap.methods.A().call();
+
+/*				let A = await contract.swap.methods.A().call();
 				let fee = await contract.swap.methods.fee().call()
 				let admin_fee = await contract.swap.methods.fee().call()
 				let supply = await contract.swap_token.methods.totalSupply().call()
@@ -169,21 +310,21 @@
 
 				let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
 				console.log(+get_dy_underlying, "get_dy_underlying")
+				*/
 				data = data.map(v=> {
-					if(v.prices[pair]) {
+					if(v.prices[this.pair.idx]) {
 						return v
 					}
 					else {
 						let calc = stableswap_fns({
 							...v,
-							...compound,
+							...poolConfig,
 						});
-						let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
+						let get_dy_underlying = calc.get_dy_underlying(0, 1, abis[this.pool].coin_precisions[fromCurrency])
 						let calcprice = get_dy_underlying
-						console.log(+calcprice)
-						v.prices[pair] = [+(calcprice.div(1e6))]
-						v.volume[pair] = [0]
-						if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
+						v.prices[this.pair.idx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
+						v.volume[this.pair.idx] = [0]
+						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 						return v;
 					}
 				})
@@ -193,36 +334,33 @@
 			    // split the data set into ohlc and volume
 			    var ohlc = [],
 			        volume = [],
-			        dataLength = data.length,
+			        dataLength = data.length
 			        // set the allowed units for data grouping
 
-			        i = 0;
 
-			    let len = data[0].prices[pair].length
+			    let len = data[0].prices[this.pair.idx].length
 
-			    for (i; i < dataLength; i += 1) {
-			    	console.log(data[i].prices[pair])
+			    for (let i = 1; i < dataLength; i ++) {
 			        ohlc.push([
 			            data[i].timestamp*1000, // the date
-			            data[i].prices[pair][0], // open
-			            Math.max(...data[i].prices[pair]), // high
-			            Math.min(...data[i].prices[pair]), // low
-			            data[i].prices[pair][len-1] // close
+			            data[i].prices[this.pair.idx][0], // open
+			            Math.max(...data[i].prices[this.pair.idx]), // high
+			            Math.min(...data[i].prices[this.pair.idx]), // low
+			            data[i].prices[this.pair.idx][len-1] // close
 			        ]);
-
 			        volume.push([
 			            data[i].timestamp*1000, // the date
-			            data[i].volume[pair][0]/1e18 // the volume
+			            data[i].volume[this.pair.idx][0]/abis[this.pool].coin_precisions[fromCurrency] // the volume
 			        ]);
 			    }
 
 			    this.$refs.highcharts.chart.addSeries({
 		            type: 'candlestick',
-		            name: 'DAI/USDC',
+		            name: this.pair.val,
 		            data: ohlc,
 		            dataGrouping: {
 		                units: [
-		                	['minute', [120]],
+		                	['hour', [1]],
 
 			        	]
 		            }
@@ -234,18 +372,23 @@
 		            yAxis: 1,
 		            dataGrouping: {
 		                units: [
-		                	['minute', [120]],
+		                	['hour', [1]],
 
 			        	]
 		            }
 		        })
 		        this.$refs.highcharts.chart.redraw()
+		        console.log(this.$refs.highcharts.chart)
+		        this.$refs.highcharts.chart.setTitle({title: this.pair.val})
 			    this.loading = false;
 			}
 		}
 	}
 </script>
 
-<style>
-	
+<style scoped>
+	.tradeview {
+		width: 90%;
+		margin: 0 auto;
+	}
 </style>

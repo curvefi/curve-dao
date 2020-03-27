@@ -3,6 +3,7 @@ export var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a
 var compound = {
 N_COINS: 2,
 coin_precisions: [1e18, 1e6],
+use_lending: [true, true],
 old_swap_address: '0x2e60CF74d81ac34eB21eEff58Db4D385920ef419',
 swap_address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
 token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',

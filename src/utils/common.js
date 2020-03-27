@@ -151,6 +151,7 @@ export async function update_fee_info(version = 'new') {
     let balances = []
     currentContract.total = 0;
     resolves.forEach((balance, i) => {
+        Vue.set(currentContract.balances, i, balance)
         balances[i] = +balance;
         Vue.set(currentContract.bal_info, i, balances[i] * currentContract.c_rates[i]);
         currentContract.total += balances[i] * currentContract.c_rates[i];

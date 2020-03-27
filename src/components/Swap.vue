@@ -103,6 +103,10 @@
         },
         watch: {
             from_currency(val, oldval) {
+                if(val == this.to_currency) {
+                    this.to_currency = oldval;
+                }
+                this.from_cur_handler()
                 this.from_cur_handler()
             },
             to_currency(val, oldval) {
@@ -152,13 +156,6 @@
                     this.inf_approval = false;
 
                 await this.set_from_amount(this.from_currency);
-                if (this.to_currency == this.from_currency) {
-                    if (this.from_currency == 0) {
-                        this.to_currency = 1;
-                    } else {
-                        this.to_currency = 0;
-                    }
-                }
                 await this.set_to_amount();
             },
             async to_cur_handler() {

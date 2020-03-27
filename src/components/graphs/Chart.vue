@@ -1,8 +1,9 @@
 <template>
 	<div class = 'tradeview'>
-		<select-pool />
+<!-- 		<select-pool />
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-		<depth/>
+		<depth/> -->
+		<one-split />
 	</div>
 </template>
 
@@ -14,6 +15,7 @@
 	import SelectPool from './SelectPool.vue'
 	import EventBus from './EventBus'
 	import stableswap_fns from '../../utils/stableswap_fns'
+	import OneSplit from './OneSplit.vue'
 
 	import { contract, allCurrencies, LENDING_PRECISION, PRECISION } from '../../contract'
 
@@ -26,6 +28,7 @@
 			highcharts: Chart,
 			Depth,
 			SelectPool,
+			OneSplit,
 		},
 		data: () => ({
 		loading: true,	
@@ -200,9 +203,9 @@
 		mounted() {
 			console.log(this.pool)
 			this.chart = this.$refs.highcharts.chart;
-			this.$watch(()=>contract.initializedContracts, val => {
+			/*this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
-            })
+            })*/
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
@@ -324,6 +327,7 @@
 						let calcprice = get_dy_underlying
 						v.prices[this.pair.idx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
 						v.volume[this.pair.idx] = [0]
+						console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 						return v;
 					}

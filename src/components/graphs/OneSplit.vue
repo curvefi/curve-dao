@@ -70,7 +70,7 @@
 
     import { contract } from '../../contract'
     import * as common from '../../utils/common'
-    import helpers from '../../utils/helpers'
+    import * as helpers from '../../utils/helpers'
 
     import BN from 'bignumber.js'
 
@@ -103,6 +103,7 @@
             underlying_coins: [],
             onesplit: null,
             CONTRACT_FLAG: 462335,
+            swapPromise: helpers.makeCancelable(Promise.resolve())
 		}),
         watch: {
             from_currency(val, oldval) {
@@ -189,22 +190,34 @@
             async set_to_amount() {
                 let amount = BN(this.fromInput).times(this.coin_precisions[this.from_currency]).toFixed(0)
                 let parts = 30
-                let split_swap = await this.onesplit.methods.getExpectedReturn(
-                        this.underlying_coins[this.from_currency]._address,
-                        this.underlying_coins[this.to_currency]._address,
-                        amount,
-                        parts,
-                        this.CONTRACT_FLAG
-                    ).call();
-                this.amount_dy = split_swap.returnAmount;
-                this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);
-                if(+this.exchangeRate <= 0.98) this.bgColor = 'red'
-                else this.bgColor= '#505070'
-                if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
-                this.toInput = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).toFixed(2);
-                this.distribution = split_swap.distribution
-                this.highlight_input();
-                this.disabled = false
+                this.swapPromise.cancel();
+                try {
+                    this.swapPromise = helpers.makeCancelable(
+                            this.onesplit.methods.getExpectedReturn(
+                                this.underlying_coins[this.from_currency]._address,
+                                this.underlying_coins[this.to_currency]._address,
+                                amount,
+                                parts,
+                                this.CONTRACT_FLAG
+                            ).call()
+                        )
+                    let split_swap = await this.swapPromise
+                    this.amount_dy = split_swap.returnAmount;
+                    this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);
+                    if(+this.exchangeRate <= 0.98) this.bgColor = 'red'
+                    else this.bgColor= '#505070'
+                    if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
+                    this.toInput = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).toFixed(2);
+                    this.distribution = split_swap.distribution
+                    this.disabled = false
+                }
+                catch(err) {
+                    console.error(err);
+                    if(!err.canceled) this.disabled = true
+                }
+                finally {
+                    this.highlight_input();
+                }
             },
 			async set_max_balance() {
                 let balance = await this.underlying_coins[this.from_currency].methods.balanceOf(contract.default_account).call();

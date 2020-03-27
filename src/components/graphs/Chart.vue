@@ -1,9 +1,9 @@
 <template>
-	<div class = 'tradeview'>
-<!-- 		<select-pool />
+	<div class = 'tradeview window white'>
+		<select-pool id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-		<depth/> -->
-		<one-split />
+		<depth/>
+ 		<one-split />
 	</div>
 </template>
 
@@ -17,7 +17,7 @@
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import OneSplit from './OneSplit.vue'
 
-	import { contract, allCurrencies, LENDING_PRECISION, PRECISION } from '../../contract'
+	import { contract, allCurrencies, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 
 	import abis from '../../allabis'
 
@@ -38,6 +38,7 @@
 						point: {
 							events: {
 								click: function() {
+									console.log(this)
 									EventBus.$emit('changeTime', this.index)
 								}
 							}
@@ -152,10 +153,18 @@
 					height: 600,
 					panning: true,
 					zoomType: 'x',
-			        panKey: 'ctrl'
+			        panKey: 'ctrl',
+			        events: {
+			        	click: (e) => {
+			        		EventBus.$emit('chartClick', e)
+			        	},
+			        	load() {
+			        		this.redraw();
+			        	}
+			        }
 				},
 				title: {
-					text: 'Price',
+					text: '',
 				},
 				yAxis: [{
 						labels: {
@@ -199,37 +208,45 @@
 		}),
 		created() {
 			EventBus.$on('selected', this.selectPool);
+			EventBus.$on('chartClick', this.chartClick)
 		},
 		mounted() {
 			console.log(this.pool)
 			this.chart = this.$refs.highcharts.chart;
-			/*this.$watch(()=>contract.initializedContracts, val => {
+/*			this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
             })*/
+            this.mounted()
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
 		},
 		methods: {
+			chartClick(e) {
+				let nearest = this.chart.pointer.findNearestKDPoint(this.chart.series, false, e)
+				console.log(nearest)
+				EventBus.$emit('changeTime', nearest.index)
+			},
 
-			selectPool(pool, pair, interval) {
-				console.log("SELECT POOL")
+			async selectPool(pool, pair, interval) {
 				this.pool = pool;
 				this.pair = pair;
 				this.interval = interval;
 				console.log(pool, pair, interval)
 				console.log(this.chart.series)
-				if(this.chart.series.length) {
-					//calling remove changes indexes of chart series, we have two series, so removing them both with index 0
+				while(this.chart.series.length) {
 					this.chart.series[0].remove()
-					this.chart.series[0].remove()
+				}
+				if(contract.currentContract != this.pool) {
+					await changeContract(this.pool)
 				}
 				this.mounted();
 			},
 
 			async mounted() {
+				//move this to selectPool method
 
-				let data = require(`../../jsons/${this.pool}-${this.interval}m.json`);
+				let data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
 
 				let poolConfig = {
 					N_COINS: abis[this.pool].N_COINS,
@@ -240,7 +257,7 @@
 				}
 
 				let fromCurrency = this.pair.idx.split('-')[0]
-				let toCurrency = this.pair.idx.split('0')[1]
+				let toCurrency = this.pair.idx.split('-')[1]
 
 
 /*				let A = await contract.swap.methods.A().call();
@@ -327,7 +344,7 @@
 						let calcprice = get_dy_underlying
 						v.prices[this.pair.idx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
 						v.volume[this.pair.idx] = [0]
-						console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
+						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 						return v;
 					}
@@ -362,28 +379,20 @@
 		            type: 'candlestick',
 		            name: this.pair.val,
 		            data: ohlc,
-		            dataGrouping: {
-		                units: [
-		                	['hour', [1]],
 
-			        	]
-		            }
 	        	})
 			    this.$refs.highcharts.chart.addSeries({
 		            type: 'column',
 		            name: 'Volume',
 		            data: volume,
 		            yAxis: 1,
-		            dataGrouping: {
-		                units: [
-		                	['hour', [1]],
 
-			        	]
-		            }
 		        })
-		        this.$refs.highcharts.chart.redraw()
 		        console.log(this.$refs.highcharts.chart)
-		        this.$refs.highcharts.chart.setTitle({title: this.pair.val})
+		        this.chart.setTitle({text: this.pair.val})
+		        this.chart.redraw();
+		        //highcharts doesn't select the defined range, doing it again manually
+		        this.chart.rangeSelector.clickButton(4, true)
 			    this.loading = false;
 			}
 		}
@@ -394,5 +403,8 @@
 	.tradeview {
 		width: 90%;
 		margin: 0 auto;
+	}
+	#select_pool {
+		margin-bottom: 10px;
 	}
 </style>

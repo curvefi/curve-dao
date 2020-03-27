@@ -128,11 +128,14 @@
 	    	bbrect: null,
 	    	data: [],
 		}),
-		created() {
+		async created() {
 			EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
-			this.$watch(()=>contract.initializedContracts, val => {
-                if(val) this.mounted();
+			this.$watch(()=>contract.initializedContracts, async (val) => {
+                if(val) {
+                	await this.updatePoolInfo();
+                	this.mounted();
+                }
             })
 		},
 		mounted() {
@@ -143,46 +146,42 @@
 			EventBus.$off('changeTime', this.changeTime)
 		},
 		methods: {
-			selectPool(pool, pair, interval) {
+			async updatePoolInfo() {
+				console.log("CONTRACT", contract.balances)
+				this.poolInfo.A = await contract.swap.methods.A().call();
+				this.poolInfo.fee = contract.fee
+				this.poolInfo.admin_fee = contract.admin_fee
+				this.poolInfo.supply = await contract.swap_token.methods.totalSupply().call()
+				this.poolInfo.virtual_price = await contract.swap.methods.get_virtual_price().call()
+				this.poolInfo.balances = contract.balances;
+				this.poolInfo.rates = contract.c_rates.map((r,i)=>BN(r).times(PRECISION).times(contract.coin_precisions[i]))
+				this.poolInfo.timestamp = (Date.now() / 1000) | 0;
+			},
+
+			async selectPool(pool, pair, interval) {
 				this.pool = pool
 				this.pair = pair
 				this.interval = interval
-				if(this.chart.series.length) {
-					//calling remove changes indexes of chart series, we have two series, so removing them both with index 0
-					this.chart.series[0].remove()
-					this.chart.series[0].remove()
-				}
-				this.mounted()
+				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
 			},
 			//we can go back in time! Time travelling!
 			changeTime(index) {
-				this.data = require(`../../jsons/${this.pool}-${this.interval}m.json`);
+				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
 				this.poolInfo = this.data[index]
-				console.log("CHANGE TIME")
-				if(this.chart.series.length) {
-					//calling remove changes indexes of chart series, we have two series, so removing them both with index 0
-					this.chart.series[0].remove()
-					this.chart.series[0].remove()
-				}
+
 				this.mounted()
 			},
 			async mounted() {
-				if(contract.currentContract != this.pool) {
+
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
+
+
+/*				if(contract.currentContract != this.pool) {
 					await changeContract(this.pool)
-				}
-
-				console.log(contract.coins)
-
-				if(!this.poolInfo.A) {
-					this.poolInfo.A = await contract.swap.methods.A().call();
-					this.poolInfo.fee = contract.fee
-					this.poolInfo.admin_fee = contract.admin_fee
-					this.poolInfo.supply = await contract.swap_token.methods.totalSupply().call()
-					this.poolInfo.virtual_price = await contract.swap.methods.get_virtual_price().call()
-					this.poolInfo.balances = contract.balances;
-					this.poolInfo.rates = contract.c_rates.map((r,i)=>BN(r).times(PRECISION).times(contract.coin_precisions[i]))
-					this.poolInfo.timestamp = (Date.now() / 1000) | 0;
-				}
+					this.poolInfo = {}
+				}*/
 
 				let poolConfig = {
 					N_COINS: abis[this.pool].N_COINS,
@@ -235,7 +234,9 @@
 		            color: '#007A00',
 		        })
 
-		        let currentValue = +((calc.get_dy_underlying(0, 1, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
+			    //maybe not right - get from web3 when no this.poolInfo but this should be the same because calc is initialized with now
+			    // - get from clicked point value otherwise
+		        let currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
 				this.$refs.highcharts.chart.series[0].xAxis.plotLinesAndBands[0]
 							.update({
@@ -277,12 +278,12 @@
 							text: this.chart.xAxis[0].toValue(x).toFixed(4)
 						});
 
-						this.chart.crossYLabelLeft.attr({
+						this.chart.hoverPoint && this.chart.crossYLabelLeft.attr({
 							y: this.chart.hoverPoint.plotY + this.chart.plotTop,
 							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
 						});
 
-						this.chart.crossYLabelRight.attr({
+						this.chart.hoverPoint && this.chart.crossYLabelRight.attr({
 							y: this.chart.hoverPoint.plotY + this.chart.plotTop,
 							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
 						});

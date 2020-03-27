@@ -53,3 +53,9 @@
 		}
 	}
 </script>
+
+<style scoped>
+	button {
+		margin-left: 3px;
+	}
+</style>

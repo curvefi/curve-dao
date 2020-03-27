@@ -1,6 +1,7 @@
 <template>
 	<div>
-		<div style="display: table; margin: auto">
+		<div style="display: table; margin: auto" class='swap'>
+            <p class='text-center'>Swap routed through all pools</p>
             <fieldset style="float: left">
                 <legend>From:</legend>
                 <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
@@ -53,11 +54,11 @@
             <ul>
                 <li>
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
-                    <label for="inf-approval">Infinite approval - trust this contract forever</label>
+                    <label for="inf-approval">Infinite approval - trust 1split contract forever</label>
                 </li>
             </ul>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade'>Sell</button>
+                <button id="trade" @click='handle_trade'>Sell using 1split routing</button>
             </p>
         </div>
 	</div>
@@ -105,7 +106,6 @@
 		}),
         watch: {
             from_currency(val, oldval) {
-                console.log(val, oldval, "VALOLDVAL")
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
@@ -123,7 +123,6 @@
                 await this.setup();
                 this.disabled = false;
                 this.from_cur_handler()
-                console.log(this.underlying_coins.map(uc=>uc._address))
             },
             async highlight_input() {
                 var balance = parseFloat(await this.underlying_coins[this.from_currency].methods.balanceOf(contract.default_account).call()) / this.coin_precisions[this.from_currency];
@@ -133,7 +132,6 @@
                     this.fromBgColor = 'blue'
             },
             async from_cur_handler() {
-                console.log(this.underlying_coins, "UNDERLYING COINS")
                 if (BN(await this.underlying_coins[this.from_currency].methods.allowance(contract.default_account, allabis.onesplit_address).call()) > contract.max_allowance.div(BN(2)))
                     this.inf_approval = true;
                 else
@@ -166,8 +164,8 @@
                         await common.ensure_underlying_allowance(i, amount, this.underlying_coins, allabis.onesplit_address);
 
                 await this.onesplit.methods.swap(
-                        this.underlying_coins[from_currency]._address,
-                        this.underlying_coins[to_currency]._address,
+                        this.underlying_coins[i]._address,
+                        this.underlying_coins[j]._address,
                         amount,
                         BN(this.toInput).times(this.coin_precisions[j]).times(BN(1 - maxSlippage)).toFixed(0),
                         this.distribution,
@@ -190,7 +188,6 @@
             },
             async set_to_amount() {
                 let amount = BN(this.fromInput).times(this.coin_precisions[this.from_currency]).toFixed(0)
-                console.log(amount)
                 let parts = 30
                 let split_swap = await this.onesplit.methods.getExpectedReturn(
                         this.underlying_coins[this.from_currency]._address,
@@ -199,14 +196,11 @@
                         parts,
                         this.CONTRACT_FLAG
                     ).call();
-                console.log(split_swap)
                 this.amount_dy = split_swap.returnAmount;
-                console.log(this.amount_dy, "AMOUNT Y")
-                console.log(amount)
                 this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);
-                console.log(this.exchangeRate)
                 if(+this.exchangeRate <= 0.98) this.bgColor = 'red'
                 else this.bgColor= '#505070'
+                if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
                 this.toInput = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).toFixed(2);
                 this.distribution = split_swap.distribution
                 this.highlight_input();

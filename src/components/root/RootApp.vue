@@ -32,7 +32,7 @@
       <a href="https://github.com/curvefi/curve-contract">git@</a>
     </div>
     <div id="screen">
-        <div class="blue window">
+        <div :class="'blue window ' + $route.name">
             <h1><img src="../../assets/logo_optimized.svg" alt="🌀 Curve" height="50"></h1>
         </div>
         <router-view/>

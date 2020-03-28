@@ -619,3 +619,8 @@ button.bn-onboard-custom {
   display: flex;
   justify-content: center;
 }
+
+.blue.window.Trade {
+  width: 70%;
+  max-width: 1280px;
+}

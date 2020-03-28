@@ -441,7 +441,7 @@
 	}
 </script>
 
-<style>
+<style scoped>
 	.tradeview {
 		width: 70%;
 		max-width: 1280px;
@@ -451,9 +451,5 @@
 	}
 	#onesplit {
 		margin-top: 30px;
-	}
-	.blue.window {
-		width: 70%;
-		max-width: 1280px;
 	}
 </style>

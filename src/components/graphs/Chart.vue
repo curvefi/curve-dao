@@ -446,8 +446,8 @@
 
 <style scoped>
 	.tradeview {
-		width: 100%;
-		max-width: 100%;
+		width: 70%;
+		max-width: 70%;
 	}
 	#select_pool {
 		margin-bottom: 10px;

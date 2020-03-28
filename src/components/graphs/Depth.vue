@@ -168,7 +168,7 @@
 		methods: {
 			setExtremes() {
 				console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
-            	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.01, this.chart.series[0].xData[0] + 0.01, true, true)
+            	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.001, this.chart.series[0].xData[0] + 0.001, true, true)
 			},
 			async updatePoolInfo() {
 				this.poolInfo.A = await contract.swap.methods.A().call();

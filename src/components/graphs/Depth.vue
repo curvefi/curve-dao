@@ -1,7 +1,11 @@
 <template>
 	<div class='bigdiv'>
-		<button @click='setExtremes'>Look at actual price * +-0.01</button>
-		<div @mousemove = 'move' ref='chartcontainer'>
+		<div id='zoomSelect'>
+			<label for='zoom'>Zoom {{100-zoom}}%</label>
+			<input type='range' min='0' max='100' id='zoom' v-model='zoom'/>
+		</div>
+<!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
+ -->		<div @mousemove = 'move' ref='chartcontainer'>
 			<highcharts :options='depthchart' ref='highcharts' class='depthchart'></highcharts>
 		</div>
 	</div>
@@ -41,6 +45,7 @@
 		},
 		data: () => ({
 		loading: true,
+		zoom: 0,
 		chart: null,
 	    	depthchart: {
 	    		chart: {
@@ -150,6 +155,11 @@
 		watch:{
 			selectChange() {
 				this.mounted()
+			},
+			zoom() {
+				let left = this.chart.series[1].xData[0] - 0.00001*(100-this.zoom)
+				let right = this.chart.series[0].xData[0] + 0.00001*(100-this.zoom)
+				this.chart.xAxis[0].setExtremes(left, right);
 			}
 		},
 		mounted() {
@@ -354,5 +364,17 @@
 </script>
 
 <style scoped>
-
+	#zoomSelect {
+		margin: 1em 0;
+		width: 300px;
+		display: flex;
+		align-items: center;
+	}
+	#zoomSelect label {
+		flex: 0.5;
+	}
+	#zoomSelect input {
+		flex: 1;
+		display: inline-block;
+	}
 </style>

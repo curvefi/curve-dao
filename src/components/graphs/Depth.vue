@@ -154,6 +154,7 @@
 		},
 		mounted() {
 			this.chart = this.$refs.highcharts.chart
+			this.chart.showLoading();
 		},
 		beforeDestroy() {
 			//EventBus.$off('selected', this.selectPool)
@@ -187,7 +188,6 @@
 				this.mounted()
 			},
 			async mounted() {
-				this.chart.showLoading();
 				this.pool = tradeStore.pool
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal

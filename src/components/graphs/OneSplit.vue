@@ -84,7 +84,7 @@
                 busd: 'BUSD'
             },
             from_currency: 0,
-            to_currency: 0,
+            to_currency: 1,
             fromInput: '0.00',
             toInput: '0.00',
             disabled: true,

@@ -68,7 +68,8 @@ button {
 
 button,
 .button,
-.button:link {
+.button:link,
+select.tvision {
   display: inline-block;
   font-weight: bolder;
   color: white;
@@ -513,15 +514,15 @@ div.info table td {
   font-size: 0.95em;
 }
 
-fieldset:nth-child(2) .maxbalance {
+fieldset:nth-child(1) .maxbalance {
   cursor: pointer;
 }
 
-fieldset:nth-child(2) .maxbalance:hover {
+fieldset:nth-child(1) .maxbalance:hover {
   text-decoration: underline;
 }
 
-fieldset:nth-child(3) .maxbalance {
+fieldset:nth-child(2) .maxbalance {
   visibility: hidden;
 }
 

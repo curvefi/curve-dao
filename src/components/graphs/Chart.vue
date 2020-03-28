@@ -3,7 +3,10 @@
 		<select-pool id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth/>
- 		<one-split />
+		<fieldset id='onesplit'>
+			<legend class='text-center'>Swap using all Curve pools</legend>
+			<one-split />
+		</fieldset>
 	</div>
 </template>
 
@@ -16,6 +19,12 @@
 	import EventBus from './EventBus'
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import OneSplit from './OneSplit.vue'
+
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+		}
+	})
 
 	import { contract, allCurrencies, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 
@@ -224,16 +233,13 @@
 		methods: {
 			chartClick(e) {
 				let nearest = this.chart.pointer.findNearestKDPoint(this.chart.series, false, e)
-				console.log(nearest)
 				EventBus.$emit('changeTime', nearest.index)
 			},
 
 			async selectPool(pool, pair, interval) {
 				this.pool = pool;
-				this.pair = pair;
+				this.pair = {...pair};
 				this.interval = interval;
-				console.log(pool, pair, interval)
-				console.log(this.chart.series)
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
 				}
@@ -244,6 +250,7 @@
 			},
 
 			async mounted() {
+				this.chart.showLoading();
 				//move this to selectPool method
 
 				let data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
@@ -258,7 +265,12 @@
 
 				let fromCurrency = this.pair.idx.split('-')[0]
 				let toCurrency = this.pair.idx.split('-')[1]
-
+				let inverse = false;
+				if(fromCurrency > toCurrency) {
+					inverse = true;
+					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
+					this.pair.idx = `${fromCurrency}-${toCurrency}`
+				}
 
 /*				let A = await contract.swap.methods.A().call();
 				let fee = await contract.swap.methods.fee().call()
@@ -331,8 +343,12 @@
 				let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
-				data = data.map(v=> {
+				data = JSON.parse(JSON.stringify(data))
+				let ohlcData = data.map(v=> {
 					if(v.prices[this.pair.idx]) {
+						if(inverse) {
+							v.prices[this.pair.idx] = v.prices[this.pair.idx].map(price => 1/price)
+						}
 						return v
 					}
 					else {
@@ -340,9 +356,10 @@
 							...v,
 							...poolConfig,
 						});
-						let get_dy_underlying = calc.get_dy_underlying(0, 1, abis[this.pool].coin_precisions[fromCurrency])
+						let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 						let calcprice = get_dy_underlying
 						v.prices[this.pair.idx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
+						if(inverse) v.prices[this.pair.idx] = [1 / v.prices[this.pair.idx]]
 						v.volume[this.pair.idx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
@@ -350,29 +367,37 @@
 					}
 				})
 
-
-
 			    // split the data set into ohlc and volume
 			    var ohlc = [],
 			        volume = [],
-			        dataLength = data.length
+			        dataLength = ohlcData.length
 			        // set the allowed units for data grouping
 
 
-			    let len = data[0].prices[this.pair.idx].length
+			    let len = ohlcData[0].prices[this.pair.idx].length
 
 			    for (let i = 1; i < dataLength; i ++) {
 			        ohlc.push([
-			            data[i].timestamp*1000, // the date
-			            data[i].prices[this.pair.idx][0], // open
-			            Math.max(...data[i].prices[this.pair.idx]), // high
-			            Math.min(...data[i].prices[this.pair.idx]), // low
-			            data[i].prices[this.pair.idx][len-1] // close
+			            ohlcData[i].timestamp*1000, // the date
+			            ohlcData[i].prices[this.pair.idx][0], // open
+			            Math.max(...ohlcData[i].prices[this.pair.idx]), // high
+			            Math.min(...ohlcData[i].prices[this.pair.idx]), // low
+			            ohlcData[i].prices[this.pair.idx][len-1] // close
 			        ]);
+			        let volumeData = ohlcData[i].volume[this.pair.idx][0] / abis[this.pool].coin_precisions[fromCurrency]
+			        if(inverse) volumeData = ohlcData[i].volume[this.pair.idx][1] / abis[this.pool].coin_precisions[toCurrency]
 			        volume.push([
-			            data[i].timestamp*1000, // the date
-			            data[i].volume[this.pair.idx][0]/abis[this.pool].coin_precisions[fromCurrency] // the volume
+			            ohlcData[i].timestamp*1000, // the date
+			            volumeData // the volume
 			        ]);
+/*
+			        if(inverse) {
+			        	ohlc = ohlc.map(p => p.map((v, i) => i > 0 ? 1/v : v))
+			        	volume = volume.map((p, i) => {
+			        		p[1] = data[i].volume[this.pair.idx][1] / abis[this.pool].coin_precisions[toCurrency]
+			        		return p;
+			        	})
+			        }*/
 			    }
 
 			    this.$refs.highcharts.chart.addSeries({
@@ -393,6 +418,7 @@
 		        this.chart.redraw();
 		        //highcharts doesn't select the defined range, doing it again manually
 		        this.chart.rangeSelector.clickButton(4, true)
+		        this.chart.hideLoading();
 			    this.loading = false;
 			}
 		}
@@ -401,10 +427,11 @@
 
 <style scoped>
 	.tradeview {
-		width: 90%;
-		margin: 0 auto;
 	}
 	#select_pool {
 		margin-bottom: 10px;
+	}
+	#onesplit {
+		margin-top: 30px;
 	}
 </style>

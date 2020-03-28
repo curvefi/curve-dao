@@ -1,7 +1,6 @@
 <template>
 	<div>
 		<div style="display: table; margin: auto" class='swap'>
-            <p class='text-center'>Swap routed through all pools</p>
             <fieldset style="float: left">
                 <legend>From:</legend>
                 <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
@@ -58,7 +57,7 @@
                 </li>
             </ul>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade'>Sell using 1split routing</button>
+                <button id="trade" @click='handle_trade'>Sell</button>
             </p>
         </div>
 	</div>

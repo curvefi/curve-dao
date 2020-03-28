@@ -1,15 +1,15 @@
 <template>
 	<div>
-		<select v-model='pool'>
+		<select class='tvision' v-model='pool'>
 			<option value='compound'>Compound</option>
 			<option value='usdt'>usdt</option>
 			<option value='iearn'>Y</option>
 			<option value='busd'>busd</option>
 		</select>
-		<select v-model='pair'>
+		<select class='tvision' v-model='pair'>
 			<option v-for = 'v in pairs' :value='v'>{{v.val | toUpper}}</option>
 		</select>
-		<select v-model='interval'>
+		<select class='tvision' v-model='interval'>
 			<option v-for = 'v in intervals' :value='v'>{{v}}m</option>
 		</select>
 		<button @click="emitSelect">Select</button>
@@ -56,6 +56,18 @@
 
 <style scoped>
 	button {
-		margin-left: 3px;
+		box-shadow: none;
+		margin-left: 10px;
+	}
+	select {
+		margin-left: 10px;
+		box-shadow: none;
+	}
+	select:nth-of-type(1) {
+		margin-left: 0;
+	}
+	option {
+		color: black;
+		background: #d7d5d5;
 	}
 </style>

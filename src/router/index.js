@@ -35,6 +35,11 @@ let routes = [
         component: Root
       },
       {
+        path: '/trade',
+        name: 'Trade',
+        component: ChartGraph,
+      },
+      {
         name: 'CombinedStats',
         path: 'combinedstats',
         component: CombinedStats,
@@ -56,11 +61,6 @@ let routes = [
     name: 'Index',
     component: PoolApp,
     children: [
-      {
-        path: '/trade',
-        name: 'Trade',
-        component: ChartGraph,
-      },
       {
         path: '',
         name: 'Swap',

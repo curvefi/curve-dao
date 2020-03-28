@@ -198,7 +198,7 @@ export async function changeContract(pool) {
 	state.l_info = []
 	state.total = 0
 	state.totalShare = 0
-	web3Init();
+	await web3Init();
 }
 
 export function setCurrencies(pool) {

@@ -19,6 +19,12 @@
         }
     }
 
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+		}
+	})
+
 
 	import {Chart} from 'highcharts-vue'
 	import EventBus from './EventBus'
@@ -72,7 +78,7 @@
 	    				color: 'gray',
 	    				width: 1.5,
 	    			},
-	    			min: 1,
+	    			min: 100,
 			        lineWidth: 1,
 			        gridLineWidth: 1,
 			        title: null,
@@ -89,7 +95,7 @@
 			    		color: 'gray',
 			    		width: 1.5,
 			    	},
-			    	min: 1,
+			    	min: 100,
 			        opposite: true,
 			        linkedTo: 0,
 			        lineWidth: 1,
@@ -140,6 +146,7 @@
 		},
 		mounted() {
 			this.chart = this.$refs.highcharts.chart
+			this.mounted()
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
@@ -147,7 +154,6 @@
 		},
 		methods: {
 			async updatePoolInfo() {
-				console.log("CONTRACT", contract.balances)
 				this.poolInfo.A = await contract.swap.methods.A().call();
 				this.poolInfo.fee = contract.fee
 				this.poolInfo.admin_fee = contract.admin_fee
@@ -159,10 +165,12 @@
 			},
 
 			async selectPool(pool, pair, interval) {
+				if(!contract.initializedContracts) return false;
 				this.pool = pool
 				this.pair = pair
 				this.interval = interval
 				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				this.mounted()
 			},
 			//we can go back in time! Time travelling!
 			changeTime(index) {
@@ -173,10 +181,11 @@
 			},
 			async mounted() {
 
+				this.chart.showLoading();
+
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
 				}
-
 
 /*				if(contract.currentContract != this.pool) {
 					await changeContract(this.pool)
@@ -197,6 +206,12 @@
 
 				let fromCurrency = this.pair.idx.split('-')[0]
 				let toCurrency = this.pair.idx.split('-')[1]
+				let inverse = false;
+				if(fromCurrency > toCurrency) {
+					inverse = true;
+					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
+					this.pair.idx = `${fromCurrency}-${toCurrency}`
+				}
 
 				let dx1 = 100 * contract.coin_precisions[fromCurrency]
 				let dy1 = 100 * contract.coin_precisions[toCurrency]
@@ -217,10 +232,14 @@
 					//console.log(+dy)
 					let bidrate = dy / (dx1 * i) * contract.coin_precisions[fromCurrency]
 					let askrate = (dy1 * i) / contract.coin_precisions[toCurrency] / dx
+					if(inverse) {
+						bidrate = 1/bidrate;
+						askrate = 1/askrate;
+					}
 					//console.log(+bidrate)
 					//console.log(+askrate)
-					bids.push([+bidrate, i])
-					asks.push([+askrate, i])
+					bids.push([+bidrate, i * 100])
+					asks.push([+askrate, i * 100])
 				}
 				//console.log(asks, bids)
 			    this.$refs.highcharts.chart.addSeries({
@@ -249,6 +268,7 @@
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
             	this.bbrect._top = this.bbrect.top + window.scrollY;
+            	this.chart.hideLoading();
 			    this.loading = false;
 			},
 			move(event) {

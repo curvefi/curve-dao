@@ -6,4 +6,5 @@ export default Vue.observable({
   	pairVal: 'dai-usdc',
   	pool: 'compound',
   	interval: 5,
+  	data: [],
 })

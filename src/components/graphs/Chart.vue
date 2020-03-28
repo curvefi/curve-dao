@@ -40,183 +40,191 @@
 			SelectPool,
 			OneSplit,
 		},
-		data: () => ({
-		loading: true,	
-			chartdata: {
-				plotOptions: {
-					series: {
-						point: {
-							events: {
-								click: function() {
-									EventBus.$emit('changeTime', this.index)
+		data() {
+			return {
+				loading: true,	
+					chartdata: {
+						plotOptions: {
+							series: {
+								point: {
+									events: {
+										click: (function(self) {
+											return function() {
+												EventBus.$emit('changeTime', self.data[this.index])
+											}
+										})(this)
+									}
 								}
 							}
-						}
-					}
-				},
-				rangeSelector: {
-					selected: 4,
-					allButtonsEnabled: true,
-					 buttons: [{
-                        type: 'minute',
-                        count: 10,
-                        text: '1m',
-                        dataGrouping: {
-		                    forced: true,
-		                    units: [['minute', [1]]]
-		                }
-                    }, 
-                    {
-                        type: 'minute',
-                        count: 50,
-                        text: '5m',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['minute', [5]]]
-		                }
-                    },
-                    {
-                    	type: 'minute',
-                    	count: 150,
-                    	text: '15m',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['minute', [15]]]
-		                }
-                    },
-                    {
-                        type: 'minute',
-                        count: 300,
-                        text: '30m',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['minute', [30]]]
-		                }
-                    }, 
-                    {
-                        type: 'hour',
-                        count: 10,
-                        text: '1h',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['hour', [1]]]
-		                }
-                    }, 
-                    {
-                        type: 'hour',
-                        count: 20,
-                        text: '2h',
-                        dataGrouping: {
-		                    forced: true,
-		                    units: [['hour', [2]]]
-		                }
-                    },
-                    {
-                        type: 'hour',
-                        count: 40,
-                        text: '4h',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['hour', [4]]]
-		                }
-                    },
-                    {
-                        type: 'hour',
-                        count: 60,
-                        text: '6h',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['hour', [6]]]
-		                }
-                    },
-                    {
-                        type: 'day',
-                        count: 10,
-                        text: '1d',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['day', [1]]]
-		                }
-                    },
-                    {
-                        type: 'day',
-                        count: 30,
-                        text: '3d',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['day', [3]]]
-		                }
-                    },
-                    {
-                    	type: 'week',
-                    	count: 10,
-                    	text: '1w',
-                        dataGrouping: {
-	                 	   forced: true,
-		                    units: [['week', [1]]]
-		                }
-                    }
-                    ]
-				},
-				chart: {
-					height: 600,
-					panning: true,
-					zoomType: 'x',
-			        panKey: 'ctrl',
-			        events: {
-			        	click: (e) => {
-			        		EventBus.$emit('chartClick', e)
-			        	},
-			        	load() {
-			        		this.redraw();
-			        	}
-			        }
-				},
-				title: {
-					text: '',
-				},
-				yAxis: [{
-						labels: {
-		                align: 'right',
-			                x: -3
-			            },
-			            title: {
-			                text: 'OHLC'
-			            },
-			            height: '60%',
-			            lineWidth: 2,
-			            resize: {
-			                enabled: true
-			            }
-			        }, 
-			        {
-			            labels: {
-			                align: 'right',
-			                x: -3
-			            },
-			            title: {
-			                text: 'Volume'
-			            },
-			            top: '65%',
-			            height: '35%',
-			            offset: 0,
-			            lineWidth: 2
-			        }],
-			  	tooltip: {
-			  		split: true,
-			  	},
-			  	series: [],
-	    	},
-		  	pair: {
-		  		
-		  	},
-		  	pool: '',
-		  	interval: null,
-		  	chart: null,
-		}),
+						},
+						rangeSelector: {
+							selected: 4,
+							allButtonsEnabled: true,
+							 buttons: [{
+		                        type: 'minute',
+		                        count: 10,
+		                        text: '1m',
+		                        dataGrouping: {
+				                    forced: true,
+				                    units: [['minute', [1]]]
+				                }
+		                    }, 
+		                    {
+		                        type: 'minute',
+		                        count: 50,
+		                        text: '5m',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['minute', [5]]]
+				                }
+		                    },
+		                    {
+		                    	type: 'minute',
+		                    	count: 150,
+		                    	text: '15m',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['minute', [15]]]
+				                }
+		                    },
+		                    {
+		                        type: 'minute',
+		                        count: 300,
+		                        text: '30m',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['minute', [30]]]
+				                }
+		                    }, 
+		                    {
+		                        type: 'hour',
+		                        count: 10,
+		                        text: '1h',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['hour', [1]]]
+				                }
+		                    }, 
+		                    {
+		                        type: 'hour',
+		                        count: 20,
+		                        text: '2h',
+		                        dataGrouping: {
+				                    forced: true,
+				                    units: [['hour', [2]]]
+				                }
+		                    },
+		                    {
+		                        type: 'hour',
+		                        count: 40,
+		                        text: '4h',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['hour', [4]]]
+				                }
+		                    },
+		                    {
+		                        type: 'hour',
+		                        count: 60,
+		                        text: '6h',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['hour', [6]]]
+				                }
+		                    },
+		                    {
+		                        type: 'day',
+		                        count: 10,
+		                        text: '1d',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['day', [1]]]
+				                }
+		                    },
+		                    {
+		                        type: 'day',
+		                        count: 30,
+		                        text: '3d',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['day', [3]]]
+				                }
+		                    },
+		                    {
+		                    	type: 'week',
+		                    	count: 10,
+		                    	text: '1w',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['week', [1]]]
+				                }
+		                    }
+		                    ]
+						},
+						chart: {
+							height: 600,
+							panning: true,
+							zoomType: 'x',
+					        panKey: 'ctrl',
+					        events: {
+					        	click: (function(self) {
+					        		return function(e) {
+					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
+					        			console.log(self.data[nearest.index])
+										EventBus.$emit('changeTime', self.data[nearest.index])
+					        		}
+					        	})(this),
+					        	load() {
+					        		this.redraw();
+					        	}
+					        }
+						},
+						title: {
+							text: '',
+						},
+						yAxis: [{
+								labels: {
+				                align: 'right',
+					                x: -3
+					            },
+					            title: {
+					                text: 'OHLC'
+					            },
+					            height: '60%',
+					            lineWidth: 2,
+					            resize: {
+					                enabled: true
+					            }
+					        }, 
+					        {
+					            labels: {
+					                align: 'right',
+					                x: -3
+					            },
+					            title: {
+					                text: 'Volume'
+					            },
+					            top: '65%',
+					            height: '35%',
+					            offset: 0,
+					            lineWidth: 2
+					        }],
+					  	tooltip: {
+					  		split: true,
+					  	},
+					  	series: [],
+			    	},
+				  	pair: {
+				  		
+				  	},
+				  	pool: '',
+				  	interval: null,
+				  	chart: null,
+				  	data: [],
+		  }
+		},
 		created() {
 			//EventBus.$on('selected', this.selectPool);
-			EventBus.$on('chartClick', this.chartClick)
 		},
 		watch: {
 			selectChange() {
@@ -239,10 +247,6 @@
 			}
 		},
 		methods: {
-			chartClick(e) {
-				let nearest = this.chart.pointer.findNearestKDPoint(this.chart.series, false, e)
-				EventBus.$emit('changeTime', nearest.index)
-			},
 			async mounted() {
 				this.pool = tradeStore.pool;
 				this.pairIdx = tradeStore.pairIdx
@@ -258,7 +262,9 @@
 				this.chart.showLoading();
 				//move this to selectPool method
 
-				let data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				this.data = data = await data.json();
+				//tradeStore.data = data;
 
 				let poolConfig = {
 					N_COINS: abis[this.pool].N_COINS,
@@ -276,6 +282,10 @@
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
+
+				console.log(this.pairIdx)
+
+				console.log(inverse)
 
 /*				let A = await contract.swap.methods.A().call();
 				let fee = await contract.swap.methods.fee().call()
@@ -348,10 +358,12 @@
 				let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
-				data = JSON.parse(JSON.stringify(data))
+				//data = JSON.parse(JSON.stringify(data))
+				console.log(fromCurrency, toCurrency, "FROM TO")
 				let ohlcData = data.map(v=> {
 					if(v.prices[this.pairIdx]) {
-						if(inverse) {
+						if(!inverse) {
+							console.log("HERE", v.prices[this.pairIdx])
 							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
 						return v
@@ -363,11 +375,13 @@
 						});
 						let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 						let calcprice = get_dy_underlying
+						console.log(+calcprice)
 						v.prices[this.pairIdx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
 						if(inverse) v.prices[this.pairIdx] = [1 / v.prices[this.pairIdx]]
 						v.volume[this.pairIdx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
+						console.log("HERE2", v.prices[this.pairIdx])
 						return v;
 					}
 				})

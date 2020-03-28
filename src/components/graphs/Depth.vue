@@ -143,11 +143,6 @@
 			this.$watch(()=>contract.initializedContracts, async (val) => {
                 if(val) {
                 	await this.updatePoolInfo();
-                	this.pool = tradeStore.pool
-					this.pairIdx = tradeStore.pairIdx
-					this.pairVal = tradeStore.pairVal
-					this.interval = tradeStore.interval
-					this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
                 	this.mounted();
                 }
             })
@@ -186,21 +181,21 @@
 			},
 
 			//we can go back in time! Time travelling!
-			changeTime(index) {
-				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
-				this.poolInfo = this.data[index]
+			changeTime(poolInfo) {
+				this.poolInfo = poolInfo
 
 				this.mounted()
 			},
 			async mounted() {
+				this.chart.showLoading();
 				this.pool = tradeStore.pool
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
 				this.interval = tradeStore.interval
-				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				data = await data.json();
 
 				//return;
-				this.chart.showLoading();
 				this.loading = true;
 
 				while(this.chart.series.length) {

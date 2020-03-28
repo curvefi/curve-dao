@@ -101,7 +101,8 @@
             swap: [],
             underlying_coins: [],
             onesplit: null,
-            CONTRACT_FLAG: 462335,
+            //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
+            CONTRACT_FLAG: 396799,
             swapPromise: helpers.makeCancelable(Promise.resolve())
 		}),
         watch: {
@@ -201,6 +202,7 @@
                             ).call()
                         )
                     let split_swap = await this.swapPromise
+                    console.log(split_swap, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
                     this.amount_dy = split_swap.returnAmount;
                     this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);
                     if(+this.exchangeRate <= 0.98) this.bgColor = 'red'

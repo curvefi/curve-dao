@@ -67,7 +67,7 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
 
     if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)))
         await approve(underlying_coins[i], 0, default_account, toContract);
-    return await approve(currentContract.underlying_coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
+    return await approve(underlying_coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
 
 // XXX not needed anymore

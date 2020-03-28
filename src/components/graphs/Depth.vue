@@ -1,5 +1,6 @@
 <template>
 	<div class='bigdiv'>
+		<button @click='setExtremes'>Look at actual price * +-0.01</button>
 		<div @mousemove = 'move' ref='chartcontainer'>
 			<highcharts :options='depthchart' ref='highcharts' class='depthchart'></highcharts>
 		</div>
@@ -28,6 +29,7 @@
 
 	import {Chart} from 'highcharts-vue'
 	import EventBus from './EventBus'
+	import tradeStore from './tradeStore'
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import { contract, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 	import abis from '../../allabis'
@@ -133,26 +135,45 @@
 		  	interval: 5,
 	    	bbrect: null,
 	    	data: [],
+	    	currentValue: 1,
 		}),
 		async created() {
-			EventBus.$on('selected', this.selectPool)
+			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
 			this.$watch(()=>contract.initializedContracts, async (val) => {
                 if(val) {
                 	await this.updatePoolInfo();
+                	this.pool = tradeStore.pool
+					this.pairIdx = tradeStore.pairIdx
+					this.pairVal = tradeStore.pairVal
+					this.interval = tradeStore.interval
+					this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
                 	this.mounted();
                 }
             })
 		},
+		watch:{
+			selectChange() {
+				this.mounted()
+			}
+		},
 		mounted() {
 			this.chart = this.$refs.highcharts.chart
-			this.mounted()
 		},
 		beforeDestroy() {
-			EventBus.$off('selected', this.selectPool)
+			//EventBus.$off('selected', this.selectPool)
 			EventBus.$off('changeTime', this.changeTime)
 		},
+		computed: {
+			selectChange() {
+				return tradeStore.pairIdx, tradeStore.interval, Date.now();
+			}
+		},
 		methods: {
+			setExtremes() {
+				console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
+            	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.01, this.chart.series[0].xData[0] + 0.01, true, true)
+			},
 			async updatePoolInfo() {
 				this.poolInfo.A = await contract.swap.methods.A().call();
 				this.poolInfo.fee = contract.fee
@@ -164,14 +185,6 @@
 				this.poolInfo.timestamp = (Date.now() / 1000) | 0;
 			},
 
-			async selectPool(pool, pair, interval) {
-				if(!contract.initializedContracts) return false;
-				this.pool = pool
-				this.pair = pair
-				this.interval = interval
-				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
-				this.mounted()
-			},
 			//we can go back in time! Time travelling!
 			changeTime(index) {
 				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
@@ -180,8 +193,15 @@
 				this.mounted()
 			},
 			async mounted() {
+				this.pool = tradeStore.pool
+				this.pairIdx = tradeStore.pairIdx
+				this.pairVal = tradeStore.pairVal
+				this.interval = tradeStore.interval
+				this.data = require(`../../jsons/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
 
+				//return;
 				this.chart.showLoading();
+				this.loading = true;
 
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
@@ -193,9 +213,9 @@
 				}*/
 
 				let poolConfig = {
-					N_COINS: abis[this.pool].N_COINS,
-					PRECISION_MUL: abis[this.pool].coin_precisions.map(p=>1e18/p),
-					USE_LENDING: abis[this.pool].USE_LENDING,
+					N_COINS: abis[tradeStore.pool].N_COINS,
+					PRECISION_MUL: abis[tradeStore.pool].coin_precisions.map(p=>1e18/p),
+					USE_LENDING: abis[tradeStore.pool].USE_LENDING,
 					LENDING_PRECISION,
 					PRECISION,
 				}
@@ -204,13 +224,13 @@
 				console.log(contract.c_rates)*/
 
 
-				let fromCurrency = this.pair.idx.split('-')[0]
-				let toCurrency = this.pair.idx.split('-')[1]
+				let fromCurrency = this.pairIdx.split('-')[0]
+				let toCurrency = this.pairIdx.split('-')[1]
 				let inverse = false;
 				if(fromCurrency > toCurrency) {
 					inverse = true;
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
-					this.pair.idx = `${fromCurrency}-${toCurrency}`
+					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
 				let dx1 = 100 * contract.coin_precisions[fromCurrency]
@@ -226,7 +246,6 @@
 
 				for(let i = 1; i < 100; i++) {
 					let volume = i;
-
 					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).times(i).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
 					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).times(i).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
 					//console.log(+dy)
@@ -236,8 +255,6 @@
 						bidrate = 1/bidrate;
 						askrate = 1/askrate;
 					}
-					//console.log(+bidrate)
-					//console.log(+askrate)
 					bids.push([+bidrate, i * 100])
 					asks.push([+askrate, i * 100])
 				}
@@ -255,13 +272,14 @@
 
 			    //maybe not right - get from web3 when no this.poolInfo but this should be the same because calc is initialized with now
 			    // - get from clicked point value otherwise
-		        let currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
+		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
+		        if(inverse) this.currentValue = 1 / this.currentValue
 				this.$refs.highcharts.chart.series[0].xAxis.plotLinesAndBands[0]
 							.update({
-								value: currentValue,
+								value: this.currentValue,
 								label: {
-									text: 'Actual price ' + currentValue.toFixed(4)
+									text: 'Actual price ' + this.currentValue.toFixed(4)
 								}
 							})
 
@@ -272,7 +290,7 @@
 			    this.loading = false;
 			},
 			move(event) {
-				if(!this.chart) return;
+				if(this.loading) return;
 				let x = event.pageX;
 	            let y = event.pageY;
 	            x = x - this.bbrect.left;

@@ -19,6 +19,7 @@
 <script>
 	import { contract, allCurrencies } from '../../contract'
 	import EventBus from './EventBus'
+	import tradeStore from './tradeStore'
 	import * as helpers from '../../utils/helpers'
 
 	export default {
@@ -34,7 +35,11 @@
 		},
 		methods: {
 			emitSelect() {
-				EventBus.$emit('selected', this.pool, this.pair, this.interval)
+				tradeStore.pool = this.pool
+				tradeStore.pairIdx = this.pair.idx
+				tradeStore.pairVal = this.pair.val
+				tradeStore.interval = this.interval
+				//EventBus.$emit('selected', this.pool, this.pair, this.interval)
 			}
 		},
 		computed: {

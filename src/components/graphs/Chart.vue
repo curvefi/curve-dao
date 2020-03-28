@@ -1,6 +1,6 @@
 <template>
 	<div class = 'tradeview window white'>
-		<select-pool id='select_pool'/>
+ 		<select-pool id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth/>
 		<fieldset id='onesplit'>
@@ -17,6 +17,7 @@
 	import Depth from './Depth.vue'
 	import SelectPool from './SelectPool.vue'
 	import EventBus from './EventBus'
+	import tradeStore from './tradeStore'
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import OneSplit from './OneSplit.vue'
 
@@ -47,7 +48,6 @@
 						point: {
 							events: {
 								click: function() {
-									console.log(this)
 									EventBus.$emit('changeTime', this.index)
 								}
 							}
@@ -208,19 +208,22 @@
 			  	series: [],
 	    	},
 		  	pair: {
-		  		idx: '0-1',
-		  		val: 'DAI-USDC'
+		  		
 		  	},
-		  	pool: 'compound',
-		  	interval: 5,
+		  	pool: '',
+		  	interval: null,
 		  	chart: null,
 		}),
 		created() {
-			EventBus.$on('selected', this.selectPool);
+			//EventBus.$on('selected', this.selectPool);
 			EventBus.$on('chartClick', this.chartClick)
 		},
+		watch: {
+			selectChange() {
+				this.mounted()
+			}
+		},
 		mounted() {
-			console.log(this.pool)
 			this.chart = this.$refs.highcharts.chart;
 /*			this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
@@ -230,26 +233,28 @@
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
 		},
+		computed: {
+			selectChange() {
+				return tradeStore.pairIdx, tradeStore.pool, tradeStore.interval, Date.now();
+			}
+		},
 		methods: {
 			chartClick(e) {
 				let nearest = this.chart.pointer.findNearestKDPoint(this.chart.series, false, e)
 				EventBus.$emit('changeTime', nearest.index)
 			},
-
-			async selectPool(pool, pair, interval) {
-				this.pool = pool;
-				this.pair = {...pair};
-				this.interval = interval;
+			async mounted() {
+				this.pool = tradeStore.pool;
+				this.pairIdx = tradeStore.pairIdx
+				this.pairVal = tradeStore.pairVal
+				this.interval = tradeStore.interval;
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
 				}
 				if(contract.currentContract != this.pool) {
 					await changeContract(this.pool)
 				}
-				this.mounted();
-			},
-
-			async mounted() {
+				//return;
 				this.chart.showLoading();
 				//move this to selectPool method
 
@@ -263,13 +268,13 @@
 					PRECISION,
 				}
 
-				let fromCurrency = this.pair.idx.split('-')[0]
-				let toCurrency = this.pair.idx.split('-')[1]
+				let fromCurrency = this.pairIdx.split('-')[0]
+				let toCurrency = this.pairIdx.split('-')[1]
 				let inverse = false;
 				if(fromCurrency > toCurrency) {
 					inverse = true;
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
-					this.pair.idx = `${fromCurrency}-${toCurrency}`
+					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
 /*				let A = await contract.swap.methods.A().call();
@@ -345,9 +350,9 @@
 				*/
 				data = JSON.parse(JSON.stringify(data))
 				let ohlcData = data.map(v=> {
-					if(v.prices[this.pair.idx]) {
+					if(v.prices[this.pairIdx]) {
 						if(inverse) {
-							v.prices[this.pair.idx] = v.prices[this.pair.idx].map(price => 1/price)
+							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
 						return v
 					}
@@ -358,9 +363,9 @@
 						});
 						let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 						let calcprice = get_dy_underlying
-						v.prices[this.pair.idx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
-						if(inverse) v.prices[this.pair.idx] = [1 / v.prices[this.pair.idx]]
-						v.volume[this.pair.idx] = [0]
+						v.prices[this.pairIdx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
+						if(inverse) v.prices[this.pairIdx] = [1 / v.prices[this.pairIdx]]
+						v.volume[this.pairIdx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 						return v;
@@ -374,18 +379,18 @@
 			        // set the allowed units for data grouping
 
 
-			    let len = ohlcData[0].prices[this.pair.idx].length
+			    let len = ohlcData[0].prices[this.pairIdx].length
 
 			    for (let i = 1; i < dataLength; i ++) {
 			        ohlc.push([
 			            ohlcData[i].timestamp*1000, // the date
-			            ohlcData[i].prices[this.pair.idx][0], // open
-			            Math.max(...ohlcData[i].prices[this.pair.idx]), // high
-			            Math.min(...ohlcData[i].prices[this.pair.idx]), // low
-			            ohlcData[i].prices[this.pair.idx][len-1] // close
+			            ohlcData[i].prices[this.pairIdx][0], // open
+			            Math.max(...ohlcData[i].prices[this.pairIdx]), // high
+			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
+			            ohlcData[i].prices[this.pairIdx][len-1] // close
 			        ]);
-			        let volumeData = ohlcData[i].volume[this.pair.idx][0] / abis[this.pool].coin_precisions[fromCurrency]
-			        if(inverse) volumeData = ohlcData[i].volume[this.pair.idx][1] / abis[this.pool].coin_precisions[toCurrency]
+			        let volumeData = ohlcData[i].volume[this.pairIdx][0] / abis[this.pool].coin_precisions[fromCurrency]
+			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx][1] / abis[this.pool].coin_precisions[toCurrency]
 			        volume.push([
 			            ohlcData[i].timestamp*1000, // the date
 			            volumeData // the volume
@@ -394,7 +399,7 @@
 			        if(inverse) {
 			        	ohlc = ohlc.map(p => p.map((v, i) => i > 0 ? 1/v : v))
 			        	volume = volume.map((p, i) => {
-			        		p[1] = data[i].volume[this.pair.idx][1] / abis[this.pool].coin_precisions[toCurrency]
+			        		p[1] = data[i].volume[this.pairIdx][1] / abis[this.pool].coin_precisions[toCurrency]
 			        		return p;
 			        	})
 			        }*/
@@ -402,7 +407,7 @@
 
 			    this.$refs.highcharts.chart.addSeries({
 		            type: 'candlestick',
-		            name: this.pair.val,
+		            name: this.pairVal,
 		            data: ohlc,
 
 	        	})
@@ -414,7 +419,7 @@
 
 		        })
 		        console.log(this.$refs.highcharts.chart)
-		        this.chart.setTitle({text: this.pair.val})
+		        this.chart.setTitle({text: this.pairVal})
 		        this.chart.redraw();
 		        //highcharts doesn't select the defined range, doing it again manually
 		        this.chart.rangeSelector.clickButton(4, true)
@@ -427,6 +432,8 @@
 
 <style scoped>
 	.tradeview {
+		width: 100%;
+		max-width: 100%;
 	}
 	#select_pool {
 		margin-bottom: 10px;

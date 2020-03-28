@@ -157,8 +157,14 @@
 				this.mounted()
 			},
 			zoom() {
-				let left = this.chart.series[1].xData[0] - 0.00001*(100-this.zoom)
-				let right = this.chart.series[0].xData[0] + 0.00001*(100-this.zoom)
+				//0.000028
+				let len = this.chart.series[0].xData.length
+				/*let leftDiff = (this.chart.series[1].xData[len-1] - this.chart.series[1].xData[0])
+				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
+				let left = (10000+(+this.zoom))/10000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
+				let right = (10000-(+this.zoom))/10000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
+
+				console.log((10000+this.zoom), left, right, (10000-this.zoom)/10000);
 				this.chart.xAxis[0].setExtremes(left, right);
 			}
 		},
@@ -249,7 +255,7 @@
 					...poolConfig,
 				});
 
-				for(let i = 1; i < 100; i++) {
+				for(let i = 1; i <= 100; i++) {
 					let volume = i;
 					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).times(i).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
 					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).times(i).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])

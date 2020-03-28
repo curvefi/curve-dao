@@ -359,11 +359,9 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
-				console.log(fromCurrency, toCurrency, "FROM TO")
 				let ohlcData = data.map(v=> {
 					if(v.prices[this.pairIdx]) {
 						if(!inverse) {
-							console.log("HERE", v.prices[this.pairIdx])
 							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
 						return v
@@ -381,7 +379,6 @@
 						v.volume[this.pairIdx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
-						console.log("HERE2", v.prices[this.pairIdx])
 						return v;
 					}
 				})
@@ -444,15 +441,19 @@
 	}
 </script>
 
-<style scoped>
+<style>
 	.tradeview {
 		width: 70%;
-		max-width: 70%;
+		max-width: 1280px;
 	}
 	#select_pool {
 		margin-bottom: 10px;
 	}
 	#onesplit {
 		margin-top: 30px;
+	}
+	.blue.window {
+		width: 70%;
+		max-width: 1280px;
 	}
 </style>

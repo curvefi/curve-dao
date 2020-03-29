@@ -400,9 +400,15 @@
 			        // set the allowed units for data grouping
 
 
-			    let len = ohlcData[0].prices[this.pairIdx].length
 
 			    for (let i = 0; i < dataLength; i ++) {
+			    	let len = ohlcData[i].prices[this.pairIdx].length
+/*			    	console.log(ohlcData[i].timestamp*1000, // the date
+			            ohlcData[i].prices[this.pairIdx][0], // open
+			            Math.max(...ohlcData[i].prices[this.pairIdx]), // high
+			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
+			            ohlcData[i].prices[this.pairIdx][len-1] // close
+			        )*/
 			        ohlc.push([
 			            ohlcData[i].timestamp*1000, // the date
 			            ohlcData[i].prices[this.pairIdx][0], // open

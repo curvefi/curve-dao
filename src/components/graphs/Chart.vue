@@ -370,21 +370,22 @@
 				*/
 				//data = JSON.parse(JSON.stringify(data))
 				let ohlcData = data.map(v=> {
+					let calc = stableswap_fns({
+						...v,
+						...poolConfig,
+					});
+					let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
+					let calcprice = +(get_dy_underlying.div(abis[this.pool].coin_precisions[toCurrency]))
+					if(inverse) calcprice = 1 / calcprice
 					if(v.prices[this.pairIdx]) {
 						if(!inverse) {
 							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
+						v.prices[this.pairIdx].push(calcprice)
 						return v
 					}
 					else {
-						let calc = stableswap_fns({
-							...v,
-							...poolConfig,
-						});
-						let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
-						let calcprice = get_dy_underlying
-						v.prices[this.pairIdx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
-						if(inverse) v.prices[this.pairIdx] = [1 / v.prices[this.pairIdx]]
+						v.prices[this.pairIdx] = [calcprice]
 						v.volume[this.pairIdx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)

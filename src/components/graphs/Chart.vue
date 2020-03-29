@@ -50,6 +50,7 @@
 									events: {
 										click: (function(self) {
 											return function() {
+												let index = this.dataGroup ? this.dataGroup.start : this.index
 												EventBus.$emit('changeTime', self.data[this.index])
 											}
 										})(this)
@@ -170,14 +171,17 @@
 					        	click: (function(self) {
 					        		return function(e) {
 					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
+					        			console.log(nearest)
+					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
 					        			console.log(self.data[nearest.index])
 										let calc = stableswap_fns({
-											...self.data[nearest.index],
+											...self.data[index],
 											...self.poolConfig,
 										});
 										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
-										console.log(get_dy_underlying, "price at point", nearest.index)
-										EventBus.$emit('changeTime', self.data[nearest.index])
+										console.log(+get_dy_underlying, "price at point", index)
+										console.log(self.data[index].prices["0-1"])
+										EventBus.$emit('changeTime', self.data[index])
 					        		}
 					        	})(this),
 					        	load() {

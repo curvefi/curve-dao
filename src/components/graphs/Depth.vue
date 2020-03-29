@@ -13,16 +13,6 @@
 
 <script>
 	import Highcharts from 'highcharts'
-	console.log(Highcharts.PlotLineOrBand)
-	Highcharts.PlotLineOrBand.prototype.update = function (newOptions){
-        var plotBand = this;
-        Highcharts.extend(plotBand.options, newOptions);
-        if (plotBand.svgElem) {
-            plotBand.svgElem.destroy();
-            plotBand.svgElem = undefined;
-            plotBand.render();
-        }
-    }
 
 	Highcharts.setOptions({
 		lang: {
@@ -284,14 +274,12 @@
 		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
 		        if(inverse) this.currentValue = 1 / this.currentValue
-				this.$refs.highcharts.chart.series[0].xAxis.plotLinesAndBands[0]
-							.update({
-								value: this.currentValue,
-								label: {
-									text: 'Actual price ' + this.currentValue.toFixed(4)
-								}
-							})
-
+		        console.log(this.currentValue)
+		    	console.log(this.chart)
+		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
+		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
+		    	this.chart.xAxis[0].update()
+		    	
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
             	this.bbrect._top = this.bbrect.top + window.scrollY;

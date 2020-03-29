@@ -324,7 +324,7 @@
 							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
 						});
 
-						if(document.querySelector('.highcharts-series.highcharts-series-1').classList.contains('highcharts-series-hover') == 1)
+						if(!document.querySelector('#depth_chart .highcharts-series.highcharts-series-1').classList.contains('highcharts-series-hover'))
 							this.chart.crossYLabelLeft.attr('y', -9999)
 						else
 							this.chart.crossYLabelRight.attr('y', -9999)

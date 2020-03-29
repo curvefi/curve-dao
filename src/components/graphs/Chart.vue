@@ -2,7 +2,7 @@
 	<div class = 'tradeview window white'>
  		<select-pool id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-		<depth/>
+		<depth id='depth_chart' />
 		<fieldset id='onesplit'>
 			<legend class='text-center'>Swap using all Curve pools</legend>
 			<one-split />

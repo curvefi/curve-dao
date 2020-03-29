@@ -177,7 +177,7 @@
 										});
 										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
 										console.log(get_dy_underlying, "price at point", nearest.index)
-										//EventBus.$emit('changeTime', self.data[nearest.index])
+										EventBus.$emit('changeTime', self.data[nearest.index])
 					        		}
 					        	})(this),
 					        	load() {

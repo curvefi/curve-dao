@@ -257,6 +257,8 @@
 					...poolConfig,
 				});
 
+				console.log(poolConfig, "config", this.poolInfo)
+
 				let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
 				for(let i = 1; i <= 100; i++) {
 					let volume = i;

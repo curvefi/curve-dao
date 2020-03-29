@@ -136,6 +136,7 @@
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
 			this.$watch(()=>contract.initializedContracts, async (val) => {
+				console.log('initialized contract')
                 if(val) {
                 	await this.updatePoolInfo();
                 	this.mounted();
@@ -279,7 +280,7 @@
 		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()
-		    	
+
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
             	this.bbrect._top = this.bbrect.top + window.scrollY;
@@ -323,7 +324,7 @@
 							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
 						});
 
-						if(document.querySelector('.highcharts-series.highcharts-series-0').getAttribute('opacity') == 1)
+						if(document.querySelector('.highcharts-series.highcharts-series-1').classList.contains('highcharts-series-hover') == 1)
 							this.chart.crossYLabelLeft.attr('y', -9999)
 						else
 							this.chart.crossYLabelRight.attr('y', -9999)

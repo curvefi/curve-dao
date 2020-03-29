@@ -62,7 +62,7 @@
 							allButtonsEnabled: true,
 							 buttons: [{
 		                        type: 'minute',
-		                        count: 10,
+		                        count: 100,
 		                        text: '1m',
 		                        dataGrouping: {
 				                    forced: true,
@@ -71,7 +71,7 @@
 		                    }, 
 		                    {
 		                        type: 'minute',
-		                        count: 50,
+		                        count: 500,
 		                        text: '5m',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -80,7 +80,7 @@
 		                    },
 		                    {
 		                    	type: 'minute',
-		                    	count: 150,
+		                    	count: 1500,
 		                    	text: '15m',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -89,7 +89,7 @@
 		                    },
 		                    {
 		                        type: 'minute',
-		                        count: 300,
+		                        count: 3000,
 		                        text: '30m',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -98,7 +98,7 @@
 		                    }, 
 		                    {
 		                        type: 'hour',
-		                        count: 10,
+		                        count: 500,
 		                        text: '1h',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -107,7 +107,7 @@
 		                    }, 
 		                    {
 		                        type: 'hour',
-		                        count: 20,
+		                        count: 1000,
 		                        text: '2h',
 		                        dataGrouping: {
 				                    forced: true,
@@ -116,7 +116,7 @@
 		                    },
 		                    {
 		                        type: 'hour',
-		                        count: 40,
+		                        count: 2000,
 		                        text: '4h',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -125,7 +125,7 @@
 		                    },
 		                    {
 		                        type: 'hour',
-		                        count: 60,
+		                        count: 3000,
 		                        text: '6h',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -134,7 +134,7 @@
 		                    },
 		                    {
 		                        type: 'day',
-		                        count: 10,
+		                        count: 30,
 		                        text: '1d',
 		                        dataGrouping: {
 			                 	   forced: true,
@@ -143,7 +143,7 @@
 		                    },
 		                    {
 		                        type: 'day',
-		                        count: 30,
+		                        count: 90,
 		                        text: '3d',
 		                        dataGrouping: {
 			                 	   forced: true,

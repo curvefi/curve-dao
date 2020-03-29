@@ -179,8 +179,11 @@
 				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
 				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
 
-				priceLeft = (1500+(+this.zoom))/1500 * priceLeft;
-				priceRight = (1500-(+this.zoom))/1500 * priceRight
+				let zoom = +this.zoom
+				let zoomLevel = (101 - zoom) / 100
+				console.log(zoomLevel)
+				priceLeft = p - (p - priceLeft) * priceLeft * zoomLevel
+				priceRight = p + (priceRight - p) * priceRight * zoomLevel
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {

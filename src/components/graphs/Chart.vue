@@ -173,9 +173,9 @@
 					        			console.log(self.data[nearest.index])
 										let calc = stableswap_fns({
 											...self.data[nearest.index],
-											...poolConfig,
+											...self.poolConfig,
 										});
-										let get_dy_underlying = calc.get_dy_underlying(this.fromCurrency, this.toCurrency, abis[this.pool].coin_precisions[this.fromCurrency])
+										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
 										console.log(get_dy_underlying, "price at point", nearest.index)
 										//EventBus.$emit('changeTime', self.data[nearest.index])
 					        		}

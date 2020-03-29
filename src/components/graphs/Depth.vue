@@ -186,8 +186,8 @@
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
 				let zoom = +this.zoom
-				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 4.5 * (zoom / modLen - 1))
-				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 4.5 * (zoom / modLen - 1))
+				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 2 * (zoom / modLen - 1))
+				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 2 * (zoom / modLen - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {

@@ -431,6 +431,15 @@
 		        })
 		        console.log(this.$refs.highcharts.chart)
 		        this.chart.setTitle({text: this.pairVal})
+		        this.chart.update({
+		        	rangeSelector: {
+		        		buttons: this.chartdata.rangeSelector.buttons.map(b=> {
+		        			let cb = {...b}
+		        			cb.count /= this.interval / 5
+		        			return cb;
+		        		})
+		        	}
+		        })
 		        this.chart.redraw();
 		        //highcharts doesn't select the defined range, doing it again manually
 		        this.chart.rangeSelector.clickButton(4, true)

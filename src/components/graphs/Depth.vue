@@ -172,7 +172,7 @@
 				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
 				let min_price = Math.min(this.chart.series[1].xData[0], this.chart.series[1].xData[len-1])
 				let max_price = Math.max(this.chart.series[0].xData[0], this.chart.series[0].xData[len-1])
-				let p = this.chart.series[1].xData[0]
+				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 

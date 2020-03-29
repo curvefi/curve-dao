@@ -192,8 +192,8 @@
 			},
 			async updatePoolInfo() {
 				this.poolInfo.A = await contract.swap.methods.A().call();
-				this.poolInfo.fee = contract.fee
-				this.poolInfo.admin_fee = contract.admin_fee
+				this.poolInfo.fee = contract.fee * 1e10
+				this.poolInfo.admin_fee = contract.admin_fee * 1e10
 				this.poolInfo.supply = await contract.swap_token.methods.totalSupply().call()
 				this.poolInfo.virtual_price = await contract.swap.methods.get_virtual_price().call()
 				this.poolInfo.balances = contract.balances;

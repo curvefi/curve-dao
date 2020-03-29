@@ -75,7 +75,7 @@
 	    				color: 'gray',
 	    				width: 1.5,
 	    			},
-	    			min: 100,
+	    			min: 10000,
 			        lineWidth: 1,
 			        gridLineWidth: 1,
 			        title: null,
@@ -92,7 +92,7 @@
 			    		color: 'gray',
 			    		width: 1.5,
 			    	},
-			    	min: 100,
+			    	min: 10000,
 			        opposite: true,
 			        linkedTo: 0,
 			        lineWidth: 1,
@@ -148,15 +148,7 @@
 				this.mounted()
 			},
 			zoom() {
-				//0.000028
-				let len = this.chart.series[0].xData.length
-				/*let leftDiff = (this.chart.series[1].xData[len-1] - this.chart.series[1].xData[0])
-				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
-				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
-				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
-
-				console.log((10000+this.zoom), left, right, (10000-this.zoom)/10000);
-				this.chart.xAxis[0].setExtremes(left, right);
+				this.setZoom()
 			}
 		},
 		mounted() {
@@ -173,6 +165,28 @@
 			}
 		},
 		methods: {
+			setZoom() {
+				//0.000028
+				let len = this.chart.series[0].xData.length
+				/*let leftDiff = (this.chart.series[1].xData[len-1] - this.chart.series[1].xData[0])
+				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
+				let min_price = Math.min(this.chart.series[1].xData[0], this.chart.series[1].xData[len-1])
+				let max_price = Math.max(this.chart.series[0].xData[0], this.chart.series[0].xData[len-1])
+				let p = this.chart.series[1].xData[0]
+				let priceLeft = Math.max(min_price, p - (max_price - p))
+				let priceRight = Math.min(max_price, p + (p - min_price))
+				console.log(this.chart.series[0].xData, this.chart.series[1].xData)
+				console.log(this.chart.series[0].xData[len-1], this.chart.series[1].xData[len-1])
+				console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
+
+				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
+				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
+
+				console.log((10000+this.zoom), left, right, (10000-this.zoom)/10000);
+				priceLeft = (2000+(+this.zoom))/2000 * priceLeft;
+				priceRight = (2000-(+this.zoom))/2000 * priceRight
+				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
+			},
 			setExtremes() {
 				console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
             	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.001, this.chart.series[0].xData[0] + 0.001, true, true)
@@ -233,8 +247,8 @@
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
-				let dx1 = 100 * contract.coin_precisions[fromCurrency]
-				let dy1 = 100 * contract.coin_precisions[toCurrency]
+				let dx1 = 1000 * contract.coin_precisions[fromCurrency]
+				let dy1 = 1000 * contract.coin_precisions[toCurrency]
 				
 
 				let asks = []
@@ -246,17 +260,17 @@
 
 				for(let i = 1; i <= 100; i++) {
 					let volume = i;
-					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).times(i).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).times(i).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
+					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).times(i*10).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
+					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).times(i*10).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
 					//console.log(+dy)
-					let bidrate = dy / (dx1 * i) * contract.coin_precisions[fromCurrency]
-					let askrate = (dy1 * i) / contract.coin_precisions[toCurrency] / dx
+					let bidrate = dy / (dx1 * i * 10) * contract.coin_precisions[fromCurrency]
+					let askrate = (dy1 * i * 10) / contract.coin_precisions[toCurrency] / dx
 					if(inverse) {
 						bidrate = 1/bidrate;
 						askrate = 1/askrate;
 					}
-					bids.push([+bidrate, i * 100])
-					asks.push([+askrate, i * 100])
+					bids.push([+bidrate, i * 10 * 1000])
+					asks.push([+askrate, i * 10 * 1000])
 				}
 				//console.log(asks, bids)
 			    this.$refs.highcharts.chart.addSeries({
@@ -280,7 +294,7 @@
 		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()
-
+		    	this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
             	this.bbrect._top = this.bbrect.top + window.scrollY;

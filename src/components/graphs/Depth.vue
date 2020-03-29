@@ -136,7 +136,6 @@
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
 			this.$watch(()=>contract.initializedContracts, async (val) => {
-				console.log('initialized contract')
                 if(val) {
                 	await this.updatePoolInfo();
                 	this.mounted();
@@ -175,16 +174,12 @@
 				let p = this.chart.series[1].xData[0]
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
-				console.log(this.chart.series[0].xData, this.chart.series[1].xData)
-				console.log(this.chart.series[0].xData[len-1], this.chart.series[1].xData[len-1])
-				console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
 
 				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
 				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
 
-				console.log((10000+this.zoom), left, right, (10000-this.zoom)/10000);
-				priceLeft = (2000+(+this.zoom))/2000 * priceLeft;
-				priceRight = (2000-(+this.zoom))/2000 * priceRight
+				priceLeft = (1500+(+this.zoom))/1500 * priceLeft;
+				priceRight = (1500-(+this.zoom))/1500 * priceRight
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
@@ -247,8 +242,8 @@
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
-				let dx1 = 1000 * contract.coin_precisions[fromCurrency]
-				let dy1 = 1000 * contract.coin_precisions[toCurrency]
+				/*let dx1 = 1000 * contract.coin_precisions[fromCurrency]
+				let dy1 = 1000 * contract.coin_precisions[toCurrency]*/
 				
 
 				let asks = []
@@ -258,19 +253,23 @@
 					...poolConfig,
 				});
 
+				let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
 				for(let i = 1; i <= 100; i++) {
 					let volume = i;
-					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).times(i*10).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).times(i*10).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
+					let exp = Math.pow(10, i * Math.log10(balanceSum) / 100)
+					let dx1 = exp * contract.coin_precisions[fromCurrency]
+					let dy1 = exp * contract.coin_precisions[toCurrency]
+					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
+					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
 					//console.log(+dy)
-					let bidrate = dy / (dx1 * i * 10) * contract.coin_precisions[fromCurrency]
-					let askrate = (dy1 * i * 10) / contract.coin_precisions[toCurrency] / dx
+					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
+					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
 					if(inverse) {
 						bidrate = 1/bidrate;
 						askrate = 1/askrate;
 					}
-					bids.push([+bidrate, i * 10 * 1000])
-					asks.push([+askrate, i * 10 * 1000])
+					bids.push([+bidrate, exp])
+					asks.push([+askrate, exp])
 				}
 				//console.log(asks, bids)
 			    this.$refs.highcharts.chart.addSeries({
@@ -289,7 +288,6 @@
 		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
 		        if(inverse) this.currentValue = 1 / this.currentValue
-		        console.log(this.currentValue)
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)

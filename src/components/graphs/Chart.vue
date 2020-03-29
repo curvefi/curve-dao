@@ -283,9 +283,6 @@
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
-				console.log(this.pairIdx)
-
-				console.log(inverse)
 
 /*				let A = await contract.swap.methods.A().call();
 				let fee = await contract.swap.methods.fee().call()
@@ -373,7 +370,6 @@
 						});
 						let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 						let calcprice = get_dy_underlying
-						console.log(+calcprice)
 						v.prices[this.pairIdx] = [+(calcprice.div(abis[this.pool].coin_precisions[toCurrency]))]
 						if(inverse) v.prices[this.pairIdx] = [1 / v.prices[this.pairIdx]]
 						v.volume[this.pairIdx] = [0]

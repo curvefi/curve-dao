@@ -182,8 +182,8 @@
 				let zoom = +this.zoom
 				let zoomLevel = (101 - zoom) / 100
 				console.log(zoomLevel)
-				priceLeft = p - (p - priceLeft) * priceLeft * zoomLevel
-				priceRight = p + (priceRight - p) * priceRight * zoomLevel
+				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 4.5 * ((100-zoom) / 100 - 1))
+				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 4.5 * ((100-zoom) / 100 - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {

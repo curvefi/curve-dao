@@ -171,7 +171,13 @@
 					        		return function(e) {
 					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
 					        			console.log(self.data[nearest.index])
-										EventBus.$emit('changeTime', self.data[nearest.index])
+										let calc = stableswap_fns({
+											...self.data[nearest.index],
+											...poolConfig,
+										});
+										let get_dy_underlying = calc.get_dy_underlying(this.fromCurrency, this.toCurrency, abis[this.pool].coin_precisions[this.fromCurrency])
+										console.log(get_dy_underlying, "price at point", nearest.index)
+										//EventBus.$emit('changeTime', self.data[nearest.index])
 					        		}
 					        	})(this),
 					        	load() {
@@ -221,6 +227,9 @@
 				  	interval: null,
 				  	chart: null,
 				  	data: [],
+				  	poolConfig: null,
+				  	fromCurrency: null,
+				  	toCurrency: null,
 		  }
 		},
 		created() {
@@ -266,7 +275,7 @@
 				this.data = data = await data.json();
 				//tradeStore.data = data;
 
-				let poolConfig = {
+				let poolConfig = this.poolConfig = {
 					N_COINS: abis[this.pool].N_COINS,
 					PRECISION_MUL: abis[this.pool].coin_precisions.map(p=>1e18/p),
 					USE_LENDING: abis[this.pool].USE_LENDING,
@@ -274,8 +283,8 @@
 					PRECISION,
 				}
 
-				let fromCurrency = this.pairIdx.split('-')[0]
-				let toCurrency = this.pairIdx.split('-')[1]
+				let fromCurrency = this.fromCurrency = this.pairIdx.split('-')[0]
+				let toCurrency = this.toCurrency = this.pairIdx.split('-')[1]
 				let inverse = false;
 				if(fromCurrency > toCurrency) {
 					inverse = true;

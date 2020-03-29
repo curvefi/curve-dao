@@ -1,9 +1,10 @@
 <template>
 	<div class='bigdiv'>
 		<div id='zoomSelect'>
-			<label for='zoom'>Zoom {{100-zoom}}%</label>
-			<input type='range' min='0' max='100' id='zoom' v-model='zoom'/>
-		</div>
+			<label for='zoom'>Zoom {{zoom}}%</label>
+			<input type='range' min='0' max='120' id='zoom' v-model='zoom'/>
+<!-- 			<input type='range' min='0' max='110' id='volzoom' v-model='volZoom'/>
+ -->		</div>
 <!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
  -->		<div @mousemove = 'move' ref='chartcontainer'>
 			<highcharts :options='depthchart' ref='highcharts' class='depthchart'></highcharts>
@@ -35,7 +36,8 @@
 		},
 		data: () => ({
 		loading: true,
-		zoom: 0,
+		zoom: 100,
+		volZoom: 100,
 		chart: null,
 	    	depthchart: {
 	    		chart: {
@@ -131,6 +133,7 @@
 	    	bbrect: null,
 	    	data: [],
 	    	currentValue: 1,
+	    	imax: 100,
 		}),
 		async created() {
 			//EventBus.$on('selected', this.selectPool)
@@ -149,7 +152,14 @@
 			},
 			zoom() {
 				this.setZoom()
-			}
+			},
+/*			volZoom(val) {
+				this.chart.yAxis[0].min = val*100+1
+				this.chart.yAxis[1].min = val*100+1
+				console.log(val*100+1)
+				this.chart.yAxis[0].update();
+				this.chart.yAxis[1].update()
+			}*/
 		},
 		mounted() {
 			this.chart = this.$refs.highcharts.chart
@@ -166,24 +176,18 @@
 		},
 		methods: {
 			setZoom() {
-				//0.000028
-				let len = this.chart.series[0].xData.length
-				/*let leftDiff = (this.chart.series[1].xData[len-1] - this.chart.series[1].xData[0])
-				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
-				let min_price = Math.min(this.chart.series[1].xData[0], this.chart.series[1].xData[len-1])
-				let max_price = Math.max(this.chart.series[0].xData[0], this.chart.series[0].xData[len-1])
-				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
+				let modLen = this.imax;
+				if(this.zoom <= 100)
+					modLen = 100
+				let min_price = Math.min(this.chart.series[1].xData[modLen-100], this.chart.series[1].xData[modLen-1])
+				let max_price = Math.max(this.chart.series[0].xData[modLen-100], this.chart.series[0].xData[modLen-1])
+				let p = (this.chart.series[0].xData[modLen-100] + this.chart.series[1].xData[modLen-100]) / 2
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
-				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
-				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
-
 				let zoom = +this.zoom
-				let zoomLevel = (101 - zoom) / 100
-				console.log(zoomLevel)
-				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 4.5 * ((100-zoom) / 100 - 1))
-				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 4.5 * ((100-zoom) / 100 - 1))
+				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 4.5 * (zoom / modLen - 1))
+				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 4.5 * (zoom / modLen - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
@@ -260,9 +264,11 @@
 				console.log(poolConfig, "config", this.poolInfo)
 
 				let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
-				for(let i = 1; i <= 100; i++) {
+				let imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
+				this.imax = imax
+				for(let i = 1; i <= imax; i++) {
 					let volume = i;
-					let exp = Math.pow(10, i * Math.log10(balanceSum) / 100)
+					let exp = Math.pow(balanceSum, i / 100)
 					let dx1 = exp * contract.coin_precisions[fromCurrency]
 					let dy1 = exp * contract.coin_precisions[toCurrency]
 					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])

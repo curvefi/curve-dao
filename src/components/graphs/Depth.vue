@@ -152,8 +152,8 @@
 				let len = this.chart.series[0].xData.length
 				/*let leftDiff = (this.chart.series[1].xData[len-1] - this.chart.series[1].xData[0])
 				let rightDiff = (this.chart.series[0].xData[len-1] - this.chart.series[0].xData[0])*/
-				let left = (10000+(+this.zoom))/10000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
-				let right = (10000-(+this.zoom))/10000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
+				let left = (40000+(+this.zoom))/40000*this.chart.series[1].xData[len-1];/**(Math.abs(1-rightDiff))*/
+				let right = (40000-(+this.zoom))/40000*this.chart.series[0].xData[len-1];/**(Math.abs(1-leftDiff))*/
 
 				console.log((10000+this.zoom), left, right, (10000-this.zoom)/10000);
 				this.chart.xAxis[0].setExtremes(left, right);

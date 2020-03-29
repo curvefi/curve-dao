@@ -1,8 +1,8 @@
 <template>
 	<div class = 'tradeview window white'>
  		<select-pool id='select_pool'/>
- 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-		<depth id='depth_chart' />
+<!--  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+ -->		<depth id='depth_chart' />
 		<fieldset id='onesplit'>
 			<legend class='text-center'>Swap using all Curve pools</legend>
 			<one-split />
@@ -236,7 +236,7 @@
 /*			this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
             })*/
-            this.mounted()
+            //this.mounted()
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
@@ -435,7 +435,7 @@
 		        	rangeSelector: {
 		        		buttons: this.chartdata.rangeSelector.buttons.map(b=> {
 		        			let cb = {...b}
-		        			cb.count /= this.interval / 5
+		        			cb.count /= this.interval / 2
 		        			return cb;
 		        		})
 		        	}

@@ -75,7 +75,7 @@
 	    				color: 'gray',
 	    				width: 1.5,
 	    			},
-	    			min: 10000,
+	    			min: 1,
 			        lineWidth: 1,
 			        gridLineWidth: 1,
 			        title: null,
@@ -92,7 +92,7 @@
 			    		color: 'gray',
 			    		width: 1.5,
 			    	},
-			    	min: 10000,
+			    	min: 1,
 			        opposite: true,
 			        linkedTo: 0,
 			        lineWidth: 1,
@@ -137,6 +137,7 @@
 			EventBus.$on('changeTime', this.changeTime)
 			this.$watch(()=>contract.initializedContracts, async (val) => {
                 if(val) {
+                	this.chart.showLoading()
                 	await this.updatePoolInfo();
                 	this.mounted();
                 }
@@ -285,7 +286,9 @@
 
 			    //maybe not right - get from web3 when no this.poolInfo but this should be the same because calc is initialized with now
 			    // - get from clicked point value otherwise
-		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0), true))
+
+			    //currentValue without fees
+		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0)))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
 		        if(inverse) this.currentValue = 1 / this.currentValue
 		    	console.log(this.chart)

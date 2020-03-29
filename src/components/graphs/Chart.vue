@@ -388,7 +388,7 @@
 
 			    let len = ohlcData[0].prices[this.pairIdx].length
 
-			    for (let i = 1; i < dataLength; i ++) {
+			    for (let i = 0; i < dataLength; i ++) {
 			        ohlc.push([
 			            ohlcData[i].timestamp*1000, // the date
 			            ohlcData[i].prices[this.pairIdx][0], // open
@@ -426,7 +426,7 @@
 
 		        })
 		        console.log(this.$refs.highcharts.chart)
-		        this.chart.setTitle({text: this.pairVal})
+		        this.chart.setTitle({text: this.pairVal.toUpperCase()})
 		        this.chart.update({
 		        	rangeSelector: {
 		        		buttons: this.chartdata.rangeSelector.buttons.map(b=> {

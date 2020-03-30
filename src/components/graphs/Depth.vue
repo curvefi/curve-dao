@@ -139,6 +139,7 @@
 	    	data: [],
 	    	currentValue: 1,
 	    	imax: 100,
+	    	inverse: false,
 		}),
 		async created() {
 			//EventBus.$on('selected', this.selectPool)
@@ -182,8 +183,14 @@
 		},
 		methods: {
 			setZoom() {
-				let min_price = Math.min(this.chart.series[1].xData[0], this.chart.series[1].xData[100-1])
-				let max_price = Math.max(this.chart.series[0].xData[0], this.chart.series[0].xData[100-1])
+				let ind1 = 1;
+				let ind2 = 0;
+				if(this.inverse) {
+					ind1 = 0;
+					ind2 = 1;
+				}
+				let min_price = Math.min(this.chart.series[ind1].xData[0], this.chart.series[ind1].xData[100-1])
+				let max_price = Math.max(this.chart.series[ind2].xData[0], this.chart.series[ind2].xData[100-1])
 				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
@@ -249,9 +256,8 @@
 
 				let fromCurrency = this.pairIdx.split('-')[0]
 				let toCurrency = this.pairIdx.split('-')[1]
-				let inverse = false;
 				if(fromCurrency > toCurrency) {
-					inverse = true;
+					this.inverse = true;
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
@@ -286,7 +292,7 @@
 					//console.log(+dy)
 					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
 					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
-					if(inverse) {
+					if(this.inverse) {
 						bidrate = 1/bidrate;
 						askrate = 1/askrate;
 					}
@@ -312,12 +318,12 @@
 			    //currentValue without fees
 		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0)))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
-		        if(inverse) this.currentValue = 1 / this.currentValue
+		        if(this.inverse) this.currentValue = 1 / this.currentValue
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()
-		    	this.setZoom();
+		    	//this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
             	this.bbrect._top = this.bbrect.top + window.scrollY;

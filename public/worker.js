@@ -1,7 +1,7 @@
-importScripts("https://unpkg.com/comlink/dist/umd/comlink.js");
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/bignumber.js/9.0.0/bignumber.min.js')
+importScripts("./comlink.min.js");
+importScripts('./bignumber.min.js');
 
-let BN = val => new BigNumber(val)
+let BN = val => new BigNumber(val);
 
 const fcopy = (n) => BN(n.toFixed());
 

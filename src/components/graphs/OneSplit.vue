@@ -229,7 +229,8 @@
                 await this.set_to_amount();
 			},
             async setup() {
-                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, allabis.onesplit_address)
+                let onesplit_address = await web3.eth.ens.getAddress('1split.eth')
+                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, onesplit_address)
                 this.swap.push(new web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
                 this.swap.push(new web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
                 for(let i = 0; i < 4; i++) {

@@ -64,6 +64,7 @@
 	    			minPadding: 0,
 	    			maxPadding: 0,
 	    			 plotLines: [{
+	    			 	id: 1,
 			            color: '#888',
 			            value: 1,
 			            width: 1,
@@ -147,6 +148,7 @@
 			this.$watch(()=>contract.initializedContracts, async (val) => {
                 if(val) {
                 	this.chart.showLoading()
+					this.chart.xAxis[0].removePlotLine(1)
                 	await this.updatePoolInfo();
                 	this.mounted();
                 }
@@ -185,10 +187,6 @@
 			setZoom() {
 				let ind1 = 1;
 				let ind2 = 0;
-				if(this.inverse) {
-					ind1 = 0;
-					ind2 = 1;
-				}
 				let min_price = Math.min(this.chart.series[ind1].xData[0], this.chart.series[ind1].xData[100-1])
 				let max_price = Math.max(this.chart.series[ind2].xData[0], this.chart.series[ind2].xData[100-1])
 				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
@@ -225,6 +223,7 @@
 			},
 			async mounted() {
 				this.chart.showLoading()
+				this.chart.xAxis[0].removePlotLine(1)
 				this.pool = tradeStore.pool
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
@@ -256,14 +255,8 @@
 
 				let fromCurrency = this.pairIdx.split('-')[0]
 				let toCurrency = this.pairIdx.split('-')[1]
-				if(fromCurrency > toCurrency) {
-					this.inverse = true;
-					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
-					this.pairIdx = `${fromCurrency}-${toCurrency}`
-				}
-				else {
-					this.inverse = false;
-				}
+
+				if(fromCurrency > toCurrency) this.inverse = true
 
 				/*let dx1 = 1000 * contract.coin_precisions[fromCurrency]
 				let dy1 = 1000 * contract.coin_precisions[toCurrency]*/
@@ -295,10 +288,7 @@
 					//console.log(+dy)
 					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
 					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
-					if(this.inverse) {
-						bidrate = 1/bidrate;
-						askrate = 1/askrate;
-					}
+
 					//console.log(dy, dx)
 					bids.push([+bidrate, exp])
 					asks.push([+askrate, exp])
@@ -307,12 +297,12 @@
 			    this.$refs.highcharts.chart.addSeries({
 		            name: 'Asks',
 		            data: asks,
-		            color: '#B70000',
+		            color: !this.inverse ? '#B70000' : '#007A00',
 		        })
 			    this.$refs.highcharts.chart.addSeries({
 		            name: 'Bids',
 		            data: bids,
-		            color: '#007A00',
+		            color: !this.inverse ? '#007A00' : '#B70000',
 		        })
 
 			    //maybe not right - get from web3 when no this.poolInfo but this should be the same because calc is initialized with now
@@ -321,11 +311,17 @@
 			    //currentValue without fees
 		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0)))
 	        														.div(BN(contract.coin_precisions[toCurrency])))
-		        if(this.inverse) this.currentValue = 1 / this.currentValue
 		    	console.log(this.chart)
-		    	this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
+		    	this.chart.xAxis[0].addPlotLine({
+		    		id: 1,
+		    		value: this.currentValue,
+		    		label: {
+		    			text: 'Actual price ' + this.currentValue.toFixed(4)
+		    		}
+		    	})
+		    	/*this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
-		    	this.chart.xAxis[0].update()
+		    	this.chart.xAxis[0].update()*/
 		    	this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
@@ -339,49 +335,29 @@
 	            let y = event.pageY;
 	            x = x - this.bbrect.left;
 	            y = y - this.bbrect._top;
-	            var path = ['M', this.chart.plotLeft, y,
-	                'L', this.chart.plotLeft + this.chart.plotWidth, y,
-	                'M', x, this.chart.plotTop,
-	                'L', x, this.chart.plotTop + this.chart.plotHeight];
-	            var isOnPlot = function(x, y, chart) {
-	            		return (
-	                	x > chart.plotLeft &&
-	                  x < chart.plotLeft + chart.plotWidth &&
-	                  y > chart.plotTop &&
-	                  y < chart.plotTop + chart.plotHeight
-	                ) ? true : false
-	            }
+	            
 	            //console.log(this.chart.hoverPoint)
 				if (this.chart.crossLabel) {
-		    		if(isOnPlot(x, y, this.chart)) {
-						// update label
-						this.chart.crossLabel.attr({
-							x: x - 15,
-							text: this.chart.xAxis[0].toValue(x).toFixed(4)
-						});
+					// update label
+					this.chart.crossLabel.attr({
+						x: x - 15,
+						text: this.chart.xAxis[0].toValue(x).toFixed(4)
+					});
 
-						this.chart.hoverPoint && this.chart.crossYLabelLeft.attr({
-							y: this.chart.hoverPoint.plotY + this.chart.plotTop,
-							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
-						});
+					this.chart.hoverPoint && this.chart.crossYLabelLeft.attr({
+						y: this.chart.hoverPoint.plotY + this.chart.plotTop + 25,
+						text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
+					});
 
-						this.chart.hoverPoint && this.chart.crossYLabelRight.attr({
-							y: this.chart.hoverPoint.plotY + this.chart.plotTop,
-							text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
-						});
+					this.chart.hoverPoint && this.chart.crossYLabelRight.attr({
+						y: this.chart.hoverPoint.plotY + this.chart.plotTop + 25,
+						text: this.chart.yAxis[0].toValue(this.chart.hoverPoint.plotY + this.chart.plotTop).toFixed(4)
+					});
 
-						if(!document.querySelector('#depth_chart .highcharts-series.highcharts-series-1').classList.contains('highcharts-series-hover'))
-							this.chart.crossYLabelLeft.attr('y', -9999)
-						else
-							this.chart.crossYLabelRight.attr('y', -9999)
-						
-
-					} 
-					else {
-						this.chart.crossLabel.attr('x', -9999)
+					if(!document.querySelector('#depth_chart .highcharts-series.highcharts-series-1').classList.contains('highcharts-series-hover'))
 						this.chart.crossYLabelLeft.attr('y', -9999)
-						this.chart.crossYLabelRight.attr('y', -9999)
-					}
+					else
+						this.chart.crossYLabelRight.attr('y', -9999)	
 		        }
 		        else {
 		            // draw label

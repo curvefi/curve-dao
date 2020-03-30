@@ -11,6 +11,9 @@ var swap_address = '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56';
 var token_address = '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2';
 var old_token_address = '0x3740fb63ab7a09891d7c0d4299442A551D06F5fD';
 
+export const LENDING_PRECISION = 1e18;
+export const PRECISION = 1e18;
+
 var migration_address = '0x54Ee22d5593FC76fB20EafAb66C45aAb3268B800';
 var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b';
 
@@ -156,6 +159,24 @@ export async function init() {
     }
 }
 
+export const allState = Vue.observable({
+	swap: {},
+	underlying_coins: {},
+})
+
+export async function getAllUnderlying() {
+	for([key, contract] of Object.entries(allabis)) {
+		if(key == 'susd') continue;
+		allState.swap[key] = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
+        allState.underlying_coins[key] = [];
+		for(let i = 0; i < contract.N_COINS; i++) {
+			var addr = await allState.swap[key].methods.coins(i).call();
+	        var underlying_addr = await allState.swap[key].swap.methods.underlying_coins(i).call();
+	        allState.underlying_coins[key][i] = new web3.eth.Contract(contract.ERC20_abi, underlying_addr);
+		}
+	}
+}
+
 export async function changeContract(pool) {
 	//re-init contract with different pool
 	if(!(pool in allabis)) return;
@@ -177,7 +198,7 @@ export async function changeContract(pool) {
 	state.l_info = []
 	state.total = 0
 	state.totalShare = 0
-	web3Init();
+	await web3Init();
 }
 
 export function setCurrencies(pool) {

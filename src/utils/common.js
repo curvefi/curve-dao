@@ -8,9 +8,10 @@ import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
 
-export function approve(contract, amount, account) {
+export function approve(contract, amount, account, toContract) {
+    if(!toContract) toContract = currentContract.swap_address
     return new Promise(resolve => {
-                contract.methods.approve(currentContract.swap_address, cBN(amount).toFixed(0,1))
+                contract.methods.approve(toContract, cBN(amount).toFixed(0,1))
                 .send({from: account, gas: 100000})
                 .once('transactionHash', function(hash) {resolve(true);});
             });
@@ -53,10 +54,11 @@ export async function ensure_allowance(amounts) {
     }
 }
 
-export async function ensure_underlying_allowance(i, _amount) {
+export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract) {
+    if(!underlying_coins.length) underlying_coins = currentContract.underlying_coins;
     var default_account = (await web3.eth.getAccounts())[0];
     var amount = cBN(_amount);
-    var current_allowance = cBN(await currentContract.underlying_coins[i].methods.allowance(default_account, currentContract.swap_address).call());
+    var current_allowance = cBN(await underlying_coins[i].methods.allowance(default_account, currentContract.swap_address).call());
 
     if (current_allowance.isEqualTo(amount))
         return false;
@@ -64,8 +66,8 @@ export async function ensure_underlying_allowance(i, _amount) {
         return false;  // It does get spent slowly, but that's ok
 
     if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)))
-        await approve(currentContract.underlying_coins[i], 0, default_account);
-    return await approve(currentContract.underlying_coins[i], cBN(amount).toFixed(0,1), default_account);
+        await approve(underlying_coins[i], 0, default_account, toContract);
+    return await approve(underlying_coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
 
 // XXX not needed anymore
@@ -151,6 +153,7 @@ export async function update_fee_info(version = 'new') {
     let balances = []
     currentContract.total = 0;
     resolves.forEach((balance, i) => {
+        Vue.set(currentContract.balances, i, balance)
         balances[i] = +balance;
         Vue.set(currentContract.bal_info, i, balances[i] * currentContract.c_rates[i]);
         currentContract.total += balances[i] * currentContract.c_rates[i];

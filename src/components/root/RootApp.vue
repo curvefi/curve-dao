@@ -22,6 +22,7 @@
       </div>
 
       <router-link to="/">This FAQ</router-link>
+      <router-link to="/trade">Trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
       <a href="https://twitter.com/CurveFinance">#Twitter</a>
@@ -31,7 +32,7 @@
       <a href="https://github.com/curvefi/curve-contract">git@</a>
     </div>
     <div id="screen">
-        <div class="blue window">
+        <div :class="'blue window ' + $route.name">
             <h1><img src="../../assets/logo_optimized.svg" alt="🌀 Curve" height="50"></h1>
         </div>
         <router-view/>

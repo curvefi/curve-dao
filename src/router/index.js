@@ -14,6 +14,7 @@ const RootApp = () => import('../components/root/RootApp.vue')
 const Root = () => import('../components/root/Root.vue')
 const CombinedStats = () => import('../components/root/CombinedStats.vue')
 const StatsDaily = () => import('../components/root/StatsDaily.vue')
+const ChartGraph = () => import('../components/graphs/Chart.vue')
 
 import Index from '../components/Index.vue'
 
@@ -32,6 +33,11 @@ let routes = [
         name: 'RootIndex',
         path: '',
         component: Root
+      },
+      {
+        path: '/trade',
+        name: 'Trade',
+        component: ChartGraph,
       },
       {
         name: 'CombinedStats',

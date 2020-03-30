@@ -159,7 +159,12 @@
 	}
 </script>
 
-<style scoped>
+<style>
+  .dropdown p {
+    color: black;
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
   @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
     .poolsdialog a {
       text-align: center;

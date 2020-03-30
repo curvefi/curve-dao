@@ -106,6 +106,7 @@
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
+                
                 this.from_cur_handler()
             },
             to_currency(val, oldval) {

@@ -11,6 +11,8 @@ Vue.filter('toFixed2', function (value) {
 	return (+value).toFixed(2);
 })
 
+Vue.filter('toUpper', val => val.toUpperCase())
+
 export function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }

@@ -261,6 +261,9 @@
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
+				else {
+					this.inverse = false;
+				}
 
 				/*let dx1 = 1000 * contract.coin_precisions[fromCurrency]
 				let dy1 = 1000 * contract.coin_precisions[toCurrency]*/

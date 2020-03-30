@@ -12,6 +12,7 @@
     "apexcharts": "^3.17.0",
     "bignumber.js": "^9.0.0",
     "bnc-onboard": "^1.4.0",
+    "comlink": "^4.2.0",
     "core-js": "^3.6.4",
     "highcharts": "^8.0.4",
     "highcharts-vue": "^1.3.5",

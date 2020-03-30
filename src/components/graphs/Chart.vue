@@ -393,6 +393,8 @@
 					}
 				})
 
+				return;
+
 			    // split the data set into ohlc and volume
 			    var ohlc = [],
 			        volume = [],

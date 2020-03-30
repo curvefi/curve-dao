@@ -11,7 +11,7 @@
 	import HC_exporting_data from 'highcharts/modules/export-data';
 	HC_exporting(Highcharts);
 	HC_exporting_data(Highcharts)
-	
+
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 
@@ -38,6 +38,23 @@
                 rangeSelector: {
 		            selected: 1
 		        },
+		        exporting: {
+					buttons: {
+						contextButton: {
+							menuItems: ["printChart",
+					                    "separator",
+					                    "downloadPNG",
+					                    "downloadJPEG",
+					                    "downloadPDF",
+					                    "downloadSVG",
+					                    "separator",
+					                    "downloadCSV",
+					                    "downloadXLS",
+					                    //"viewData",
+					                    "openInCloud"]
+						}
+					}
+				},
 	            yAxis: {
 	            	opposite: false,
 	            	type: 'logarithmic',

@@ -96,6 +96,23 @@
 								color: '#f8fbfe'
 							}
 						},
+						exporting: {
+							buttons: {
+								contextButton: {
+									menuItems: ["printChart",
+							                    "separator",
+							                    "downloadPNG",
+							                    "downloadJPEG",
+							                    "downloadPDF",
+							                    "downloadSVG",
+							                    "separator",
+							                    "downloadCSV",
+							                    "downloadXLS",
+							                    //"viewData",
+							                    "openInCloud"]
+								}
+							}
+						},
 						rangeSelector: {
 							selected: 4,
 							allButtonsEnabled: true,

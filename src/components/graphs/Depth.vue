@@ -56,6 +56,23 @@
 	    			marginLeft: 20,
 	    			marginRight: 20,
 	    		},
+	    		exporting: {
+					buttons: {
+						contextButton: {
+							menuItems: ["printChart",
+					                    "separator",
+					                    "downloadPNG",
+					                    "downloadJPEG",
+					                    "downloadPDF",
+					                    "downloadSVG",
+					                    "separator",
+					                    "downloadCSV",
+					                    "downloadXLS",
+					                    //"viewData",
+					                    "openInCloud"]
+						}
+					}
+				},
 	    		title: {
 	    			text: ''
 	    		},

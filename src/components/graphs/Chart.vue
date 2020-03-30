@@ -296,6 +296,7 @@
 					        }],
 					  	tooltip: {
 					  		split: true,
+					  		borderColor: '#a6cdf1',
 					  	},
 					  	series: [],
 			    	},

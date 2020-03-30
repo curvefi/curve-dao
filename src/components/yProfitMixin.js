@@ -41,6 +41,7 @@ export default {
 
 	    async checkExchangeRateBlocks(block, address, direction, type = 'deposit') {
 		    let default_account = currentContract.default_account
+		    default_account = '0xa3dB05c72c79d52D2D37170A342a2c21c5e5d7C0'
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let fromBlock = '0x'+parseInt(block-100).toString(16)
@@ -92,7 +93,7 @@ export default {
 		        console.log(mint)
 		        let tr = await web3.eth.getTransactionReceipt(mint.transactionHash)
 		        if(type=='deposit') {
-		            tr = tr.logs.filter(log=>log.address == yaddress)
+		            tr = tr.logs.filter(log=>log.address == yaddress && log.topics[1] == '0x0000000000000000000000000000000000000000000000000000000000000000')
 		        }
 		        else {
 		            tr = tr.logs.filter(log=>{

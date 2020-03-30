@@ -9,22 +9,28 @@ import BigNumber from 'bignumber.js'
 export default {
     created() {
         this.$watch(()=>currentContract.initializedContracts, val => {
+            console.log("INIT CONTRACTS")
             if(val) this.mounted();
         })
         this.$watch(()=>currentContract.currentContract, val => {
+            console.log("CHANGED")
             this.nullifyAmounts()
             this.mounted();
         })
     },
     mounted() {
-        this.$watch(()=>currentContract.default_account, val => {
-            this.cancel = true;
-            if(val) setTimeout(()=>{
-                this.cancel = false;
-                this.nullifyAmounts();
-                this.clearCache();
-                this.mounted();
-            }, 300);
+        this.$watch(()=>currentContract.default_account, (val, oldval) => {
+            console.log(val, oldval)
+            if(!oldval) return;
+            if(val.toLowerCase() != oldval.toLowerCase()) {
+                this.cancel = true;
+                setTimeout(()=>{
+                    this.cancel = false;
+                    this.nullifyAmounts();
+                    this.clearCache();
+                    this.mounted();
+                }, 300);
+            }
         })
         if(currentContract.initializedContracts) this.mounted();
     },

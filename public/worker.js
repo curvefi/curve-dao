@@ -159,10 +159,9 @@ let stableswap_fns = ({
 	}
 }
 
-let calcPrice = (config, fromCurrency, toCurrency, precisions) => {
+let calcPrice = (config, fromCurrency, toCurrency, precisions, usefee = false) => {
 	let calc = stableswap_fns(config)
-	console.log(+calc.get_dy_underlying(fromCurrency, toCurrency, precisions))
-	return calc.get_dy_underlying(fromCurrency, toCurrency, precisions).toFixed(0)
+	return calc.get_dy_underlying(fromCurrency, toCurrency, precisions, usefee).toFixed(0)
 }
 
 Comlink.expose({calcPrice})

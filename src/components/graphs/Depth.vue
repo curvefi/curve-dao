@@ -30,6 +30,11 @@
 	import abis from '../../allabis'
 	import BN from 'bignumber.js'
 
+	import * as Comlink from 'comlink'
+
+	const worker = new Worker('worker.js');
+	const calcWorker = Comlink.wrap(worker);
+
 	export default {
 		components: {
 			highcharts: Chart,
@@ -183,7 +188,7 @@
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
-				console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
+				//console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
 
 				let zoom = +this.zoom
 				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 100 - 1))
@@ -191,7 +196,7 @@
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
-				console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
+				//console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
             	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.001, this.chart.series[0].xData[0] + 0.001, true, true)
 			},
 			async updatePoolInfo() {
@@ -201,7 +206,7 @@
 				this.poolInfo.supply = await contract.swap_token.methods.totalSupply().call()
 				this.poolInfo.virtual_price = await contract.swap.methods.get_virtual_price().call()
 				this.poolInfo.balances = contract.balances;
-				this.poolInfo.rates = contract.c_rates.map((r,i)=>BN(r).times(PRECISION).times(contract.coin_precisions[i]))
+				this.poolInfo.rates = contract.c_rates.map((r,i)=>+(BN(r).times(PRECISION).times(contract.coin_precisions[i])))
 				this.poolInfo.timestamp = (Date.now() / 1000) | 0;
 			},
 
@@ -262,7 +267,7 @@
 					...poolConfig,
 				});
 
-				console.log(poolConfig, "config", this.poolInfo)
+				//console.log(poolConfig, "config", this.poolInfo)
 
 				let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
 				let imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
@@ -272,8 +277,12 @@
 					let exp = Math.pow(balanceSum, i / 100)
 					let dx1 = exp * contract.coin_precisions[fromCurrency]
 					let dy1 = exp * contract.coin_precisions[toCurrency]
-					let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])
+					let dy = await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
+					dy = +(BN(dy).div(contract.coin_precisions[toCurrency]))
+					let dx = await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
+					dx = +(BN(dx).div(contract.coin_precisions[fromCurrency]))
+					/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
+					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/
 					//console.log(+dy)
 					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
 					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
@@ -281,6 +290,7 @@
 						bidrate = 1/bidrate;
 						askrate = 1/askrate;
 					}
+					//console.log(dy, dx)
 					bids.push([+bidrate, exp])
 					asks.push([+askrate, exp])
 				}

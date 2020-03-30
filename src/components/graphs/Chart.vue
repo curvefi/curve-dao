@@ -25,6 +25,9 @@
 
 	import * as Comlink from 'comlink'
 
+	const worker = new Worker('worker.js');
+	const calcWorker = Comlink.wrap(worker);
+
 	Highcharts.setOptions({
 		lang: {
 			loading: '',
@@ -175,16 +178,16 @@
 					        	click: (function(self) {
 					        		return function(e) {
 					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
-					        			console.log(nearest)
+					        			//console.log(nearest)
 					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
-					        			console.log(self.data[nearest.index])
+					        			//console.log(self.data[nearest.index])
 										let calc = stableswap_fns({
 											...self.data[index],
 											...self.poolConfig,
 										});
 										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
-										console.log(+get_dy_underlying, "price at point", index)
-										console.log(self.data[index].prices["0-1"])
+										//console.log(+get_dy_underlying, "price at point", index)
+										//console.log(self.data[index].prices["0-1"])
 										EventBus.$emit('changeTime', self.data[index])
 					        		}
 					        	})(this),
@@ -265,8 +268,6 @@
 		},
 		methods: {
 			async mounted() {
-				const worker = new Worker('worker.js');
-				const calcWorker = Comlink.wrap(worker);
 
 				this.chart.showLoading();
 				this.pool = tradeStore.pool;
@@ -384,7 +385,6 @@
 					});
 					//let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 					let get_dy_underlying = await calcWorker.calcPrice({...v, ...poolConfig}, fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
-					console.log(get_dy_underlying, "GET DY UNDERLYING WEB WORKER")
 					let calcprice = +(BN(get_dy_underlying).div(abis[this.pool].coin_precisions[toCurrency]))
 					if(inverse) calcprice = 1 / calcprice
 					if(v.prices[this.pairIdx]) {

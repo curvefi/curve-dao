@@ -75,4 +75,13 @@
 		color: black;
 		background: #d7d5d5;
 	}
+	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+		select, button {
+			display: block;
+		}
+		select, button {
+			margin-left: 0;
+			margin-top: 10px;
+		}
+	}
 </style>

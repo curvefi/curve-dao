@@ -193,6 +193,26 @@
 					        	})(this),
 					        	load() {
 					        		this.redraw();
+					        	},
+					        	render() {
+					        		let chart = this
+							        let buttons = chart.rangeSelector.buttons;
+
+							          if (chart.forRedraw) {
+							            buttons.forEach((btn, i) => {
+							              btn.i = i;
+							              if (btn.x + btn.width / 2 > chart.plotWidth) {
+							                btn.translate(buttons[(buttons.length - 1) - i].x, btn.y + btn.height + 2)
+							                chart.forRedraw = false;
+							                chart.redraw()
+							              } else {
+							              	chart.forRedraw = false;
+							                btn.translate(btn.x, btn.y)
+							                chart.redraw()
+							              }
+							            })
+							          }
+							          chart.forRedraw = true;
 					        	}
 					        }
 						},

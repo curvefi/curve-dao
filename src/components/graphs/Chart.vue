@@ -376,7 +376,8 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
-				let ohlcData = data.map(async (v)=> {
+
+				for(let v of data) {
 					let calc = stableswap_fns({
 						...v,
 						...poolConfig,
@@ -391,19 +392,16 @@
 							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
 						v.prices[this.pairIdx].push(calcprice)
-						return v
 					}
 					else {
 						v.prices[this.pairIdx] = [calcprice]
 						v.volume[this.pairIdx] = [0]
 						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
 						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
-						return v;
 					}
-				})
+				}
 
-
-				console.log(ohlcData)
+				let ohlcData = data
 
 			    // split the data set into ohlc and volume
 			    var ohlc = [],

@@ -25,6 +25,11 @@
     import * as helpers from '../utils/helpers'
     import { getters, contract as currentContract } from '../contract'
     import Highcharts from 'highcharts'
+	import HC_exporting from 'highcharts/modules/exporting';
+	import HC_exporting_data from 'highcharts/modules/export-data';
+	HC_exporting(Highcharts);
+	HC_exporting_data(Highcharts)
+	
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 	import DailyChart from './common/DailyAPYChart.vue'

@@ -712,7 +712,7 @@ input[type=range]:focus::-ms-fill-upper {
   background: #ffffff;
 }
 
-.highcharts-range-selector-buttons > text:first-child{
+.tradeview .highcharts-range-selector-buttons > text:first-child{
   display:none;
 }
 

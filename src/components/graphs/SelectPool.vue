@@ -10,7 +10,7 @@
 			<option v-for = 'v in pairs' :value='v'>{{v.val | toUpper}}</option>
 		</select>
 		<select class='tvision' v-model='interval'>
-			<option v-for = 'v in intervals' :value='v'>{{v}}m</option>
+			<option v-for = 'v in intervals' :value='v'>{{v}}</option>
 		</select>
 		<button @click="emitSelect">Select</button>
 	</div>
@@ -26,8 +26,8 @@
 		data: () => ({
 			pool: 'compound',
 			pair: '',
-			interval: 5,
-			intervals: [1, 5, 10, 30]
+			interval: '5m',
+			intervals: ['1m', '5m', '10m', '30m', '1h', '2h', '4h', '6h', '1d', '3d', '1w']
 		}),
 		mounted() {
 			this.pair = this.pairs[0];

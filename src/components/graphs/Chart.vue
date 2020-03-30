@@ -68,7 +68,13 @@
 						rangeSelector: {
 							selected: 4,
 							allButtonsEnabled: true,
-							 buttons: [{
+							buttonTheme: {
+						        visibility: 'hidden',
+						    },
+						    labelStyle: {
+						        visibility: 'hidden'
+						    },
+						 	buttons: [{
 		                        type: 'minute',
 		                        count: 100,
 		                        text: '1m',
@@ -302,8 +308,9 @@
 				}
 				//return;
 				//move this to selectPool method
-
-				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);
+				let jsonInterval = this.interval;
+				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
+				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${jsonInterval}.json`);
 				this.data = data = await data.json();
 				//tradeStore.data = data;
 
@@ -477,18 +484,18 @@
 		        })
 		        console.log(this.$refs.highcharts.chart)
 		        this.chart.setTitle({text: this.pairVal.toUpperCase()})
-		        this.chart.update({
+/*		        this.chart.update({
 		        	rangeSelector: {
 		        		buttons: this.chartdata.rangeSelector.buttons.map(b=> {
 		        			let cb = {...b}
-		        			cb.count /= this.interval / 2
+		        			cb.count /= jsonInterval.slice(0,-1) / 2
 		        			return cb;
 		        		})
 		        	}
-		        })
+		        })*/
 		        this.chart.redraw();
 		        //highcharts doesn't select the defined range, doing it again manually
-		        this.chart.rangeSelector.clickButton(4, true)
+		        this.chart.rangeSelector.clickButton(tradeStore.intervals.indexOf(this.interval), true)
 		        this.chart.hideLoading();
 			    this.loading = false;
 			}

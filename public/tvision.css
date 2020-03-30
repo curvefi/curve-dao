@@ -711,3 +711,12 @@ input[type=range]:focus::-ms-fill-lower {
 input[type=range]:focus::-ms-fill-upper {
   background: #ffffff;
 }
+
+.highcharts-range-selector-buttons > text:first-child{
+  display:none;
+}
+
+/*
+.highcharts-range-label {
+  display: none;
+}*/

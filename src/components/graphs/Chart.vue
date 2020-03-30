@@ -28,11 +28,6 @@
 	const worker = new Worker('worker.js');
 	const calcWorker = Comlink.wrap(worker);
 
-	Highcharts.setOptions({
-		lang: {
-			loading: '',
-		}
-	})
 
 	Highcharts.seriesTypes.column.prototype.pointAttribs = (function(func) {
 	    return function(point, state) {
@@ -48,6 +43,12 @@
 	    };
 	}(Highcharts.seriesTypes.column.prototype.pointAttribs));
 
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+			rangeSelectorZoom: '',
+		}
+	})
 
 	import { contract, allCurrencies, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 
@@ -97,8 +98,12 @@
 						        visibility: 'hidden',
 						    },
 						    labelStyle: {
-						        visibility: 'hidden'
+						        //visibility: 'hidden'
 						    },
+				            inputPosition: {
+				            	x: 0,
+								align:'left',
+					        },
 						 	buttons: [{
 		                        type: 'minute',
 		                        count: 100,
@@ -226,24 +231,14 @@
 					        		this.redraw();
 					        	},
 					        	render() {
-					        		let chart = this
-							        let buttons = chart.rangeSelector.buttons;
-
-							          if (chart.forRedraw) {
-							            buttons.forEach((btn, i) => {
-							              btn.i = i;
-							              if (btn.x + btn.width / 2 > chart.plotWidth) {
-							                btn.translate(buttons[(buttons.length - 1) - i].x, btn.y + btn.height + 2)
-							                chart.forRedraw = false;
-							                chart.redraw()
-							              } else {
-							              	chart.forRedraw = false;
-							                btn.translate(btn.x, btn.y)
-							                chart.redraw()
-							              }
-							            })
-							          }
-							          chart.forRedraw = true;
+					        		if(this.plotWidth < 480) {
+					        			this.rangeSelector.maxLabel.translate(0, 25)
+					        			this.rangeSelector.maxDateBox.translate(37, 25)
+					        		}
+					        		else {
+					        			this.rangeSelector.maxLabel.translate(141, 0)
+					        			this.rangeSelector.maxDateBox.translate(164, 0)
+					        		}
 					        	}
 					        }
 						},

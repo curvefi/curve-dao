@@ -2,7 +2,7 @@
 	<div class='bigdiv'>
 		<div id='zoomSelect'>
 			<label for='zoom'>Zoom {{zoom}}%</label>
-			<input type='range' min='0' max='120' id='zoom' v-model='zoom'/>
+			<input type='range' min='0' max='140' id='zoom' v-model='zoom'/>
 <!-- 			<input type='range' min='0' max='110' id='volzoom' v-model='volZoom'/>
  -->		</div>
 <!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
@@ -51,7 +51,7 @@
 	    			text: ''
 	    		},
 	    		xAxis: {
-	    			type: 'logarithmic',
+	    			//type: 'logarithmic',
 	    			crosshair: {
 	    				color: 'gray',
 	    				width: 1.5,
@@ -147,8 +147,9 @@
             })
 		},
 		watch:{
-			selectChange() {
-				this.mounted()
+			selectChange(val, oldval) {
+				//don't call mount when pools are changed, it's called when contacts are re-initialized
+				if(val[1] == oldval[1]) this.mounted()
 			},
 			zoom() {
 				this.setZoom()
@@ -171,23 +172,22 @@
 		},
 		computed: {
 			selectChange() {
-				return tradeStore.pairIdx, tradeStore.interval, Date.now();
+				return [tradeStore.pairIdx, tradeStore.pool, tradeStore.interval]
 			}
 		},
 		methods: {
 			setZoom() {
-				let modLen = this.imax;
-				if(this.zoom <= 100)
-					modLen = 100
-				let min_price = Math.min(this.chart.series[1].xData[modLen-100], this.chart.series[1].xData[modLen-1])
-				let max_price = Math.max(this.chart.series[0].xData[modLen-100], this.chart.series[0].xData[modLen-1])
-				let p = (this.chart.series[0].xData[modLen-100] + this.chart.series[1].xData[modLen-100]) / 2
+				let min_price = Math.min(this.chart.series[1].xData[0], this.chart.series[1].xData[100-1])
+				let max_price = Math.max(this.chart.series[0].xData[0], this.chart.series[0].xData[100-1])
+				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
+				console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
+
 				let zoom = +this.zoom
-				priceLeft = p - (p - priceLeft) * priceLeft * Math.pow(10, 2 * (zoom / modLen - 1))
-				priceRight = p + (priceRight - p) * priceRight * Math.pow(10, 2 * (zoom / modLen - 1))
+				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 100 - 1))
+				priceRight = p + (priceRight - p) * Math.pow(10, 2 * (zoom / 100 - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
@@ -212,6 +212,7 @@
 				this.mounted()
 			},
 			async mounted() {
+				this.chart.showLoading()
 				this.pool = tradeStore.pool
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal

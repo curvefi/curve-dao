@@ -261,6 +261,7 @@
 		},
 		methods: {
 			async mounted() {
+				this.chart.showLoading();
 				this.pool = tradeStore.pool;
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
@@ -272,7 +273,6 @@
 					await changeContract(this.pool)
 				}
 				//return;
-				this.chart.showLoading();
 				//move this to selectPool method
 
 				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${this.interval}m.json`);

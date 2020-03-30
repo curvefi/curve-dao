@@ -173,7 +173,7 @@
                         this.CONTRACT_FLAG
                     ).send({
                         from: contract.default_account,
-                        gas: 3000000
+                        gas: 6000000
                     })
             },
             async set_from_amount(i) {
@@ -189,7 +189,7 @@
             },
             async set_to_amount() {
                 let amount = BN(this.fromInput).times(this.coin_precisions[this.from_currency]).toFixed(0)
-                let parts = 30
+                let parts = 10
                 this.swapPromise.cancel();
                 try {
                     this.swapPromise = helpers.makeCancelable(

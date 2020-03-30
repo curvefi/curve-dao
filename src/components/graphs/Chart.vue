@@ -21,6 +21,10 @@
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import OneSplit from './OneSplit.vue'
 
+	import BN from 'bignumber.js'
+
+	import * as Comlink from 'comlink'
+
 	Highcharts.setOptions({
 		lang: {
 			loading: '',
@@ -261,6 +265,9 @@
 		},
 		methods: {
 			async mounted() {
+				const worker = new Worker('worker.js');
+				const calcWorker = Comlink.wrap(worker);
+
 				this.chart.showLoading();
 				this.pool = tradeStore.pool;
 				this.pairIdx = tradeStore.pairIdx
@@ -369,13 +376,15 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
-				let ohlcData = data.map(v=> {
+				let ohlcData = data.map(async (v)=> {
 					let calc = stableswap_fns({
 						...v,
 						...poolConfig,
 					});
-					let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
-					let calcprice = +(get_dy_underlying.div(abis[this.pool].coin_precisions[toCurrency]))
+					//let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
+					let get_dy_underlying = await calcWorker.calcPrice({...v, ...poolConfig}, fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
+					console.log(get_dy_underlying, "GET DY UNDERLYING WEB WORKER")
+					let calcprice = +(BN(get_dy_underlying).div(abis[this.pool].coin_precisions[toCurrency]))
 					if(inverse) calcprice = 1 / calcprice
 					if(v.prices[this.pairIdx]) {
 						if(!inverse) {
@@ -393,7 +402,8 @@
 					}
 				})
 
-				return;
+
+				console.log(ohlcData)
 
 			    // split the data set into ohlc and volume
 			    var ohlc = [],

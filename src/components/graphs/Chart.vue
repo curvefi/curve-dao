@@ -34,6 +34,21 @@
 		}
 	})
 
+	Highcharts.seriesTypes.column.prototype.pointAttribs = (function(func) {
+	    return function(point, state) {
+	      var attribs = func.apply(this, arguments);
+	      
+	      var candleSeries = this.chart.series[0]; // Probably you'll need to change the index
+	      var candlePoint = candleSeries.points.filter(function(p) { return p.index == point.index; })[0];
+
+	      var color = (candlePoint.open < candlePoint.close) ? '#007A00' : '#B70000'; // Replace with your colors
+	      attribs.fill = state == 'hover' ? Highcharts.Color(color).brighten(0.3).get() : color;
+	      
+	      return attribs;
+	    };
+	}(Highcharts.seriesTypes.column.prototype.pointAttribs));
+
+
 	import { contract, allCurrencies, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 
 	import abis from '../../allabis'
@@ -52,6 +67,10 @@
 				loading: true,	
 					chartdata: {
 						plotOptions: {
+							candlestick: {
+								color: '#B70000',
+								upColor: '#007A00',
+							},
 							series: {
 								point: {
 									events: {
@@ -63,6 +82,12 @@
 										})(this)
 									}
 								}
+							}
+						},
+						navigator: {
+							series: {
+								lineColor: '#a6cdf1',
+								color: '#f8fbfe'
 							}
 						},
 						rangeSelector: {

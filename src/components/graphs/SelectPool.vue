@@ -24,10 +24,10 @@
 
 	export default {
 		data: () => ({
-			pool: 'compound',
+			pool: tradeStore.pool,
 			pair: '',
-			interval: '5m',
-			intervals: ['1m', '5m', '10m', '30m', '1h', '2h', '4h', '6h', '1d', '3d', '1w']
+			interval: tradeStore.interval,
+			intervals: tradeStore.intervals
 		}),
 		mounted() {
 			this.pair = this.pairs[0];

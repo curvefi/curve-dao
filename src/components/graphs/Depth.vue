@@ -405,8 +405,9 @@
 <style scoped>
 	#zoomSelect {
 		margin: 1em 0;
-		width: 300px;
+		max-width: 300px;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 	}
 	#zoomSelect label {

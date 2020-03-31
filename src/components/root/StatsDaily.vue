@@ -150,13 +150,15 @@
 				this.poolData.push(json.data);
 			}
 
-			let pools = Object.values(this.pools).slice(0, 3)
+			let pools = Object.values(this.pools).slice(0, 4)
+			console.log(pools, "POOLS")
 	        requests = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-30m.json`))
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			let volumeSeries = []
 			for(let [key, data] of jsons[0].entries()) {
 				let allVolumeData = jsons.map(json => json[key].volume)
+				console.log(allVolumeData)
 				let volume = allVolumeData.map((volData, i) => {
 					let pool = pools[i] == 'y' ? 'iearn' : pools[i]
 					return Object.entries(volData).map(([k, v]) => {

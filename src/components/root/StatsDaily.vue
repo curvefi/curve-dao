@@ -60,15 +60,45 @@
 					panning: true,
 					zoomType: 'x',
 			        panKey: 'ctrl',
-			        height: 600,
+			        height: 800,
 				},
-				yAxis: {
-					type: 'logarithmic',
-				},
+				yAxis: [
+					{
+						opposite: false,
+						title: {
+							text: 'Daily APY %',
+						},
+						type: 'logarithmic',
+		            	height: '60%',
+					},
+					{
+		            	id: 'volumeAxis',
+		            	//type: 'logarithmic',
+		            	opposite: false,
+		            	title: {
+		            		text: 'Volume',
+		            		style: {
+		            			color: 'black'
+		            		},
+		            		margin: 10,
+		            	},
+		            	labels: {
+		            		style: {
+		            			color: 'black',
+		            		},
+		            		align: 'right',
+		            		x: -30,
+		            	},
+		            	top: '65%',
+		            	height: '35%',
+			            offset: 0,
+		            }
+	            ],
 				tooltip: {
 	                valueDecimals: 3,
 	                pointFormatter() {
                 		let value = Math.floor(this.y * 100) / 100 + '%';
+                		if(this.series.name == 'Volume') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${this.y.toFixed(0)}</b><br/>`
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
@@ -120,8 +150,37 @@
 				this.poolData.push(json.data);
 			}
 
-			var pools = ['compound', 'usdt', 'y', 'busd']
-            volumeStore.getVolumes(pools);
+			let pools = Object.values(this.pools).slice(0, 3)
+	        requests = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-30m.json`))
+			requests = await Promise.all(requests)
+			let jsons = await Promise.all(requests.map(r => r.json()))
+			let volumeSeries = []
+			for(let [key, data] of jsons[1].entries()) {
+				let allVolumeData = jsons.map(json => json[key].volume)
+				let volume = allVolumeData.map((volData, i) => {
+					let pool = pools[i] == 'y' ? 'iearn' : pools[i]
+					return Object.entries(volData).map(([k, v]) => {
+		    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
+		    			return v[0] / precisions
+		    		}).reduce((a, b) => a + b, 0)
+				}).reduce((a, b) => a + b, 0)
+				volumeSeries.push([
+					data.timestamp * 1000,
+					volume,
+				])
+			}
+
+			this.chart.addSeries({
+	        	type: 'column',
+				name: 'Volume',
+				data: volumeSeries,
+				color: '#0b0a57',
+				yAxis: 1,
+			})
+
+			console.log(volumeSeries, "VOLUME SERIES")
+
+            volumeStore.getVolumes(Object.values(this.pools));
 		},
 	}
 </script>

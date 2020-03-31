@@ -247,7 +247,6 @@ export default {
 
 	    async getDeposits() {
 		    let default_account = currentContract.default_account
-		    default_account = '0xa3dB05c72c79d52D2D37170A342a2c21c5e5d7C0'
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let depositUsdSum = 0;
@@ -303,7 +302,6 @@ export default {
 
 		async getWithdrawals(address) {
 		    let default_account = currentContract.default_account
-		    default_account = '0xa3dB05c72c79d52D2D37170A342a2c21c5e5d7C0'
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    let fromBlock = this.fromBlock;
@@ -366,7 +364,6 @@ export default {
 		async getAvailable(curr) {
 		    if(this.cancel) throw new Error('cancel');
 		    let default_account = currentContract.default_account
-		    default_account = '0xa3dB05c72c79d52D2D37170A342a2c21c5e5d7C0'
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method

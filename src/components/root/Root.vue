@@ -8,8 +8,10 @@
 	                	<span class='index'>0.</span>  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
-	                    <span class='apr'>APY: <span>{{apy[0]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData.compound | 0) | formatNumber}}$</span></span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.compound < 0}">
+	                    	<span v-show='volumesData.compound >= 0'>{{(volumesData.compound | 0) | formatNumber}}$</span>
+               	 		</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
@@ -17,8 +19,10 @@
 	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
-	                    <span class='apr'>APY: <span>{{apy[1]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData.usdt | 0) | formatNumber}}$</span></span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.usdt < 0}">
+	                    	<span v-show='volumesData.usdt >= 0'>{{(volumesData.usdt | 0) | formatNumber}}$</span>
+               	 		</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
@@ -26,8 +30,10 @@
 	                	<span class='index'>2.</span>  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
-	                    <span class='apr'>APY: <span>{{apy[2]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData.iearn | 0) | formatNumber}}$</span></span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.iearn < 0}">
+	                    	<span v-show='volumesData.iearn >= 0'>{{(volumesData.iearn | 0) | formatNumber}}$</span>
+               	 		</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
@@ -35,8 +41,10 @@
 	                	<span class='index'>3.</span>  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
-	                    <span class='apr'>APY: <span>{{apy[3]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData.busd | 0) | formatNumber}}$</span></span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.busd < 0}">
+	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+               	 		</span></span>
 	                </router-link>
 	            </div>
 	        </fieldset>
@@ -192,34 +200,45 @@
 </script>
 
 <style scoped>
-  .dropdown p {
-    color: black;
-    margin-top: 0;
-    margin-bottom: 15px;
-  }
-  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-    .poolsdialog a {
-      text-align: center;
-    }
-    .pools {
-      width: 100%;
-    }
-  }
+	.dropdown p {
+		color: black;
+		margin-top: 0;
+		margin-bottom: 15px;
+	}
+	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+		.poolsdialog.poolsdialog > div a {
+			display: block;
+		  text-align: center;
+		}
+		.poolsdialog.poolsdialog > div a > span {
+			display: block;
+			text-align: center;
+		}
+		.poolsdialog.poolsdialog > div span.pooltext, .poolsdialog.poolsdialog > div span.index {
+			display: inline;
+		}
+		.pools {
+		  width: 100%;
+		}
+	}
 	.poolsdialog > div a {
 		display: flex;
 		justify-content: space-between;
+	}
+	.poolsdialog > div a span {
+		text-align: left;
 	}
 	.index {
 		flex: 0.1;
 	}
 	.pooltext {
-		flex: 0.8;
+		flex: 0.7;
 	}
 	.pools {
-		flex: 2.8;
+		flex: 2.6;
 	}
 	.apr {
-		flex: 1;
+		flex: 0.8;
 	}
 	.volume {
 		flex: 1.2;

@@ -9,7 +9,7 @@
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
 	                    <span class='apr'>APY: <span>{{apy[0]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData[0] | 0) | formatNumber}}$</span></span>
+	                    <span class='volume'>Vol: <span>{{(volumesData.compound | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
@@ -18,7 +18,7 @@
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
 	                    <span class='apr'>APY: <span>{{apy[1]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData[1] | 0) | formatNumber}}$</span></span>
+	                    <span class='volume'>Vol: <span>{{(volumesData.usdt | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
@@ -27,7 +27,7 @@
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
 	                    <span class='apr'>APY: <span>{{apy[2]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData[2] | 0) | formatNumber}}$</span></span>
+	                    <span class='volume'>Vol: <span>{{(volumesData.iearn | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
@@ -36,13 +36,13 @@
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
 	                    <span class='apr'>APY: <span>{{apy[3]}}</span>%</span>
-	                    <span class='volume'>Vol: <span>{{(volumesData[3] | 0) | formatNumber}}$</span></span>
+	                    <span class='volume'>Vol: <span>{{(volumesData.busd | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	        </fieldset>
 	    </div>
 
-	    <total-balances :volume='totalVolume'/>
+	    <total-balances />
 
 	    <div class="window white">
 	        <h2>Curve FAQ</h2>
@@ -118,6 +118,7 @@
 <script>
 	import TotalBalances from './TotalBalances.vue'
 	import abis from '../../allabis'
+	import * as volumeStore from '@/components/common/volumeStore'
 
 	import * as helpers from '../../utils/helpers'
 
@@ -129,7 +130,6 @@
 			activePoolLink: 0,
 			pools: ['compound','usdt','y','busd'],
 			apy: [],
-			volumesData: [0,0,0,0],
 			start: 0,
 			end: 0,
 		}),
@@ -151,7 +151,10 @@
 		},
 		computed: {
 			totalVolume() {
-				return this.volumesData.reduce((a, b) => a + b, 0)
+				return volumeStore.totalVolume();
+			},
+			volumesData() {
+				return volumeStore.state.volumes;
 			}
 		},
 		methods: {
@@ -182,21 +185,6 @@
 	                let json = await stats[i].json();
 	                var weekly_apr = json['daily_apr'];
 	                this.apy.push((weekly_apr*100).toFixed(2))
-	            }
-
-	            var pools = ['compound', 'usdt', 'y', 'busd']
-	            let volumes = pools.map(p=>fetch(`https://beta.curve.fi/raw-stats/${p}-5m.json`))
-	            volumes = await Promise.all(volumes)
-	            for(let i = 0; i < volumes.length; i++) {
-	            	let json = await volumes[i].json();
-	            	for(let data of json.slice(helpers.findClosestIndex(this.start, json), helpers.findClosestIndex(this.end, json))) {
-	            		this.$set(this.volumesData, i,  this.volumesData[i]+= Object.entries(data.volume).map(([k, v]) => {
-	            			let pool = pools[i] == 'y' ? 'iearn' : pools[i]
-	            			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
-	            			console.log(precisions)
-	            			return v[0] / precisions
-	            		}).reduce((a, b) => a + b, 0));
-	            	}
 	            }
 			}
 		}
@@ -234,6 +222,6 @@
 		flex: 1;
 	}
 	.volume {
-		flex: 1;
+		flex: 1.2;
 	}
 </style>

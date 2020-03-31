@@ -5,8 +5,8 @@
 				<div :class="{'loading line': !total}" id='total-balances'>
 					Deposits: <span v-show='total'>{{total | formatNumber}}$</span>
 				</div>
-				<div :class="{'loading line': !volume}" >
-					Daily volume: <span v-show='volume'>{{(volume | 0) | formatNumber}}$</span>
+				<div :class="{'loading line': volume < 0}" >
+					Daily volume: <span v-show='volume >= 0'>{{(volume | 0) | formatNumber}}$</span>
 				</div>
         </fieldset>
     </div>
@@ -17,15 +17,22 @@
 	import * as abis from '../../allabis'
 	import helpers from '../../utils/helpers'
 	import BigNumber from 'bignumber.js'
+	import * as volumeStore from '@/components/common/volumeStore'
+
     var cBN = (val) => new BigNumber(val);
 
 	export default {
-		props: ['volume'],
 		data: () => ({
 			total: '',
 		}),
+		computed: {
+			volume() {
+				return volumeStore.totalVolume();
+			}
+		},
 		async created() {
 			this.totalBalances()
+			this.dailyVolume()
 		},
 		methods: {
 			async totalBalances() {
@@ -45,6 +52,10 @@
 			    }
 			    this.total = total.toFixed(0);
 			},
+			async dailyVolume() {
+				var pools = ['compound', 'usdt', 'y', 'busd']
+	            volumeStore.getVolumes(pools);
+			}
 		}
 
 	}

@@ -16,8 +16,8 @@
 		    	</span>
 	    	</p>
 	    	<p>Daily volume: 
-	    		<span :class="{'loading line': loading}">
-	    			<span v-show='!loading'> {{(volumeData | 0) | formatNumber}}$</span>	
+	    		<span :class="{'loading line': volumeData < 0}">
+	    			<span v-show='volumeData >= 0'> {{(volumeData | 0) | formatNumber}}$</span>	
 	    		</span>
 	    	</p>
 	        <p>Recent weekly APY: 
@@ -44,6 +44,8 @@
 	import stockInit from 'highcharts/modules/stock'
 	import DailyChart from './common/DailyAPYChart.vue'
 
+	import * as volumeStore from '@/components/common/volumeStore'
+
 	stockInit(Highcharts)
 
 
@@ -63,7 +65,6 @@
 			apr: '',
 			daily_apr: '',
 			weekly_apr: '',
-			volumeData: 0,
 			chartdata: {
 				chart: {
 					panning: true,
@@ -137,6 +138,10 @@
 		}),
         computed: {
           ...getters,
+          volumeData() {
+          	console.log(['compound','usdt','iearn','busd'].indexOf(this.pool || this.currentPool))
+          	return volumeStore.state.volumes[this.pool || this.currentPool]
+          }
         },
         created() {
         	var start = new Date();
@@ -152,11 +157,13 @@
             this.$watch(()=>currentContract.currentContract, val => {
             	if(currentContract.initializedContracts) this.mounted();
             })
+
         },
         mounted() {
         	this.chart = this.$refs.highcharts.chart;
 	        this.chart.showLoading();
             this.mounted();
+            volumeStore.getVolumes(this.pool || this.currentPool)
         },
 		methods: {
 			async mounted() {
@@ -165,15 +172,15 @@
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
 
-	            let volume = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-5m.json`)
+	            /*let volume = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-5m.json`)
 	            let voljson = await volume.json();
-            	for(let data of voljson.slice(helpers.findClosestIndex(this.start, voljson), helpers.findClosestIndex(this.end, voljson))) {
+            	for(let data of voljson.slice(-288)) {
             		this.volumeData += Object.entries(data.volume).map(([k, v]) => {
             			let precisions = abis[subdomain].coin_precisions[k.split('-')[0]]
             			console.log(precisions)
             			return v[0] / precisions
             		}).reduce((a, b) => a + b, 0);
-            	}
+            	}*/
 
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()

@@ -37,14 +37,14 @@
 			end: 0,
 		}),
 		async created() {
-			var start = new Date(2020, 2, 30);
+			var start = new Date();
 			start.setHours(0,0,0,0);
 			this.start = start.getTime() / 1000
 
-			var end = new Date(2020, 2, 30);
+			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
-			
+
 			let requests = Object.values(this.pools).map(p => fetch(`https://${p}.curve.fi/stats.json`))
 			let data = await Promise.all(requests)
 			for(let res of data) {

@@ -139,11 +139,11 @@
           ...getters,
         },
         created() {
-        	var start = new Date(2020, 2, 30);
+        	var start = new Date();
 			start.setHours(0,0,0,0);
 			this.start = start.getTime() / 1000
 
-			var end = new Date(2020, 2, 30);
+			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
 /*            this.$watch(()=>currentContract.initializedContracts, val => {

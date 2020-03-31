@@ -447,7 +447,7 @@ div.info table td {
   background: green;
 }
 
-.pooltext {
+/*.pooltext {
   display: inline-block;
   width: 12%;
 }
@@ -455,7 +455,7 @@ div.info table td {
 .pools {
   display: inline-block;
   width: 60%;
-}
+}*/
 
 .highcharts-loading-inner, .loading {
   display: inline-block;

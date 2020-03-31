@@ -58,7 +58,13 @@ export function formatDate(date) {
 }
 
 export function formatNumber(number) {
+  number = number.toString();
   return number.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+}
+
+export function findClosestIndex(timestamp, data) {
+    let index = data.findIndex(d=>d.timestamp - timestamp > 0);
+    return index;
 }
 
 Vue.filter('formatNumber', formatNumber)

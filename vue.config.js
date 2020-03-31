@@ -7,6 +7,11 @@ const path = require('path')
 module.exports = {
 	chainWebpack: config => {
 		config.plugins.delete('prefetch')
+		config.module.rule('worker')
+	      .test(/\.worker\.js$/i)
+	      .use('worker-loader')
+	      .loader('worker-loader');
+ 
 	},
 	configureWebpack: {
 		plugins: [

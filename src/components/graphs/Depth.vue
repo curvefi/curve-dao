@@ -33,10 +33,13 @@
 	import { contract, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 	import abis from '../../allabis'
 	import BN from 'bignumber.js'
+	import BI from 'big-integer'
+
 
 	import * as Comlink from 'comlink'
 
-	const worker = new Worker('worker.js');
+	import Worker from 'worker-loader!./worker.js';
+	const worker = new Worker();
 	const calcWorker = Comlink.wrap(worker);
 
 	export default {

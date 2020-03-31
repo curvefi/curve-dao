@@ -30,7 +30,8 @@
 
 	import * as Comlink from 'comlink'
 
-	const worker = new Worker('worker.js');
+	import Worker from 'worker-loader!./worker.js';
+	const worker = new Worker();
 	const calcWorker = Comlink.wrap(worker);
 
 

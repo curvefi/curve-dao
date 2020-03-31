@@ -1,9 +1,12 @@
 <template>
     <div class="window white">
         <fieldset>
-			<legend>Total pool deposits</legend>
+			<legend>Total pool deposits and daily volume</legend>
 				<div :class="{'loading line': !total}" id='total-balances'>
-					<span v-show='total'>{{total | formatNumber}}$</span>
+					Deposits: <span v-show='total'>{{total | formatNumber}}$</span>
+				</div>
+				<div :class="{'loading line': !volume}" >
+					Daily volume: <span v-show='volume'>{{(volume | 0) | formatNumber}}$</span>
 				</div>
         </fieldset>
     </div>
@@ -17,6 +20,7 @@
     var cBN = (val) => new BigNumber(val);
 
 	export default {
+		props: ['volume'],
 		data: () => ({
 			total: '',
 		}),
@@ -45,3 +49,12 @@
 
 	}
 </script>
+
+<style scoped>
+	fieldset div {
+		display: block;
+	}
+	fieldset div:nth-of-type(2) {
+		margin-top: 1em;
+	}
+</style>

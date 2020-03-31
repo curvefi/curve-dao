@@ -10,18 +10,28 @@
 	            <div class='loading matrix' v-show='loading'></div>
 				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 	        </fieldset>
-	        <p>Recent daily APY: <span id="daily-apr" :class="{'loading line': loading}">
-	        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
-	    	</span></p>
-	        <p>Recent weekly APY: <span id="weekly-apr" :class="{'loading line': loading}">
-	        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
-	    	</span></p>
+	        <p>Recent daily APY: 
+	        	<span id="daily-apr" :class="{'loading line': loading}">
+		        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
+		    	</span>
+	    	</p>
+	    	<p>Daily volume: 
+	    		<span :class="{'loading line': loading}">
+	    			<span v-show='!loading'> {{(volumeData | 0) | formatNumber}}$</span>	
+	    		</span>
+	    	</p>
+	        <p>Recent weekly APY: 
+	        	<span id="weekly-apr" :class="{'loading line': loading}">
+		        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
+		    	</span>
+	    	</p>
 	    	<daily-chart :data='data' v-if='!pool'/>
 	    </div>
 	</div>
 </template>
 
 <script>
+	import abis from '../allabis'
     import * as helpers from '../utils/helpers'
     import { getters, contract as currentContract } from '../contract'
     import Highcharts from 'highcharts'
@@ -53,6 +63,7 @@
 			apr: '',
 			daily_apr: '',
 			weekly_apr: '',
+			volumeData: 0,
 			chartdata: {
 				chart: {
 					panning: true,
@@ -121,11 +132,20 @@
 			chartdataDaily: null,
 			loading: true,
 			chart: null,
+			start: 0,
+			end: 0,
 		}),
         computed: {
           ...getters,
         },
         created() {
+        	var start = new Date(2020, 2, 30);
+			start.setHours(0,0,0,0);
+			this.start = start.getTime() / 1000
+
+			var end = new Date(2020, 2, 30);
+			end.setHours(23,59,59,999);
+			this.end = end.getTime() / 1000
 /*            this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })*/
@@ -144,6 +164,17 @@
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
+
+	            let volume = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-5m.json`)
+	            let voljson = await volume.json();
+            	for(let data of voljson.slice(helpers.findClosestIndex(this.start, voljson), helpers.findClosestIndex(this.end, voljson))) {
+            		this.volumeData += Object.entries(data.volume).map(([k, v]) => {
+            			let precisions = abis[subdomain].coin_precisions[k.split('-')[0]]
+            			console.log(precisions)
+            			return v[0] / precisions
+            		}).reduce((a, b) => a + b, 0);
+            	}
+
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 

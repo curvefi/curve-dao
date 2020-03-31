@@ -4,37 +4,45 @@
 	        <fieldset class='poolsdialog'>
 	            <legend>Curve pools</legend>
 	            <div :class="{selected: activePoolLink == 0}">
-	                <router-link to = '/compound'>0.  
+	                <router-link to = '/compound'>
+	                	<span class='index'>0.</span>  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
-	                    <span class='apr'>Daily APY: <span>{{apy[0]}}</span>%</span>
+	                    <span class='apr'>APY: <span>{{apy[0]}}</span>%</span>
+	                    <span class='volume'>Vol: <span>{{(volumesData[0] | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
-	                <router-link to = '/usdt'>1.  
+	                <router-link to = '/usdt'>
+	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
-	                    <span class='apr'>Daily APY: <span>{{apy[1]}}</span>%</span>
+	                    <span class='apr'>APY: <span>{{apy[1]}}</span>%</span>
+	                    <span class='volume'>Vol: <span>{{(volumesData[1] | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
-	                <router-link to = '/y'>2.  
+	                <router-link to = '/y'>
+	                	<span class='index'>2.</span>  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
-	                    <span class='apr'>Daily APY: <span>{{apy[2]}}</span>%</span>
+	                    <span class='apr'>APY: <span>{{apy[2]}}</span>%</span>
+	                    <span class='volume'>Vol: <span>{{(volumesData[2] | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
-	                <router-link to = '/busd'>3.  
+	                <router-link to = '/busd'>
+	                	<span class='index'>3.</span>  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
-	                    <span class='apr'>Daily APY: <span>{{apy[3]}}</span>%</span>
+	                    <span class='apr'>APY: <span>{{apy[3]}}</span>%</span>
+	                    <span class='volume'>Vol: <span>{{(volumesData[3] | 0) | formatNumber}}$</span></span>
 	                </router-link>
 	            </div>
 	        </fieldset>
 	    </div>
 
-	    <total-balances/>
+	    <total-balances :volume='totalVolume'/>
 
 	    <div class="window white">
 	        <h2>Curve FAQ</h2>
@@ -109,6 +117,10 @@
 
 <script>
 	import TotalBalances from './TotalBalances.vue'
+	import abis from '../../allabis'
+
+	import * as helpers from '../../utils/helpers'
+
 	export default {
 		components: {
 			TotalBalances
@@ -117,13 +129,30 @@
 			activePoolLink: 0,
 			pools: ['compound','usdt','y','busd'],
 			apy: [],
+			volumesData: [0,0,0,0],
+			start: 0,
+			end: 0,
 		}),
+		created() {
+			var start = new Date(2020, 2, 30);
+			start.setHours(0,0,0,0);
+			this.start = start.getTime() / 1000
+
+			var end = new Date(2020, 2, 30);
+			end.setHours(23,59,59,999);
+			this.end = end.getTime() / 1000
+		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
 	        this.getAPY()
 		},
 		beforeDestroy() {
 			document.removeEventListener('keydown', this.handle_pool_change);
+		},
+		computed: {
+			totalVolume() {
+				return this.volumesData.reduce((a, b) => a + b, 0)
+			}
 		},
 		methods: {
 			handle_pool_change(e) {
@@ -147,19 +176,34 @@
 	            }
 			},
 			async getAPY() {
-	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi']        
+	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi']       
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
 	            for(let i = 0; i < stats.length; i++) {
 	                let json = await stats[i].json();
 	                var weekly_apr = json['daily_apr'];
 	                this.apy.push((weekly_apr*100).toFixed(2))
 	            }
+
+	            var pools = ['compound', 'usdt', 'y', 'busd']
+	            let volumes = pools.map(p=>fetch(`https://beta.curve.fi/raw-stats/${p}-5m.json`))
+	            volumes = await Promise.all(volumes)
+	            for(let i = 0; i < volumes.length; i++) {
+	            	let json = await volumes[i].json();
+	            	for(let data of json.slice(helpers.findClosestIndex(this.start, json), helpers.findClosestIndex(this.end, json))) {
+	            		this.$set(this.volumesData, i,  this.volumesData[i]+= Object.entries(data.volume).map(([k, v]) => {
+	            			let pool = pools[i] == 'y' ? 'iearn' : pools[i]
+	            			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
+	            			console.log(precisions)
+	            			return v[0] / precisions
+	            		}).reduce((a, b) => a + b, 0));
+	            	}
+	            }
 			}
 		}
 	}
 </script>
 
-<style>
+<style scoped>
   .dropdown p {
     color: black;
     margin-top: 0;
@@ -173,4 +217,23 @@
       width: 100%;
     }
   }
+	.poolsdialog > div a {
+		display: flex;
+		justify-content: space-between;
+	}
+	.index {
+		flex: 0.1;
+	}
+	.pooltext {
+		flex: 0.8;
+	}
+	.pools {
+		flex: 2.8;
+	}
+	.apr {
+		flex: 1;
+	}
+	.volume {
+		flex: 1;
+	}
 </style>

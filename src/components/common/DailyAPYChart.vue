@@ -2,6 +2,11 @@
 	<fieldset>
 		<legend>Daily APY %</legend>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+    	<p v-show='volume'>Daily volume: 
+    		<span :class="{'loading line': !volume}">
+    			<span v-show='volume'> {{(volume | 0) | formatNumber}}$</span>	
+    		</span>
+    	</p>
 	</fieldset>
 </template>
 
@@ -15,6 +20,9 @@
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 
+	import * as helpers from '../../utils/helpers'
+
+
 	stockInit(Highcharts)
 
 	Highcharts.setOptions({
@@ -24,7 +32,7 @@
 	})
 
 	export default {
-		props: ['data'],
+		props: ['data' , 'volume'],
 		components: {
 			highcharts: Chart,
 		},

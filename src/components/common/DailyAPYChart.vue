@@ -2,7 +2,7 @@
 	<fieldset>
 		<legend>Daily APY %</legend>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-    	<p v-show='volume'>Daily volume: 
+    	<p v-show='volume != -1'>Daily volume: 
     		<span :class="{'loading line': !volume}">
     			<span v-show='volume'> {{(volume | 0) | formatNumber}}$</span>	
     		</span>
@@ -32,7 +32,13 @@
 	})
 
 	export default {
-		props: ['data' , 'volume'],
+		props: {
+			data: Array,
+			volume: {
+				type: Number,
+				default: -1
+			}
+		},
 		components: {
 			highcharts: Chart,
 		},

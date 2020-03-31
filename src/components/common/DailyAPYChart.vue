@@ -171,9 +171,11 @@
 		        if(this.pool == 'susd') {
 		        	this.chart.get('volumeAxis').remove();
 		        	this.chart.yAxis[0].update({
-		            	type: 'linear',
 		            	height: '100%',
-		        	}, true)
+		            	labels: {
+		            		step: 10,
+		            	}
+		        	}, false)
 		        }
 		        this.chart.setSize(undefined, 600)
 		        this.chart.addSeries({
@@ -191,15 +193,13 @@
 					for(let i = 0; i < volumes.length; i++) {
 				    	let json = await volumes[i].json();
 						let pool = pools[i] == 'y' ? 'iearn' : pools[i]
-				    	for(let j = 0; j <= json.length-48; j += 48) {
+				    	for(let data of json) {
 				    		volumeSeries.push([
-				    			json[j+48].timestamp * 1000,
-				    			json.slice(j, j+48).map(data => { 
-				    				return Object.entries(data.volume).map(([k, v]) => {
-						    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
-						    			return v[0] / precisions
-						    		}).reduce((a, b) => a + b, 0)
-						    	}).reduce((a, b) => a + b, 0)
+				    			data.timestamp * 1000,
+				    			Object.entries(data.volume).map(([k, v]) => {
+					    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
+					    			return v[0] / precisions
+					    		}).reduce((a, b) => a + b, 0)
 				    		])
 				    	}
 				    }

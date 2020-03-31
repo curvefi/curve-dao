@@ -17,13 +17,15 @@ export async function getVolumes(pools, refresh = false) {
 	volumes = await Promise.all(volumes)
 	for(let i = 0; i < volumes.length; i++) {
     	let json = await volumes[i].json();
+		let pool = pools[i] == 'y' ? 'iearn' : pools[i]
+    	let sum = 0;
     	for(let data of json.slice(-288)) {
-			let pool = pools[i] == 'y' ? 'iearn' : pools[i]
-    		state.volumes[pool]+= Object.entries(data.volume).map(([k, v]) => {
+    		sum += Object.entries(data.volume).map(([k, v]) => {
     			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
     			return v[0] / precisions
     		}).reduce((a, b) => a + b, 0);
     	}
+    	state.volumes[pool] = sum;
     }
 }
 

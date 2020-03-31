@@ -155,7 +155,7 @@
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			let volumeSeries = []
-			for(let [key, data] of jsons[1].entries()) {
+			for(let [key, data] of jsons[0].entries()) {
 				let allVolumeData = jsons.map(json => json[key].volume)
 				let volume = allVolumeData.map((volData, i) => {
 					let pool = pools[i] == 'y' ? 'iearn' : pools[i]

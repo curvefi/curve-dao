@@ -25,7 +25,7 @@
 		        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
-	    	<daily-chart :data='data' v-if='!pool'/>
+	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool'/>
 	    </div>
 	</div>
 </template>
@@ -171,17 +171,7 @@
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
-
-	            /*let volume = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-5m.json`)
-	            let voljson = await volume.json();
-            	for(let data of voljson.slice(-288)) {
-            		this.volumeData += Object.entries(data.volume).map(([k, v]) => {
-            			let precisions = abis[subdomain].coin_precisions[k.split('-')[0]]
-            			console.log(precisions)
-            			return v[0] / precisions
-            		}).reduce((a, b) => a + b, 0);
-            	}*/
-
+				
 				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
 				let json = await res.json()
 

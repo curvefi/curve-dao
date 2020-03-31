@@ -13,7 +13,7 @@ export const state = Vue.observable({
 export async function getVolumes(pools, refresh = false) {
 	if(!Array.isArray(pools)) pools = [pools]
 	if(Object.values(state.volumes).filter(v=>v!=-1).length == pools.length && !refresh) return;
-	let volumes = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-5m.json`))
+	let volumes = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p == 'iearn' ? 'y' : p}-5m.json`))
 	volumes = await Promise.all(volumes)
 	for(let i = 0; i < volumes.length; i++) {
     	let json = await volumes[i].json();

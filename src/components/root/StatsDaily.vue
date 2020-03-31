@@ -5,7 +5,7 @@
 		      	<router-link :to="currency" v-show="currency != 'susd'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>
-			<daily-chart :data = 'poolData[i]' :volume = 'volumesData[currency]' />
+			<daily-chart :data = 'poolData[i]' :pool='currency' :volume = 'volumesData[currency]' />
 		</div>
 	</div>
 </template>

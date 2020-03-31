@@ -55,7 +55,9 @@
 				susd: 'synthetix',
 			},
 			chartdata: {
-				title: 'Daily APY % on all pools',
+				title: {
+					text: 'Daily APY % and volume'
+				},
 				chart: {
 					panning: true,
 					zoomType: 'x',
@@ -156,9 +158,8 @@
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			let volumeSeries = []
-			for(let [key, data] of jsons[0].entries()) {
-				let allVolumeData = jsons.map(json => json[key].volume)
-				console.log(allVolumeData)
+			for(let j = 0; j < jsons[0].length; j++) {
+				let allVolumeData = jsons.map(json=>json[j].volume)
 				let volume = allVolumeData.map((volData, i) => {
 					let pool = pools[i] == 'y' ? 'iearn' : pools[i]
 					return Object.entries(volData).map(([k, v]) => {
@@ -167,9 +168,9 @@
 		    		}).reduce((a, b) => a + b, 0)
 				}).reduce((a, b) => a + b, 0)
 				volumeSeries.push([
-					data.timestamp * 1000,
+					jsons[0][j].timestamp * 1000,
 					volume,
-				])
+				])			
 			}
 
 			this.chart.addSeries({

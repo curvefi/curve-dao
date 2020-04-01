@@ -29,7 +29,7 @@
 	import Decimal from 'break_infinity.js'
 
 	let BN = val => new Decimal(val)
-	
+
 	import * as Comlink from 'comlink'
 
 	import Worker from 'worker-loader!./worker.js';
@@ -349,9 +349,7 @@
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
 				}
-				if(contract.currentContract != this.pool) {
-					await changeContract(this.pool)
-				}
+
 				//return;
 				//move this to selectPool method
 				let jsonInterval = this.interval;

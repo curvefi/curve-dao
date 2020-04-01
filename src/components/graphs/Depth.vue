@@ -35,9 +35,6 @@
 	import Decimal from 'break_infinity.js'
 	let BN = val => new Decimal(val)
 
-	import BI from 'big-integer'
-
-
 	import * as Comlink from 'comlink'
 
 	import Worker from 'worker-loader!./worker.js';
@@ -181,9 +178,10 @@
             })
 		},
 		watch:{
-			selectChange(val, oldval) {
+			async selectChange(val, oldval) {
 				//don't call mount when pools are changed, it's called when contacts are re-initialized
 				if(val[1] == oldval[1]) this.mounted()
+				else await changeContract(val[1])
 			},
 			zoom() {
 				this.setZoom()
@@ -261,11 +259,6 @@
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
 				}
-
-/*				if(contract.currentContract != this.pool) {
-					await changeContract(this.pool)
-					this.poolInfo = {}
-				}*/
 
 				let poolConfig = {
 					N_COINS: abis[tradeStore.pool].N_COINS,

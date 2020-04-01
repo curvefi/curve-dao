@@ -301,7 +301,19 @@
 					  		split: true,
 					  		borderColor: '#a6cdf1',
 					  	},
-					  	series: [],
+					  	series: [
+						  	{
+						  		type: 'candlestick',
+					            name: this.pairVal,
+					            data: [],
+						  	},
+						  	{
+						  		type: 'column',
+					            name: 'Volume',
+					            data: [],
+					            yAxis: 1,
+						  	}
+					  	],
 			    	},
 				  	pair: {
 				  		
@@ -346,9 +358,9 @@
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
 				this.interval = tradeStore.interval;
-				while(this.chart.series.length) {
+/*				while(this.chart.series.length) {
 					this.chart.series[0].remove()
-				}
+				}*/
 
 				//return;
 				//move this to selectPool method
@@ -511,21 +523,11 @@
 			        		return p;
 			        	})
 			        }*/
+			        if(i == dataLength/20 || i == dataLength/10 || i == dataLength/5 || i == dataLength/2 || i == dataLength-1) {
+					    this.$refs.highcharts.chart.series[0].setData(ohlc)
+					    this.$refs.highcharts.chart.series[1].setData(volume)
+			        }
 			    }
-
-			    this.$refs.highcharts.chart.addSeries({
-		            type: 'candlestick',
-		            name: this.pairVal,
-		            data: ohlc,
-
-	        	})
-			    this.$refs.highcharts.chart.addSeries({
-		            type: 'column',
-		            name: 'Volume',
-		            data: volume,
-		            yAxis: 1,
-
-		        })
 		        console.log(this.$refs.highcharts.chart)
 		        this.chart.setTitle({text: this.pairVal.toUpperCase()})
 /*		        this.chart.update({
@@ -537,9 +539,9 @@
 		        		})
 		        	}
 		        })*/
-		        this.chart.redraw();
 		        //highcharts doesn't select the defined range, doing it again manually
 		        this.chart.rangeSelector.clickButton(tradeStore.intervals.indexOf(this.interval), true)
+		        this.chart.redraw();
 		        this.chart.hideLoading();
 			    this.loading = false;
 			}

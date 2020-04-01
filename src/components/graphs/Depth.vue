@@ -45,126 +45,140 @@
 		components: {
 			highcharts: Chart,
 		},
-		data: () => ({
-		loading: true,
-		zoom: 100,
-		volZoom: 100,
-		chart: null,
-	    	depthchart: {
-	    		chart: {
-	    			type: 'areaspline',
-	    			zoomType: 'x',
-	    			marginTop: 20,
-	    			marginLeft: 20,
-	    			marginRight: 20,
-	    		},
-	    		exporting: {
-					buttons: {
-						contextButton: {
-							menuItems: ["printChart",
-					                    "separator",
-					                    "downloadPNG",
-					                    "downloadJPEG",
-					                    "downloadPDF",
-					                    "downloadSVG",
-					                    "separator",
-					                    "downloadCSV",
-					                    "downloadXLS",
-					                    //"viewData",
-					                    "openInCloud"]
-						}
-					}
-				},
-	    		title: {
-	    			text: ''
-	    		},
-	    		xAxis: {
-	    			//type: 'logarithmic',
-	    			crosshair: {
-	    				color: 'gray',
-	    				width: 1.5,
-	    			},
-	    			minPadding: 0,
-	    			maxPadding: 0,
-	    			 plotLines: [{
-	    			 	id: 1,
-			            color: '#888',
-			            value: 1,
-			            width: 1,
-			            label: {
-			                text: 'Actual price',
-			                rotation: 90
-			            }
-			        }],
-	    			title: {
-	    				text: 'Price'
-	    			}
-	    		},
-	    		yAxis: [{
-	    			type: 'logarithmic',
-	    			crosshair: {
-	    				color: 'gray',
-	    				width: 1.5,
-	    			},
-	    			min: 1,
-			        lineWidth: 1,
-			        gridLineWidth: 1,
-			        title: null,
-			        tickWidth: 1,
-			        tickLength: 5,
-			        tickPosition: 'inside',
-			        labels: {
-			            align: 'left',
-			            x: 8
-			        }
-			    }, {
-			    	type: 'logarithmic',
-			    	crosshair: {
-			    		color: 'gray',
-			    		width: 1.5,
+		data() {
+			return {
+				loading: true,
+				zoom: 100,
+				volZoom: 100,
+				chart: null,
+			    	depthchart: {
+			    		chart: {
+			    			type: 'areaspline',
+			    			zoomType: 'x',
+			    			marginTop: 20,
+			    			marginLeft: 20,
+			    			marginRight: 20,
+			    		},
+			    		exporting: {
+							buttons: {
+								contextButton: {
+									menuItems: ["printChart",
+							                    "separator",
+							                    "downloadPNG",
+							                    "downloadJPEG",
+							                    "downloadPDF",
+							                    "downloadSVG",
+							                    "separator",
+							                    "downloadCSV",
+							                    "downloadXLS",
+							                    //"viewData",
+							                    "openInCloud"]
+								}
+							}
+						},
+			    		title: {
+			    			text: ''
+			    		},
+			    		xAxis: {
+			    			//type: 'logarithmic',
+			    			crosshair: {
+			    				color: 'gray',
+			    				width: 1.5,
+			    			},
+			    			minPadding: 0,
+			    			maxPadding: 0,
+			    			 plotLines: [{
+			    			 	id: 1,
+					            color: '#888',
+					            value: 1,
+					            width: 1,
+					            label: {
+					                text: 'Actual price',
+					                rotation: 90
+					            }
+					        }],
+			    			title: {
+			    				text: 'Price'
+			    			},
+			    			events: {
+			    				setExtremes: (function(self) {
+				    				return function(e) {
+				    					//on reset zoom button click
+						                if(typeof e.min == 'undefined' && typeof e.max == 'undefined') {
+						                	//setting zoom to 100 doesn't work?? so 99.99 is pretty close :D
+						                	self.zoom = 99.99
+						                }
+
+				    				}
+			    				})(this)
+			    			}
+			    		},
+			    		yAxis: [{
+			    			type: 'logarithmic',
+			    			crosshair: {
+			    				color: 'gray',
+			    				width: 1.5,
+			    			},
+			    			min: 1,
+					        lineWidth: 1,
+					        gridLineWidth: 1,
+					        title: null,
+					        tickWidth: 1,
+					        tickLength: 5,
+					        tickPosition: 'inside',
+					        labels: {
+					            align: 'left',
+					            x: 8
+					        }
+					    }, {
+					    	type: 'logarithmic',
+					    	crosshair: {
+					    		color: 'gray',
+					    		width: 1.5,
+					    	},
+					    	min: 1,
+					        opposite: true,
+					        linkedTo: 0,
+					        lineWidth: 1,
+					        gridLineWidth: 0,
+					        title: null,
+					        tickWidth: 1,
+					        tickLength: 5,
+					        tickPosition: 'inside',
+					        labels: {
+					            align: 'right',
+					            x: -8
+					        }
+					    }],
+					    legend: {
+					        enabled: false
+					    },
+					    plotOptions: {
+					        area: {
+					            fillOpacity: 0.2,
+					            step: 'center',
+					        }
+					    },
+					    tooltip: {
+					        headerFormat: '<span style="font-size=10px;">Price: {point.key}</span><br/>',
+					        valueDecimals: 2
+					    },
+					    series: [],
 			    	},
-			    	min: 1,
-			        opposite: true,
-			        linkedTo: 0,
-			        lineWidth: 1,
-			        gridLineWidth: 0,
-			        title: null,
-			        tickWidth: 1,
-			        tickLength: 5,
-			        tickPosition: 'inside',
-			        labels: {
-			            align: 'right',
-			            x: -8
-			        }
-			    }],
-			    legend: {
-			        enabled: false
-			    },
-			    plotOptions: {
-			        area: {
-			            fillOpacity: 0.2,
-			            step: 'center',
-			        }
-			    },
-			    tooltip: {
-			        headerFormat: '<span style="font-size=10px;">Price: {point.key}</span><br/>',
-			        valueDecimals: 2
-			    },
-			    series: [],
-	    	},
-	    	pair: {
-		  		idx: '0-1',
-		  		val: 'DAI-USDC'
-		  	},
-		  	pool: 'compound',
-		  	poolInfo: {},
-		  	interval: 5,
-	    	bbrect: null,
-	    	data: [],
-	    	currentValue: 1,
-	    	imax: 100,
-	    	inverse: false,
-		}),
+			    	pair: {
+				  		idx: '0-1',
+				  		val: 'DAI-USDC'
+				  	},
+				  	pool: 'compound',
+				  	poolInfo: {},
+				  	interval: 5,
+			    	bbrect: null,
+			    	data: [],
+			    	currentValue: 1,
+			    	imax: 100,
+			    	inverse: false,
+			}
+		},
 		async created() {
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)

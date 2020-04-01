@@ -1,11 +1,20 @@
 <template>
 	<div>
-		<select class='tvision' v-model='pool'>
-			<option value='compound'>Compound</option>
-			<option value='usdt'>usdt</option>
-			<option value='iearn'>Y</option>
-			<option value='busd'>busd</option>
-		</select>
+		<div id='poolselect'>
+			<input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
+			<label for='compoundpool'>Compound</label>
+
+			<input id='usdtpool' type='checkbox' value='usdt' v-model='pools'/>
+			<label for='usdtpool'>usdt</label>
+
+			<input id='ypool' type='checkbox' value='y' v-model='pools'/>
+			<label for='ypool'>Y</label>
+
+			<input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
+			<label for='busdpool'>bUSD</label>
+		</div>
+
+
 		<select class='tvision' v-model='pair'>
 			<option v-for = 'v in pairs' :value='v'>{{v.val | toUpper}}</option>
 		</select>
@@ -24,6 +33,7 @@
 
 	export default {
 		data: () => ({
+			pools: tradeStore.pools,
 			pool: tradeStore.pool,
 			pair: '',
 			interval: tradeStore.interval,
@@ -35,7 +45,7 @@
 		},
 		methods: {
 			emitSelect() {
-				tradeStore.pool = this.pool
+				tradeStore.pools = this.pools
 				tradeStore.pairIdx = this.pair.idx
 				tradeStore.pairVal = this.pair.val
 				tradeStore.interval = this.interval
@@ -74,6 +84,15 @@
 	option {
 		color: black;
 		background: #d7d5d5;
+	}
+	#poolselect {
+		margin-bottom: 1em;
+	}
+	#poolselect > label:nth-of-type(1) {
+		margin-left: 0;
+	}
+	#poolselect > label {
+		margin-left: 1em;
 	}
 	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
 		select, button {

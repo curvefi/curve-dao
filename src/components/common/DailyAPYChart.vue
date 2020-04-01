@@ -22,7 +22,7 @@
 
 	import * as helpers from '../../utils/helpers'
 	import abis from '@/allabis'
-
+	import * as volumeStore from '@/components/common/volumeStore'
 
 	stockInit(Highcharts)
 
@@ -185,24 +185,8 @@
 		        	color: '#0b0a57'
 		        }, true)
 		        if(this.pool != 'susd') {
-			        let pool = this.pool == 'iearn' ? 'y' : this.pool
-			        let pools = [pool]
-			        let volumes = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${pool}-30m.json`))
-					volumes = await Promise.all(volumes)
-					let volumeSeries = []
-					for(let i = 0; i < volumes.length; i++) {
-				    	let json = await volumes[i].json();
-						let pool = pools[i] == 'y' ? 'iearn' : pools[i]
-				    	for(let data of json) {
-				    		volumeSeries.push([
-				    			data.timestamp * 1000,
-				    			Object.entries(data.volume).map(([k, v]) => {
-					    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
-					    			return v[0] / precisions
-					    		}).reduce((a, b) => a + b, 0)
-				    		])
-				    	}
-				    }
+			        await volumeStore.getDailyVolume(this.pool)
+			        let volumeSeries = volumeStore.state.allVolume[this.pool]
 
 			        this.chart.addSeries({
 			        	type: 'column',

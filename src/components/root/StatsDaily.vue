@@ -153,24 +153,17 @@
 			}
 
 			let pools = Object.values(this.pools).slice(0, 4)
-			console.log(pools, "POOLS")
 	        requests = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-30m.json`))
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			let volumeSeries = []
-			for(let j = 0; j < jsons[0].length; j++) {
-				let allVolumeData = jsons.map(json=>json[j].volume)
-				let volume = allVolumeData.map((volData, i) => {
-					let pool = pools[i] == 'y' ? 'iearn' : pools[i]
-					return Object.entries(volData).map(([k, v]) => {
-		    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
-		    			return v[0] / precisions
-		    		}).reduce((a, b) => a + b, 0)
-				}).reduce((a, b) => a + b, 0)
+			let allPools = ['compound', 'usdt', 'iearn', 'busd']
+
+			for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
 				volumeSeries.push([
-					jsons[0][j].timestamp * 1000,
-					volume,
-				])			
+					volumeStore.state.allVolume.compound[i][0],
+					allPools.map(p=>volumeStore.state.allVolume[p][i][1]).reduce((a ,b) => (+a) + (+b), 0)
+				])
 			}
 
 			this.chart.addSeries({
@@ -180,8 +173,6 @@
 				color: '#0b0a57',
 				yAxis: 1,
 			})
-
-			console.log(volumeSeries, "VOLUME SERIES")
 
             volumeStore.getVolumes(Object.values(this.pools));
 		},

@@ -26,8 +26,10 @@
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import OneSplit from './OneSplit.vue'
 
-	import BN from 'bignumber.js'
+	import Decimal from 'break_infinity.js'
 
+	let BN = val => new Decimal(val)
+	
 	import * as Comlink from 'comlink'
 
 	import Worker from 'worker-loader!./worker.js';

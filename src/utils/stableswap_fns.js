@@ -1,4 +1,6 @@
-import BN from 'bignumber.js'
+import Decimal from 'break_infinity.js'
+
+let BN = (val) => new Decimal(val)
 
 const fcopy = (n) => new BN(n.toFixed());
 
@@ -46,8 +48,8 @@ let calc = ({
 		    	let c1 = D_P.times(D);
 		    	let c2 = _x.times(BN(N_COINS))
 		    	let c3 = c2.plus(ONE)
-		    	D_P = c1.idiv(c3)
-		        //D_P = D_P.times(D).idiv((_x.times(N_COINS).plus(ONE)))
+		    	D_P = c1.div(c3)
+		        //D_P = D_P.times(D).div((_x.times(N_COINS).plus(ONE)))
 		    }
 		    let Dprev = fcopy(D)
 		    let d1 = Ann.times(S);
@@ -58,7 +60,7 @@ let calc = ({
 		    let d5 = Annsub.times(D);
 		    let d6 = BN(N_COINS + 1).times(D_P)
 		    let d7 = d5.plus(d6)
-		    D = d4.idiv(d7);
+		    D = d4.div(d7);
 		    if (D.gt(Dprev))
 		        if ((D.minus(Dprev)).lte(BN(1)))
 		            break
@@ -107,7 +109,7 @@ let calc = ({
 	        let y3 = BN(2).times(y)
 	        let y4 = y3.plus(b).minus(D)
 
-	        y = y2.idiv(y4)
+	        y = y2.div(y4)
 
 	        if (y.gt(y_prev))
 	            if ((y.minus(y_prev)).lte(BN(1)))
@@ -122,7 +124,7 @@ let calc = ({
 	function _xp(rates) {
 		let result = rates.map(rate=>BN(rate))
 		for(let i = 0; i < N_COINS; i++) {
-			result[i] = result[i].times(BN(balances[i])).idiv(PRECISION);
+			result[i] = result[i].times(BN(balances[i])).div(PRECISION);
 		}
 		return result;
 	}

@@ -32,7 +32,9 @@
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import { contract, LENDING_PRECISION, PRECISION, changeContract } from '../../contract'
 	import abis from '../../allabis'
-	import BN from 'bignumber.js'
+	import Decimal from 'break_infinity.js'
+	let BN = val => new Decimal(val)
+
 	import BI from 'big-integer'
 
 
@@ -333,8 +335,7 @@
 			    // - get from clicked point value otherwise
 
 			    //currentValue without fees
-		        this.currentValue = +((calc.get_dy_underlying(fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0)))
-	        														.div(BN(contract.coin_precisions[toCurrency])))
+		        this.currentValue = +(BN(await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0))).div(BN(contract.coin_precisions[toCurrency])))
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].addPlotLine({
 		    		id: 1,

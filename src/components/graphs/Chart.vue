@@ -495,8 +495,6 @@
 				catch(err) {
 					console.error(err)
 				}
-				console.log(ohlcData, "OHLCDATA")
-
 
 			    // split the data set into ohlc and volume
 			    var ohlc = [],

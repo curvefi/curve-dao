@@ -97,8 +97,6 @@ export function init_menu() {
 
 export async function update_rates(version = 'new', contract) {
     if(!contract) contract = currentContract
-    console.log(contract, "CONTRACT ERROR")
-    console.log(contract.currentContract, "current contract name")
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         /*
         rate: uint256 = cERC20(self.coins[i]).exchangeRateStored()
@@ -130,7 +128,6 @@ export async function update_rates(version = 'new', contract) {
 
 export async function update_fee_info(version = 'new', contract) {
     if(!contract) contract = currentContract
-    console.log(contract, "CONTRACT")
     var swap_abi_stats = allabis[contract.currentContract].swap_abi;
     var swap_address_stats = allabis[contract.currentContract].swap_address;
     var swap_stats = contract.swap;
@@ -145,7 +142,6 @@ export async function update_fee_info(version = 'new', contract) {
     await update_rates(version, contract);
     var promises = [];
     let infuraProvider = new Web3(infura_url)
-    console.log(swap_address_stats, "ADDRESS STATS")
     let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         promises.push(swapInfura.methods.balances(i).call())

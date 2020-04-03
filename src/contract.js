@@ -195,7 +195,6 @@ export async function init(contract, refresh = false) {
 	//contract = contracts.compound for example
 
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
-	console.log("HERE")
 	//console.log(contract, state.contracts[contract.currentContract], "CONTRAAAAAAACT")
 	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
 	if(!contract) contract = state
@@ -230,7 +229,6 @@ export async function init(contract, refresh = false) {
       await common.update_fee_info('old', contract)
   	else 
       await common.update_fee_info('new', contract);
-  	console.log("INITED CONTRACT", contract)
   	contract.initializedContracts = true;
 }
 

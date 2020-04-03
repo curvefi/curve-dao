@@ -204,7 +204,6 @@
 				let oldarr = oldval[1].concat();
 				if(arr.sort().toString() == oldarr.sort.toString()) this.mounted()
 				else {
-					console.log(val[1], "VAL1")
 					try {					
 						let inits = await Promise.all(val[1].map(p=>{
 							console.log(contract.contracts[p == 'y' ? 'iearn' : p])
@@ -275,7 +274,6 @@
 					let cont = contract.contracts[pool]
 					if(pool == contract.currentContract) cont = contract
 					//console.log(contract.contracts[pool], "POOL")
-					console.log(cont, "CONTRACT")
 					this.poolInfo[key] = {}
 					this.poolInfo[key].A = await cont.swap.methods.A().call();
 					this.poolInfo[key].fee = cont.fee * 1e10
@@ -283,7 +281,6 @@
 					this.poolInfo[key].supply = await cont.swap_token.methods.totalSupply().call()
 					this.poolInfo[key].virtual_price = await cont.swap.methods.get_virtual_price().call()
 					this.poolInfo[key].balances = cont.balances;
-					console.log(cont.c_rates, "C RATES", PRECISION, abis[pool].coin_precisions)
 					this.poolInfo[key].rates = cont.c_rates.map((r,i)=>+(BN(r).times(PRECISION).times(abis[pool].coin_precisions[i])))
 					this.poolInfo[key].timestamp = (Date.now() / 1000) | 0;
 				}
@@ -338,8 +335,6 @@
 				let bids = []
 				//console.log(poolConfig, "config", this.poolInfo)
 
-				console.log(this.poolInfo, "POOL INFO")
-
 				//let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
 				let balanceSum = 0;
 
@@ -353,7 +348,6 @@
 			 	let imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
 				this.imax = imax
 
-				console.log(balanceSum, "BALANCE SUM")
 
 				let bxs = []
 				let axs = []
@@ -385,37 +379,43 @@
 						axs[j].push(+askrate)
 					}
 				}
-
-				const bis = bxs.map(bx => interpolator(bx.map((x, i) => [x, ys[i]])))
-				const ais = axs.map(ax => interpolator(ax.map((x,i) => [x, ys[i]])))
-
-				console.log(bxs, axs, ys, "BXS AXS YS")
-				for(let i = 0; i < bxs.length; i++) {
-					for(let j = 0; j < bxs[0].length; j++) {
-
-						console.log(bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0))
-						console.log(ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0))
-						bids.push([
-							+bxs[i][j],
-							bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
-
-						])
-						asks.push([
-							+axs[i][j],
-							ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)
-
-						])
-					}
+				//not sure if needed
+				if(bxs.length == 1) {
+					bids = bxs[0].map((price, i) => [price, ys[i]])
+					asks = axs[0].map((price, i) => [price, ys[i]])
 				}
+				else {
+					const bis = bxs.map(bx => interpolator(bx.map((x, i) => [x, ys[i]])))
+					const ais = axs.map(ax => interpolator(ax.map((x,i) => [x, ys[i]])))
 
-				bids.sort((a, b) => {
-				  if(b[0] == a[0]) return b[1] - a[1]
-				  else return b[0] - a[0]
-				})
-				asks.sort((a, b) => {
-				  if(b[0] == a[0]) return a[1] - b[1]
-				  else return a[0] - b[0]
-				})
+					console.log(bxs, axs, ys, "bxs axs ys")
+					for(let i = 0; i < bxs.length; i++) {
+						for(let j = 0; j < bxs[0].length; j++) {
+
+							console.log(bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0))
+							console.log(ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0))
+							bids.push([
+								+bxs[i][j],
+								bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
+
+							])
+							asks.push([
+								+axs[i][j],
+								ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)
+
+							])
+						}
+					}
+
+					bids.sort((a, b) => {
+					  if(b[0] == a[0]) return b[1] - a[1]
+					  else return b[0] - a[0]
+					})
+					asks.sort((a, b) => {
+					  if(b[0] == a[0]) return a[1] - b[1]
+					  else return a[0] - b[0]
+					})
+				}
 
 /*				bids = bids.filter(b => b[0] > 0.8)
 				asks = asks.filter(b => b[0] < 1.2)*/

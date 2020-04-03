@@ -2,7 +2,7 @@
 	<div class='bigdiv'>
 		<div id='zoomSelect'>
 			<label for='zoom'>Zoom {{zoom}}%</label>
-			<input type='range' min='0' max='140' id='zoom' v-model='zoom'/>
+			<input type='range' min='0' max='300' id='zoom' v-model='zoom'/>
 <!-- 			<input type='range' min='0' max='110' id='volzoom' v-model='volZoom'/>
  -->		</div>
 <!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
@@ -120,7 +120,7 @@
 			    			}
 			    		},
 			    		yAxis: [{
-			    			//type: 'logarithmic',
+			    			type: 'logarithmic',
 			    			crosshair: {
 			    				color: 'gray',
 			    				width: 1.5,
@@ -137,7 +137,7 @@
 					            x: 8
 					        }
 					    }, {
-					    	//type: 'logarithmic',
+					    	type: 'logarithmic',
 					    	crosshair: {
 					    		color: 'gray',
 					    		width: 1.5,
@@ -191,6 +191,7 @@
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
 			this.unwatch = this.$watch(()=>contract.initializedContracts, async (val) => {
+				await this.updatePoolInfo()
                 this.mounted()
                 this.unwatch();
             })
@@ -203,7 +204,16 @@
 				let oldarr = oldval[1].concat();
 				if(arr.sort().toString() == oldarr.sort.toString()) this.mounted()
 				else {
-					let inits = await Promise.all(val[1].map(p=>init(contract.contracts[p == 'y' ? 'iearn' : p])))
+					console.log(val[1], "VAL1")
+					try {					
+						let inits = await Promise.all(val[1].map(p=>{
+							console.log(contract.contracts[p == 'y' ? 'iearn' : p])
+							return init(contract.contracts[p == 'y' ? 'iearn' : p])
+						}))
+					}
+					catch(err) {
+						console.error(err)
+					}
 					this.chart.showLoading()
 					this.chart.xAxis[0].removePlotLine(1)
                 	await this.updatePoolInfo();
@@ -224,11 +234,11 @@
 		async mounted() {
 			this.chart = this.$refs.highcharts.chart
 			this.chart.showLoading();
-			await Promise.all(tradeStore.pools.map(p=>{
+/*			await Promise.all(tradeStore.pools.map(p=>{
 				return init(contract.contracts[p == 'y' ? 'iearn' : p])
 			}))
-			await this.updatePoolInfo();
-			this.mounted();
+			await this.updatePoolInfo();*/
+			//this.mounted();
 		},
 		beforeDestroy() {
 			//EventBus.$off('selected', this.selectPool)
@@ -249,8 +259,6 @@
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
-				//console.log(min_price, max_price, p, priceLeft, priceRight, "prices")
-
 				let zoom = +this.zoom
 				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 100 - 1))
 				priceRight = p + (priceRight - p) * Math.pow(10, 2 * (zoom / 100 - 1))
@@ -267,6 +275,7 @@
 					let cont = contract.contracts[pool]
 					if(pool == contract.currentContract) cont = contract
 					//console.log(contract.contracts[pool], "POOL")
+					console.log(cont, "CONTRACT")
 					this.poolInfo[key] = {}
 					this.poolInfo[key].A = await cont.swap.methods.A().call();
 					this.poolInfo[key].fee = cont.fee * 1e10
@@ -274,6 +283,7 @@
 					this.poolInfo[key].supply = await cont.swap_token.methods.totalSupply().call()
 					this.poolInfo[key].virtual_price = await cont.swap.methods.get_virtual_price().call()
 					this.poolInfo[key].balances = cont.balances;
+					console.log(cont.c_rates, "C RATES", PRECISION, abis[pool].coin_precisions)
 					this.poolInfo[key].rates = cont.c_rates.map((r,i)=>+(BN(r).times(PRECISION).times(abis[pool].coin_precisions[i])))
 					this.poolInfo[key].timestamp = (Date.now() / 1000) | 0;
 				}
@@ -340,7 +350,7 @@
 					balanceSum += cont.bal_info[fromCurrency] + cont.bal_info[toCurrency]
 				}
 
-			 	let imax = Math.floor(500 * (1 + Math.log10(10) / Math.log10(balanceSum)))
+			 	let imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
 				this.imax = imax
 
 				console.log(balanceSum, "BALANCE SUM")
@@ -350,7 +360,7 @@
 				let ys = []
 
 				for(let i = 0; i <= imax; i++) {
-					let exp = Math.pow(balanceSum, i / 500)
+					let exp = Math.pow(balanceSum, i / 100)
 					ys.push(exp)
 					for(let j = 0; j < pools.length; j++) {
 						let volume = i;
@@ -376,50 +386,24 @@
 					}
 				}
 
-				let bspline = bxs.map(xs=>{
-					return new Spline(xs, ys)
-				})
-				let aspline = axs.map(xs=>{
-					return new Spline(xs, ys)
-				})
-
-				const bcurve = bxs.map(bx=> new CurveInterpolator(bx.map((x, i) => [x, ys[i]])), { tension: 0.2})
-				const acurve = axs.map(bx=> new CurveInterpolator(bx.map((x, i) => [x, ys[i]])), { tension: 0.2})
-
 				const bis = bxs.map(bx => interpolator(bx.map((x, i) => [x, ys[i]])))
 				const ais = axs.map(ax => interpolator(ax.map((x,i) => [x, ys[i]])))
 
 				console.log(bxs, axs, ys, "BXS AXS YS")
-				console.log(bxs[0][0])
-				console.log(bspline[0].at(1.017), bspline[1].at(1.017))
-				console.log(bcurve, acurve)
-				console.log("SPLINES")
 				for(let i = 0; i < bxs.length; i++) {
 					for(let j = 0; j < bxs[0].length; j++) {
-/*						bcurve.map(c=>{
-							console.log(c.lookup(bxs[i][j], 0).filter(([_, v], i, a) => {
-								console.log(v, "VS")
-								return a.findIndex(([_, v1]) => v == v1) == i
-							}))
-							return c.lookup(bxs[i][j], 0).filter(([_, v], i, a) => a.findIndex(([_, v1]) => v == v1) == i);
-						})*/
+
 						console.log(bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0))
+						console.log(ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0))
 						bids.push([
 							+bxs[i][j],
 							bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
-							//bcurve.map(c=>(c.lookup(bxs[i][j], 0))
-							//	.filter(([_, v], i, a) => a.findIndex(([_, v1]) => v == v1) == i)
-							//	.map(c=>c[1])).reduce((a, b) => a + (+b), 0) || 0
-							//bspline.map(bs=>bs.at(+bxs[i][j])).reduce((a, b) => a + b) || 0
+
 						])
 						asks.push([
 							+axs[i][j],
-							bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
-							//acurve.map(c=>(c.lookup(axs[i][j], 0))
-							//	.filter(([_, v], i, a) => a.findIndex(([_, v1]) => v == v1) == i)
-							//	.map(c=>c[1])).reduce((a, b) => a + (+b), 0) || 0
-							//acurve.nodes[j*100].y
-							//aspline.map(as=>as.at(+axs[i][j])).reduce((a, b) => a + b) || 0
+							ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)
+
 						])
 					}
 				}
@@ -432,6 +416,9 @@
 				  if(b[0] == a[0]) return a[1] - b[1]
 				  else return a[0] - b[0]
 				})
+
+/*				bids = bids.filter(b => b[0] > 0.8)
+				asks = asks.filter(b => b[0] < 1.2)*/
 
 				console.log(bids, asks)
 
@@ -446,108 +433,19 @@
 		            data: bids,
 		            color: !this.inverse ? '#007A00' : '#B70000',
 		        })
-		        //this.setZoom();
-				return;
-				for(let i = 0; i <= imax; i++) {
-					let exp = Math.pow(balanceSum, i / 100)
-					let bidrates = []
-					let askrates = []
-					for(let j = 0; j < pools.length; j++) {
-						let volume = i;
-						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
-						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
-						let dy = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
-						dy = +(BN(dy).div(abis[pools[j]].coin_precisions[toCurrency]))
-						let dx = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
-						dx = +(BN(dx).div(abis[pools[j]].coin_precisions[fromCurrency]))
-						/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-						let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/
-						//console.log(+dy)
-						let bidrate = dy / (dx1) * abis[pools[j]].coin_precisions[fromCurrency]
-						let askrate = (dy1) / abis[pools[j]].coin_precisions[toCurrency] / dx
-						bidrates.push(+bidrate)
-						askrates.push(+askrate)
-						//console.log(dy, dx)
-					}
-					bids.push([+bidrate, bidrates.map(b=>bspline.at(b)).reduce((a, b) => a + b, 0)])
-					asks.push([+askrate, askrates.map(a=>aspline.at(a)).reduce((a, b) => a + b, 0)])
-				}
-
-				for(let i = 1; i <= imax; i++) {
-					let volume = i;
-					let exp = Math.pow(balanceSum, i / 100)
-					let dx1 = exp * contract.coin_precisions[fromCurrency]
-					let dy1 = exp * contract.coin_precisions[toCurrency]
-					let dy = await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
-					dy = +(BN(dy).div(contract.coin_precisions[toCurrency]))
-					let dx = await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
-					dx = +(BN(dx).div(contract.coin_precisions[fromCurrency]))
-					/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/
-					//console.log(+dy)
-					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
-					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
-
-					//console.log(dy, dx)
-					bids.push([+bidrate, exp])
-					asks.push([+askrate, exp])
-				}
-				//console.log(asks, bids)
-			    this.$refs.highcharts.chart.addSeries({
-		            name: 'Asks',
-		            data: asks,
-		            color: !this.inverse ? '#B70000' : '#007A00',
-		        })
-			    this.$refs.highcharts.chart.addSeries({
-		            name: 'Bids',
-		            data: bids,
-		            color: !this.inverse ? '#007A00' : '#B70000',
-		        })
-
-				for(let [key, pool] of tradeStore.pools.entries()) {
-					if(pool == 'y') pool = 'iearn'
-					let cont = contract.contracts[pool]
-					if(pool == contract.currentContract) cont = contract
-					balanceSum += cont.bal_info[fromCurrency] + cont.bal_info[toCurrency]
-				}
-			 	 imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
-				this.imax = imax
-				console.log("HERRE")
-				for(let i = 1; i <= imax; i++) {
-					console.log("HERE")
-					let volume = i;
-					let exp = Math.pow(balanceSum, i / 100)
-					let dx1 = exp * contract.coin_precisions[fromCurrency]
-					let dy1 = exp * contract.coin_precisions[toCurrency]
-					let dy = await calcWorker.calcPrice({...this.poolInfo[0], ...poolConfigs[0]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
-					dy = +(BN(dy).div(contract.coin_precisions[toCurrency]))
-					let dx = await calcWorker.calcPrice({...this.poolInfo[0], ...poolConfigs[0]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
-					dx = +(BN(dx).div(contract.coin_precisions[fromCurrency]))
-					/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
-					let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/
-					//console.log(+dy)
-					let bidrate = dy / (dx1) * contract.coin_precisions[fromCurrency]
-					let askrate = (dy1) / contract.coin_precisions[toCurrency] / dx
-
-					//console.log(dy, dx)
-					bids.push([+bidrate, exp])
-					asks.push([+askrate, exp])
-				}
-			    this.$refs.highcharts.chart.addSeries({
-		            name: 'Asks',
-		            data: asks,
-		            color: '#B70000',
-		        })
-			    this.$refs.highcharts.chart.addSeries({
-		            name: 'Bids',
-		            data: bids,
-		            color: '#007A00',
-		        })
+				
 			    //maybe not right - get from web3 when no this.poolInfo but this should be the same because calc is initialized with now
 			    // - get from clicked point value otherwise
 
 			    //currentValue without fees
-		        this.currentValue = +(BN(await calcWorker.calcPrice({...this.poolInfo, ...poolConfig}, fromCurrency, toCurrency, BN(contract.coin_precisions[fromCurrency]).toFixed(0))).div(BN(contract.coin_precisions[toCurrency])))
+				for(let [key, pool] of tradeStore.pools.entries()) {
+					if(pool == 'y') pool = 'iearn'
+					let cont = contract.contracts[pool]
+					if(pool == contract.currentContract) cont = contract
+		        	this.currentValue = +(BN(await calcWorker.calcPrice({...this.poolInfo[key], ...poolConfigs[key]}, fromCurrency, toCurrency, 
+		        		BN(abis[pool].coin_precisions[fromCurrency]).toFixed(0))).div(BN(abis[pool].coin_precisions[toCurrency])))
+				}
+				this.currentValues /= tradeStore.pools.length
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].addPlotLine({
 		    		id: 1,

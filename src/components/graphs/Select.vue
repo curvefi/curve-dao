@@ -59,6 +59,7 @@
 		computed: {
 			pairs() {
 				//this.pools.map(p=>Object.entriesallCurrencies[this.pool])
+				if(!this.pools.length) return []
 				let pools = this.pools.map(p=>p == 'y' ? 'iearn' : p)
 				let duplicates
 				if(pools.length > 1) {

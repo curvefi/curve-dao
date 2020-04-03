@@ -98,6 +98,7 @@ export function init_menu() {
 export async function update_rates(version = 'new', contract) {
     if(!contract) contract = currentContract
     console.log(contract, "CONTRACT ERROR")
+    console.log(contract.currentContract, "current contract name")
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         /*
         rate: uint256 = cERC20(self.coins[i]).exchangeRateStored()
@@ -105,7 +106,6 @@ export async function update_rates(version = 'new', contract) {
         old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
         rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
         */
-
         if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
             allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);

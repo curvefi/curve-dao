@@ -76,19 +76,51 @@ const state = Vue.observable({
 	contracts: {
 		compound: {
 			currentContract: 'compound',
-			...initState
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
 		},
 		usdt: {
 			currentContract: 'usdt',
-			...initState
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
 		},
 		iearn: {
 			currentContract: 'iearn',
-			...initState
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
 		},
 		busd: {
 			currentContract: 'busd',
-			...initState
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
 		},
 	},
 	currentContract: 'compound',
@@ -161,9 +193,11 @@ export const getters = {
 
 export async function init(contract, refresh = false) {
 	//contract = contracts.compound for example
-	if(state.initializedContracts && !refresh) return;
+
+	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
+	console.log("HERE")
 	//console.log(contract, state.contracts[contract.currentContract], "CONTRAAAAAAACT")
-	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return;
+	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
 	if(!contract) contract = state
 	try {
         let networkId = await web3.eth.net.getId();
@@ -196,6 +230,7 @@ export async function init(contract, refresh = false) {
       await common.update_fee_info('old', contract)
   	else 
       await common.update_fee_info('new', contract);
+  	console.log("INITED CONTRACT", contract)
   	contract.initializedContracts = true;
 }
 

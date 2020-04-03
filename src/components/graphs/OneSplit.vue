@@ -2,17 +2,17 @@
 	<div>
 
         <div id='poolselect'>
-            <input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
-            <label for='compoundpool'>Compound</label>
+            <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
+            <label for='compoundpool1'>Compound</label>
 
-            <input id='usdtpool' type='checkbox' value='usdt' v-model='pools'/>
-            <label for='usdtpool'>usdt</label>
+            <input id='usdtpool1' type='checkbox' value='usdt' v-model='pools'/>
+            <label for='usdtpool1'>usdt</label>
 
-            <input id='ypool' type='checkbox' value='y' v-model='pools'/>
-            <label for='ypool'>Y</label>
+            <input id='ypool1' type='checkbox' value='y' v-model='pools'/>
+            <label for='ypool1'>Y</label>
 
-            <input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
-            <label for='busdpool'>bUSD</label>
+            <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
+            <label for='busdpool1'>bUSD</label>
         </div>
 
 		<div style="display: table; margin: auto" class='swap'>
@@ -79,6 +79,8 @@
 </template>
 
 <script>
+    import EventBus from './EventBus'
+
     import * as allabis from '../../allabis'
     let contractAbis = allabis.default
 
@@ -144,8 +146,15 @@
                 this.to_cur_handler()
             }
         },
+        async created() {
+            //EventBus.$on('selected', this.selectPool)
+            EventBus.$on('changeTime', this.changeTime)
+            this.$watch(()=>contract.initializedContracts, async (val) => {
+                await this.mounted()
+            })
+        },
         mounted() {
-            this.mounted()
+            //this.mounted()
         },
 		methods: {
             async mounted() {

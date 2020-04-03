@@ -480,7 +480,7 @@
 							let calcprice = +(BN(get_dy_underlying).div(abis[pools[j]].coin_precisions[toCurrency]))
 							if(inverse) calcprice = 1 / calcprice
 							if(v.prices[this.pairIdx]) {
-								if(!inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
+								if(inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 								v.prices[this.pairIdx].push(calcprice)
 							}
 							else {

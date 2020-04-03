@@ -462,16 +462,12 @@
 				//data = JSON.parse(JSON.stringify(data))
 
 				for(let v of data) {
-					let calc = stableswap_fns({
-						...v,
-						...poolConfig,
-					});
 					//let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 					let get_dy_underlying = await calcWorker.calcPrice({...v, ...poolConfig}, fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
 					let calcprice = +(BN(get_dy_underlying).div(abis[this.pool].coin_precisions[toCurrency]))
 					if(inverse) calcprice = 1 / calcprice
 					if(v.prices[this.pairIdx]) {
-						if(!inverse) {
+						if(inverse) {
 							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
 						}
 						v.prices[this.pairIdx].push(calcprice)

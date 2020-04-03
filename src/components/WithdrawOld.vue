@@ -77,8 +77,9 @@
         		backgroundColor: '#707070',
         		color: '#d0d0d0',
         	})
-            this.$watch(()=>currentContract.default_account, val => {
-                if(val) this.mounted();
+            this.$watch(()=>currentContract.default_account, (val, oldval) => {
+                if(!oldval) return;
+                if(val.toLowerCase() != oldval.toLowerCase()) this.mounted();
             })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
@@ -93,7 +94,6 @@
         methods: {
             async mounted() {
                 await common.update_fee_info('old');
-                await common.update_rates('old');
             	await this.update_balances();
             	this.handle_change_share();
             },

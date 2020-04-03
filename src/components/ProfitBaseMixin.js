@@ -9,11 +9,9 @@ import BigNumber from 'bignumber.js'
 export default {
     created() {
         this.$watch(()=>currentContract.initializedContracts, val => {
-            console.log("INIT CONTRACTS")
             if(val) this.mounted();
         })
         this.$watch(()=>currentContract.currentContract, val => {
-            console.log("CHANGED")
             this.nullifyAmounts()
             this.mounted();
         })

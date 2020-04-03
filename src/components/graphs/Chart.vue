@@ -1,6 +1,6 @@
 <template>
 	<div class = 'tradeview window white'>
- 		<select-pool id='select_pool'/>
+ 		<select-component id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth id='depth_chart' />
 		<fieldset id='onesplit'>
@@ -20,7 +20,7 @@
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 	import Depth from './Depth.vue'
-	import SelectPool from './SelectPool.vue'
+	import Select from './Select.vue'
 	import EventBus from './EventBus'
 	import tradeStore from './tradeStore'
 	import stableswap_fns from '../../utils/stableswap_fns'
@@ -68,7 +68,7 @@
 		components: {
 			highcharts: Chart,
 			Depth,
-			SelectPool,
+			SelectComponent: Select,
 			OneSplit,
 		},
 		data() {
@@ -86,7 +86,7 @@
 										click: (function(self) {
 											return function() {
 												let index = this.dataGroup ? this.dataGroup.start : this.index
-												EventBus.$emit('changeTime', self.data[this.index])
+												EventBus.$emit('changeTime', self.data.map(p=>p[this.index]))
 											}
 										})(this)
 									}
@@ -241,15 +241,15 @@
 					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
 					        			//console.log(nearest)
 					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
-					        			//console.log(self.data[nearest.index])
+					        			//console.log(self.data[nearest.sindex])
 										let calc = stableswap_fns({
 											...self.data[index],
 											...self.poolConfig,
 										});
+										EventBus.$emit('changeTime', self.data.map(p=>p[index]))
 										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
 										//console.log(+get_dy_underlying, "price at point", index)
 										//console.log(self.data[index].prices["0-1"])
-										EventBus.$emit('changeTime', self.data[index])
 					        		}
 					        	})(this),
 					        	load() {
@@ -333,7 +333,6 @@
 		},
 		watch: {
 			selectChange() {
-				console.log("CHANGE")
 				this.mounted()
 			}
 		},
@@ -374,7 +373,6 @@
 				//tradeStore.data = data;
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
 				let poolConfigs = this.poolConfigs = pools.map(pool => {
-					console.log(abis[pool])
 					return {
 						N_COINS: abis[pool].N_COINS,
 						PRECISION_MUL: abis[pool].coin_precisions.map(p=>1e18/p),
@@ -466,7 +464,6 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
-				console.log("TUK I TUK I TAM")
 				let ohlcData = []
 				try {
 					for(let i = 0; i < data[0].length; i++) {
@@ -478,7 +475,6 @@
 						ohlcData[i].volume[this.pairIdx] = []
 						for(let j = 0; j < data.length; j++) {
 							let v = data[j][i]
-							console.log(this.pools[j], "POOLS")
 							let get_dy_underlying = await calcWorker.calcPrice(
 								{...v, ...poolConfigs[j]}, fromCurrency, toCurrency, abis[pools[j]].coin_precisions[fromCurrency])
 							let calcprice = +(BN(get_dy_underlying).div(abis[pools[j]].coin_precisions[toCurrency]))
@@ -492,14 +488,14 @@
 								v.volume[this.pairIdx] = [0]
 							}
 							ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
-							ohlcData[i].volume[this.pairIdx].push(...v.volume[this.pairIdx].map((v,k)=>v / abis[pools[j]].coin_precisions[k]))
+							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>v / abis[pools[j]].coin_precisions[k])
 						}
 					}
 				}
 				catch(err) {
 					console.error(err)
 				}
-				console.log(ohlcData)
+				console.log(ohlcData, "OHLCDATA")
 
 
 			    // split the data set into ohlc and volume
@@ -525,11 +521,11 @@
 			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
 			            ohlcData[i].prices[this.pairIdx][len-1] // close
 			        ]);
-			        let volumeData = ohlcData[i].volume[this.pairIdx][0]
-			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx][1]
+			        let volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
+			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
 			        volume.push([
 			            ohlcData[i].timestamp*1000, // the date
-			            volumeData // the volume
+			            volumeData.reduce((a, b) => a + b, 0) // the volume
 			        ]);
 /*
 			        if(inverse) {

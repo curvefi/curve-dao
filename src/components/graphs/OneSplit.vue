@@ -1,5 +1,20 @@
 <template>
 	<div>
+
+        <div id='poolselect'>
+            <input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
+            <label for='compoundpool'>Compound</label>
+
+            <input id='usdtpool' type='checkbox' value='usdt' v-model='pools'/>
+            <label for='usdtpool'>usdt</label>
+
+            <input id='ypool' type='checkbox' value='y' v-model='pools'/>
+            <label for='ypool'>Y</label>
+
+            <input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
+            <label for='busdpool'>bUSD</label>
+        </div>
+
 		<div style="display: table; margin: auto" class='swap'>
             <fieldset style="float: left">
                 <legend>From:</legend>
@@ -75,6 +90,7 @@
 
 	export default {
 		data: () => ({
+            pools: ['compound', 'usdt', 'y', 'busd'],
 			maxBalance: '0.00',
             currencies: {
                 dai: 'DAI',
@@ -102,9 +118,21 @@
             underlying_coins: [],
             onesplit: null,
             //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
-            CONTRACT_FLAG: 396799,
             swapPromise: helpers.makeCancelable(Promise.resolve())
 		}),
+        computed: {
+            CONTRACT_FLAG() {
+                let flag = 0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000+0x80000;
+                let curveFlags = {
+                    compound: 0x1000,
+                    usdt: 0x2000,
+                    y: 0x4000,
+                    busd: 0x8000
+                }
+                let addFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f]).reduce((a, b) => a + b, 0)
+                return flag + addFlag;
+            }
+        },
         watch: {
             from_currency(val, oldval) {
                 if(val == this.to_currency) {
@@ -244,6 +272,14 @@
 	}
 </script>
 
-<style>
-	
+<style scoped>
+   #poolselect {
+        margin-bottom: 1em;
+    }
+    #poolselect > label:nth-of-type(1) {
+        margin-left: 0;
+    }
+    #poolselect > label {
+        margin-left: 1em;
+    }
 </style>

@@ -14,7 +14,6 @@
 			<label for='busdpool'>bUSD</label>
 		</div>
 
-
 		<select class='tvision' v-model='pair'>
 			<option v-for = 'v in pairs' :value='v'>{{v.val | toUpper}}</option>
 		</select>
@@ -31,7 +30,12 @@
 	import tradeStore from './tradeStore'
 	import * as helpers from '../../utils/helpers'
 
+	import SelectPool from '../common/SelectPool.vue'
+
 	export default {
+		components: {
+			SelectPool
+		},
 		data: () => ({
 			pools: tradeStore.pools,
 			pool: tradeStore.pool,
@@ -54,9 +58,21 @@
 		},
 		computed: {
 			pairs() {
+				//this.pools.map(p=>Object.entriesallCurrencies[this.pool])
+				let pools = this.pools.map(p=>p == 'y' ? 'iearn' : p)
+				let duplicates
+				if(pools.length > 1) {
+					let filteredCurrencies = Object.keys(allCurrencies).filter(p => pools.includes(p))
+					duplicates = filteredCurrencies
+										.flatMap(f=>Object.keys(allCurrencies[f]))
+										.filter((k, i, all)=>all.indexOf(k) === i && all.lastIndexOf(k) !== i)
+				}
+				else {
+					duplicates = Object.keys(allCurrencies[this.pools])
+				}
 				var pairs = []
-				for(let [i, val] of Object.keys(allCurrencies[this.pool]).entries()) {
-					for(let [j, val1] of Object.keys(allCurrencies[this.pool]).entries()) {
+				for(let [i, val] of duplicates.entries()) {
+					for(let [j, val1] of duplicates.entries()) {
 						if(i != j) pairs.push({
 							idx: `${i}-${j}`,
 							val: `${val}-${val1}`

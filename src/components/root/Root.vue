@@ -64,7 +64,7 @@
 
 	        <p>Curve allows users (and smart contracts like
 	        <a href="http://1inch.exchange/">1inch</a>,
-	        <a href="https://paraswap.io/">Paraswap</a> and <a href="https://swap.totle.com/">Totle</a>)
+	        <a href="https://paraswap.io/">Paraswap</a>, <a href="https://swap.totle.com/">Totle</a> and <a href="https://dex.ag/">Dex.ag</a>)
 	        to trade between DAI and USDC with a bespoke low slippage, low fee algorithm
 	        designed specifically for stablecoins and earn fees. Behind the scenes, the
 	        liquidity pool is also supplied to the <a href="https://compound.finance/">Compound</a> protocol

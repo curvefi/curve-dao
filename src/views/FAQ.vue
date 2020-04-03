@@ -9,8 +9,8 @@
         risk, supplemental fee income for liquidity providers, without an
         opportunity cost.</p>
 
-        <p>Curve allows users (and smart contracts like <a href="https://1inch.exchange/">1inch</a>, <a href="https://paraswap.io">Paraswap</a>
-        or <a href="https://swap.totle.com/">Totle</a>) to trade
+        <p>Curve allows users (and smart contracts like <a href="https://1inch.exchange/">1inch</a>, <a href="https://paraswap.io">Paraswap</a>,
+        <a href="https://swap.totle.com/">Totle</a> and <a href="https://dex.ag/">Dex.ag</a>) to trade
         between DAI and USDC with a bespoke low slippage, low fee algorithm
         designed specifically for stablecoins. Behind the scenes, the
         liquidity pool is supplied to the <a href="https://compound.finance/">Compound</a> protocol, where it
@@ -45,7 +45,7 @@
         work. You can acquire cDAI or cUSDC by supplying DAI or USDC to
         <a href="https://app.compound.finance/">Compound</a>, or by
         acquiring cTokens on <a href="https://1inch.exchange/">1inch</a>,
-        <a href="https://paraswap.io/">Paraswap</a> or <a href="https://swap.totle.com/">Totle</a>.</p>
+        <a href="https://paraswap.io/">Paraswap</a>, <a href="https://swap.totle.com/">Totle</a> or <a href="https://dex.ag/">Dex.ag</a>.</p>
 
         <p>Before providing liquidity, you’ll have to approve Curve to
         interact with your cDAI or cUSDC balances.</p>

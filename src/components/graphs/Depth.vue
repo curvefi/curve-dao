@@ -418,8 +418,6 @@
 					})
 				}
 
-				console.log(Math.max(...bxs.map(xs=>Math.min(...xs))), Math.min(...axs.map(xs=>Math.max(...xs))), "MAX/MIN BID PRICE")
-
 				bids = bids.filter(b => b[0] > Math.max(Math.max(...bxs.map(xs=>Math.min(...xs))), 0.5) )
 				asks = asks.filter(a => a[0] < Math.min(Math.min(...axs.map(xs=>Math.max(...xs))), 10) )
 /*				bids = bids.filter(b => b[0] > 0.8)
@@ -454,7 +452,6 @@
 				}*/
 				//this.currentValues /= tradeStore.pools.length
 				this.currentValue = (Math.max(...bxs.flat()) + Math.min(...axs.flat())) / 2
-				console.log(this.currentVluea)
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].addPlotLine({
 		    		id: 1,

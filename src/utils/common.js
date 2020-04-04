@@ -45,10 +45,10 @@ export async function ensure_allowance(amounts) {
     else {
         // Infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
-            if (cBN(allowances[i]).isLessThan(max_allowance.div(cBN(2)))) {
+            if (cBN(allowances[i]).isLessThan(currentContract.max_allowance.div(cBN(2)))) {
                 if (allowances[i] > 0)
                     await approve(currentContract.coins[i], 0, default_account);
-                await approve(currentContract.coins[i], max_allowance, default_account);
+                await approve(currentContract.coins[i], currentContract.max_allowance, default_account);
             }
         }
     }

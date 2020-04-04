@@ -338,6 +338,7 @@
 				let balanceSum = 0;
 
 				for(let [key, pool] of tradeStore.pools.entries()) {
+					if(poolConfigs[key].N_COINS-1 < toCurrency || poolConfigs[key].N_COINS-1 < fromCurrency) continue;
 					if(pool == 'y') pool = 'iearn'
 					let cont = contract.contracts[pool]
 					if(pool == contract.currentContract) cont = contract
@@ -351,11 +352,11 @@
 				let bxs = []
 				let axs = []
 				let ys = []
-
 				for(let i = 0; i <= imax; i++) {
 					let exp = Math.pow(balanceSum, i / 100)
 					ys.push(exp)
 					for(let j = 0; j < pools.length; j++) {
+						if(poolConfigs[j].N_COINS-1 < toCurrency || poolConfigs[j].N_COINS-1 < fromCurrency) continue;
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
@@ -376,6 +377,8 @@
 						axs[j].push(+askrate)
 					}
 				}
+				bxs = bxs.filter(el=>el.length)
+				axs = axs.filter(el=>el.length)
 				//not sure if needed
 				if(bxs.length == 1) {
 					bids = bxs[0].map((price, i) => [price, ys[i]])

@@ -119,6 +119,7 @@
             swap: [],
             underlying_coins: [],
             onesplit: null,
+            onesplit_address: '',
             //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
             swapPromise: helpers.makeCancelable(Promise.resolve())
 		}),
@@ -197,9 +198,9 @@
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, allabis.onesplit_address)
+                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, this.onesplit_address)
                     else
-                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, allabis.onesplit_address);
+                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, this.onesplit_address);
 
                 await this.onesplit.methods.swap(
                         this.underlying_coins[i]._address,
@@ -266,8 +267,8 @@
                 await this.set_to_amount();
 			},
             async setup() {
-                let onesplit_address = await web3.eth.ens.getAddress('1split.eth')
-                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, onesplit_address)
+                this.onesplit_address = await web3.eth.ens.getAddress('1split.eth')
+                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, this.onesplit_address)
                 this.swap.push(new web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
                 this.swap.push(new web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
                 for(let i = 0; i < 4; i++) {

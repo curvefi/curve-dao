@@ -474,7 +474,9 @@
 						ohlcData[i].volume = {}
 						ohlcData[i].volume[this.pairIdx] = []
 						for(let j = 0; j < data.length; j++) {
+							if(poolConfigs[j].N_COINS-1 < toCurrency) continue;
 							let v = data[j][i]
+							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
 							let get_dy_underlying = await calcWorker.calcPrice(
 								{...v, ...poolConfigs[j]}, fromCurrency, toCurrency, abis[pools[j]].coin_precisions[fromCurrency])
 							let calcprice = +(BN(get_dy_underlying).div(abis[pools[j]].coin_precisions[toCurrency]))

@@ -489,6 +489,13 @@
 								v.prices[this.pairIdx] = [calcprice]
 								v.volume[this.pairIdx] = [0]
 							}
+							if(i == data[0].length-1) {
+								let dx = BN(abis[pools[j]].coin_precisions[fromCurrency]).toFixed(0)
+								let lastPrice = await contract.swap.methods
+														.get_dy_underlying(fromCurrency, toCurrency, dx).call()
+								lastPrice = +(BN(lastPrice)).div(abis[pools[j]].coin_precisions[toCurrency])
+								ohlcData[i].prices[this.pairIdx].push(lastPrice)
+							}
 							ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
 							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>v / abis[pools[j]].coin_precisions[k])
 						}
@@ -503,8 +510,6 @@
 			        volume = [],
 			        dataLength = ohlcData.length
 			        // set the allowed units for data grouping
-
-
 
 			    for (let i = 0; i < dataLength; i ++) {
 			    	let len = ohlcData[i].prices[this.pairIdx].length
@@ -535,6 +540,7 @@
 			        		return p;
 			        	})
 			        }*/
+			        if(i == dataLength) console.log("LAST")
 			        if(i == dataLength/20 || i == dataLength/10 || i == dataLength/5 || i == dataLength/2 || i == dataLength-1) {
 					    this.$refs.highcharts.chart.series[0].setData(ohlc)
 					    this.$refs.highcharts.chart.series[1].setData(volume)

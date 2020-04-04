@@ -418,8 +418,14 @@
 					})
 				}
 
+				console.log(Math.max(...bxs.map(xs=>Math.min(...xs))), Math.min(...axs.map(xs=>Math.max(...xs))), "MAX/MIN BID PRICE")
+
+				bids = bids.filter(b => b[0] > Math.max(Math.max(...bxs.map(xs=>Math.min(...xs))), 0.5) )
+				asks = asks.filter(a => a[0] < Math.min(Math.min(...axs.map(xs=>Math.max(...xs))), 10) )
 /*				bids = bids.filter(b => b[0] > 0.8)
 				asks = asks.filter(b => b[0] < 1.2)*/
+
+				console.log(bxs, axs)
 
 				console.log(bids, asks)
 
@@ -439,14 +445,16 @@
 			    // - get from clicked point value otherwise
 
 			    //currentValue without fees
-				for(let [key, pool] of tradeStore.pools.entries()) {
+/*				for(let [key, pool] of tradeStore.pools.entries()) {
 					if(pool == 'y') pool = 'iearn'
 					let cont = contract.contracts[pool]
 					if(pool == contract.currentContract) cont = contract
 		        	this.currentValue = +(BN(await calcWorker.calcPrice({...this.poolInfo[key], ...poolConfigs[key]}, fromCurrency, toCurrency, 
 		        		BN(abis[pool].coin_precisions[fromCurrency]).toFixed(0))).div(BN(abis[pool].coin_precisions[toCurrency])))
-				}
-				this.currentValues /= tradeStore.pools.length
+				}*/
+				//this.currentValues /= tradeStore.pools.length
+				this.currentValue = (Math.max(...bxs.flat()) + Math.min(...axs.flat())) / 2
+				console.log(this.currentVluea)
 		    	console.log(this.chart)
 		    	this.chart.xAxis[0].addPlotLine({
 		    		id: 1,

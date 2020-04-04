@@ -100,9 +100,6 @@
     		amounts: [],
     		to_currency: null,
     		test: null,
-    		coins: [],
-    		rates: [],
-    		swap_address: '',
     		withdrawc: true,
     	}),
         created() {
@@ -136,9 +133,6 @@
         },
         methods: {
             async mounted() {
-            	this.coins = currentContract.coins
-            	this.rates = currentContract.c_rates
-            	this.swap_address = compound.swap_address
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
@@ -225,10 +219,10 @@
 				        });
 			    	}
 			        else {
-			        	let amounts = this.inputs.map((v, i) => cBN(v).times(compound.coin_precisions[i]).toFixed(0))
+			        	let amounts = this.inputs.map((v, i) => cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			        	common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: 1000000
+				        	from: currentContract.default_account, gas: 1600000
 				        })
 			        }
 			    }

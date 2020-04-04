@@ -88,7 +88,7 @@
     		depositc: true,
     		coins: [],
     		rates: [],
-    		swap_address: '',
+    		swap_address: currentContract.swap_address,
     	}),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -105,20 +105,18 @@
         },
         watch: {
         	async depositc(val, oldval) {
-        		let inputs = this.inputs
         		if(val) {
 	            	this.coins = currentContract.coins
 	            	this.rates = currentContract.c_rates
-	            	this.swap_address = compound.swap_address
+	            	this.swap_address = currentContract.swap_address
         		}
             	else {
             		this.coins = currentContract.underlying_coins
-            		this.rates = compound.coin_precisions.map(cp=>1/cp)
-            		this.swap_address = compound.deposit_address
-            		inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
+            		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
+            		this.swap_address = currentContract.deposit_address
             	}
         		this.handle_sync_balances()
-        		await common.calc_slippage(inputs, true);
+        		await common.calc_slippage(this.inputs, true);
         	}
         },
         computed: {
@@ -130,8 +128,7 @@
         methods: {
             async mounted() {
             	this.coins = currentContract.coins
-            	this.rates = currentContract.c_rates
-            	this.swap_address = compound.swap_address
+        		this.rates = currentContract.c_rates
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
@@ -141,9 +138,7 @@
 	        	})
                 common.update_fee_info();
                 await this.handle_sync_balances();
-        		let inputs = this.inputs
-        		if(!this.depositc) inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
-                await common.calc_slippage(inputs, true);
+                await common.calc_slippage(this.inputs, true);
                 for (let i = 0; i < currentContract.N_COINS; i++) {
 					if (cBN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(cBN(2))))
 		            	this.inf_approval = false;
@@ -151,7 +146,7 @@
                 this.disabledButtons = false;
             },
             async handle_sync_balances() {
-			    if(this.depositc) await common.update_rates();
+			    await common.update_rates();
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	var wallet_balance = parseInt(await this.coins[i].methods.balanceOf(currentContract.default_account).call())
 			        Vue.set(this.wallet_balances, i, wallet_balance);
@@ -175,26 +170,28 @@
 			},
 			async handle_add_liquidity() {
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        let amount = cBN(this.inputs[i]).div(cBN(this.rates[i])).toFixed(0,1);
-			        let balance = await this.coins[i].methods.balanceOf(currentContract.default_account).call();
+			        let amount = cBN(this.inputs[i]).div(cBN(currentContract.c_rates[i])).toFixed(0,1);
+			        let balance = await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call();
 			        if(Math.abs(balance/amount-1) < 0.005) {
 			            Vue.set(this.amounts, i, cBN(balance).toFixed(0,1));
 			        }
 			        else {
-			            Vue.set(this.amounts, i, cBN(this.inputs[i]).div(cBN(this.rates[i])).toFixed(0,1)); // -> c-tokens
+			            Vue.set(this.amounts, i, cBN(this.inputs[i]).div(cBN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 			    }
 			    if (this.inf_approval)
 			        await common.ensure_allowance(false, !this.depositc)
-			    else
-			        await common.ensure_allowance(this.amounts, !this.depositc);
+			    else if(this.depositc) {
+			        await common.ensure_allowance(this.amounts, false);
+			    }
+			    else {
+			    	let amounts = this.inputs.map((v, i)=>cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			    	await common.ensure_allowance(amounts, true)
+			    }
 			    var token_amount = 0;
-			    if(this.depositc && parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
+			    if(parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = cBN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
-			    }
-			    if(!this.depositc) {
-			    	token_amount = this.amounts.reduce((a, b) => a.plus(b || 0), cBN(0))
 			    }
 			    if(this.depositc) {
 			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
@@ -203,21 +200,20 @@
 				    });
 				}
 				else {
-					await currentContract.deposit_zap.methods.add_liquidity(this.amounts, token_amount).send({
+			    	let amounts = this.inputs.map((v, i)=>cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
-						gas:1300000
+						gas: 1300000
 					})
 				}
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
 			async change_currency(i) {
-        		let inputs = this.inputs
-        		if(!this.depositc) inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
 	            await common.calc_slippage(this.inputs, true)
 
 	            var value = this.inputs[i]
-	            if (value > this.wallet_balances[i] * this.rates[i])
+	            if (value > this.wallet_balances[i] * currentContract.c_rates[i])
 	                Vue.set(this.bgColors, i, 'red');
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
@@ -227,10 +223,10 @@
 	                    if (j != i) {
 	                        var value_j = this.inputs[j]
 
-	                        if (this.balances[i] * this.rates[i] > 1) {
+	                        if (this.balances[i] * currentContract.c_rates[i] > 1) {
 	                            // proportional
-	                            var newval = value / this.rates[i] * this.balances[j] / this.balances[i];
-	                            newval = Math.floor(newval * this.rates[j] * 100) / 100;
+	                            var newval = value / currentContract.c_rates[i] * this.balances[j] / this.balances[i];
+	                            newval = Math.floor(newval * currentContract.c_rates[j] * 100) / 100;
 	                            Vue.set(this.inputs, j, newval);
 
 	                        } else {
@@ -240,7 +236,7 @@
 	                        }
 
 	                        // Balance not enough highlight
-	                        if (newval > this.wallet_balances[j] * this.rates[j])
+	                        if (newval > this.wallet_balances[j] * currentContract.c_rates[j])
 	                            Vue.set(this.bgColors, j, 'red');
 	                        else
 	                            Vue.set(this.bgColors, j, 'blue');

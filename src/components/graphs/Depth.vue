@@ -37,6 +37,7 @@
 	import jsspline from 'js-spline';
 	import { CurveInterpolator } from 'curve-interpolator';
 	import interpolator from 'natural-spline-interpolator'
+	import * as helpers from '@/utils/helpers'
 
 
 	let BN = val => new Decimal(val)
@@ -385,8 +386,8 @@
 					asks = axs[0].map((price, i) => [price, ys[i]])
 				}
 				else {
-					const bis = bxs.map(bx => interpolator(bx.map((x, i) => [x, ys[i]])))
-					const ais = axs.map(ax => interpolator(ax.map((x,i) => [x, ys[i]])))
+					const bis = bxs.map(bx => helpers.interp(bx, ys))
+					const ais = axs.map(ax => helpers.interp(ax, ys))
 
 					console.log(bxs, axs, ys, "bxs axs ys")
 					for(let i = 0; i < bxs.length; i++) {
@@ -396,12 +397,12 @@
 							console.log(ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0))
 							bids.push([
 								+bxs[i][j],
-								bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
+								bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)// < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
 
 							])
 							asks.push([
 								+axs[i][j],
-								ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0) < 0 ? 0 : ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)
+								ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)// < 0 ? 0 : ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0)
 
 							])
 						}

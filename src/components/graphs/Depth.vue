@@ -33,10 +33,6 @@
 	import { getters, contract, LENDING_PRECISION, PRECISION, changeContract, init } from '../../contract'
 	import abis from '../../allabis'
 	import Decimal from 'break_infinity.js'
-	import Spline from 'cubic-spline'
-	import jsspline from 'js-spline';
-	import { CurveInterpolator } from 'curve-interpolator';
-	import interpolator from 'natural-spline-interpolator'
 	import * as helpers from '@/utils/helpers'
 
 

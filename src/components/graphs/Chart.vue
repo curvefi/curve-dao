@@ -242,12 +242,7 @@
 					        			//console.log(nearest)
 					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
 					        			//console.log(self.data[nearest.sindex])
-										let calc = stableswap_fns({
-											...self.data[index],
-											...self.poolConfig,
-										});
 										EventBus.$emit('changeTime', self.data.map(p=>p[index]))
-										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
 										//console.log(+get_dy_underlying, "price at point", index)
 										//console.log(self.data[index].prices["0-1"])
 					        		}

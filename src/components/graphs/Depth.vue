@@ -1,10 +1,13 @@
 <template>
 	<div class='bigdiv'>
 		<div id='zoomSelect'>
-			<label for='zoom'>Zoom {{zoom}}%</label>
-			<input type='range' min='0' max='300' id='zoom' v-model='zoom'/>
+			<div>
+				<label for='zoom'>Zoom {{zoom}}%</label>
+				<input type='range' min='0' max='300' id='zoom' v-model='zoom'/>
+			</div>
+			<button @click='resetChart'>Reset time interval</button>
 <!-- 			<input type='range' min='0' max='110' id='volzoom' v-model='volZoom'/>
- -->		</div>
+ -->	</div>
 <!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
  -->		<div @mousemove = 'move' ref='chartcontainer'>
 			<highcharts :options='depthchart' ref='highcharts' class='depthchart'></highcharts>
@@ -80,7 +83,7 @@
 							}
 						},
 			    		title: {
-			    			text: ''
+			    			text: '',
 			    		},
 			    		xAxis: {
 			    			//type: 'logarithmic',
@@ -258,13 +261,18 @@
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
 				let zoom = +this.zoom
-				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 100 - 1))
-				priceRight = p + (priceRight - p) * Math.pow(10, 2 * (zoom / 100 - 1))
+				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 300 - 1))
+				priceRight = p + (priceRight - p) * Math.pow(10, 2 * (zoom / 300 - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
 				//console.log(this.chart.series[0].xData[0], this.chart.series[1].xData[0]);
             	this.chart.xAxis[0].setExtremes(this.chart.series[1].xData[0] - 0.001, this.chart.series[0].xData[0] + 0.001, true, true)
+			},
+			async resetChart() {
+				this.chart.setTitle({ text: '' })
+				await this.updatePoolInfo()
+				this.mounted()
 			},
 			async updatePoolInfo() {
 				this.poolInfo = []
@@ -287,8 +295,16 @@
 
 			//we can go back in time! Time travelling!
 			changeTime(poolInfo) {
+				console.log(poolInfo)
 				this.poolInfo = poolInfo
-
+				this.chart.setTitle({ 
+					text: helpers.formatDateToHuman(poolInfo.timestamp || poolInfo[0].timestamp),
+				})
+				this.chart.update({
+					chart: {
+						marginTop: 40
+					}
+				})
 				this.mounted()
 			},
 			async mounted() {
@@ -453,6 +469,7 @@
 		    	/*this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()*/
+		    	console.log("HERE")
 		    	this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();
@@ -512,16 +529,20 @@
 <style scoped>
 	#zoomSelect {
 		margin: 1em 0;
-		max-width: 300px;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
 	}
-	#zoomSelect label {
-		flex: 0.5;
+	#zoomSelect div {
+		max-width: 300px;
 	}
-	#zoomSelect input {
-		flex: 1;
-		display: inline-block;
+	#zoomSelect button {
+		margin-left: 1em;
+	}
+  	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+		#zoomSelect button {
+			margin-left: 0;
+			margin-top: 0.5em;
+		}
 	}
 </style>

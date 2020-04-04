@@ -57,6 +57,17 @@ export function formatDate(date) {
   return monthNames[date.getMonth()] + String(date.getDate()).padStart(2, '0');
 }
 
+export function formatDateToHuman(timestamp) {
+  //convert to UTC
+  let d = new Date(timestamp*1000+(new Date).getTimezoneOffset() * 60 * 1000)
+  return [d.getMonth()+1,
+             d.getDate(),
+             d.getFullYear()].join('/')+' '+
+            [`${d.getHours()}`.padStart(2, '0'),
+             `${d.getMinutes()}`.padStart(2, '0'),
+             `${d.getSeconds()}`.padStart(2, '0')].join(':');
+}
+
 export function formatNumber(number) {
   number = number.toString();
   return number.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");

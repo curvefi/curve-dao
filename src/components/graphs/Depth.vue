@@ -247,11 +247,13 @@
 		},
 		methods: {
 			setZoom() {
-				let ind1 = 1;
-				let ind2 = 0;
-				let min_price = Math.min(this.chart.series[ind1].xData[0], this.chart.series[ind1].xData[100-1])
-				let max_price = Math.max(this.chart.series[ind2].xData[0], this.chart.series[ind2].xData[100-1])
-				let p = (this.chart.series[0].xData[0] + this.chart.series[1].xData[0]) / 2
+                let data1 = this.chart.series[1].xData
+                let data2 = this.chart.series[0].xData
+				let min_price = Math.min(data1[0], data1[data1.length-1])
+				let bid_price = Math.max(data1[0], data1[data1.length-1])
+				let max_price = Math.max(data2[0], data2[data2.length-1])
+				let ask_price = Math.min(data2[0], data2[data2.length-1])
+				let p = (bid_price + ask_price) / 2
 				let priceLeft = Math.max(min_price, p - (max_price - p))
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
@@ -355,10 +357,8 @@
 					ys.push(exp)
 					for(let j = 0; j < pools.length; j++) {
 						let volume = i;
-						console.log(pools[j])
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
-						console.log({...this.poolInfo[j], ...poolConfigs[j]})
 						let dy = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
 						dy = +(BN(dy).div(abis[pools[j]].coin_precisions[toCurrency]))
 						let dx = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
@@ -385,12 +385,9 @@
 					const bis = bxs.map(bx => helpers.interp(bx, ys))
 					const ais = axs.map(ax => helpers.interp(ax, ys))
 
-					console.log(bxs, axs, ys, "bxs axs ys")
 					for(let i = 0; i < bxs.length; i++) {
 						for(let j = 0; j < bxs[0].length; j++) {
 
-							console.log(bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0))
-							console.log(ais.map(f => f(axs[i][j])).reduce((a, b) => a + b, 0))
 							bids.push([
 								+bxs[i][j],
 								bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)// < 0 ? 0 : bis.map(f => f(bxs[i][j])).reduce((a, b) => a + b, 0)
@@ -414,14 +411,9 @@
 					})
 				}
 
-				bids = bids.filter(b => b[0] > Math.max(Math.max(...bxs.map(xs=>Math.min(...xs))), 0.5) )
+				bids = bids.filter(b => b[0] > Math.max(Math.max(...bxs.map(xs=>Math.min(...xs))), 0.1) )
 				asks = asks.filter(a => a[0] < Math.min(Math.min(...axs.map(xs=>Math.max(...xs))), 10) )
-/*				bids = bids.filter(b => b[0] > 0.8)
-				asks = asks.filter(b => b[0] < 1.2)*/
-
-				console.log(bxs, axs)
-
-				console.log(bids, asks)
+                bids = bids.reverse()
 
 				this.chart.hideLoading()
 			    this.$refs.highcharts.chart.addSeries({
@@ -448,7 +440,6 @@
 				}*/
 				//this.currentValues /= tradeStore.pools.length
 				this.currentValue = (Math.max(...bxs.flat()) + Math.min(...axs.flat())) / 2
-		    	console.log(this.chart)
 		    	this.chart.xAxis[0].addPlotLine({
 		    		id: 1,
 		    		value: this.currentValue,

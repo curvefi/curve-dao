@@ -26,19 +26,37 @@ export function approve_to_migrate(amount, account) {
             });
 }
 
-export async function ensure_allowance(amounts) {
+export async function ensure_allowance_zap_out(amount) {
+    var default_account = (await web3.eth.getAccounts())[0];
+    let fromContract = currentContract.swap_token;
+    let toContract = allabis[currentContract.currentContract].deposit_address
+    let allowance = await currentContract.swap_token.methods.allowance(default_account, toContract).call()
+
+    if(allowance > 0) await approve(fromContract, 0, default_account, toContract)
+    await approve(fromContract, amount, default_account, toContract)
+}
+
+export async function ensure_allowance(amounts, plain = false, withdrawplain = false) {
     var default_account = (await web3.eth.getAccounts())[0];
     var allowances = new Array(currentContract.N_COINS);
+    let coins = currentContract.coins;
+    let swap = currentContract.swap_address;
+    if(plain) {
+        coins = currentContract.underlying_coins;
+        swap = allabis[currentContract.currentContract].deposit_address;
+    }
+    let fromContract = coins
+    if(withdrawplain) fromContract = currentContract.deposit_zap
     for (let i=0; i < currentContract.N_COINS; i++)
-        allowances[i] = await currentContract.coins[i].methods.allowance(default_account, currentContract.swap_address).call();
+        allowances[i] = await coins[i].methods.allowance(default_account, swap).call();
 
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(amounts[i])) {
                 if (allowances[i] > 0)
-                    await approve(currentContract.coins[i], 0, default_account);
-                await approve(currentContract.coins[i], amounts[i], default_account);
+                    await approve(coins[i], 0, default_account, swap);
+                await approve(coins[i], amounts[i], default_account, swap);
             }
         }
     }
@@ -47,8 +65,8 @@ export async function ensure_allowance(amounts) {
         for (let i=0; i < currentContract.N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(max_allowance.div(cBN(2)))) {
                 if (allowances[i] > 0)
-                    await approve(currentContract.coins[i], 0, default_account);
-                await approve(currentContract.coins[i], max_allowance, default_account);
+                    await approve(coins[i], 0, default_account, swap);
+                await approve(coins[i], max_allowance, default_account, swap);
             }
         }
     }

@@ -5,7 +5,17 @@
                 <legend>Currencies:</legend>
                 <ul>
                     <li v-for='(currency, i) in Object.keys(currencies)'>
-                        <label :for="'currency_'+i">{{currencies[currency]}} <span v-show="!(currency == 'usdt' && currentPool == 'usdt')"> (in {{currency | capitalize}}) </span></label>
+                        <label :for="'currency_'+i">
+                        	<span v-show='depositc'>
+                        		{{currencies[currency]}} 
+	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt')"> 
+	                        		(in {{currency | capitalize}}) 
+	                        	</span>
+	                        </span>
+	                        <span v-show='!depositc'>
+	                        	{{currency | capitalize}}
+	                        </span>
+                        </label>
                         <input 
 	                        type="text" 
 	                        :id="'currency_'+i" 
@@ -32,6 +42,10 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust this contract forever</label>
                 </li>
+                <li>
+                    <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
+                    <label for="depositc">Deposit compounded</label>
+                </li>
             </ul>
 
             <p style="text-align: center">
@@ -47,6 +61,8 @@
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
     import { getters, contract as currentContract } from '../contract'
+    import allabis from '../allabis'
+    const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
     import BigNumber from 'bignumber.js'
@@ -69,10 +85,16 @@
     		inputs: [],
     		amounts: [],
     		bgColors: [],
+    		depositc: true,
+    		coins: [],
+    		rates: [],
+    		swap_address: '',
     	}),
         created() {
-            this.$watch(()=>currentContract.default_account, val => {
-                if(val) this.mounted();
+            this.$watch(()=>currentContract.default_account, (val, oldval) => {
+            	if(!val || !oldval) return;
+            	if(val.toLowerCase() == oldval.toLowerCase()) return;
+                this.mounted();
             })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
@@ -80,6 +102,24 @@
             this.$watch(()=>currentContract.currentContract, val => {
             	if(currentContract.initializedContracts) this.mounted();
             })
+        },
+        watch: {
+        	async depositc(val, oldval) {
+        		let inputs = this.inputs
+        		if(val) {
+	            	this.coins = currentContract.coins
+	            	this.rates = currentContract.c_rates
+	            	this.swap_address = compound.swap_address
+        		}
+            	else {
+            		this.coins = currentContract.underlying_coins
+            		this.rates = compound.coin_precisions.map(cp=>1/cp)
+            		this.swap_address = compound.deposit_address
+            		inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
+            	}
+        		this.handle_sync_balances()
+        		await common.calc_slippage(inputs, true);
+        	}
         },
         computed: {
           ...getters,
@@ -89,6 +129,9 @@
         },
         methods: {
             async mounted() {
+            	this.coins = currentContract.coins
+            	this.rates = currentContract.c_rates
+            	this.swap_address = compound.swap_address
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
@@ -98,26 +141,29 @@
 	        	})
                 common.update_fee_info();
                 await this.handle_sync_balances();
-                await common.calc_slippage(this.inputs, true);
+        		let inputs = this.inputs
+        		if(!this.depositc) inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
+                await common.calc_slippage(inputs, true);
                 for (let i = 0; i < currentContract.N_COINS; i++) {
-					if (cBN(await currentContract.coins[i].methods.allowance(currentContract.default_account, currentContract.swap_address).call()).lte(currentContract.max_allowance.div(cBN(2))))
+					if (cBN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(cBN(2))))
 		            	this.inf_approval = false;
 		        }
                 this.disabledButtons = false;
             },
             async handle_sync_balances() {
-			    await common.update_rates();
+			    if(this.depositc) await common.update_rates();
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	var wallet_balance = parseInt(await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call())
+			    	var wallet_balance = parseInt(await this.coins[i].methods.balanceOf(currentContract.default_account).call())
 			        Vue.set(this.wallet_balances, i, wallet_balance);
 			        if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0);
 			    }
-
 			    if (this.max_balances) {
 
 			        this.disabled = true;
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
-			            var val = Math.floor(this.wallet_balances[i] * currentContract.c_rates[i] * 100) / 100;
+			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
+			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
+			            var val = Math.floor(amount * 100) / 100;
 			            val = val.toFixed(2)
 			            Vue.set(this.inputs, i, val)
 			        }
@@ -129,35 +175,49 @@
 			},
 			async handle_add_liquidity() {
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        let amount = cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1);
-			        let balance = await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call();
+			        let amount = cBN(this.inputs[i]).div(cBN(this.rates[i])).toFixed(0,1);
+			        let balance = await this.coins[i].methods.balanceOf(currentContract.default_account).call();
 			        if(Math.abs(balance/amount-1) < 0.005) {
 			            Vue.set(this.amounts, i, cBN(balance).toFixed(0,1));
 			        }
 			        else {
-			            Vue.set(this.amounts, i, cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
+			            Vue.set(this.amounts, i, cBN(this.inputs[i]).div(cBN(this.rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 			    }
 			    if (this.inf_approval)
-			        await common.ensure_allowance(false)
+			        await common.ensure_allowance(false, !this.depositc)
 			    else
-			        await common.ensure_allowance(this.amounts);
+			        await common.ensure_allowance(this.amounts, !this.depositc);
 			    var token_amount = 0;
-			    if(parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
+			    if(this.depositc && parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = cBN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }
-			    await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
-			        from: currentContract.default_account,
-			        gas: 1300000});
+			    if(!this.depositc) {
+			    	token_amount = this.amounts.reduce((a, b) => a.plus(b || 0), cBN(0))
+			    }
+			    if(this.depositc) {
+			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
+				        from: currentContract.default_account,
+				        gas: 1300000
+				    });
+				}
+				else {
+					await currentContract.deposit_zap.methods.add_liquidity(this.amounts, token_amount).send({
+						from: currentContract.default_account,
+						gas:1300000
+					})
+				}
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
 			async change_currency(i) {
+        		let inputs = this.inputs
+        		if(!this.depositc) inputs = inputs.map((v,i)=>v / currentContract.c_rates[i])
 	            await common.calc_slippage(this.inputs, true)
 
 	            var value = this.inputs[i]
-	            if (value > this.wallet_balances[i] * currentContract.c_rates[i])
+	            if (value > this.wallet_balances[i] * this.rates[i])
 	                Vue.set(this.bgColors, i, 'red');
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
@@ -167,10 +227,10 @@
 	                    if (j != i) {
 	                        var value_j = this.inputs[j]
 
-	                        if (this.balances[i] * currentContract.c_rates[i] > 1) {
+	                        if (this.balances[i] * this.rates[i] > 1) {
 	                            // proportional
-	                            var newval = value / currentContract.c_rates[i] * this.balances[j] / this.balances[i];
-	                            newval = Math.floor(newval * currentContract.c_rates[j] * 100) / 100;
+	                            var newval = value / this.rates[i] * this.balances[j] / this.balances[i];
+	                            newval = Math.floor(newval * this.rates[j] * 100) / 100;
 	                            Vue.set(this.inputs, j, newval);
 
 	                        } else {
@@ -180,7 +240,7 @@
 	                        }
 
 	                        // Balance not enough highlight
-	                        if (newval > this.wallet_balances[j] * currentContract.c_rates[j])
+	                        if (newval > this.wallet_balances[j] * this.rates[j])
 	                            Vue.set(this.bgColors, j, 'red');
 	                        else
 	                            Vue.set(this.bgColors, j, 'blue');

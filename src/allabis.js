@@ -10,6 +10,199 @@ token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
 old_token_address: '0x3740fb63ab7a09891d7c0d4299442A551D06F5fD',
 migration_address: '0x54Ee22d5593FC76fB20EafAb66C45aAb3268B800',
 infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+deposit_address: '0x7B5A0905cBeD0E96c062DbF0F921726db1f5f55B',
+deposit_abi:  
+[
+ {
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "address[2]",
+    "name": "_coins"
+   },
+   {
+    "type": "address[2]",
+    "name": "_underlying_coins"
+   },
+   {
+    "type": "address",
+    "name": "_curve"
+   },
+   {
+    "type": "address",
+    "name": "_token"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "constructor"
+ },
+ {
+  "name": "add_liquidity",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256[2]",
+    "name": "uamounts"
+   },
+   {
+    "type": "uint256",
+    "name": "min_mint_amount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 117161
+ },
+ {
+  "name": "remove_liquidity",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_amount"
+   },
+   {
+    "type": "uint256[2]",
+    "name": "min_uamounts"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 83281
+ },
+ {
+  "name": "remove_liquidity_imbalance",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256[2]",
+    "name": "uamounts"
+   },
+   {
+    "type": "uint256",
+    "name": "max_burn_amount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 96384
+ },
+ {
+  "name": "calc_withdraw_one_coin",
+  "outputs": [
+   {
+    "type": "uint256",
+    "name": "out"
+   }
+  ],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 2938045
+ },
+ {
+  "name": "remove_liquidity_one_coin",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   },
+   {
+    "type": "uint256",
+    "name": "min_uamount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 3026812
+ },
+ {
+  "name": "coins",
+  "outputs": [
+   {
+    "type": "address",
+    "name": "out"
+   }
+  ],
+  "inputs": [
+   {
+    "type": "int128",
+    "name": "arg0"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1650
+ },
+ {
+  "name": "underlying_coins",
+  "outputs": [
+   {
+    "type": "address",
+    "name": "out"
+   }
+  ],
+  "inputs": [
+   {
+    "type": "int128",
+    "name": "arg0"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1680
+ },
+ {
+  "name": "curve",
+  "outputs": [
+   {
+    "type": "address",
+    "name": "out"
+   }
+  ],
+  "inputs": [],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1511
+ },
+ {
+  "name": "token",
+  "outputs": [
+   {
+    "type": "address",
+    "name": "out"
+   }
+  ],
+  "inputs": [],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1541
+ }
+],
 
 migration_abi: [
  {

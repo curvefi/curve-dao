@@ -142,6 +142,7 @@ export async function init() {
     if(state.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
+	    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     }
 
     state.swap = new web3.eth.Contract(allabis[state.currentContract].swap_abi, state.swap_address);

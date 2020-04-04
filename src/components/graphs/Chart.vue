@@ -1,6 +1,6 @@
 <template>
 	<div class = 'tradeview window white'>
- 		<select-pool id='select_pool'/>
+ 		<select-component id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth id='depth_chart' />
 		<fieldset id='onesplit'>
@@ -20,7 +20,7 @@
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 	import Depth from './Depth.vue'
-	import SelectPool from './SelectPool.vue'
+	import Select from './Select.vue'
 	import EventBus from './EventBus'
 	import tradeStore from './tradeStore'
 	import stableswap_fns from '../../utils/stableswap_fns'
@@ -37,7 +37,7 @@
 	const calcWorker = Comlink.wrap(worker);
 
 
-	Highcharts.seriesTypes.column.prototype.pointAttribs = (function(func) {
+/*	Highcharts.seriesTypes.column.prototype.pointAttribs = (function(func) {
 	    return function(point, state) {
 	      var attribs = func.apply(this, arguments);
 	      
@@ -49,7 +49,7 @@
 	      
 	      return attribs;
 	    };
-	}(Highcharts.seriesTypes.column.prototype.pointAttribs));
+	}(Highcharts.seriesTypes.column.prototype.pointAttribs));*/
 
 	Highcharts.setOptions({
 		lang: {
@@ -68,7 +68,7 @@
 		components: {
 			highcharts: Chart,
 			Depth,
-			SelectPool,
+			SelectComponent: Select,
 			OneSplit,
 		},
 		data() {
@@ -86,7 +86,7 @@
 										click: (function(self) {
 											return function() {
 												let index = this.dataGroup ? this.dataGroup.start : this.index
-												EventBus.$emit('changeTime', self.data[this.index])
+												EventBus.$emit('changeTime', self.data.map(p=>p[this.index]))
 											}
 										})(this)
 									}
@@ -241,15 +241,15 @@
 					        			let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
 					        			//console.log(nearest)
 					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
-					        			//console.log(self.data[nearest.index])
+					        			//console.log(self.data[nearest.sindex])
 										let calc = stableswap_fns({
 											...self.data[index],
 											...self.poolConfig,
 										});
+										EventBus.$emit('changeTime', self.data.map(p=>p[index]))
 										let get_dy_underlying = calc.get_dy_underlying(self.fromCurrency, self.toCurrency, abis[self.pool].coin_precisions[self.fromCurrency])
 										//console.log(+get_dy_underlying, "price at point", index)
 										//console.log(self.data[index].prices["0-1"])
-										EventBus.$emit('changeTime', self.data[index])
 					        		}
 					        	})(this),
 					        	load() {
@@ -319,10 +319,11 @@
 				  		
 				  	},
 				  	pool: '',
+				  	pools: [],
 				  	interval: null,
 				  	chart: null,
 				  	data: [],
-				  	poolConfig: null,
+				  	poolConfigs: null,
 				  	fromCurrency: null,
 				  	toCurrency: null,
 		  }
@@ -347,14 +348,14 @@
 		},
 		computed: {
 			selectChange() {
-				return tradeStore.pairIdx, tradeStore.pool, tradeStore.interval, Date.now();
+				return tradeStore.pairIdx, tradeStore.pools.join(), tradeStore.interval, Date.now();
 			}
 		},
 		methods: {
 			async mounted() {
 
 				this.chart.showLoading();
-				this.pool = tradeStore.pool;
+				this.pools = tradeStore.pools;
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
 				this.interval = tradeStore.interval;
@@ -366,17 +367,20 @@
 				//move this to selectPool method
 				let jsonInterval = this.interval;
 				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
-				let data = await fetch(`https://beta.curve.fi/raw-stats/${this.pool == 'iearn' ? 'y' : this.pool}-${jsonInterval}.json`);
-				this.data = data = await data.json();
+				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool}-${jsonInterval}.json`));
+				let requests = await Promise.all(urls)
+				let data = this.data = await Promise.all(requests.map(r=>r.json()))
 				//tradeStore.data = data;
-
-				let poolConfig = this.poolConfig = {
-					N_COINS: abis[this.pool].N_COINS,
-					PRECISION_MUL: abis[this.pool].coin_precisions.map(p=>1e18/p),
-					USE_LENDING: abis[this.pool].USE_LENDING,
-					LENDING_PRECISION,
-					PRECISION,
-				}
+				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
+				let poolConfigs = this.poolConfigs = pools.map(pool => {
+					return {
+						N_COINS: abis[pool].N_COINS,
+						PRECISION_MUL: abis[pool].coin_precisions.map(p=>1e18/p),
+						USE_LENDING: abis[pool].USE_LENDING,
+						LENDING_PRECISION,
+						PRECISION,
+					}
+				})
 
 				let fromCurrency = this.fromCurrency = this.pairIdx.split('-')[0]
 				let toCurrency = this.toCurrency = this.pairIdx.split('-')[1]
@@ -460,27 +464,39 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
-
-				for(let v of data) {
-					//let get_dy_underlying = calc.get_dy_underlying(fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
-					let get_dy_underlying = await calcWorker.calcPrice({...v, ...poolConfig}, fromCurrency, toCurrency, abis[this.pool].coin_precisions[fromCurrency])
-					let calcprice = +(BN(get_dy_underlying).div(abis[this.pool].coin_precisions[toCurrency]))
-					if(inverse) calcprice = 1 / calcprice
-					if(v.prices[this.pairIdx]) {
-						if(inverse) {
-							v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
+				let ohlcData = []
+				try {
+					for(let i = 0; i < data[0].length; i++) {
+						ohlcData[i] = {}
+						ohlcData[i].timestamp = data[0][i].timestamp
+						ohlcData[i].prices = {}
+						ohlcData[i].prices[this.pairIdx] = []
+						ohlcData[i].volume = {}
+						ohlcData[i].volume[this.pairIdx] = []
+						for(let j = 0; j < data.length; j++) {
+							if(poolConfigs[j].N_COINS-1 < toCurrency) continue;
+							let v = data[j][i]
+							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
+							let get_dy_underlying = await calcWorker.calcPrice(
+								{...v, ...poolConfigs[j]}, fromCurrency, toCurrency, abis[pools[j]].coin_precisions[fromCurrency])
+							let calcprice = +(BN(get_dy_underlying).div(abis[pools[j]].coin_precisions[toCurrency]))
+							if(inverse) calcprice = 1 / calcprice
+							if(v.prices[this.pairIdx]) {
+								if(inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
+								v.prices[this.pairIdx].push(calcprice)
+							}
+							else {
+								v.prices[this.pairIdx] = [calcprice]
+								v.volume[this.pairIdx] = [0]
+							}
+							ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
+							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>v / abis[pools[j]].coin_precisions[k])
 						}
-						v.prices[this.pairIdx].push(calcprice)
-					}
-					else {
-						v.prices[this.pairIdx] = [calcprice]
-						v.volume[this.pairIdx] = [0]
-						//console.log(+(calcprice.div(abis[this.pool].coin_precisions[toCurrency])))
-						//if(calcprice > 1.1 || calcprice < 0.9) console.log(v)
 					}
 				}
-
-				let ohlcData = data
+				catch(err) {
+					console.error(err)
+				}
 
 			    // split the data set into ohlc and volume
 			    var ohlc = [],
@@ -505,11 +521,11 @@
 			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
 			            ohlcData[i].prices[this.pairIdx][len-1] // close
 			        ]);
-			        let volumeData = ohlcData[i].volume[this.pairIdx][0] / abis[this.pool].coin_precisions[fromCurrency]
-			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx][1] / abis[this.pool].coin_precisions[toCurrency]
+			        let volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
+			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
 			        volume.push([
 			            ohlcData[i].timestamp*1000, // the date
-			            volumeData // the volume
+			            volumeData.reduce((a, b) => a + b, 0) // the volume
 			        ]);
 /*
 			        if(inverse) {

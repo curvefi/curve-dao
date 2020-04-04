@@ -67,4 +67,42 @@ export function findClosestIndex(timestamp, data) {
     return index;
 }
 
+export function binary_search(x, val) {
+    let ascending = (x[x.length - 1] > x[0])
+    let start = 0
+    let end = x.length - 1
+
+    while (true) {
+        if (Math.abs(start - end) <= 1) return Math.min(start, end)
+        if (x[start] == val) return start
+        if (x[end] == val) return end
+
+        let mid = Math.floor((start + end) / 2)
+
+        if (ascending) {
+            if (val >= x[mid])
+                start = mid
+            else
+                end = mid
+        } else {
+            if (val <= x[mid])
+                start = mid
+            else
+                end = mid
+        }
+    }
+}
+
+export function interp(x, y, val) {
+  let x_min = Math.min(x[0], x[x.length - 1])
+  let x_max = Math.max(x[0], x[x.length - 1])
+  return val => {
+    if ((val <= x_min) | (val >= x_max))
+        return 0
+    let i = binary_search(x, val)
+    return y[i] + (y[i+1] - y[i]) / (x[i+1] - x[i]) * (val - x[i])
+  }
+}
+
+
 Vue.filter('formatNumber', formatNumber)

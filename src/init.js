@@ -118,14 +118,9 @@ async function init(init = true) {
     else window.web3 = new Web3(infura_url)
 
 
-    if(init) await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
-    if(window.location.href.includes('withdraw_old')) 
-      await common.update_fee_info('old')
-  	else 
-      await common.update_fee_info();
-  	currentContract.contract.initializedContracts = true;
+    if(init) await currentContract.init();
   }
   catch(err) {
     console.error(err)

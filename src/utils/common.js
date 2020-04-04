@@ -1,6 +1,6 @@
 import Vue from "vue";
 import BigNumber from 'bignumber.js'
-import { contract as currentContract } from '../contract.js'
+import { contract as currentContract, infura_url } from '../contract.js'
 import * as abis from '../abis'
 import allabis from '../allabis'
 import Web3 from "web3";
@@ -95,55 +95,55 @@ export function init_menu() {
     })
 }
 
-export async function update_rates(version = 'new') {
-    for (let i = 0; i < currentContract.N_COINS; i++) {
+export async function update_rates(version = 'new', contract) {
+    if(!contract) contract = currentContract
+    for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         /*
         rate: uint256 = cERC20(self.coins[i]).exchangeRateStored()
         supply_rate: uint256 = cERC20(self.coins[i]).supplyRatePerBlock()
         old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
         rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
         */
-
-        if(allabis[currentContract.currentContract].tethered && allabis[currentContract.currentContract].tethered[i] &&
-            allabis[currentContract.currentContract].use_lending && !allabis[currentContract.currentContract].use_lending[i]) {
-
-            Vue.set(currentContract.c_rates, i, 1 / currentContract.coin_precisions[i]);
+        if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
+            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
+            Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
-        else if(['iearn', 'busd'].includes(currentContract.currentContract)) { 
-            var rate = parseInt(await currentContract.coins[i].methods.getPricePerFullShare().call()) / 1e18 / currentContract.coin_precisions[i];
-            Vue.set(currentContract.c_rates, i, rate);
+        else if(['iearn', 'busd'].includes(contract.currentContract)) {
+            var rate = parseInt(await contract.coins[i].methods.getPricePerFullShare().call()) / 1e18 / allabis[contract.currentContract].coin_precisions[i];
+            Vue.set(contract.c_rates, i, rate);
 
         }
         else {
-            var rate = parseInt(await currentContract.coins[i].methods.exchangeRateStored().call()) / 1e18 / currentContract.coin_precisions[i];
-            var supply_rate = parseInt(await currentContract.coins[i].methods.supplyRatePerBlock().call());
-            var old_block = parseInt(await currentContract.coins[i].methods.accrualBlockNumber().call());
+            var rate = parseInt(await contract.coins[i].methods.exchangeRateStored().call()) / 1e18 / allabis[contract.currentContract].coin_precisions[i];
+            var supply_rate = parseInt(await contract.coins[i].methods.supplyRatePerBlock().call());
+            var old_block = parseInt(await contract.coins[i].methods.accrualBlockNumber().call());
             var block = await web3.eth.getBlockNumber();
-            Vue.set(currentContract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18));
+            Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18));
         }
     }
-    var swap_stats = currentContract.swap;
-    if(version == 'old') swap_stats = currentContract.old_swap;
-    currentContract.fee = parseInt(await swap_stats.methods.fee().call()) / 1e10;
+    var swap_stats = contract.swap;
+    if(version == 'old') swap_stats = contract.old_swap;
+    contract.fee = parseInt(await swap_stats.methods.fee().call()) / 1e10;
 }
 
-export async function update_fee_info(version = 'new') {
-    var swap_abi_stats = abis.swap_abi;
-    var swap_address_stats = currentContract.swap_address;
-    var swap_stats = currentContract.swap;
-    var swap_token_stats = currentContract.swap_token;
+export async function update_fee_info(version = 'new', contract) {
+    if(!contract) contract = currentContract
+    var swap_abi_stats = allabis[contract.currentContract].swap_abi;
+    var swap_address_stats = allabis[contract.currentContract].swap_address;
+    var swap_stats = contract.swap;
+    var swap_token_stats = contract.swap_token;
     if(version == 'old') {
-        swap_abi_stats = abis.old_swap_abi;
-        swap_address_stats = currentContract.old_swap_address;
-        swap_stats = currentContract.old_swap;
-        swap_token_stats = currentContract.old_swap_token;
+        swap_abi_stats = allabis[contract.currentContract].old_swap_abi;
+        swap_address_stats = allabis[contract.currentContract].old_swap_address;
+        swap_stats = allabis[contract.currentContract].old_swap;
+        swap_token_stats = allabis[contract.currentContract].old_swap_token;
     }
 
-    await update_rates();
+    await update_rates(version, contract);
     var promises = [];
-    let infuraProvider = new Web3(currentContract.infura_url)
+    let infuraProvider = new Web3(infura_url)
     let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
-    for (let i = 0; i < currentContract.N_COINS; i++) {
+    for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         promises.push(swapInfura.methods.balances(i).call())
 /*        balances[i] = parseInt(await swap.methods.balances(i).call());
         $(bal_info[i]).text((balances[i] * c_rates[i]).toFixed(2));
@@ -153,30 +153,30 @@ export async function update_fee_info(version = 'new') {
     let balances = []
     currentContract.total = 0;
     resolves.forEach((balance, i) => {
-        Vue.set(currentContract.balances, i, balance)
+        Vue.set(contract.balances, i, balance)
         balances[i] = +balance;
-        Vue.set(currentContract.bal_info, i, balances[i] * currentContract.c_rates[i]);
-        currentContract.total += balances[i] * currentContract.c_rates[i];
+        Vue.set(contract.bal_info, i, balances[i] * contract.c_rates[i]);
+        contract.total += balances[i] * contract.c_rates[i];
     })
-    currentContract.fee = parseInt(await swap_stats.methods.fee().call()) / 1e10;
-    currentContract.admin_fee = parseInt(await swap_stats.methods.admin_fee().call()) / 1e10;
+    contract.fee = parseInt(await swap_stats.methods.fee().call()) / 1e10;
+    contract.admin_fee = parseInt(await swap_stats.methods.admin_fee().call()) / 1e10;
 
     var default_account = (await web3.eth.getAccounts())[0];
     if (default_account) {
         var token_balance = parseInt(await swap_token_stats.methods.balanceOf(default_account).call());
         if (token_balance > 0) {
             var token_supply = parseInt(await swap_token_stats.methods.totalSupply().call());
-            currentContract.totalShare = 0;
-            for (let i=0; i < currentContract.N_COINS; i++) {
-                var val = balances[i] * currentContract.c_rates[i] * token_balance / token_supply;
-                currentContract.totalShare += val;
-                Vue.set(currentContract.l_info, i, val)
+            contract.totalShare = 0;
+            for (let i=0; i < contract.N_COINS; i++) {
+                var val = balances[i] * contract.c_rates[i] * token_balance / token_supply;
+                contract.totalShare += val;
+                Vue.set(contract.l_info, i, val)
             }
-            currentContract.showShares = true;
+            contract.showShares = true;
         }
         else {
-            currentContract.totalShare = 0;
-            currentContract.showShares = false;
+            contract.totalShare = 0;
+            contract.showShares = false;
             //no need to set other values as v-show check is done based on totalShare
         }
     }

@@ -1,5 +1,20 @@
 <template>
 	<div>
+
+        <div id='poolselect'>
+            <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
+            <label for='compoundpool1'>Compound</label>
+
+            <input id='usdtpool1' type='checkbox' value='usdt' v-model='pools'/>
+            <label for='usdtpool1'>usdt</label>
+
+            <input id='ypool1' type='checkbox' value='y' v-model='pools'/>
+            <label for='ypool1'>Y</label>
+
+            <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
+            <label for='busdpool1'>bUSD</label>
+        </div>
+
 		<div style="display: table; margin: auto" class='swap'>
             <fieldset style="float: left">
                 <legend>From:</legend>
@@ -64,6 +79,8 @@
 </template>
 
 <script>
+    import EventBus from './EventBus'
+
     import * as allabis from '../../allabis'
     let contractAbis = allabis.default
 
@@ -75,6 +92,7 @@
 
 	export default {
 		data: () => ({
+            pools: ['compound', 'usdt', 'y', 'busd'],
 			maxBalance: '0.00',
             currencies: {
                 dai: 'DAI',
@@ -101,10 +119,23 @@
             swap: [],
             underlying_coins: [],
             onesplit: null,
+            onesplit_address: '',
             //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
-            CONTRACT_FLAG: 396799,
             swapPromise: helpers.makeCancelable(Promise.resolve())
 		}),
+        computed: {
+            CONTRACT_FLAG() {
+                let flag = 0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000+0x80000;
+                let curveFlags = {
+                    compound: 0x1000,
+                    usdt: 0x2000,
+                    y: 0x4000,
+                    busd: 0x8000
+                }
+                let addFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f]).reduce((a, b) => a + b, 0)
+                return flag + addFlag;
+            }
+        },
         watch: {
             from_currency(val, oldval) {
                 if(val == this.to_currency) {
@@ -116,8 +147,15 @@
                 this.to_cur_handler()
             }
         },
+        async created() {
+            //EventBus.$on('selected', this.selectPool)
+            EventBus.$on('changeTime', this.changeTime)
+            this.$watch(()=>contract.initializedContracts, async (val) => {
+                await this.mounted()
+            })
+        },
         mounted() {
-            this.mounted()
+            //this.mounted()
         },
 		methods: {
             async mounted() {
@@ -160,9 +198,9 @@
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, allabis.onesplit_address)
+                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, this.onesplit_address)
                     else
-                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, allabis.onesplit_address);
+                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, this.onesplit_address);
 
                 await this.onesplit.methods.swap(
                         this.underlying_coins[i]._address,
@@ -229,8 +267,8 @@
                 await this.set_to_amount();
 			},
             async setup() {
-                let onesplit_address = await web3.eth.ens.getAddress('1split.eth')
-                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, onesplit_address)
+                this.onesplit_address = await web3.eth.ens.getAddress('1split.eth')
+                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, this.onesplit_address)
                 this.swap.push(new web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
                 this.swap.push(new web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
                 for(let i = 0; i < 4; i++) {
@@ -244,6 +282,14 @@
 	}
 </script>
 
-<style>
-	
+<style scoped>
+   #poolselect {
+        margin-bottom: 1em;
+    }
+    #poolselect > label:nth-of-type(1) {
+        margin-left: 0;
+    }
+    #poolselect > label {
+        margin-left: 1em;
+    }
 </style>

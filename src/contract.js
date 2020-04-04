@@ -1,8 +1,9 @@
 import Vue from "vue";
-import * as cBN from 'bignumber.js'
+import * as BN from 'bignumber.js'
 import * as abis from './abis'
 import allabis from './allabis'
 import web3Init from './init'
+import * as common from './utils/common.js'
 
 var N_COINS = 2;
 var coin_precisions = [1e18, 1e6];
@@ -15,7 +16,7 @@ export const LENDING_PRECISION = 1e18;
 export const PRECISION = 1e18;
 
 var migration_address = '0x54Ee22d5593FC76fB20EafAb66C45aAb3268B800';
-var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b';
+export const infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b';
 
 const currencies = {
 	compound: {
@@ -59,7 +60,69 @@ export const gas = {
 	}
 }
 
+let initState = {
+	balances: [],
+	wallet_balances: [],
+	underlying_coins: [],
+	c_rates: [],
+	bal_info: [],
+	total: 0,
+	l_info: [],
+	totalShare: 0,
+	showShares: false,
+}
+
 const state = Vue.observable({
+	contracts: {
+		compound: {
+			currentContract: 'compound',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+		},
+		usdt: {
+			currentContract: 'usdt',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+		},
+		iearn: {
+			currentContract: 'iearn',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+		},
+		busd: {
+			currentContract: 'busd',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+		},
+	},
 	currentContract: 'compound',
 	currencies: currencies.compound,
 	N_COINS: N_COINS,
@@ -84,7 +147,7 @@ const state = Vue.observable({
 	fee: 0,
 	admin_fee: 0,
 	trade_timeout: 1800,
-	max_allowance: cBN(2).pow(cBN(256)).minus(cBN(1)),
+	max_allowance: BN(2).pow(BN(256)).minus(BN(1)),
 	coins: [],
 	underlying_coins: [],
 	c_rates: [],
@@ -128,7 +191,13 @@ export const getters = {
 }
 
 
-export async function init() {
+export async function init(contract, refresh = false) {
+	//contract = contracts.compound for example
+
+	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
+	//console.log(contract, state.contracts[contract.currentContract], "CONTRAAAAAAACT")
+	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
+	if(!contract) contract = state
 	try {
         let networkId = await web3.eth.net.getId();
         if(networkId != 1) {
@@ -139,24 +208,28 @@ export async function init() {
         console.error(err);
         this.error = 'There was an error connecting. Please refresh page';
     }
-    if(state.currentContract == 'compound') {
-	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
-	    state.old_swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
+    if(contract.currentContract == 'compound') {
+	    contract.old_swap = new web3.eth.Contract(allabis[contract.currentContract].old_swap_abi, allabis[contract.currentContract].old_swap_address);
+	    contract.old_swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].old_token_address);
+    }
+    contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
+    contract.swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].token_address);
+    contract.coins = []
+    contract.underlying_coins = []
+    for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
+        var addr = await contract.swap.methods.coins(i).call();
+        let coin_abi = allabis[contract.currentContract].cERC20_abi
+        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
+        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
+        var underlying_addr = await contract.swap.methods.underlying_coins(i).call();
+        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
     }
 
-    state.swap = new web3.eth.Contract(allabis[state.currentContract].swap_abi, state.swap_address);
-    state.swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, state.token_address);
-
-    state.coins = []
-    state.underlying_coins = []
-    for (let i = 0; i < state.N_COINS; i++) {
-        var addr = await state.swap.methods.coins(i).call();
-        let coin_abi = allabis[state.currentContract].cERC20_abi
-        if(['iearn', 'busd'].includes(state.currentContract)) coin_abi = allabis[state.currentContract].yERC20_abi
-        state.coins.push(new web3.eth.Contract(coin_abi, addr));
-        var underlying_addr = await state.swap.methods.underlying_coins(i).call();
-        state.underlying_coins.push(new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, underlying_addr));
-    }
+    if(window.location.href.includes('withdraw_old')) 
+      await common.update_fee_info('old', contract)
+  	else 
+      await common.update_fee_info('new', contract);
+  	contract.initializedContracts = true;
 }
 
 export const allState = Vue.observable({
@@ -203,4 +276,9 @@ export async function changeContract(pool) {
 
 export function setCurrencies(pool) {
 	contract.currencies = currencies[pool]
+}
+
+export async function initusdt() {
+	await init(state.contracts.usdt)
+	console.log(state.contracts)
 }

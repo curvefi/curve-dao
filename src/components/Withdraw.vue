@@ -37,13 +37,13 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li>
+                <li v-show = "currentPool == 'compound'">
                     <input id="withdrawc" type="checkbox" name="inf-approval" checked v-model='withdrawc'>
                     <label for="withdrawc">Withdraw compounded</label>
                 </li>
             </ul>
         </fieldset>
-        <fieldset>
+        <fieldset v-show="currentPool == 'compound'">
         	<legend>Withdraw % in:</legend>
         	<ul>
         		<li>

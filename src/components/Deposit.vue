@@ -42,7 +42,7 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust this contract forever</label>
                 </li>
-                <li>
+                <li v-show="currentPool == 'compound'">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit compounded</label>
                 </li>

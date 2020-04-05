@@ -73,6 +73,7 @@ let initState = {
 }
 
 const state = Vue.observable({
+	multicall: null,
 	contracts: {
 		compound: {
 			currentContract: 'compound',

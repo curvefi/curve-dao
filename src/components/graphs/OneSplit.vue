@@ -149,7 +149,6 @@
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)
-            EventBus.$on('changeTime', this.changeTime)
             this.$watch(()=>contract.initializedContracts, async (val) => {
                 await this.mounted()
             })
@@ -252,7 +251,6 @@
                 }
                 catch(err) {
                     console.error(err);
-                    if(!err.canceled) this.disabled = true
                 }
                 finally {
                     this.highlight_input();

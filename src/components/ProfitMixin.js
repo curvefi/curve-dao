@@ -155,6 +155,7 @@ export default {
 		    if(mints.length) {
 		        let mint = mints[0]
 		        let mintevent = web3.eth.abi.decodeParameters(['address','uint256','uint256'], mint.data)
+		        if(mintevent[1] == 0 || mintevent[2] == 0) return 0;
 		        let exchangeRate = this.BN(mintevent[1]).div(this.BN(mintevent[2]));
 		        if(address == currentContract.coins[1]._address) {
 		            exchangeRate = this.BN(mintevent[1]).mul(this.BN(1e12)).div(this.BN(mintevent[2]))
@@ -207,13 +208,12 @@ export default {
 		        	exchangeRateFuture.exchangeRate = exchangeRateFuture.exchangeRate.toNumber()
 		        	exchangeRatePast.exchangeRate = exchangeRatePast.exchangeRate.toNumber()
 		        }
-
+	        	if(exchangeRate == 0) return 0;
 		        exchangeRate = (exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber)*(exchangeRateFuture.exchangeRate-(exchangeRatePast.exchangeRate))
 		        exchangeRate = exchangeRate / ((exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber))
 		        exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
 		    }
-
-		    if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
+			if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
 		    return exchangeRate;
 		},
 
@@ -228,6 +228,8 @@ export default {
 		            let address = currentContract.coins[i]._address
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
 		            let exchangeRate = await this.getExchangeRate(block, address, '', type)
+		        	
+		        	if(exchangeRate == 0) continue;
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
 			            	usd = BN(tokens).div(BN(1e4)).toNumber();

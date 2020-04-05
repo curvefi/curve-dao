@@ -100,6 +100,7 @@
             })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
+                console.timeEnd('initswap')
             })
         },
         watch: {
@@ -235,8 +236,7 @@
                             gas: contractGas.swap[this.currentPool],
                         });
                     
-                    await common.update_rates();
-                    common.update_fee_info();
+                    await common.update_fee_info();
                     this.from_cur_handler();
                     let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
                     let amount = Math.floor(

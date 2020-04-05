@@ -535,7 +535,6 @@
 			        		return p;
 			        	})
 			        }*/
-			        if(i == dataLength) console.log("LAST")
 			        if(i == dataLength/20 || i == dataLength/10 || i == dataLength/5 || i == dataLength/2 || i == dataLength-1) {
 					    this.$refs.highcharts.chart.series[0].setData(ohlc)
 					    this.$refs.highcharts.chart.series[1].setData(volume)

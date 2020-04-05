@@ -10,7 +10,7 @@ import Onboard from 'bnc-onboard'
 import * as common from './utils/common.js'
 import * as currentContract from './contract.js'
 import { infura_url } from './allabis.js'
-
+import { multicall_address, multicall_abi } from './allabis'
 
 /*const providerOptions = {
     walletconnect: {
@@ -105,6 +105,7 @@ export const onboard = Onboard({
 });
 
 async function init(init = true) {
+  console.time('initswap')
 	//try catch for checking cancel dialog
 	//const provider = await web3Modal.connect();
 
@@ -116,8 +117,7 @@ async function init(init = true) {
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
-
-
+    currentContract.contract.multicall = new web3.eth.Contract(multicall_abi, multicall_address)
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
     if(init) await currentContract.init();

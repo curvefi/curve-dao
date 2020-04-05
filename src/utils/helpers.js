@@ -115,5 +115,9 @@ export function interp(x, y, val) {
   }
 }
 
+export function chunkArr(arr, chunks) {
+  return new Array(Math.ceil(arr.length / chunks)).fill().map((_, i) => arr.slice(i*chunks,i*chunks+chunks))
+}
+
 
 Vue.filter('formatNumber', formatNumber)

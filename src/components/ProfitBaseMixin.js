@@ -18,7 +18,6 @@ export default {
     },
     mounted() {
         this.$watch(()=>currentContract.default_account, (val, oldval) => {
-            console.log(val, oldval)
             if(!oldval) return;
             if(val.toLowerCase() != oldval.toLowerCase()) {
                 this.cancel = true;

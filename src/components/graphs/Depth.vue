@@ -191,6 +191,9 @@
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
 			this.unwatch = this.$watch(()=>contract.initializedContracts, async (val) => {
+				let inits = await Promise.all(tradeStore.pools.map(p=>{
+					return init(contract.contracts[p == 'y' ? 'iearn' : p])
+				}))
 				await this.updatePoolInfo()
                 this.mounted()
                 this.unwatch();
@@ -204,15 +207,9 @@
 				let oldarr = oldval[1].concat();
 				if(arr.sort().toString() == oldarr.sort.toString()) this.mounted()
 				else {
-					try {					
-						let inits = await Promise.all(val[1].map(p=>{
-							console.log(contract.contracts[p == 'y' ? 'iearn' : p])
-							return init(contract.contracts[p == 'y' ? 'iearn' : p])
-						}))
-					}
-					catch(err) {
-						console.error(err)
-					}
+					let inits = await Promise.all(val[1].map(p=>{
+						return init(contract.contracts[p == 'y' ? 'iearn' : p])
+					}))
 					this.chart.showLoading()
 					this.chart.xAxis[0].removePlotLine(1)
                 	await this.updatePoolInfo();
@@ -469,7 +466,6 @@
 		    	/*this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()*/
-		    	console.log("HERE")
 		    	this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();

@@ -158,9 +158,9 @@ export async function update_fee_info(version = 'new', contract) {
         calls.push([contract.swap._address, contract.swap.methods.balances(i).encodeABI()])
     }
     calls.push(...rates_calls)
-    let aggcalls = (await currentContract.multicall.methods.aggregate(calls).call())[1]
+    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
-    let decoded = aggcalls.map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]

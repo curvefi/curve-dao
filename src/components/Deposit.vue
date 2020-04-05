@@ -107,7 +107,7 @@
                 this.disabledButtons = false;
             },
             async handle_sync_balances() {
-			    await common.update_rates();
+			    await common.update_fee_info();
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	var wallet_balance = parseInt(await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call())
 			        Vue.set(this.wallet_balances, i, wallet_balance);

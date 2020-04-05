@@ -96,7 +96,7 @@ export function init_menu() {
 }
 
 
-export async function update_rates(version = 'new', contract) {
+export function update_rates(version = 'new', contract) {
     if(!contract) contract = currentContract
     let calls = [];
     let callscoins = []
@@ -114,51 +114,19 @@ export async function update_rates(version = 'new', contract) {
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
         else if(['iearn', 'busd'].includes(contract.currentContract)) {
-            //var rate = parseInt(await contract.coins[i].methods.getPricePerFullShare().call()) / 1e18 / allabis[contract.currentContract].coin_precisions[i];
             calls.push([address, contract.coins[i].methods.getPricePerFullShare().encodeABI()])
             callscoins.push({pool: 'ys', i: i})
-            //Vue.set(contract.c_rates, i, rate);
-
         }
         else {
-           /* var rate = parseInt(await contract.coins[i].methods.exchangeRateStored().call()) / 1e18 / allabis[contract.currentContract].coin_precisions[i];
-            var supply_rate = parseInt(await contract.coins[i].methods.supplyRatePerBlock().call());
-            var old_block = parseInt(await contract.coins[i].methods.accrualBlockNumber().call());
-            var block = await web3.eth.getBlockNumber();*/
             calls.push(
                 [address, contract.coins[i].methods.exchangeRateStored().encodeABI()],
                 [address, contract.coins[i].methods.supplyRatePerBlock().encodeABI()],
                 [address, contract.coins[i].methods.accrualBlockNumber().encodeABI()],
             )
             callscoins.push({pool: 'compounds', i: i})
-            //Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18));
         }
     }
-    var swap_stats = contract.swap;
-    if(version == 'old') swap_stats = contract.old_swap;
-    calls.push([swap_stats._address, swap_stats.methods.fee().encodeABI()])
-    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-    console.log(aggcalls)
-    console.log(aggcalls[1].map(hex=>web3.eth.abi.decodeParameter('uint256', hex)))
-    let decoded = aggcalls[1].slice(0, -1).map(hex=>web3.eth.abi.decodeParameter('uint256', hex))
-    let block = aggcalls[0]
-    if(['iearn', 'busd'].includes(contract.currentContract)) {
-        decoded.map((v, i) => {
-            let rate = v / 1e18 / allabis[contract.currentContract].coin_precisions[i]
-            console.log(rate)
-            Vue.set(contract.c_rates, i, rate)
-        })
-    }
-    else {
-        chunkArr(decoded ,3).map((v, i) => {
-            let rate = v[0] / 1e18 / allabis[contract.currentContract].coin_precisions[i]
-            let supply_rate = v[1]
-            let old_block = v[2]
-            Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18))
-        })
-    }
-    console.log(callscoins)
-    contract.fee = aggcalls[aggcalls.length - 1]
+    return calls;
 }
 
 export async function update_fee_info(version = 'new', contract) {
@@ -175,25 +143,6 @@ export async function update_fee_info(version = 'new', contract) {
         swap_token_stats = allabis[contract.currentContract].old_swap_token;
     }
 
-    await update_rates(version, contract);
-    var promises = [];
-    let infuraProvider = new Web3(infura_url)
-    let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
-    for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
-        promises.push(swapInfura.methods.balances(i).call())
-/*        balances[i] = parseInt(await swap.methods.balances(i).call());
-        $(bal_info[i]).text((balances[i] * c_rates[i]).toFixed(2));
-        total += balances[i] * c_rates[i];*/
-    }
-    let resolves = await Promise.all(promises)
-    let balances = []
-    currentContract.total = 0;
-    resolves.forEach((balance, i) => {
-        Vue.set(contract.balances, i, balance)
-        balances[i] = +balance;
-        Vue.set(contract.bal_info, i, balances[i] * contract.c_rates[i]);
-        contract.total += balances[i] * contract.c_rates[i];
-    })
     var default_account = currentContract.default_account;
     let calls = [
                     [swap_stats._address, swap_stats.methods.fee().encodeABI()],
@@ -201,12 +150,49 @@ export async function update_fee_info(version = 'new', contract) {
                     [swap_token_stats._address, swap_token_stats.methods.balanceOf(default_account).encodeABI()],
                     [swap_token_stats._address, swap_token_stats.methods.totalSupply().encodeABI()],
                     ]
+    let rates_calls = update_rates(version, contract);
+
+    //let infuraProvider = new Web3(infura_url)
+    //let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
+    for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
+        calls.push([contract.swap._address, contract.swap.methods.balances(i).encodeABI()])
+    }
+    calls.push(...rates_calls)
     let aggcalls = (await currentContract.multicall.methods.aggregate(calls).call())[1]
+    var block = +aggcalls[0]
     let decoded = aggcalls.map(hex => web3.eth.abi.decodeParameter('uint256', hex))
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]
     var token_supply = decoded[3]
+
+    let ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS)
+    if(['iearn', 'busd'].includes(contract.currentContract)) {
+        ratesDecoded.map((v, i) => {
+            let rate = v / 1e18 / allabis[contract.currentContract].coin_precisions[i]
+            Vue.set(contract.c_rates, i, rate)
+        })
+    }
+    else {
+        chunkArr(ratesDecoded ,3).map((v, i) => {
+            let rate = +v[0] / 1e18 / allabis[contract.currentContract].coin_precisions[i]
+            let supply_rate = +v[1]
+            let old_block = +v[2]
+            Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18))
+        })
+    }
+
+    let balances = []
+    currentContract.total = 0;
+
+    let balancesDecoded = decoded.slice(4, 4+allabis[contract.currentContract].N_COINS)
+    balancesDecoded.forEach((balance, i) => {
+        Vue.set(contract.balances, i, +balance)
+        balances[i] = +balance;
+        Vue.set(contract.bal_info, i, balances[i] * contract.c_rates[i]);
+        contract.total += balances[i] * contract.c_rates[i];
+    })
+
     if (default_account) {
         if (token_balance > 0) {
             contract.totalShare = 0;

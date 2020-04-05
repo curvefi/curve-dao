@@ -99,8 +99,7 @@
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
 	        	})
-                common.update_fee_info();
-                await common.update_rates();
+                await common.update_fee_info();
             	await this.update_balances();
             	this.handle_change_share();
             },

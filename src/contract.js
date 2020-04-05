@@ -3,6 +3,7 @@ import * as BN from 'bignumber.js'
 import * as abis from './abis'
 import allabis from './allabis'
 import web3Init from './init'
+import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
 
 var N_COINS = 2;
@@ -193,6 +194,7 @@ export const getters = {
 
 
 export async function init(contract, refresh = false) {
+	console.time('init')
 	//contract = contracts.compound for example
 
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
@@ -217,20 +219,33 @@ export async function init(contract, refresh = false) {
     contract.swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].token_address);
     contract.coins = []
     contract.underlying_coins = []
+    let calls = [];
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
-        var addr = await contract.swap.methods.coins(i).call();
+    	calls.push([contract.swap._address, contract.swap.methods.coins(i).encodeABI()])
+    	calls.push([contract.swap._address, contract.swap.methods.underlying_coins(i).encodeABI()])
+/*        var addr = await contract.swap.methods.coins(i).call();
         let coin_abi = allabis[contract.currentContract].cERC20_abi
         if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
         contract.coins.push(new web3.eth.Contract(coin_abi, addr));
         var underlying_addr = await contract.swap.methods.underlying_coins(i).call();
-        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
+        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));*/
     }
-
+    let aggcalls = await state.multicall.methods.aggregate(calls).call()
+    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))
+    chunkArr(decoded, 2).map((v, i) => {
+    	var addr = v[0];
+        let coin_abi = allabis[contract.currentContract].cERC20_abi
+        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
+        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
+        var underlying_addr = v[1];
+        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
+    })
     if(window.location.href.includes('withdraw_old')) 
       await common.update_fee_info('old', contract)
   	else 
       await common.update_fee_info('new', contract);
   	contract.initializedContracts = true;
+  	console.timeEnd('init')
 }
 
 export const allState = Vue.observable({

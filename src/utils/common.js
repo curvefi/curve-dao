@@ -49,7 +49,6 @@ export async function ensure_allowance(amounts, plain = false, withdrawplain = f
     if(withdrawplain) fromContract = currentContract.deposit_zap
     for (let i=0; i < currentContract.N_COINS; i++)
         allowances[i] = await coins[i].methods.allowance(default_account, swap).call();
-
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
@@ -129,16 +128,16 @@ export function update_rates(version = 'new', contract) {
         //for usdt pool
         if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
             allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
-            console.log('tether')
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
         else if(['iearn', 'busd'].includes(contract.currentContract)) {
-            calls.push([address, contract.coins[i].methods.getPricePerFullShare().encodeABI()])
+            //getPricePerFullShare
+            calls.push([address, '0x77c7b8fc'])
             callscoins.push({pool: 'ys', i: i})
         }
         else {
             calls.push(
-                //excahngeRateStored
+                //exchangeRateStored
                 [address, '0x182df0f5'],
                 //supplyRatePerBlock
                 [address, '0xae9d70b0'],
@@ -195,18 +194,23 @@ export async function update_fee_info(version = 'new', contract, update = true) 
     console.timeEnd('updatefeeinfo')
 }
 
+function checkTethered(contract, i) {
+    return allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
+        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i];
+}
+
 export async function multiInitState(calls, contract) {
     var default_account = currentContract.default_account;
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
     let decoded = aggcalls[1].map((hex, i) => 
-        i >= (4+4+allabis[contract.currentContract].N_COINS*2) ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)
+        i >= aggcalls[1].length-allabis[contract.currentContract].N_COINS*2 ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)
     )
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]
     var token_supply = decoded[3]
-    let contractsDecoded = decoded.slice(4+4+allabis[contract.currentContract].N_COINS*2)
+    let contractsDecoded = decoded.slice(-allabis[contract.currentContract].N_COINS*2)
     chunkArr(contractsDecoded, 2).map((v, i) => {
         var addr = v[0];
         let coin_abi = allabis[contract.currentContract].cERC20_abi
@@ -217,18 +221,29 @@ export async function multiInitState(calls, contract) {
     })
 
     let ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS)
+
     if(['iearn', 'busd'].includes(contract.currentContract)) {
         ratesDecoded.map((v, i) => {
-            let rate = v / 1e18 / allabis[contract.currentContract].coin_precisions[i]
-            Vue.set(contract.c_rates, i, rate)
+            if(checkTethered(contract, i)) {
+                Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
+            }
+            else {
+                let rate = v / 1e18 / allabis[contract.currentContract].coin_precisions[i]
+                Vue.set(contract.c_rates, i, rate)
+            }
         })
     }
     else {
         chunkArr(ratesDecoded ,3).map((v, i) => {
-            let rate = +v[0] / 1e18 / allabis[contract.currentContract].coin_precisions[i]
-            let supply_rate = +v[1]
-            let old_block = +v[2]
-            Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18))
+            if(checkTethered(contract, i)) {
+                Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
+            }
+            else {            
+                let rate = +v[0] / 1e18 / allabis[contract.currentContract].coin_precisions[i]
+                let supply_rate = +v[1]
+                let old_block = +v[2]
+                Vue.set(contract.c_rates, i, rate * (1 + supply_rate * (block - old_block) / 1e18))
+            }
         })
     }
 

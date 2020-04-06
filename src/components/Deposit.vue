@@ -42,7 +42,7 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust this contract forever</label>
                 </li>
-                <li v-show="currentPool == 'compound'">
+                <li v-show="['compound', 'iearn'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit compounded</label>
                 </li>
@@ -65,8 +65,7 @@
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
-    import BigNumber from 'bignumber.js'
-    var cBN = (val) => new BigNumber(val);
+    import BN from 'bignumber.js'
 
     import Slippage from './common/Slippage.vue'
 
@@ -140,7 +139,7 @@
                 await this.handle_sync_balances();
                 await common.calc_slippage(this.inputs, true);
                 for (let i = 0; i < currentContract.N_COINS; i++) {
-					if (cBN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(cBN(2))))
+					if (BN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(BN(2))))
 		            	this.inf_approval = false;
 		        }
                 this.disabledButtons = false;
@@ -170,13 +169,13 @@
 			},
 			async handle_add_liquidity() {
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        let amount = cBN(this.inputs[i]).div(cBN(currentContract.c_rates[i])).toFixed(0,1);
+			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        let balance = await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call();
 			        if(Math.abs(balance/amount-1) < 0.005) {
-			            Vue.set(this.amounts, i, cBN(balance).toFixed(0,1));
+			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
 			        }
 			        else {
-			            Vue.set(this.amounts, i, cBN(this.inputs[i]).div(cBN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
+			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 			    }
 			    if (this.inf_approval)
@@ -185,13 +184,13 @@
 			        await common.ensure_allowance(this.amounts, false);
 			    }
 			    else {
-			    	let amounts = this.inputs.map((v, i)=>cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			    	await common.ensure_allowance(amounts, true)
 			    }
 			    var token_amount = 0;
 			    if(parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
-			        token_amount = cBN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
+			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }
 			    if(this.depositc) {
 			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
@@ -200,10 +199,10 @@
 				    });
 				}
 				else {
-			    	let amounts = this.inputs.map((v, i)=>cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
-						gas: 1300000
+						gas: 3000000
 					})
 				}
 			    await this.handle_sync_balances();

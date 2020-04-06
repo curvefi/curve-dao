@@ -188,6 +188,7 @@
             },
             async set_from_amount(i) {
                 let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
+                console.log(balance, "BALANCE")
                 let amount = Math.floor(
                         100 * parseFloat(balance) / currentContract.coin_precisions[i]
                     ) / 100

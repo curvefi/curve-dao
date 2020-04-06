@@ -37,13 +37,13 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "currentPool == 'compound'">
+                <li v-show = "['compound', 'iearn'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
-                    <label for="withdrawc">Withdraw compounded</label>
+                    <label for="withdrawc" @click='selected=null'>Withdraw compounded</label>
                 </li>
             </ul>
         </fieldset>
-        <fieldset v-show="currentPool == 'compound'">
+        <fieldset v-show="['compound', 'iearn'].includes(currentPool)">
         	<legend>Withdraw % in:</legend>
         	<ul>
         		<li>
@@ -78,8 +78,7 @@
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
-    import BigNumber from 'bignumber.js'
-    var cBN = (val) => new BigNumber(val);
+    import BN from 'bignumber.js'
 
     import Slippage from './common/Slippage.vue'
 
@@ -128,14 +127,9 @@
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
 	        	})
-	        	console.log(val, "THEVAL")
 	        	this.withdrawc = false;
 	        	this.handle_change_share();
         	},
-        	withdrawc() {
-        		console.log("WITHDRAWC")
-        		this.selected = null
-        	}
         },
         computed: {
         	selected: {
@@ -143,7 +137,6 @@
         			return this.to_currency
         		},
         		set(val) {
-        			console.log(val, this.to_currency)
         			if(val == this.to_currency) this.to_currency = null
         			else this.to_currency = val
         		}
@@ -189,7 +182,7 @@
 			async handle_change_amounts(i) {
 				this.to_currency = null
 		        var values = this.inputs.map((x,i) => x / currentContract.c_rates[i])
-		        values = values.map(v=>cBN(Math.floor(v).toString()).toFixed(0))
+		        values = values.map(v=>BN(Math.floor(v).toString()).toFixed(0))
 		        this.show_nobalance = false;
 		        this.show_nobalance_i = 0;
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
@@ -228,29 +221,28 @@
 			async handle_remove_liquidity() {
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        Vue.set(this.amounts, i, cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
-			    	min_amounts[i] = cBN(0.97).times(this.share/100).times(cBN(this.balances[i]))
+			        Vue.set(this.amounts, i, BN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
+			    	min_amounts[i] = BN(0.97).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {
 						min_amounts[i] = min_amounts[i]
 										.times(allabis[currentContract.currentContract].coin_precisions[i])
 										.times(currentContract.c_rates[i])
 					}
-					min_amounts[i] = min_amounts[i].times(cBN(this.token_balance))
-						            .div(cBN(this.token_supply))
+					min_amounts[i] = min_amounts[i].times(BN(this.token_balance))
+						            .div(BN(this.token_supply))
 						            .toFixed(0,1)
 			    }
-			    console.log(min_amounts, "MIN AMOUNTS")
 			    var txhash;
 			    if (this.share == '---') {
 			        var token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();
-			        token_amount = cBN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
+			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        if(this.withdrawc) {
 			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
 				        	from: currentContract.default_account, gas: 1000000
 				        });
 			    	}
 			        else {
-			        	let amounts = this.inputs.map((v, i) => cBN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			        	common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
 				        	from: currentContract.default_account, gas: 1600000
@@ -258,7 +250,7 @@
 			        }
 			    }
 			    else {
-			        var amount = cBN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
+			        var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 			        if (this.share == 100)
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 			        if(this.to_currency !== null && this.to_currency < 10) {
@@ -267,11 +259,11 @@
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
-    							cBN(min_amount).times(cBN(0.97)).toFixed(0), 
+    							BN(min_amount).times(BN(0.97)).toFixed(0), 
     							this.donate_dust)
 			        		.send({
 			        			from: currentContract.default_account,
-			        			gas: 1000000,
+			        			gas: 1600000,
 			        		})
 			        }
 			        else if(this.to_currency == 10) {
@@ -293,12 +285,12 @@
         		currentContract.slippage = 0;
 
         		if(this.to_currency !== null && this.to_currency < 10) {
-	        		var amount = cBN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
+	        		var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
 				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 	                let precision = allabis[currentContract.currentContract].coin_precisions[this.to_currency]
 					let zap_values = Array(currentContract.N_COINS).fill(0)
-					zap_values[this.to_currency] = cBN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
+					zap_values[this.to_currency] = BN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)

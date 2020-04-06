@@ -101,7 +101,7 @@ export function update_rates(version = 'new', contract) {
     let calls = [];
     let callscoins = []
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
-        let address = contract.coins[i]._address
+        let address = allabis[contract.currentContract].coins[i]
         /*
         rate: uint256 = cERC20(self.coins[i]).exchangeRateStored()
         supply_rate: uint256 = cERC20(self.coins[i]).supplyRatePerBlock()
@@ -119,9 +119,12 @@ export function update_rates(version = 'new', contract) {
         }
         else {
             calls.push(
-                [address, contract.coins[i].methods.exchangeRateStored().encodeABI()],
-                [address, contract.coins[i].methods.supplyRatePerBlock().encodeABI()],
-                [address, contract.coins[i].methods.accrualBlockNumber().encodeABI()],
+                //excahngeRateStored
+                [address, '0x182df0f5'],
+                //supplyRatePerBlock
+                [address, '0xae9d70b0'],
+                //accrualBlockNumber
+                [address, '0x6c540baf'],
             )
             callscoins.push({pool: 'compounds', i: i})
         }
@@ -129,11 +132,13 @@ export function update_rates(version = 'new', contract) {
     return calls;
 }
 
-export async function update_fee_info(version = 'new', contract) {
+export async function update_fee_info(version = 'new', contract, update = true) {
     console.time('updatefeeinfo')
     if(!contract) contract = currentContract
     var swap_abi_stats = allabis[contract.currentContract].swap_abi;
     var swap_address_stats = allabis[contract.currentContract].swap_address;
+    var swap_token_stats = allabis[contract.currentContract].swap_token
+    var swap_token_address = allabis[contract.currentContract].token_address
     var swap_stats = contract.swap;
     var swap_token_stats = contract.swap_token;
     if(version == 'old') {
@@ -141,30 +146,56 @@ export async function update_fee_info(version = 'new', contract) {
         swap_address_stats = allabis[contract.currentContract].old_swap_address;
         swap_stats = allabis[contract.currentContract].old_swap;
         swap_token_stats = allabis[contract.currentContract].old_swap_token;
+        swap_token_address = allabis[contract.currentContract].token_address
     }
 
     var default_account = currentContract.default_account;
-    let calls = [
-                    [swap_stats._address, swap_stats.methods.fee().encodeABI()],
-                    [swap_stats._address, swap_stats.methods.admin_fee().encodeABI()],
-                    [swap_token_stats._address, swap_token_stats.methods.balanceOf(default_account).encodeABI()],
-                    [swap_token_stats._address, swap_token_stats.methods.totalSupply().encodeABI()],
+    let calls = [   
+                    //.fee()
+                    [swap_address_stats, swap_stats.methods.fee().encodeABI()],
+                    //.admin_fee()
+                    [swap_address_stats, swap_stats.methods.admin_fee().encodeABI()],
+                    //balanceOf(default_account)
+                    [swap_token_address, swap_token_stats.methods.balanceOf(default_account).encodeABI()],
+                    //token_supply()
+                    [swap_token_address, swap_token_stats.methods.totalSupply().encodeABI()],
                     ]
     let rates_calls = update_rates(version, contract);
 
     //let infuraProvider = new Web3(infura_url)
     //let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
-        calls.push([contract.swap._address, contract.swap.methods.balances(i).encodeABI()])
+        //swap.methods.balances(i)
+        calls.push([swap_address_stats, currentContract.swap.methods.balances(i).encodeABI()])
     }
     calls.push(...rates_calls)
+    if(update)
+        await multiInitState(calls, contract)
+    return calls
+    
+    console.timeEnd('updatefeeinfo')
+}
+
+export async function multiInitState(calls, contract) {
+    var default_account = currentContract.default_account;
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
-    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+    let decoded = aggcalls[1].map((hex, i) => 
+        i >= (4+4+allabis[contract.currentContract].N_COINS*2) ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)
+    )
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]
     var token_supply = decoded[3]
+    let contractsDecoded = decoded.slice(4+4+allabis[contract.currentContract].N_COINS*2)
+    chunkArr(contractsDecoded, 2).map((v, i) => {
+        var addr = v[0];
+        let coin_abi = allabis[contract.currentContract].cERC20_abi
+        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
+        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
+        var underlying_addr = v[1];
+        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
+    })
 
     let ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS)
     if(['iearn', 'busd'].includes(contract.currentContract)) {
@@ -209,7 +240,6 @@ export async function update_fee_info(version = 'new', contract) {
             //no need to set other values as v-show check is done based on totalShare
         }
     }
-    console.timeEnd('updatefeeinfo')
 }
 
 export async function handle_migrate_new(page) {

@@ -121,6 +121,7 @@ async function init(init = true) {
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
     if(init) await currentContract.init();
+    console.timeEnd('initswap')
   }
   catch(err) {
     console.error(err)

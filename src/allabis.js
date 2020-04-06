@@ -11,6 +11,12 @@ token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
 old_token_address: '0x3740fb63ab7a09891d7c0d4299442A551D06F5fD',
 migration_address: '0x54Ee22d5593FC76fB20EafAb66C45aAb3268B800',
 infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+underlying_coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',],
+coins: [
+        '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
+        '0x39AA39c021dfbaE8faC545936693aC917d5E7563',],
 
 migration_abi: [
  {
@@ -3062,7 +3068,14 @@ var usdt = {
   swap_address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C',
   token_address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
-
+  underlying_coins: [
+          '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+          '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+          '0xdAC17F958D2ee523a2206206994597C13D831ec7'],
+  coins: [
+        '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
+        '0x39AA39c021dfbaE8faC545936693aC917d5E7563',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7'],
   swap_abi: [
    {
     "name": "TokenExchange",
@@ -5344,6 +5357,16 @@ var iearn = {
   swap_address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
   token_address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+  underlying_coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0x0000000000085d4780B73119b644AE5ecd22b376'],
+  coins: [
+        '0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01',
+        '0xd6aD7a6750A7593E092a9B218d66C0A814a3436e',
+        '0x83f798e925BcD4017Eb265844FDDAbb448f1707D',
+        '0x73a052500105205d34Daf004eAb301916DA8190f'],
 
   swap_abi: [
    {
@@ -7627,6 +7650,16 @@ var busd = {
   swap_address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27',
   token_address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+  underlying_coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0x0000000000085d4780B73119b644AE5ecd22b376'],
+  coins: [
+        '0x16de59092dAE5CcF4A1E6439D611fd0653f0Bd01',
+        '0xd6aD7a6750A7593E092a9B218d66C0A814a3436e',
+        '0x83f798e925BcD4017Eb265844FDDAbb448f1707D',
+        '0x73a052500105205d34Daf004eAb301916DA8190f'],
 
   swap_abi: [
    {

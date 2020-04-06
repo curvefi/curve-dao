@@ -155,8 +155,9 @@ export default {
 		    if(mints.length) {
 		        let mint = mints[0]
 		        let mintevent = web3.eth.abi.decodeParameters(['address','uint256','uint256'], mint.data)
-		        if(mintevent[1] == 0 || mintevent[2] == 0) return 0;
-		        let exchangeRate = this.BN(mintevent[1]).div(this.BN(mintevent[2]));
+		        let exchangeRate;
+		        if(mintevent[1] == 0 || mintevent[2] == 0) return -1
+		        exchangeRate = this.BN(mintevent[1]).div(this.BN(mintevent[2]));
 		        if(address == currentContract.coins[1]._address) {
 		            exchangeRate = this.BN(mintevent[1]).mul(this.BN(1e12)).div(this.BN(mintevent[2]))
 		        }
@@ -208,7 +209,7 @@ export default {
 		        	exchangeRateFuture.exchangeRate = exchangeRateFuture.exchangeRate.toNumber()
 		        	exchangeRatePast.exchangeRate = exchangeRatePast.exchangeRate.toNumber()
 		        }
-	        	if(exchangeRate == 0) return 0;
+	        	if(exchangeRatePast.exchangeRate === undefined || exchangeRateFuture.exchangeRate === undefined) return -1;
 		        exchangeRate = (exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber)*(exchangeRateFuture.exchangeRate-(exchangeRatePast.exchangeRate))
 		        exchangeRate = exchangeRate / ((exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber))
 		        exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
@@ -229,7 +230,7 @@ export default {
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
 		            let exchangeRate = await this.getExchangeRate(block, address, '', type)
 		        	
-		        	if(exchangeRate == 0) continue;
+		        	if(exchangeRate == -1) continue;
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
 			            	usd = BN(tokens).div(BN(1e4)).toNumber();
@@ -307,11 +308,13 @@ export default {
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    let fromBlock = this.fromBlock;
-		    console.log(localStorage.getItem(this.currentPool + 'wversion') == this.version, localStorage.getItem(this.currentPool + 'lastWithdrawalBlock'), localStorage.getItem(this.currentPool + 'wlastAddress'), default_account)
-		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version && localStorage.getItem(this.currentPool + 'lastWithdrawalBlock') && localStorage.getItem(this.currentPool + 'lastAddress') == default_account) {
-		        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
-		        fromBlock = '0x'+parseInt(block+1).toString(16)
-		        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
+		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version 
+		    	&& localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
+			 	&& localStorage.getItem(this.currentPool + 'wlastAddress') == default_account) {
+
+			        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
+			        fromBlock = '0x'+parseInt(block+1).toString(16)
+			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
 		    }
 		    const logs = await web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
@@ -357,7 +360,7 @@ export default {
 		    }
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
-		    !this.cancel && localStorage.setItem(this.currentPool + 'wlastAddress', withdrawals);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'wlastAddress', default_account);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wversion', this.version);
 		    console.log("WITHDRAWALS", withdrawals)
 		    return withdrawals;

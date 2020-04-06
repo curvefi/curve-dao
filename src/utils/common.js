@@ -219,32 +219,44 @@ export async function handle_migrate_new(page) {
     update_fee_info(page);
 }
 
-export async function calc_slippage(values, deposit) {
+export async function calc_slippage(values, deposit, amount, to_currency) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
     let slippage = 0;
     var real_values = values.map(v=>+v);
     var Sr = real_values.reduce((a,b) => a+b, 0);
 
     var values = real_values.map((x,i) => cBN(Math.floor(x / currentContract.c_rates[i]).toString()).toFixed(0,1));
-    var token_amount = await currentContract.swap.methods.calc_token_amount(values, deposit).call();
+    var token_amount;
+    if(to_currency !== undefined && to_currency < 10) {
+        let precisions = allabis[currentContract.currentContract].coin_precisions[to_currency]
+        console.log(amount, "AMOUNT")
+        Sr = amount;
+        token_amount = (await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, to_currency).call()) * 1e18 / precisions;
+    }
+    else token_amount = (await currentContract.swap.methods.calc_token_amount(values, deposit).call()) / 1e18
     var virtual_price = await currentContract.swap.methods.get_virtual_price().call();
-    var Sv = virtual_price * token_amount / 1e36;
-
-    for(let i = 0; i < currentContract.N_COINS; i++) {
-        let coin_balance = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
-        if(!deposit) {
-            if(coin_balance < real_values[i]) {
-                currentContract.showNoBalance = true;
-                currentContract.noBalanceCoin = i;
+    var Sv = virtual_price * token_amount / 1e18;
+    if(!this.to_currency) {    
+        for(let i = 0; i < currentContract.N_COINS; i++) {
+            let coin_balance = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
+            if(!deposit) {
+                if(coin_balance < real_values[i]) {
+                    currentContract.showNoBalance = true;
+                    currentContract.noBalanceCoin = i;
+                }
+                else
+                    currentContract.showNoBalance = false;
             }
-            else
-                currentContract.showNoBalance = false;
         }
     }
     if (deposit)
         slippage = Sv / Sr
-    else
+    else if(to_currency === undefined)
         slippage = Sr / Sv;
+    else {
+        console.log(Sv, Sr, token_amount, "CALC ON THESE")
+        slippage  = token_amount / Sr
+    }
     slippage = slippage - 1;
     slippage = slippage || 0
     console.log(slippage)

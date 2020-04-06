@@ -116,7 +116,7 @@
             })
         },
         watch: {
-        	to_currency(val) {
+        	async to_currency(val) {
         		if(this.share == 0 || this.share == '---') this.share = 100
 	        	this.inputStyles = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',
@@ -253,9 +253,18 @@
 			    await this.update_balances();
 			    common.update_fee_info();
 			},
-			handle_change_share() {
+			async handle_change_share() {
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
+
+        		if(this.to_currency !== undefined && this.to_currency < 10) {
+        			console.log("HERE")    			
+	        		var amount = cBN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
+				        if (this.share == 100)
+				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
+				    await common.calc_slippage([], false, amount, this.to_currency)
+        		}
+
 				this.shareStyles.backgroundColor = 'blue'
 				this.shareStyles.color = 'aqua'
 			    if (this.share == '---') {

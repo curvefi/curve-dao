@@ -720,3 +720,36 @@ input[type=range]:focus::-ms-fill-upper {
 .highcharts-range-label {
   display: none;
 }*/
+
+/* Tooltip container */
+.tooltip {
+  margin-left: 3px;
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  font-size: 0.8em;
+  visibility: hidden;
+  width: 140px;
+  background-color: #3465a4e6;
+  color: white;
+  text-align: center;
+  padding: 5px 0;
+  box-shadow: 2px 3px 0px -1px rgba(0,0,0,0.51);
+  margin-bottom: 3px;
+  border-radius: 6px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}

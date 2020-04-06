@@ -73,7 +73,7 @@
 <script>
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
-    import { getters, contract as currentContract } from '../contract'
+    import { getters, contract as currentContract, gas as contractGas } from '../contract'
     import allabis from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
@@ -263,7 +263,7 @@
     							this.donate_dust)
 			        		.send({
 			        			from: currentContract.default_account,
-			        			gas: 1600000,
+			        			gas: contractGas.depositzap[this.currentPool].withdraw,
 			        		})
 			        }
 			        else if(this.to_currency == 10) {

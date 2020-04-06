@@ -60,7 +60,7 @@
 <script>
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
-    import { getters, contract as currentContract } from '../contract'
+    import { getters, contract as currentContract, gas as contractGas } from '../contract'
     import allabis from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
@@ -202,7 +202,7 @@
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
-						gas: 3000000
+						gas: contractGas.depositzap[this.currentPool].deposit
 					})
 				}
 			    await this.handle_sync_balances();

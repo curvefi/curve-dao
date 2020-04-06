@@ -211,9 +211,8 @@
 			},
 			async change_currency(i) {
 	            await common.calc_slippage(this.inputs, true)
-
 	            var value = this.inputs[i]
-	            if (value > this.wallet_balances[i] * currentContract.c_rates[i])
+	            if (value > this.wallet_balances[i] * this.rates[i])
 	                Vue.set(this.bgColors, i, 'red');
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
@@ -236,7 +235,7 @@
 	                        }
 
 	                        // Balance not enough highlight
-	                        if (newval > this.wallet_balances[j] * currentContract.c_rates[j])
+	                        if (newval > this.wallet_balances[j] * this.rates[j])
 	                            Vue.set(this.bgColors, j, 'red');
 	                        else
 	                            Vue.set(this.bgColors, j, 'blue');

@@ -219,7 +219,7 @@ export async function handle_migrate_new(page) {
     update_fee_info(page);
 }
 
-export async function calc_slippage(values, deposit, amount, to_currency) {
+export async function calc_slippage(values, deposit, zap_values, to_currency) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
     let slippage = 0;
     var token_amount;
@@ -227,8 +227,6 @@ export async function calc_slippage(values, deposit, amount, to_currency) {
     var virtual_price = await currentContract.swap.methods.get_virtual_price().call();
     if(to_currency !== undefined) {
         let precision = allabis[currentContract.currentContract].coin_precisions[to_currency]
-        let zap_values = Array(currentContract.N_COINS).fill(0)
-        zap_values[to_currency] = cBN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, to_currency).call())
         real_values[to_currency] = zap_values[to_currency].div(precision)
         zap_values[to_currency] = zap_values[to_currency].times(1e18/precision)
         var Sr = zap_values[to_currency]

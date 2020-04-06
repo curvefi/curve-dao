@@ -127,6 +127,7 @@
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
 	        	})
+	        	this.withdrawc = false;
 	        	this.handle_change_share();
         	}
         },
@@ -251,7 +252,6 @@
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	common.ensure_allowance_zap_out(amount)
 			        	let min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
-			    		console.log(min_amount, "MIN AMOUNT")
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
@@ -284,7 +284,14 @@
 	        		var amount = cBN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
 				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
-				    await common.calc_slippage(this.inputs, false, amount, this.to_currency)
+	                let precision = allabis[currentContract.currentContract].coin_precisions[this.to_currency]
+					let zap_values = Array(currentContract.N_COINS).fill(0)
+					zap_values[this.to_currency] = cBN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
+			        let real_values = Array(currentContract.N_COINS).fill(0)
+			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
+			        this.inputs = this.inputs.map(v=>0)
+			        this.inputs[this.to_currency] = real_values[this.to_currency].toFixed(2)
+				    await common.calc_slippage(this.inputs, false, zap_values, this.to_currency)
         		}
 
 				this.shareStyles.backgroundColor = 'blue'
@@ -294,7 +301,7 @@
 			    }
 			    else if ((this.share > 100) | (this.share < 0))
 			        this.shareStyles.backgroundColor = 'red'
-
+			    if(this.to_currency !== null) return;
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
 			            Vue.set(this.inputs, i, (this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply).toFixed(2))

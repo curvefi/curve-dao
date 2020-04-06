@@ -10,7 +10,7 @@ import Onboard from 'bnc-onboard'
 import * as common from './utils/common.js'
 import * as currentContract from './contract.js'
 import { infura_url } from './allabis.js'
-
+import { multicall_address, multicall_abi } from './allabis'
 
 /*const providerOptions = {
     walletconnect: {
@@ -98,7 +98,8 @@ export const onboard = Onboard({
           infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"
         },
         { walletName: "opera" },
-        { walletName: "operaTouch" }
+        { walletName: "operaTouch" },
+        { walletName: "unilogin" },
       ]
     },
 
@@ -116,7 +117,7 @@ async function init(init = true) {
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
-
+    currentContract.contract.multicall = new web3.eth.Contract(multicall_abi, multicall_address)
 
     if(init) await currentContract.init();
     var default_account = (await web3.eth.getAccounts())[0];

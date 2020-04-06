@@ -1,5 +1,6 @@
 export var infura_url = 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b'
-
+export let multicall_address = '0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441'
+export let multicall_abi = [{"constant":true,"inputs":[],"name":"getCurrentBlockTimestamp","outputs":[{"name":"timestamp","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"components":[{"name":"target","type":"address"},{"name":"callData","type":"bytes"}],"name":"calls","type":"tuple[]"}],"name":"aggregate","outputs":[{"name":"blockNumber","type":"uint256"},{"name":"returnData","type":"bytes[]"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getLastBlockHash","outputs":[{"name":"blockHash","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"addr","type":"address"}],"name":"getEthBalance","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCurrentBlockDifficulty","outputs":[{"name":"difficulty","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCurrentBlockGasLimit","outputs":[{"name":"gaslimit","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCurrentBlockCoinbase","outputs":[{"name":"coinbase","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"blockNumber","type":"uint256"}],"name":"getBlockHash","outputs":[{"name":"blockHash","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"}]
 var compound = {
 N_COINS: 2,
 coin_precisions: [1e18, 1e6],
@@ -10,7 +11,7 @@ token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
 old_token_address: '0x3740fb63ab7a09891d7c0d4299442A551D06F5fD',
 migration_address: '0x54Ee22d5593FC76fB20EafAb66C45aAb3268B800',
 infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
-deposit_address: '0x7B5A0905cBeD0E96c062DbF0F921726db1f5f55B',
+deposit_address: '0x4F0e0eD4Ee48F253aC92490ce851712fcF053841',
 deposit_abi:  
 [
  {
@@ -112,7 +113,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 2938045
+  "gas": 2946562
  },
  {
   "name": "remove_liquidity_one_coin",
@@ -133,8 +134,41 @@ deposit_abi:
   ],
   "constant": false,
   "payable": false,
+  "type": "function"
+ },
+ {
+  "name": "remove_liquidity_one_coin",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   },
+   {
+    "type": "uint256",
+    "name": "min_uamount"
+   },
+   {
+    "type": "bool",
+    "name": "donate_dust"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function"
+ },
+ {
+  "name": "withdraw_donated_dust",
+  "outputs": [],
+  "inputs": [],
+  "constant": false,
+  "payable": false,
   "type": "function",
-  "gas": 3026812
+  "gas": 63973
  },
  {
   "name": "coins",
@@ -153,7 +187,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 1650
+  "gas": 1680
  },
  {
   "name": "underlying_coins",
@@ -172,7 +206,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 1680
+  "gas": 1710
  },
  {
   "name": "curve",
@@ -186,7 +220,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 1511
+  "gas": 1541
  },
  {
   "name": "token",
@@ -200,7 +234,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 1541
+  "gas": 1571
  }
 ],
 

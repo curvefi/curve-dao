@@ -47,12 +47,16 @@
         	<legend>Withdraw % in:</legend>
         	<ul>
         		<li>
-        			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' v-model='to_currency'>
+        			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>Combination of all coins</label>
         		</li>
 				<li v-for='(currency, i) in Object.keys(currencies)'>
-	                <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
+	                <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' :checked='to_currency === i' @click='handleCheck(i)'>
 	                <label :for="'to_cur_'+i">{{currency | capitalize}}</label>
+	            </li>
+	            <li>
+	            	<input type='checkbox' id='donate_dust' name='donate_dust' v-model='donate_dust'>
+	            	<label for='donate_dust'>Donate dust</label>
 	            </li>
         	</ul>
         </fieldset>
@@ -101,6 +105,7 @@
     		to_currency: null,
     		test: null,
     		withdrawc: true,
+    		donate_dust: true,
     	}),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -116,7 +121,7 @@
             })
         },
         watch: {
-        	async to_currency(val) {
+        	async selected(val) {
         		if(this.share == 0 || this.share == '---') this.share = 100
 	        	this.inputStyles = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',
@@ -126,24 +131,37 @@
         	}
         },
         computed: {
+        	selected: {
+        		get() {
+        			return this.to_currency
+        		},
+        		set(val) {
+        			console.log(val, this.to_currency)
+        			if(val == this.to_currency) this.to_currency = null
+        			else this.to_currency = val
+        		}
+        	},
           ...getters,
         },
         mounted() {
+        	this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+        	this.inputStyles = Array(Object.keys(this.currencies).length).fill({
+        		backgroundColor: '#707070',
+        		color: '#d0d0d0',
+        	})
             if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
             async mounted() {
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
-	        	this.inputStyles = Array(currentContract.N_COINS).fill({
-	        		backgroundColor: '#707070',
-	        		color: '#d0d0d0',
-	        	})
-                common.update_fee_info();
-                await common.update_rates();
+                await common.update_fee_info();
             	await this.update_balances();
             	this.handle_change_share();
+            },
+            handleCheck(val) {
+            	if(val === this.to_currency) this.to_currency = null
+            	else this.to_currency = val
             },
             async update_balances() {
 			    if (currentContract.default_account) {
@@ -233,7 +251,12 @@
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	common.ensure_allowance_zap_out(amount)
 			        	let min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
-			        	await currentContract.deposit_zap.methods.remove_liquidity_one_coin(amount, this.to_currency, cBN(min_amount).times(cBN(0.97)).toFixed(0))
+			    		console.log(min_amount, "MIN AMOUNT")
+			        	await currentContract.deposit_zap.methods
+			        		.remove_liquidity_one_coin(amount, 
+			        			this.to_currency, 
+    							cBN(min_amount).times(cBN(0.97)).toFixed(0), 
+    							this.donate_dust)
 			        		.send({
 			        			from: currentContract.default_account,
 			        			gas: 1000000,
@@ -257,12 +280,11 @@
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 
-        		if(this.to_currency !== undefined && this.to_currency < 10) {
-        			console.log("HERE")    			
+        		if(this.to_currency !== null && this.to_currency < 10) {
 	        		var amount = cBN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
 				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
-				    await common.calc_slippage([], false, amount, this.to_currency)
+				    await common.calc_slippage(this.inputs, false, amount, this.to_currency)
         		}
 
 				this.shareStyles.backgroundColor = 'blue'

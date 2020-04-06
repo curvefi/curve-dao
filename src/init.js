@@ -119,8 +119,7 @@ async function init(init = true) {
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
     currentContract.contract.multicall = new web3.eth.Contract(multicall_abi, multicall_address)
-  
-    if(init) await currentContract.init();
+
     var default_account = (await web3.eth.getAccounts())[0];
     currentContract.contract.default_account = default_account;
     if(init) await currentContract.init();

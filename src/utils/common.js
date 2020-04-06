@@ -129,6 +129,7 @@ export function update_rates(version = 'new', contract) {
         //for usdt pool
         if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
             allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
+            console.log('tether')
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
         else if(['iearn', 'busd'].includes(contract.currentContract)) {

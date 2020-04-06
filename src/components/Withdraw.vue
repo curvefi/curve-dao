@@ -38,7 +38,7 @@
                     @focus='handle_change_amounts(i)'>
                 </li>
                 <li v-show = "currentPool == 'compound'">
-                    <input id="withdrawc" type="checkbox" name="inf-approval" checked v-model='withdrawc'>
+                    <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw compounded</label>
                 </li>
             </ul>
@@ -128,8 +128,13 @@
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
 	        	})
+	        	console.log(val, "THEVAL")
 	        	this.withdrawc = false;
 	        	this.handle_change_share();
+        	},
+        	withdrawc() {
+        		console.log("WITHDRAWC")
+        		this.selected = null
         	}
         },
         computed: {
@@ -157,7 +162,7 @@
             async mounted() {
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-        		
+
                 await common.update_fee_info();
             	await this.update_balances();
             	this.handle_change_share();
@@ -225,11 +230,16 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        Vue.set(this.amounts, i, cBN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
 			    	min_amounts[i] = cBN(0.97).times(this.share/100).times(cBN(this.balances[i]))
-					if(this.withdrawc) min_amounts[i] = min_amounts[i].times(currentContract.c_rates[i])
+					if(!this.withdrawc) {
+						min_amounts[i] = min_amounts[i]
+										.times(allabis[currentContract.currentContract].coin_precisions[i])
+										.times(currentContract.c_rates[i])
+					}
 					min_amounts[i] = min_amounts[i].times(cBN(this.token_balance))
 						            .div(cBN(this.token_supply))
 						            .toFixed(0,1)
 			    }
+			    console.log(min_amounts, "MIN AMOUNTS")
 			    var txhash;
 			    if (this.share == '---') {
 			        var token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();

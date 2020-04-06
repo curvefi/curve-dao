@@ -5,7 +5,7 @@
 	            <legend>Average liquidity provider profit [
 		            	<span id="apr-profit" :class="{'loading line': loading}">
 		            		<span v-show='!loading'> {{apr*100 | toFixed2}}%</span>
-	            	</span> APY ]
+	            	</span> APY <span class='tooltip'>[?]<span class='tooltiptext'>(on annual basis)</span></span> ]
 	        	</legend>
 	            <div class='loading matrix' v-show='loading'></div>
 				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>

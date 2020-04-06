@@ -1,7 +1,10 @@
 <template>
 	<div>
  		<div class='window white'>
- 			<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+ 			<fieldset>
+ 				<legend>Daily APY % and volume <span class='tooltip'>[?]<span class='tooltiptext'>(on annual basis)</span></span></legend>
+ 				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+ 			</fieldset>
  		</div>
 
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
@@ -56,7 +59,7 @@
 			},
 			chartdata: {
 				title: {
-					text: 'Daily APY % and volume'
+					text: ''
 				},
 				chart: {
 					panning: true,

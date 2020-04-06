@@ -26,19 +26,37 @@ export function approve_to_migrate(amount, account) {
             });
 }
 
-export async function ensure_allowance(amounts) {
+export async function ensure_allowance_zap_out(amount) {
+    var default_account = (await web3.eth.getAccounts())[0];
+    let fromContract = currentContract.swap_token;
+    let toContract = allabis[currentContract.currentContract].deposit_address
+    let allowance = await currentContract.swap_token.methods.allowance(default_account, toContract).call()
+
+    if(allowance > 0) await approve(fromContract, 0, default_account, toContract)
+    await approve(fromContract, amount, default_account, toContract)
+}
+
+export async function ensure_allowance(amounts, plain = false, withdrawplain = false) {
     var default_account = (await web3.eth.getAccounts())[0];
     var allowances = new Array(currentContract.N_COINS);
+    let coins = currentContract.coins;
+    let swap = currentContract.swap_address;
+    if(plain) {
+        coins = currentContract.underlying_coins;
+        swap = allabis[currentContract.currentContract].deposit_address;
+    }
+    let fromContract = coins
+    if(withdrawplain) fromContract = currentContract.deposit_zap
     for (let i=0; i < currentContract.N_COINS; i++)
-        allowances[i] = await currentContract.coins[i].methods.allowance(default_account, currentContract.swap_address).call();
+        allowances[i] = await coins[i].methods.allowance(default_account, swap).call();
 
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(amounts[i])) {
                 if (allowances[i] > 0)
-                    await approve(currentContract.coins[i], 0, default_account);
-                await approve(currentContract.coins[i], amounts[i], default_account);
+                    await approve(coins[i], 0, default_account, swap);
+                await approve(coins[i], amounts[i], default_account, swap);
             }
         }
     }
@@ -47,8 +65,8 @@ export async function ensure_allowance(amounts) {
         for (let i=0; i < currentContract.N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(currentContract.max_allowance.div(cBN(2)))) {
                 if (allowances[i] > 0)
-                    await approve(currentContract.coins[i], 0, default_account);
-                await approve(currentContract.coins[i], currentContract.max_allowance, default_account);
+                    await approve(coins[i], 0, default_account, swap);
+                await approve(coins[i], max_allowance, default_account, swap);
             }
         }
     }
@@ -261,17 +279,30 @@ export async function handle_migrate_new(page) {
     update_fee_info(page);
 }
 
-export async function calc_slippage(values, deposit) {
+export async function calc_slippage(values, deposit, zap_values, to_currency) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
     let slippage = 0;
-    var real_values = values.map(v=>+v);
-    var Sr = real_values.reduce((a,b) => a+b, 0);
-
-    var values = real_values.map((x,i) => cBN(Math.floor(x / currentContract.c_rates[i]).toString()).toFixed(0,1));
-    var token_amount = await currentContract.swap.methods.calc_token_amount(values, deposit).call();
+    var token_amount;
+    var real_values = Array(currentContract.N_COINS).fill(0)
     var virtual_price = await currentContract.swap.methods.get_virtual_price().call();
-    var Sv = virtual_price * token_amount / 1e36;
+    if(to_currency !== undefined) {
+        let precision = allabis[currentContract.currentContract].coin_precisions[to_currency]
+        real_values[to_currency] = zap_values[to_currency].div(precision)
+        zap_values[to_currency] = zap_values[to_currency].times(1e18/precision)
+        var Sr = zap_values[to_currency]
+        zap_values[to_currency] = zap_values[to_currency].div(1e18).div(currentContract.c_rates[to_currency]).toFixed(0);
+        token_amount = (await currentContract.swap.methods.calc_token_amount(zap_values, to_currency).call()) / 1e18
 
+        slippage = Sr / (virtual_price * token_amount)
+    }
+    else {
+        real_values = values.map(v=>+v);
+        var Sr = real_values.reduce((a,b) => a+b, 0);
+
+        var values = real_values.map((x,i) => cBN(Math.floor(x / currentContract.c_rates[i]).toString()).toFixed(0,1));
+        token_amount = (await currentContract.swap.methods.calc_token_amount(values, deposit).call()) / 1e18
+    }
+    var Sv = virtual_price * token_amount / 1e18;
     for(let i = 0; i < currentContract.N_COINS; i++) {
         let coin_balance = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
         if(!deposit) {
@@ -285,7 +316,7 @@ export async function calc_slippage(values, deposit) {
     }
     if (deposit)
         slippage = Sv / Sr
-    else
+    else if(to_currency === undefined)
         slippage = Sr / Sv;
     slippage = slippage - 1;
     slippage = slippage || 0

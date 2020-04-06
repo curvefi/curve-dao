@@ -211,9 +211,11 @@ export async function init(contract, refresh = false) {
         console.error(err);
         this.error = 'There was an error connecting. Please refresh page';
     }
-    if(contract.currentContract == 'compound') {
-	    contract.old_swap = new web3.eth.Contract(allabis[contract.currentContract].old_swap_abi, allabis[contract.currentContract].old_swap_address);
-	    contract.old_swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].old_token_address);
+
+    if(state.currentContract == 'compound') {
+	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
+	    state.old_swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
+	    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     }
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].token_address);

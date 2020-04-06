@@ -55,7 +55,7 @@
 	    <div class="window white">
 	        <h2>Curve FAQ</h2>
 	        <h3>What is Curve?</h3>
-
+	        <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
 	        <p>Curve is an exchange liquidity pool on Ethereum (like <a
 	         href="https://uniswap.exchange/">Uniswap</a>)
 	        designed for (1) extremely efficient stablecoin trading (2) low

@@ -92,11 +92,6 @@
 </script>
 
 <style>
-  .dropdown p {
-    color: black;
-    margin-top: 0;
-    margin-bottom: 15px;
-  }
   a.showmobile {
     display: none;
   }

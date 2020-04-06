@@ -764,3 +764,9 @@ input[type=range]:focus::-ms-fill-upper {
 .tooltip:hover .tooltiptext {
   visibility: visible;
 }
+
+.dropdown p {
+  color: black;
+  margin-top: 0;
+  margin-bottom: 15px;
+}

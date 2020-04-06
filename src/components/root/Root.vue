@@ -200,11 +200,6 @@
 </script>
 
 <style scoped>
-	.dropdown p {
-		color: black;
-		margin-top: 0;
-		margin-bottom: 15px;
-	}
 	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
 		.poolsdialog.poolsdialog > div a {
 			display: block;

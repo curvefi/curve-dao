@@ -106,6 +106,7 @@
     		test: null,
     		withdrawc: true,
     		donate_dust: true,
+    		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -160,6 +161,11 @@
             	await this.update_balances();
             	this.handle_change_share();
             },
+            async calcSlippage(...args) {
+            	this.slippagePromise.cancel();
+        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(...args))
+        		await this.slippagePromise;
+            },
             handleCheck(val) {
             	if(val === this.to_currency) this.to_currency = null
             	else this.to_currency = val
@@ -205,7 +211,7 @@
 		            else {
 		                this.setAllInputBackground('blue')
 		            }
-		            await common.calc_slippage(this.inputs, false);
+		            this.calcSlippage(this.inputs, false);
 
 		            this.share = '---';
 		            this.shareStyles = {
@@ -278,12 +284,11 @@
 			        }
 			    }
 			    await this.update_balances();
-			    common.update_fee_info();
+			    await common.update_fee_info();
 			},
 			async handle_change_share() {
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-
         		if(this.to_currency !== null && this.to_currency < 10) {
 	        		var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
@@ -295,7 +300,7 @@
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)
 			        this.inputs[this.to_currency] = real_values[this.to_currency].toFixed(2)
-				    await common.calc_slippage(this.inputs, false, zap_values, this.to_currency)
+				    await this.calcSlippage([], false, zap_values, this.to_currency)
         		}
 
 				this.shareStyles.backgroundColor = 'blue'
@@ -305,7 +310,7 @@
 			    }
 			    else if ((this.share > 100) | (this.share < 0))
 			        this.shareStyles.backgroundColor = 'red'
-			    if(this.to_currency !== null) return;
+			    if(this.to_currency !== null && this.to_currency < 10) return;
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
 			            Vue.set(this.inputs, i, (this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply).toFixed(2))

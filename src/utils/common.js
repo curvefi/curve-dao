@@ -36,7 +36,7 @@ export async function ensure_allowance_zap_out(amount) {
     await approve(fromContract, amount, default_account, toContract)
 }
 
-export async function ensure_allowance(amounts, plain = false, withdrawplain = false) {
+export async function ensure_allowance(amounts, plain = false) {
     var default_account = (await web3.eth.getAccounts())[0];
     var allowances = new Array(currentContract.N_COINS);
     let coins = currentContract.coins;
@@ -46,7 +46,6 @@ export async function ensure_allowance(amounts, plain = false, withdrawplain = f
         swap = allabis[currentContract.currentContract].deposit_address;
     }
     let fromContract = coins
-    if(withdrawplain) fromContract = currentContract.deposit_zap
     for (let i=0; i < currentContract.N_COINS; i++)
         allowances[i] = await coins[i].methods.allowance(default_account, swap).call();
     if (amounts) {

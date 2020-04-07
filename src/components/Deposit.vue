@@ -88,6 +88,7 @@
     		coins: [],
     		rates: [],
     		swap_address: currentContract.swap_address,
+    		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -115,7 +116,7 @@
             		this.swap_address = currentContract.deposit_address
             	}
         		this.handle_sync_balances()
-        		await common.calc_slippage(this.inputs, true);
+        		await this.calcSlippage()
         	}
         },
         computed: {
@@ -137,12 +138,17 @@
 	        	})
                 common.update_fee_info();
                 await this.handle_sync_balances();
-                await common.calc_slippage(this.inputs, true);
+                await this.calcSlippage()
                 for (let i = 0; i < currentContract.N_COINS; i++) {
 					if (BN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(BN(2))))
 		            	this.inf_approval = false;
 		        }
                 this.disabledButtons = false;
+            },
+            async calcSlippage() {
+            	this.slippagePromise.cancel();
+        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(this.inputs, true))
+        		await this.slippagePromise;
             },
             async handle_sync_balances() {
 			    await common.update_fee_info();
@@ -209,7 +215,7 @@
 			    common.update_fee_info();
 			},
 			async change_currency(i) {
-	            await common.calc_slippage(this.inputs, true)
+	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            if (value > this.wallet_balances[i] * this.rates[i])
 	                Vue.set(this.bgColors, i, 'red');

@@ -254,7 +254,7 @@
 			        if (this.share == 100)
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 			        if(this.to_currency !== null && this.to_currency < 10) {
-			        	common.ensure_allowance_zap_out(amount)
+			        	await common.ensure_allowance_zap_out(amount)
 			        	let min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
@@ -267,7 +267,7 @@
 			        		})
 			        }
 			        else if(this.to_currency == 10) {
-			        	common.ensure_allowance_zap_out(amount)
+			        	await common.ensure_allowance_zap_out(amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 1000000});
 			        }
 			        else await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});

@@ -243,7 +243,7 @@
 			    	}
 			        else {
 			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
-			        	common.ensure_allowance_zap_out(token_amount)
+			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
 				        	from: currentContract.default_account, gas: 1600000
 				        })

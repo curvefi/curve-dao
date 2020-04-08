@@ -37,14 +37,15 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "['compound'].includes(currentPool)">
+                <li>
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
-                    <label for="withdrawc" @click='selected=null'>Withdraw compounded</label>
+                    <label for="withdrawc">Withdraw compounded</label>
                 </li>
             </ul>
         </fieldset>
-        <fieldset v-show="['compound'].includes(currentPool)">
+        <fieldset>
         	<legend>Withdraw % in:</legend>
+        	{{to_currency}} SELECTED
         	<ul>
         		<li>
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
@@ -118,38 +119,27 @@
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, val => {
+            	this.setInputStyles(true)
                 if(currentContract.initializedContracts) this.mounted();
             })
         },
         watch: {
-        	async selected(val) {
+        	to_currency(val) {
         		if(this.share == 0 || this.share == '---') this.share = 100
-	        	this.inputStyles = Array(currentContract.N_COINS).fill({
-	        		backgroundColor: '#707070',
-	        		color: '#d0d0d0',
-	        	})
-	        	this.withdrawc = false;
+	        	this.setInputStyles()
 	        	if(val !== null) this.handle_change_share();
         	},
+        	withdrawc(val) {
+        		if(this.share == '---' ) return;
+        		if(!val && this.to_currency === null) this.to_currency = 10
+        		if(val && this.to_currency !== null) this.to_currency = null
+        	}
         },
         computed: {
-        	selected: {
-        		get() {
-        			return this.to_currency
-        		},
-        		set(val) {
-        			if(val == this.to_currency) this.to_currency = null
-        			else this.to_currency = val
-        		}
-        	},
           ...getters,
         },
         mounted() {
-        	this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
-        	this.inputStyles = Array(Object.keys(this.currencies).length).fill({
-        		backgroundColor: '#707070',
-        		color: '#d0d0d0',
-        	})
+        	this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
@@ -161,14 +151,27 @@
             	await this.update_balances();
             	this.handle_change_share();
             },
+            setInputStyles(newInputs = false) {
+	        	if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+	        	this.inputStyles = Array(Object.keys(this.currencies).length).fill({
+	        		backgroundColor: '#707070',
+	        		color: '#d0d0d0',
+	        	})
+            },
             async calcSlippage(...args) {
             	this.slippagePromise.cancel();
         		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(...args))
         		await this.slippagePromise;
             },
             handleCheck(val) {
-            	if(val === this.to_currency) this.to_currency = null
-            	else this.to_currency = val
+            	if(val === this.to_currency) {
+            		if(this.withdrawc == false) this.withdrawc = true
+            		this.to_currency = null
+            	}
+            	else {
+            		this.withdrawc = false
+            		this.to_currency = val
+            	}
             },
             async update_balances() {
             	let calls = []
@@ -271,7 +274,7 @@
 			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: 1600000
+				        	from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawImbalance
 				        })
 			        }
 			    }
@@ -294,9 +297,12 @@
 			        }
 			        else if(this.to_currency == 10) {
 			        	await common.ensure_allowance_zap_out(amount)
-			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 1000000});
+			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
+			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
 			        }
-			        else await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
+			        else {
+			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
+			        }
 			    }
 			    if(this.share == '---') {
 			        for (let i = 0; i < currentContract.N_COINS; i++) {

@@ -42,7 +42,7 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust this contract forever</label>
                 </li>
-                <li v-show="['compound'].includes(currentPool)">
+                <li>
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit compounded</label>
                 </li>
@@ -100,6 +100,7 @@
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, val => {
+            	this.setInputStyles(true)
             	if(currentContract.initializedContracts) this.mounted();
             })
         },
@@ -115,7 +116,8 @@
             		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
             		this.swap_address = currentContract.deposit_address
             	}
-        		this.handle_sync_balances()
+        		await this.handle_sync_balances()
+        		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i)))
         		await this.calcSlippage()
         	}
         },
@@ -131,11 +133,7 @@
         		this.rates = currentContract.c_rates
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-	        	this.inputs = new Array(currentContract.N_COINS).fill('0.00')
-	        	this.bgColors = Array(currentContract.N_COINS).fill({
-	        		backgroundColor: '#707070',
-	        		color: '#d0d0d0',
-	        	})
+	        	this.setInputStyles(true)
                 common.update_fee_info();
                 await this.handle_sync_balances();
                 await this.calcSlippage()
@@ -146,6 +144,13 @@
                 if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
                 	this.inf_approval = false
                 this.disabledButtons = false;
+            },
+            setInputStyles(newInputs = false) {
+				if(newInputs) this.inputs = new Array(currentContract.N_COINS).fill('0.00')
+	        	this.bgColors = Array(currentContract.N_COINS).fill({
+	        		backgroundColor: '#707070',
+	        		color: '#d0d0d0',
+	        	})
             },
             async calcSlippage() {
             	this.slippagePromise.cancel();

@@ -24,9 +24,8 @@ underlying_coins: [
 coins: [
         '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
         '0x39AA39c021dfbaE8faC545936693aC917d5E7563',],
-deposit_address: '0x4F0e0eD4Ee48F253aC92490ce851712fcF053841',
-deposit_abi:  
-[
+deposit_address: '0xeB21209ae4C2c9FF2a86ACA31E123764A3B6Bc06',
+deposit_abi: [
  {
   "outputs": [],
   "inputs": [
@@ -67,7 +66,7 @@ deposit_abi:
   "constant": false,
   "payable": false,
   "type": "function",
-  "gas": 117161
+  "gas": 117283
  },
  {
   "name": "remove_liquidity",
@@ -85,7 +84,7 @@ deposit_abi:
   "constant": false,
   "payable": false,
   "type": "function",
-  "gas": 83281
+  "gas": 83606
  },
  {
   "name": "remove_liquidity_imbalance",
@@ -103,14 +102,14 @@ deposit_abi:
   "constant": false,
   "payable": false,
   "type": "function",
-  "gas": 96384
+  "gas": 96829
  },
  {
   "name": "calc_withdraw_one_coin",
   "outputs": [
    {
     "type": "uint256",
-    "name": "out"
+    "name": ""
    }
   ],
   "inputs": [
@@ -126,7 +125,7 @@ deposit_abi:
   "constant": true,
   "payable": false,
   "type": "function",
-  "gas": 2946562
+  "gas": 2945630
  },
  {
   "name": "remove_liquidity_one_coin",
@@ -188,7 +187,7 @@ deposit_abi:
   "outputs": [
    {
     "type": "address",
-    "name": "out"
+    "name": ""
    }
   ],
   "inputs": [
@@ -207,7 +206,7 @@ deposit_abi:
   "outputs": [
    {
     "type": "address",
-    "name": "out"
+    "name": ""
    }
   ],
   "inputs": [
@@ -226,7 +225,7 @@ deposit_abi:
   "outputs": [
    {
     "type": "address",
-    "name": "out"
+    "name": ""
    }
   ],
   "inputs": [],
@@ -240,7 +239,7 @@ deposit_abi:
   "outputs": [
    {
     "type": "address",
-    "name": "out"
+    "name": ""
    }
   ],
   "inputs": [],
@@ -1852,6 +1851,231 @@ var usdt = {
         '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643',
         '0x39AA39c021dfbaE8faC545936693aC917d5E7563',
         '0xdAC17F958D2ee523a2206206994597C13D831ec7'],
+  deposit_address: '0xac795D2c97e60DF6a99ff1c814727302fD747a80',
+  deposit_abi: [
+ {
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "address[3]",
+    "name": "_coins"
+   },
+   {
+    "type": "address[3]",
+    "name": "_underlying_coins"
+   },
+   {
+    "type": "address",
+    "name": "_curve"
+   },
+   {
+    "type": "address",
+    "name": "_token"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "constructor"
+ },
+ {
+  "name": "add_liquidity",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256[3]",
+    "name": "uamounts"
+   },
+   {
+    "type": "uint256",
+    "name": "min_mint_amount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 141657
+ },
+ {
+  "name": "remove_liquidity",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_amount"
+   },
+   {
+    "type": "uint256[3]",
+    "name": "min_uamounts"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 92544
+ },
+ {
+  "name": "remove_liquidity_imbalance",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256[3]",
+    "name": "uamounts"
+   },
+   {
+    "type": "uint256",
+    "name": "max_burn_amount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 110959
+ },
+ {
+  "name": "calc_withdraw_one_coin",
+  "outputs": [
+   {
+    "type": "uint256",
+    "name": ""
+   }
+  ],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 3413700
+ },
+ {
+  "name": "remove_liquidity_one_coin",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   },
+   {
+    "type": "uint256",
+    "name": "min_uamount"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function"
+ },
+ {
+  "name": "remove_liquidity_one_coin",
+  "outputs": [],
+  "inputs": [
+   {
+    "type": "uint256",
+    "name": "_token_amount"
+   },
+   {
+    "type": "int128",
+    "name": "i"
+   },
+   {
+    "type": "uint256",
+    "name": "min_uamount"
+   },
+   {
+    "type": "bool",
+    "name": "donate_dust"
+   }
+  ],
+  "constant": false,
+  "payable": false,
+  "type": "function"
+ },
+ {
+  "name": "withdraw_donated_dust",
+  "outputs": [],
+  "inputs": [],
+  "constant": false,
+  "payable": false,
+  "type": "function",
+  "gas": 63973
+ },
+ {
+  "name": "coins",
+  "outputs": [
+   {
+    "type": "address",
+    "name": ""
+   }
+  ],
+  "inputs": [
+   {
+    "type": "int128",
+    "name": "arg0"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1680
+ },
+ {
+  "name": "underlying_coins",
+  "outputs": [
+   {
+    "type": "address",
+    "name": ""
+   }
+  ],
+  "inputs": [
+   {
+    "type": "int128",
+    "name": "arg0"
+   }
+  ],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1710
+ },
+ {
+  "name": "curve",
+  "outputs": [
+   {
+    "type": "address",
+    "name": ""
+   }
+  ],
+  "inputs": [],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1541
+ },
+ {
+  "name": "token",
+  "outputs": [
+   {
+    "type": "address",
+    "name": ""
+   }
+  ],
+  "inputs": [],
+  "constant": true,
+  "payable": false,
+  "type": "function",
+  "gas": 1571
+ }
+],
   swap_abi: [
    {
     "name": "TokenExchange",
@@ -2686,231 +2910,231 @@ var iearn = {
         '0xd6aD7a6750A7593E092a9B218d66C0A814a3436e',
         '0x83f798e925BcD4017Eb265844FDDAbb448f1707D',
         '0x73a052500105205d34Daf004eAb301916DA8190f'],
-  deposit_address: '0x61Dc3C6dA3F97f544c5352Fd0508d0B849896E87',
+  deposit_address: '0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3',
   deposit_abi: [
-   {
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "address[4]",
-      "name": "_coins"
-     },
-     {
-      "type": "address[4]",
-      "name": "_underlying_coins"
-     },
-     {
-      "type": "address",
-      "name": "_curve"
-     },
-     {
-      "type": "address",
-      "name": "_token"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "constructor"
-   },
-   {
-    "name": "add_liquidity",
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "uint256[4]",
-      "name": "uamounts"
-     },
-     {
-      "type": "uint256",
-      "name": "min_mint_amount"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "function",
-    "gas": 164316
-   },
-   {
-    "name": "remove_liquidity",
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "uint256",
-      "name": "_amount"
-     },
-     {
-      "type": "uint256[4]",
-      "name": "min_uamounts"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "function",
-    "gas": 99145
-   },
-   {
-    "name": "remove_liquidity_imbalance",
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "uint256[4]",
-      "name": "uamounts"
-     },
-     {
-      "type": "uint256",
-      "name": "max_burn_amount"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "function",
-    "gas": 119348
-   },
-   {
-    "name": "calc_withdraw_one_coin",
-    "outputs": [
-     {
-      "type": "uint256",
-      "name": ""
-     }
-    ],
-    "inputs": [
-     {
-      "type": "uint256",
-      "name": "_token_amount"
-     },
-     {
-      "type": "int128",
-      "name": "i"
-     }
-    ],
-    "constant": true,
-    "payable": false,
-    "type": "function",
-    "gas": 3881601
-   },
-   {
-    "name": "remove_liquidity_one_coin",
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "uint256",
-      "name": "_token_amount"
-     },
-     {
-      "type": "int128",
-      "name": "i"
-     },
-     {
-      "type": "uint256",
-      "name": "min_uamount"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "function"
-   },
-   {
-    "name": "remove_liquidity_one_coin",
-    "outputs": [],
-    "inputs": [
-     {
-      "type": "uint256",
-      "name": "_token_amount"
-     },
-     {
-      "type": "int128",
-      "name": "i"
-     },
-     {
-      "type": "uint256",
-      "name": "min_uamount"
-     },
-     {
-      "type": "bool",
-      "name": "donate_dust"
-     }
-    ],
-    "constant": false,
-    "payable": false,
-    "type": "function"
-   },
-   {
-    "name": "withdraw_donated_dust",
-    "outputs": [],
-    "inputs": [],
-    "constant": false,
-    "payable": false,
-    "type": "function",
-    "gas": 63973
-   },
-   {
-    "name": "coins",
-    "outputs": [
-     {
-      "type": "address",
-      "name": ""
-     }
-    ],
-    "inputs": [
-     {
-      "type": "int128",
-      "name": "arg0"
-     }
-    ],
-    "constant": true,
-    "payable": false,
-    "type": "function",
-    "gas": 1680
-   },
-   {
-    "name": "underlying_coins",
-    "outputs": [
-     {
-      "type": "address",
-      "name": ""
-     }
-    ],
-    "inputs": [
-     {
-      "type": "int128",
-      "name": "arg0"
-     }
-    ],
-    "constant": true,
-    "payable": false,
-    "type": "function",
-    "gas": 1710
-   },
-   {
-    "name": "curve",
-    "outputs": [
-     {
-      "type": "address",
-      "name": ""
-     }
-    ],
-    "inputs": [],
-    "constant": true,
-    "payable": false,
-    "type": "function",
-    "gas": 1541
-   },
-   {
-    "name": "token",
-    "outputs": [
-     {
-      "type": "address",
-      "name": ""
-     }
-    ],
-    "inputs": [],
-    "constant": true,
-    "payable": false,
-    "type": "function",
-    "gas": 1571
-   }
-  ],
+	 {
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "address[4]",
+	    "name": "_coins"
+	   },
+	   {
+	    "type": "address[4]",
+	    "name": "_underlying_coins"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_curve"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_token"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "constructor"
+	 },
+	 {
+	  "name": "add_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_mint_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 164560
+	 },
+	 {
+	  "name": "remove_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_amount"
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "min_uamounts"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 99521
+	 },
+	 {
+	  "name": "remove_liquidity_imbalance",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "max_burn_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 120148
+	 },
+	 {
+	  "name": "calc_withdraw_one_coin",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 3881601
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   },
+	   {
+	    "type": "bool",
+	    "name": "donate_dust"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "withdraw_donated_dust",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 63973
+	 },
+	 {
+	  "name": "coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1680
+	 },
+	 {
+	  "name": "underlying_coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1710
+	 },
+	 {
+	  "name": "curve",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1541
+	 },
+	 {
+	  "name": "token",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1571
+	 }
+	],
   swap_abi: [
    {
     "name": "TokenExchange",
@@ -3745,7 +3969,231 @@ var busd = {
         '0x26EA744E5B887E5205727f55dFBE8685e3b21951',
         '0xE6354ed5bC4b393a5Aad09f21c46E101e692d447',
         '0x04bC0Ab673d88aE9dbC9DA2380cB6B79C4BCa9aE'],
-
+  deposit_address: '0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB',
+  deposit_abi: [
+	 {
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "address[4]",
+	    "name": "_coins"
+	   },
+	   {
+	    "type": "address[4]",
+	    "name": "_underlying_coins"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_curve"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_token"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "constructor"
+	 },
+	 {
+	  "name": "add_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_mint_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 164560
+	 },
+	 {
+	  "name": "remove_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_amount"
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "min_uamounts"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 99521
+	 },
+	 {
+	  "name": "remove_liquidity_imbalance",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "max_burn_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 120148
+	 },
+	 {
+	  "name": "calc_withdraw_one_coin",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 3881601
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   },
+	   {
+	    "type": "bool",
+	    "name": "donate_dust"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "withdraw_donated_dust",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 63973
+	 },
+	 {
+	  "name": "coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1680
+	 },
+	 {
+	  "name": "underlying_coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1710
+	 },
+	 {
+	  "name": "curve",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1541
+	 },
+	 {
+	  "name": "token",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1571
+	 }
+	],
   swap_abi: [
    {
     "name": "TokenExchange",

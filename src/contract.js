@@ -62,11 +62,28 @@ export const gas = {
 		compound: {
 			deposit: 1300000,
 			withdraw: 1000000,
+			withdrawShare: 1000000,
+			withdrawImbalance: 1600000,
+		},
+		usdt: {
+			deposit: 1300000,
+			withdraw: 1600000,
+			withdrawShare: 1000000,
+			withdrawImbalance: 1600000,
 		},
 		iearn: {
 			//maybe too much?
-			deposit: 3000000,
-			withdraw: 1300000,
+			deposit: 1600000,
+			withdraw: 2000000,
+			withdrawShare: 1600000,
+			withdrawImbalance: 3000000,
+		},
+		busd: {
+			//maybe too much?
+			deposit: 1600000,
+			withdraw: 2000000,
+			withdrawShare: 1600000,
+			withdrawImbalance: 3000000,
 		}
 	}
 }
@@ -208,7 +225,6 @@ export async function init(contract, refresh = false) {
 	//contract = contracts.compound for example
 
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
-	//console.log(contract, state.contracts[contract.currentContract], "CONTRAAAAAAACT")
 	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
 	if(!contract) contract = state
 	try {
@@ -226,9 +242,7 @@ export async function init(contract, refresh = false) {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     }
-    if(['compound', 'iearn'].includes(state.currentContract)) {
-	    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
-    }
+    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
     contract.coins = []

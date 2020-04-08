@@ -338,7 +338,6 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     if (deposit)
         slippage = Sv / Sr
     else if(to_currency === undefined) {
-        console.log("HERERE")
         slippage = Sr / Sv;
     }
     else

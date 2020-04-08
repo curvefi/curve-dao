@@ -45,7 +45,6 @@
         </fieldset>
         <fieldset>
         	<legend>Withdraw % in:</legend>
-        	{{to_currency}} SELECTED
         	<ul>
         		<li>
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>

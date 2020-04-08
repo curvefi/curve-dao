@@ -2,7 +2,7 @@ import Vue from "vue";
 import BigNumber from 'bignumber.js'
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi } from '../allabis'
+import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi } from '../allabis'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -165,7 +165,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
         swap_token_address = allabis[contract.currentContract].token_address
     }
 
-    var default_account = currentContract.default_account;
+    var default_account = currentContract.default_account || '0x0000000000000000000000000000000000000000';
     let calls = [   
                     //.fee()
                     [swap_address_stats, swap_stats.methods.fee().encodeABI()],
@@ -178,11 +178,11 @@ export async function update_fee_info(version = 'new', contract, update = true) 
                     ]
     let rates_calls = update_rates(version, contract);
 
-    //let infuraProvider = new Web3(infura_url)
-    //let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
+    let web3 = currentContract.web3 || new Web3(infura_url)
+    let swap = new web3.eth.Contract(swap_abi_stats, swap_address_stats);
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         //swap.methods.balances(i)
-        calls.push([swap_address_stats, currentContract.swap.methods.balances(i).encodeABI()])
+        calls.push([swap_address_stats, swap.methods.balances(i).encodeABI()])
     }
     calls.push(...rates_calls)
     if(update)
@@ -198,8 +198,10 @@ function checkTethered(contract, i) {
 }
 
 export async function multiInitState(calls, contract, initContracts = false) {
+    let web3 = contract.web3 || new Web3(infura_url)
+    let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
     var default_account = currentContract.default_account;
-    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+    let aggcalls = await multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
     let decoded = aggcalls[1].map((hex, i) => 
         i >= aggcalls[1].length-allabis[contract.currentContract].N_COINS*2 ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)

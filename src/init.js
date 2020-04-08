@@ -116,7 +116,7 @@ async function init(init = true) {
   try {
     currentContract.contract.initializedContracts = false;
     let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
-    if(userSelectedWallet) {} //await onboard.walletCheck();
+    if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
     currentContract.contract.web3 = window.web3
     currentContract.contract.multicall = new web3.eth.Contract(multicall_abi, multicall_address)

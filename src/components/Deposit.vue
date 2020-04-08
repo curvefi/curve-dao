@@ -99,23 +99,14 @@
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
-            this.$watch(()=>currentContract.currentContract, val => {
-            	this.setInputStyles(true)
+            this.$watch(()=>currentContract.currentContract, (val, oldval) => {
+            	this.setInputStyles(false, val, oldval)
             	if(currentContract.initializedContracts) this.mounted();
             })
         },
         watch: {
         	async depositc(val, oldval) {
-        		if(val) {
-	            	this.coins = currentContract.coins
-	            	this.rates = currentContract.c_rates
-	            	this.swap_address = currentContract.swap_address
-        		}
-            	else {
-            		this.coins = currentContract.underlying_coins
-            		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
-            		this.swap_address = currentContract.deposit_address
-            	}
+        		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i)))
         		await this.calcSlippage()
@@ -125,15 +116,14 @@
           ...getters,
         },
         mounted() {
+	        this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
-            async mounted() {
-            	this.coins = currentContract.coins
-        		this.rates = currentContract.c_rates
+            async mounted(oldContract) {
+            	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-	        	this.setInputStyles(true)
                 common.update_fee_info();
                 await this.handle_sync_balances();
                 await this.calcSlippage()
@@ -145,8 +135,21 @@
                 	this.inf_approval = false
                 this.disabledButtons = false;
             },
-            setInputStyles(newInputs = false) {
-				if(newInputs) this.inputs = new Array(currentContract.N_COINS).fill('0.00')
+            changeSwapInfo(val) {
+            	if(val) {
+	            	this.coins = currentContract.coins
+	            	this.rates = currentContract.c_rates
+	            	this.swap_address = currentContract.swap_address
+        		}
+            	else {
+            		this.coins = currentContract.underlying_coins
+            		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
+            		this.swap_address = currentContract.deposit_address
+            	}
+            },
+            setInputStyles(newInputs = false, newContract, oldContract) {
+				if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
+				if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
 	        	this.bgColors = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',

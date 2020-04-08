@@ -117,8 +117,8 @@
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
-            this.$watch(()=>currentContract.currentContract, val => {
-            	this.setInputStyles(true)
+            this.$watch(()=>currentContract.currentContract, (val, oldval) => {
+            	this.setInputStyles(false, val, oldval)
                 if(currentContract.initializedContracts) this.mounted();
             })
         },
@@ -150,8 +150,9 @@
             	await this.update_balances();
             	this.handle_change_share();
             },
-            setInputStyles(newInputs = false) {
-	        	if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+            setInputStyles(newInputs = false, newContract, oldContract) {
+	        	if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
+				if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
 	        	this.inputStyles = Array(Object.keys(this.currencies).length).fill({
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',

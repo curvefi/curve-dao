@@ -323,7 +323,7 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
     let [virtual_price, token_amount, ...balances] = decoded
-    let Sv = +virtual_price * (+token_amount) / 1e18;
+    let Sv = +virtual_price * (+token_amount) / 1e36;
     for(let i = 0; i < currentContract.N_COINS; i++) {
         let coin_balance = +balances[i] * currentContract.c_rates[i];
         if(!deposit) {
@@ -337,10 +337,12 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     }
     if (deposit)
         slippage = Sv / Sr
-    else if(to_currency === undefined)
-        slippage = Sr / Sv / 1e18;
+    else if(to_currency === undefined) {
+        console.log("HERERE")
+        slippage = Sr / Sv;
+    }
     else
-        slippage = Sr / Sv
+        slippage = Sr / (Sv * 1e18)
     slippage = slippage - 1;
     slippage = slippage || 0
     console.log(slippage)

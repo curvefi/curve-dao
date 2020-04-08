@@ -129,7 +129,7 @@
 	        		color: '#d0d0d0',
 	        	})
 	        	this.withdrawc = false;
-	        	this.handle_change_share();
+	        	if(val !== null) this.handle_change_share();
         	},
         },
         computed: {

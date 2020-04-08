@@ -277,7 +277,6 @@
 	                ) ? true : false
 	            }
 	            var isOnPlot = () => true
-	            console.log(this.chart.pointer, "POINTER")
 	            console.log(this.chart.pointer.findNearestKDPoint(this.chart.series, false, {clientX: 0, clientY: 0}))
 	            let event1 = JSON.parse(JSON.stringify(event));
 	            event1.y = this.chart.plotWidth + 2*this.chart.plotLeft - y

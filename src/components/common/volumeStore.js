@@ -57,5 +57,5 @@ export async function getDailyVolume(pool, refresh = false) {
 }
 
 export function totalVolume() {
-	return Object.values(state.volumes).reduce((a, b) => a + b, 0)
+	return Object.values(state.volumes).filter(v=>v!=-1).length == 4 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
 }

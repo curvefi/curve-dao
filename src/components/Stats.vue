@@ -139,7 +139,6 @@
         computed: {
           ...getters,
           volumeData() {
-          	console.log(['compound','usdt','iearn','busd'].indexOf(this.pool || this.currentPool))
           	return volumeStore.state.volumes[this.pool || this.currentPool]
           }
         },

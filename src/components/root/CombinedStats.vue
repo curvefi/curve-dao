@@ -33,8 +33,7 @@
 	import TotalBalances from './TotalBalances.vue'
 
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
-    import * as allabis from '../../allabis'
-    let contracts = allabis.default;
+    import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi } from '../../allabis'
 
 	export default {
 		metaInfo: {
@@ -105,7 +104,7 @@
 			    for(let [key, contract] of Object.entries(contracts)) {
 			    	this.web3contracts[key] = {};
 				    this.web3contracts[key].swap = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
-				    this.web3contracts[key].swap_token = new web3.eth.Contract(contract.ERC20_abi, contract.token_address);
+				    this.web3contracts[key].swap_token = new web3.eth.Contract(ERC20_abi, contract.token_address);
 
 			        this.all_coins[key] = {}
 			        this.all_coins[key].coins = [];
@@ -114,14 +113,14 @@
 				    for (let i = 0; i < contract.N_COINS; i++) {
 				        var addr = await this.web3contracts[key].swap.methods.coins(i).call();
 
-				        let cabi = ['iearn','busd', 'susd'].includes(key) ? contract.yERC20_abi : contract.cERC20_abi;
+				        let cabi = ['iearn','busd', 'susd'].includes(key) ? yERC20_abi : cERC20_abi;
 				        if(key == 'susd' && i == 1) {
 				        	cabi = contracts.iearn.swap_abi;
 				        	addr = contracts.iearn.swap_address
 				        }
 				        this.all_coins[key].coins[i] = new web3.eth.Contract(cabi, addr);
 				        var underlying_addr = await this.web3contracts[key].swap.methods.underlying_coins(i).call();
-				        this.all_underlying_coins[key].underlying_coins[i] = new web3.eth.Contract(contract.ERC20_abi, underlying_addr);
+				        this.all_underlying_coins[key].underlying_coins[i] = new web3.eth.Contract(ERC20_abi, underlying_addr);
 				    }
 			    }
 			},
@@ -188,7 +187,7 @@
 				    }
 				    var total = 0;
 				    var promises = [];
-				    let infuraProvider = new Web3(allabis.infura_url)
+				    let infuraProvider = new Web3(infura_url)
 				    let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
 				    for (let i = 0; i < contract.N_COINS; i++) {
 				        promises.push(swapInfura.methods.balances(i).call())

@@ -466,6 +466,7 @@
 		    	/*this.chart.xAxis[0].options.plotLines[0].value = this.currentValue
 		    	this.chart.xAxis[0].options.plotLines[0].label.text = 'Actual price ' + this.currentValue.toFixed(4)
 		    	this.chart.xAxis[0].update()*/
+		    	
 		    	this.setZoom();
 		        this.$refs.highcharts.chart.redraw()
             	this.bbrect = this.$refs.highcharts.$el.getBoundingClientRect();

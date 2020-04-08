@@ -14,12 +14,11 @@
 
 <script>
 	import Web3 from 'web3'
-	import * as abis from '../../allabis'
-	import helpers from '../../utils/helpers'
-	import BigNumber from 'bignumber.js'
+	import allabis, { infura_url, multicall_address, multicall_abi, ERC20_abi } from '../../allabis'
+	import { chunkArr } from '../../utils/helpers'
+	import BN from 'bignumber.js'
 	import * as volumeStore from '@/components/common/volumeStore'
-
-    var cBN = (val) => new BigNumber(val);
+    import { contract } from '../../contract'
 
 	export default {
 		data: () => ({
@@ -36,20 +35,26 @@
 		},
 		methods: {
 			async totalBalances() {
-			    let total = cBN(0);
+			    let total = BN(0);
 			    let tokenContracts = {}
 			    let swapContracts = {}
 			    let promises = []
-			    let infuraProvider = new Web3(abis.infura_url)
-			    let pools = Object.assign({},abis.default)
+			    let web3 = contract.web3 || new Web3(infura_url)
+			    let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
+			    let calls = []
+			    let pools = Object.assign({},allabis)
 			    delete pools.susd
 			    for(let [key, contract] of Object.entries(pools)) {
-			        tokenContracts[key] = new infuraProvider.eth.Contract(contract.ERC20_abi, contract.token_address);
-			        swapContracts[key] = new infuraProvider.eth.Contract(contract.swap_abi, contract.swap_address);
-			        let totalSupply = cBN(await tokenContracts[key].methods.totalSupply().call())
-			        let price = cBN(await swapContracts[key].methods.get_virtual_price().call())
-			        total = total.plus(totalSupply.multipliedBy(price).div(1e36))
+			        tokenContracts[key] = new web3.eth.Contract(ERC20_abi, contract.token_address);
+			        swapContracts[key] = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
+			        calls.push([tokenContracts[key]._address, tokenContracts[key].methods.totalSupply().encodeABI()])
+			        calls.push([swapContracts[key]._address, swapContracts[key].methods.get_virtual_price().encodeABI()])
 			    }
+			    let aggcalls = await multicall.methods.aggregate(calls).call()
+			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    chunkArr(decoded, 2).map(v=> {
+			    	total = total.plus(BN(v[0]).times(BN(v[1])).div(1e36))
+			    })
 			    this.total = total.toFixed(0);
 			},
 			async dailyVolume() {

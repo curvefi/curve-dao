@@ -81,8 +81,7 @@
 <script>
     import EventBus from './EventBus'
 
-    import * as allabis from '../../allabis'
-    let contractAbis = allabis.default
+    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, onesplit_address, onesplit_abi } from '../../allabis'
 
     import { contract } from '../../contract'
     import * as common from '../../utils/common'
@@ -125,6 +124,9 @@
 		}),
         computed: {
             CONTRACT_FLAG() {
+                //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, ..., ..., curve synthetix, weth
+                //enable multipath DAI, multipath USDC
+                //enabled curve compound, curve usdt, curve y, curve binance
                 let flag = 0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000+0x80000;
                 let curveFlags = {
                     compound: 0x1000,
@@ -145,11 +147,14 @@
             },
             to_currency(val, oldval) {
                 this.to_cur_handler()
-            }
+            },
+            pools() {
+                this.from_cur_handler()
+            },
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)
-            this.$watch(()=>contract.initializedContracts, async (val) => {
+            this.$watch(()=>contract.web3, async (val) => {
                 await this.mounted()
             })
         },
@@ -170,7 +175,7 @@
                     this.fromBgColor = 'blue'
             },
             async from_cur_handler() {
-                if (BN(await this.underlying_coins[this.from_currency].methods.allowance(contract.default_account, allabis.onesplit_address).call()) > contract.max_allowance.div(BN(2)))
+                if (BN(await this.underlying_coins[this.from_currency].methods.allowance(contract.default_account, onesplit_address).call()) > contract.max_allowance.div(BN(2)))
                     this.inf_approval = true;
                 else
                     this.inf_approval = false;
@@ -265,16 +270,14 @@
                 await this.set_to_amount();
 			},
             async setup() {
-                this.onesplit_address = await web3.eth.ens.getAddress('1split.eth')
-                this.onesplit = new web3.eth.Contract(allabis.onesplit_abi, this.onesplit_address)
-                this.swap.push(new web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
-                this.swap.push(new web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
+                this.onesplit_address = await contract.web3.eth.ens.getAddress('1split.eth')
+                this.onesplit = new contract.web3.eth.Contract(onesplit_abi, this.onesplit_address)
+                this.swap.push(new contract.web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
+                this.swap.push(new contract.web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
                 for(let i = 0; i < 4; i++) {
-                    var underlying_addr = await this.swap[0].methods.underlying_coins(i).call();
-                    this.underlying_coins.push(new web3.eth.Contract(contractAbis.iearn.ERC20_abi, underlying_addr))
+                    this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.iearn.underlying_coins[i]))
                 }
-                var underlying_addr = await this.swap[1].methods.underlying_coins(3).call();
-                this.underlying_coins.push(new web3.eth.Contract(contractAbis.iearn.ERC20_abi, underlying_addr))
+                this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.busd.underlying_coins[3]))
             }
 		}
 	}

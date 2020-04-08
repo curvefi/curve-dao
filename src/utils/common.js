@@ -2,8 +2,7 @@ import Vue from "vue";
 import BigNumber from 'bignumber.js'
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
-import * as abis from '../allabis'
-const allabis = abis.default
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi } from '../allabis'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -27,7 +26,7 @@ export function approve_to_migrate(amount, account) {
 }
 
 export async function ensure_allowance_zap_out(amount) {
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = currentContract.default_account
     let fromContract = currentContract.swap_token;
     let toContract = allabis[currentContract.currentContract].deposit_address
     let allowance = await currentContract.swap_token.methods.allowance(default_account, toContract).call()
@@ -37,7 +36,7 @@ export async function ensure_allowance_zap_out(amount) {
 }
 
 export async function ensure_allowance(amounts, plain = false) {
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = currentContract.default_account
     var allowances = new Array(currentContract.N_COINS);
     let coins = currentContract.coins;
     let swap = currentContract.swap_address;
@@ -72,7 +71,7 @@ export async function ensure_allowance(amounts, plain = false) {
 
 export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract) {
     if(!underlying_coins.length) underlying_coins = currentContract.underlying_coins;
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = currentContract.default_account
     var amount = cBN(_amount);
     var current_allowance = cBN(await underlying_coins[i].methods.allowance(default_account, currentContract.swap_address).call());
 
@@ -89,7 +88,7 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
 // XXX not needed anymore
 // Keeping for old withdraw, to be removed whenever the chance is
 export async function ensure_token_allowance() {
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = currentContract.default_account
     if (parseInt(await currentContract.swap_token.methods.allowance(default_account, currentContract.swap_address).call()) == 0)
         return new Promise(resolve => {
             currentContract.swap_token.methods.approve(currentContract.swap_address, cBN(currentContract.max_allowance).toFixed(0))
@@ -161,8 +160,8 @@ export async function update_fee_info(version = 'new', contract, update = true) 
     if(version == 'old') {
         swap_abi_stats = allabis[contract.currentContract].old_swap_abi;
         swap_address_stats = allabis[contract.currentContract].old_swap_address;
-        swap_stats = allabis[contract.currentContract].old_swap;
-        swap_token_stats = allabis[contract.currentContract].old_swap_token;
+        swap_stats = contract.old_swap;
+        swap_token_stats = contract.old_swap_token;
         swap_token_address = allabis[contract.currentContract].token_address
     }
 
@@ -198,7 +197,7 @@ function checkTethered(contract, i) {
         allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i];
 }
 
-export async function multiInitState(calls, contract) {
+export async function multiInitState(calls, contract, initContracts = false) {
     var default_account = currentContract.default_account;
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
@@ -209,17 +208,20 @@ export async function multiInitState(calls, contract) {
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]
     var token_supply = decoded[3]
-    let contractsDecoded = decoded.slice(-allabis[contract.currentContract].N_COINS*2)
-    chunkArr(contractsDecoded, 2).map((v, i) => {
-        var addr = v[0];
-        let coin_abi = allabis[contract.currentContract].cERC20_abi
-        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
-        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
-        var underlying_addr = v[1];
-        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
-    })
-
     let ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS)
+    if(initContracts) {
+        let contractsDecoded = decoded.slice(-allabis[contract.currentContract].N_COINS*2)
+        chunkArr(contractsDecoded, 2).map((v, i) => {
+            var addr = v[0];
+            let coin_abi = cERC20_abi
+            if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = yERC20_abi
+            contract.coins.push(new web3.eth.Contract(coin_abi, addr));
+            var underlying_addr = v[1];
+            contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
+        })
+        ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS, decoded.length-allabis[contract.currentContract].N_COINS*2)
+    }
+
 
     if(['iearn', 'busd'].includes(contract.currentContract)) {
         ratesDecoded.map((v, i) => {
@@ -276,7 +278,7 @@ export async function multiInitState(calls, contract) {
 }
 
 export async function handle_migrate_new(page) {
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = currentContract.default_account
     let migration = new web3.eth.Contract(allabis.compound.migration_abi, currentContract.migration_address);
     let old_balance = await currentContract.old_swap_token.methods.balanceOf(default_account).call();
     var allowance = parseInt(await currentContract.old_swap_token.methods.allowance(default_account, currentContract.migration_address).call());
@@ -297,29 +299,33 @@ export async function handle_migrate_new(page) {
 export async function calc_slippage(values, deposit, zap_values, to_currency) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
     let slippage = 0;
-    var token_amount;
     var real_values = Array(currentContract.N_COINS).fill(0)
-    var virtual_price = await currentContract.swap.methods.get_virtual_price().call();
+    let calls = [
+        [currentContract.swap._address ,currentContract.swap.methods.get_virtual_price().encodeABI()],
+    ]
     if(to_currency !== undefined) {
         let precision = allabis[currentContract.currentContract].coin_precisions[to_currency]
         real_values[to_currency] = zap_values[to_currency].div(precision)
         zap_values[to_currency] = zap_values[to_currency].times(1e18/precision)
         var Sr = zap_values[to_currency]
         zap_values[to_currency] = zap_values[to_currency].div(1e18).div(currentContract.c_rates[to_currency]).toFixed(0);
-        token_amount = (await currentContract.swap.methods.calc_token_amount(zap_values, to_currency).call()) / 1e18
+        calls.push([currentContract.swap._address, currentContract.swap.methods.calc_token_amount(zap_values, to_currency).encodeABI()])
 
-        slippage = Sr / (virtual_price * token_amount)
     }
     else {
         real_values = values.map(v=>+v);
         var Sr = real_values.reduce((a,b) => a+b, 0);
 
         var values = real_values.map((x,i) => cBN(Math.floor(x / currentContract.c_rates[i]).toString()).toFixed(0,1));
-        token_amount = (await currentContract.swap.methods.calc_token_amount(values, deposit).call()) / 1e18
+        calls.push([currentContract.swap._address, currentContract.swap.methods.calc_token_amount(values, deposit).encodeABI()])
     }
-    var Sv = virtual_price * token_amount / 1e18;
+    calls.push(...[...Array(currentContract.N_COINS).keys()].map(i => [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()]))
+    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
+    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+    let [virtual_price, token_amount, ...balances] = decoded
+    let Sv = +virtual_price * (+token_amount) / 1e18;
     for(let i = 0; i < currentContract.N_COINS; i++) {
-        let coin_balance = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
+        let coin_balance = +balances[i] * currentContract.c_rates[i];
         if(!deposit) {
             if(coin_balance < real_values[i]) {
                 currentContract.showNoBalance = true;
@@ -332,7 +338,9 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     if (deposit)
         slippage = Sv / Sr
     else if(to_currency === undefined)
-        slippage = Sr / Sv;
+        slippage = Sr / Sv / 1e18;
+    else
+        slippage = Sr / Sv
     slippage = slippage - 1;
     slippage = slippage || 0
     console.log(slippage)

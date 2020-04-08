@@ -129,26 +129,26 @@
             async set_to_amount() {
                 this.promise.cancel()
                 let promise = this.setAmountPromise()
-                    .then(async ([dy, dy_, dx_]) => {
-                        this.toInput = dy;
-                        this.exchangeRate = (dy_ / dx_).toFixed(4);
-                        if(this.exchangeRate <= 0.98) this.bgColor = 'red'
-                        else this.bgColor= '#505070'
-                        if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
-                        let balance = await currentContract.underlying_coins[this.to_currency].methods.balanceOf(currentContract.default_account).call();
-                        let amount = Math.floor(
-                                100 * parseFloat(balance) / currentContract.coin_precisions[this.to_currency]
-                            ) / 100
+                try {
+                    let [dy, dy_, dx_, balance] = await promise
+                    this.toInput = dy;
+                    this.exchangeRate = (dy_ / dx_).toFixed(4);
+                    if(this.exchangeRate <= 0.98) this.bgColor = 'red'
+                    else this.bgColor= '#505070'
+                    if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
+                    let amount = Math.floor(
+                            100 * parseFloat(balance) / currentContract.coin_precisions[this.to_currency]
+                        ) / 100
 
-                        this.disabled = false;
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        this.disabled = true;
-                    })
-                    .finally(() => {
-                        this.highlight_input();
-                    })
+                    this.disabled = false;
+                }
+                catch(err) {
+                    console.error(err)
+                    this.disabled = true
+                }
+                finally {
+                    this.highlight_input();
+                }
                 this.promise = helpers.makeCancelable(promise)
             },
             async from_cur_handler() {
@@ -188,7 +188,6 @@
             },
             async set_from_amount(i) {
                 let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
-                console.log(balance, "BALANCE")
                 let amount = Math.floor(
                         100 * parseFloat(balance) / currentContract.coin_precisions[i]
                     ) / 100
@@ -202,16 +201,25 @@
                 let promise = new Promise(async (resolve, reject) => {
                     var i = this.from_currency;
                     var j = this.to_currency;
-                    var b = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
+                    var dx_ = this.fromInput;
+                    var dx = cBN(Math.round(dx_ * currentContract.coin_precisions[i])).toFixed(0,1);
+                    let calls = [
+                        [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
+                        [currentContract.swap._address, currentContract.swap.methods.get_dy_underlying(i, j, dx).encodeABI()],
+                        [currentContract.underlying_coins[this.to_currency]._address , currentContract.underlying_coins[this.to_currency].methods.balanceOf(currentContract.default_account).encodeABI()]
+                    ]
+                    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+                    let [b, get_dy_underlying, balance] = decoded
+                    b = +b * currentContract.c_rates[i];
                     if (b >= 0.001) {
                         // In c-units
-                        var dx_ = this.fromInput;
-                        var dx = cBN(Math.round(dx_ * currentContract.coin_precisions[i])).toFixed(0,1);
-                        var dy_ = parseInt(await currentContract.swap.methods.get_dy_underlying(i, j, dx).call()) / currentContract.coin_precisions[j];
+                        var dy_ = +get_dy_underlying / currentContract.coin_precisions[j];
                         var dy = dy_.toFixed(2);
-                        resolve([dy, dy_, dx_])
+                        resolve([dy, dy_, dx_, balance])
                     }
                     else { 
+                        this.toInput = 0
                         reject()
                     }
                 })

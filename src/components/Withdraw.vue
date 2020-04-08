@@ -171,19 +171,34 @@
             	else this.to_currency = val
             },
             async update_balances() {
+            	let calls = []
 			    if (currentContract.default_account) {
-			        for (let i = 0; i < currentContract.N_COINS; i++)
-			            Vue.set(this.wallet_balances, i, parseInt(await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call()));
-			        this.token_balance = parseInt(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
+			        for (let i = 0; i < currentContract.N_COINS; i++) {
+			        	calls.push([currentContract.coins[i]._address ,currentContract.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()])
+			        }
+			        calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.balanceOf(currentContract.default_account).encodeABI()])
 			    }
 			    else {
 			        this.token_balance = 0;
 			    }
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        Vue.set(this.balances, i, parseInt(await currentContract.swap.methods.balances(i).call()));
-			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
+			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-			    this.token_supply = parseInt(await currentContract.swap_token.methods.totalSupply().call());
+				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
+				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				if(currentContract.default_account) {
+					decoded.slice(0, currentContract.N_COINS).map((v, i) => {
+						Vue.set(this.wallet_balances, i, +v)
+					})
+					this.token_balance = +decoded[currentContract.N_COINS]
+					decoded = decoded.slice(currentContract.N_COINS+1)			
+				}
+				decoded.map((v, i) => {
+					Vue.set(this.balances, i, +v)
+			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
+				})
+				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i) {
 				this.to_currency = null
@@ -191,19 +206,24 @@
 		        values = values.map(v=>BN(Math.floor(v).toString()).toFixed(0))
 		        this.show_nobalance = false;
 		        this.show_nobalance_i = 0;
-		        for(let i = 0; i < currentContract.N_COINS; i++) {
-		            let coin_balance = parseInt(await currentContract.swap.methods.balances(i).call()) * currentContract.c_rates[i];
+		        let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
+		        calls.push([currentContract.swap._address ,currentContract.swap.methods.calc_token_amount(values, false).encodeABI()])
+		        calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.balanceOf(currentContract.default_account).encodeABI()])
+		        let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+		        let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+		        decoded.slice(0, currentContract.N_COINS).forEach((v, i) => {
+		        	let coin_balance = +v * currentContract.c_rates[i]
 		            if(coin_balance < this.inputs[i]) {
 		                this.show_nobalance |= true;
 		                this.show_nobalance_i = i;
 		            }
 		            else
 		                this.show_nobalance |= false;
-		        }
+		        })
 		        try {
-		            var availableAmount =  await currentContract.swap.methods.calc_token_amount(values, false).call()
+		            var availableAmount = +decoded[decoded.length-2]
 		            availableAmount = availableAmount / (1 - currentContract.fee * currentContract.N_COINS / (4 * (currentContract.N_COINS - 1)))
-		            var maxAvailableAmount = parseInt(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
+		            var maxAvailableAmount = +decoded[decoded.length-1];
 
 		            if(availableAmount > maxAvailableAmount) {
 		                this.setAllInputBackground('red')

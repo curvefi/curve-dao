@@ -1,7 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import * as abis from './abis'
-import allabis from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -85,6 +84,7 @@ let initState = {
 }
 
 const state = Vue.observable({
+	web3: null,
 	multicall: null,
 	contracts: {
 		compound: {
@@ -156,7 +156,6 @@ const state = Vue.observable({
 	ERC20Contract: null,
 	balances: new Array(N_COINS),
 	wallet_balances: new Array(N_COINS),
-	c_rates: new Array(N_COINS),
 	fee: 0,
 	admin_fee: 0,
 	trade_timeout: 1800,
@@ -225,13 +224,13 @@ export async function init(contract, refresh = false) {
 
     if(state.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
-	    state.old_swap_token = new web3.eth.Contract(allabis[state.currentContract].ERC20_abi, old_token_address);
+	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     }
     if(['compound', 'iearn'].includes(state.currentContract)) {
 	    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     }
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
-    contract.swap_token = new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, allabis[contract.currentContract].token_address);
+    contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
     contract.coins = []
     contract.underlying_coins = []
     let calls = [];
@@ -242,14 +241,8 @@ export async function init(contract, refresh = false) {
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
     	calls.push([contract.swap._address, contract.swap.methods.coins(i).encodeABI()])
     	calls.push([contract.swap._address, contract.swap.methods.underlying_coins(i).encodeABI()])
-/*        var addr = await contract.swap.methods.coins(i).call();
-        let coin_abi = allabis[contract.currentContract].cERC20_abi
-        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
-        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
-        var underlying_addr = await contract.swap.methods.underlying_coins(i).call();
-        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));*/
     }
-    await common.multiInitState(calls, contract)
+    await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;
   	console.timeEnd('init')
   	return;
@@ -257,11 +250,11 @@ export async function init(contract, refresh = false) {
     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))
     chunkArr(decoded, 2).map((v, i) => {
     	var addr = v[0];
-        let coin_abi = allabis[contract.currentContract].cERC20_abi
-        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = allabis[contract.currentContract].yERC20_abi
+        let coin_abi = cERC20_abi
+        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = yERC20_abi
         contract.coins.push(new web3.eth.Contract(coin_abi, addr));
         var underlying_addr = v[1];
-        contract.underlying_coins.push(new web3.eth.Contract(allabis[contract.currentContract].ERC20_abi, underlying_addr));
+        contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
     })
 }
 
@@ -278,7 +271,7 @@ export async function getAllUnderlying() {
 		for(let i = 0; i < contract.N_COINS; i++) {
 			var addr = await allState.swap[key].methods.coins(i).call();
 	        var underlying_addr = await allState.swap[key].swap.methods.underlying_coins(i).call();
-	        allState.underlying_coins[key][i] = new web3.eth.Contract(contract.ERC20_abi, underlying_addr);
+	        allState.underlying_coins[key][i] = new web3.eth.Contract(ERC20_abi, underlying_addr);
 		}
 	}
 }
@@ -313,5 +306,4 @@ export function setCurrencies(pool) {
 
 export async function initusdt() {
 	await init(state.contracts.usdt)
-	console.log(state.contracts)
 }

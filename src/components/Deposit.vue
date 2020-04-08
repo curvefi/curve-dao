@@ -139,10 +139,12 @@
                 common.update_fee_info();
                 await this.handle_sync_balances();
                 await this.calcSlippage()
-                for (let i = 0; i < currentContract.N_COINS; i++) {
-					if (BN(await this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).call()).lte(currentContract.max_allowance.div(BN(2))))
-		            	this.inf_approval = false;
-		        }
+                let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
+                	this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).encodeABI()])
+                let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+                if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
+                	this.inf_approval = false
                 this.disabledButtons = false;
             },
             async calcSlippage() {
@@ -152,13 +154,19 @@
             },
             async handle_sync_balances() {
 			    await common.update_fee_info();
+			    let calls = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	var wallet_balance = parseInt(await this.coins[i].methods.balanceOf(currentContract.default_account).call())
-			        Vue.set(this.wallet_balances, i, wallet_balance);
-			        if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0);
+			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()])
+			    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 			    }
+			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    helpers.chunkArr(decoded, 2).map((v, i) => {
+			    	Vue.set(this.wallet_balances, i, +v[0])
+			    	if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0)
+			    	Vue.set(this.balances, i, +v[1])
+			    })
 			    if (this.max_balances) {
-
 			        this.disabled = true;
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
 			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
@@ -167,23 +175,27 @@
 			            val = val.toFixed(2)
 			            Vue.set(this.inputs, i, val)
 			        }
-			    } else
+			    }
+			    else
 			        this.disabled = false;
-
-			    for (let i = 0; i < currentContract.N_COINS; i++)
-			        Vue.set(this.balances, i, parseInt(await currentContract.swap.methods.balances(i).call()));
 			},
 			async handle_add_liquidity() {
-			    for (let i = 0; i < currentContract.N_COINS; i++) {
+				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
+						[currentContract.coins[i]._address, currentContract.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
+					)
+				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
+				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex=>web3.eth.abi.decodeParameter('uint256',hex))
+				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
-			        let balance = await currentContract.coins[i].methods.balanceOf(currentContract.default_account).call();
 			        if(Math.abs(balance/amount-1) < 0.005) {
 			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
 			        }
 			        else {
 			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
-			    }
+				})
+				let total_supply = +decoded[decoded.length-1];
 			    if (this.inf_approval)
 			        await common.ensure_allowance(false, !this.depositc)
 			    else if(this.depositc) {
@@ -194,7 +206,7 @@
 			    	await common.ensure_allowance(amounts, true)
 			    }
 			    var token_amount = 0;
-			    if(parseInt(await currentContract.swap_token.methods.totalSupply().call()) > 0) {    
+			    if(total_supply > 0) {    
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }

@@ -189,9 +189,9 @@
 			async getAPY() {
 	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi']       
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
+	            stats = await Promise.all(stats.map(stat=>stat.json()))
 	            for(let i = 0; i < stats.length; i++) {
-	                let json = await stats[i].json();
-	                var weekly_apr = json['daily_apr'];
+	                var weekly_apr = stats[i]['daily_apr'];
 	                this.apy.push((weekly_apr*100).toFixed(2))
 	            }
 			}

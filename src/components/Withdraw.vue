@@ -37,13 +37,13 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "['compound', 'iearn'].includes(currentPool)">
+                <li v-show = "['compound'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc" @click='selected=null'>Withdraw compounded</label>
                 </li>
             </ul>
         </fieldset>
-        <fieldset v-show="['compound', 'iearn'].includes(currentPool)">
+        <fieldset v-show="['compound'].includes(currentPool)">
         	<legend>Withdraw % in:</legend>
         	<ul>
         		<li>

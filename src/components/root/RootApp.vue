@@ -1,10 +1,10 @@
 <template>
-  <div id="app">
+  <div id="app" class='root'>
      <div class="top-menu-bar">
       <label for="hamburger" class='border-menu'></label>
       <input type="checkbox" id="hamburger"/>
 
-      <div id='poolsdropdown'>
+      <div class='poolsdropdown'>
         <button class='simplebutton'>☰</button>
         <div class='dropdown'>
            <!--  <a :href="'//compound.localhost:8080'+$route.path" :class="{selected: currentPool == 'compound'}" @click="changePools('compound')">Compound</a>
@@ -26,12 +26,23 @@
       <router-link to="/trade">Trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
-      <a href="https://twitter.com/CurveFinance">#Twitter</a>
-      <a href="https://t.me/curvefi">@Telegram</a>
-      <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
-      <router-link to="/donate">Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract">git@</a>
-      <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
+      <div class='poolsdropdown right'>
+        <button class='simplebutton'>[<span class='yellowchar'>?</span>]</button>
+        <div class='dropdown'>
+          <a href="https://twitter.com/CurveFinance">#Twitter</a>
+          <a href="https://t.me/curvefi">@Telegram</a>
+          <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
+          <router-link to="/donate">Donate</router-link>
+          <a href="https://github.com/curvefi/curve-contract">git@</a>
+          <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
+        </div>
+      </div>
+      <a href="https://twitter.com/CurveFinance" class='hidemobile'>#Twitter</a>
+      <a href="https://t.me/curvefi" class='hidemobile'>@Telegram</a>
+      <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='hidemobile'>Dune Analytics</a>
+      <router-link to="/donate" class='hidemobile'>Donate</router-link>
+      <a href="https://github.com/curvefi/curve-contract" class='hidemobile'>git@</a>
+      <a href="https://github.com/pengiundev/curve-vue" class='hidemobile'>git@UI</a>
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">
@@ -88,7 +99,7 @@
 
 <style scoped>
   @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-    .top-menu-bar > #poolsdropdown {
+    .top-menu-bar > .poolsdropdown {
       display: none;
     }
   }

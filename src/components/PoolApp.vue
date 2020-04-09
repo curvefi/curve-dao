@@ -4,7 +4,7 @@
       <label for="hamburger" class='border-menu'></label>
       <input type="checkbox" id="hamburger"/>
 
-      <div id='poolsdropdown'>
+      <div class='poolsdropdown'>
         <button class='simplebutton' :class="{'loading line': !initializedContracts && !['Stats', 'FAQ', 'Donate'].includes($route.name)}">[{{poolMenu[currentPool]}}]</button>
         <div class='dropdown'>
            <!--  <a :href="'//compound.localhost:8080'+$route.path" :class="{selected: currentPool == 'compound'}" @click="changePools('compound')">Compound</a>
@@ -35,11 +35,21 @@
       <router-link :to="'/' + currentPool + '/withdraw'">Withdraw</router-link>
       <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound'">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'">Stats</router-link>
-      <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
-      <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
-      <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
-      <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
+      <div class='poolsdropdown right'>
+        <button class='simplebutton'>[<span class='yellowchar'>?</span>]</button>
+        <div class='dropdown'>
+          <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
+          <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
+          <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
+          <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
+          <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
+        </div>
+      </div>
+      <router-link :to="'/' + currentPool + '/profit'" class='hidemobile'>Profit</router-link>
+      <router-link :to="'/' + currentPool + '/faq'" class='hidemobile'>FAQ</router-link>
+      <router-link :to="'/' + currentPool + '/donate'" class='hidemobile'>Donate</router-link>
+      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='hidemobile'>git@</a>
+      <a href="https://github.com/pengiundev/curve-vue" class='hidemobile'>git@UI</a>
     </div>
     <div id="screen">
         <div class="blue window">

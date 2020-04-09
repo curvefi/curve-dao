@@ -321,10 +321,10 @@ div.info table td {
     display: block;
   }
   /*fix selector priority*/
-  .top-menu-bar.top-menu-bar #poolsdropdown:hover .dropdown {
+  .top-menu-bar.top-menu-bar .poolsdropdown:hover .dropdown {
     display: none;
   }
-  #poolsdropdown > a:after {
+  .poolsdropdown > a:after {
     content: " Pools";
   }
 }
@@ -391,18 +391,18 @@ div.info table td {
   text-decoration: none;
 }
 
-#poolsdropdown {
+.poolsdropdown {
   display: inline-block;
   cursor: pointer;
   position: relative;
 }
 
-.top-menu-bar #poolsdropdown:hover {
+.top-menu-bar .poolsdropdown:hover {
   background-color: blue;
   color: white;
 }
 
-.top-menu-bar #poolsdropdown:hover .dropdown {
+.top-menu-bar .poolsdropdown:hover .dropdown {
   display: block;
 }
 
@@ -417,7 +417,7 @@ div.info table td {
   box-shadow: 0 0 0 3px silver, 1em 1em 3px 0 rgba(0,0,0,.5);
 }
 
-#poolsdropdown > a {
+.poolsdropdown > a {
   margin: 0;
 }
 
@@ -775,15 +775,59 @@ input[type=range]:focus::-ms-fill-upper {
   visibility: visible;
 }
 
+.yellowchar {
+  color: yellow;
+}
+
 .dropdown p {
   color: black;
   margin-top: 0;
   margin-bottom: 15px;
 }
 
-@media only screen and (min-device-width : 1100px) and (max-device-width : 1400px) {
+.poolsdropdown.right {
+  display: none;
+}
+.poolsdropdown.right .dropdown {
+  left: unset;
+  right: 0;
+  transform: none;
+}
+
+
+@media only screen and (max-device-width: 1280px) {
+  .top-menu-bar a {
+    margin: 0;
+    margin-left: 3px;
+  }
+}
+
+@media only screen and (min-device-width: 1100px) and (max-device-width: 1400px) {
   .dropdown {
     left: 40%;
     transform: translateX(-10%);
+  }
+}
+
+@media only screen and (min-device-width : 480px) and (max-device-width : 1180px) {
+
+  .root .hidemobile {
+    display: none;
+  }
+  .root .poolsdropdown.right {
+    display: inline-block;
+  }
+}
+
+@media only screen and (min-device-width : 480px) and (max-device-width : 1100px) {
+  .top-menu-bar a {
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+  .hidemobile {
+    display: none;
+  }
+  .poolsdropdown.right {
+    display: inline-block;
   }
 }

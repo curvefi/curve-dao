@@ -50,6 +50,7 @@ export async function ensure_allowance(amounts, plain = false) {
         calls.push([coins[i]._address, coins[i].methods.allowance(default_account, swap).encodeABI()])
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
     allowances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex));
+    console.log(allowances, "ALLOWANCES")
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {

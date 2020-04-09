@@ -246,14 +246,14 @@
                         this.underlying_coins[this.to_currency]._address,
                         amount,
                         20,
-                        this.CONTRACT_FLAG
+                        this.CONTRACT_FLAG - 0x10000
                     ).encodeABI()],
                     [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
                         this.underlying_coins[this.from_currency]._address,
                         this.underlying_coins[this.to_currency]._address,
                         amount,
                         30,
-                        this.CONTRACT_FLAG
+                        this.CONTRACT_FLAG - 0x20000
                     ).encodeABI()],
                 ]
                 let calls = defaultCalls.concat();
@@ -264,14 +264,6 @@
                     calls = defaultCalls.slice(1)
                     if(this.fromInput < 50000) calls = []
                     calls.push(
-                        [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
-                            this.underlying_coins[this.from_currency]._address,
-                            this.underlying_coins[this.to_currency]._address,
-                            amount,
-                            10,
-                            //all multipaths
-                            this.CONTRACT_FLAG
-                        ).encodeABI()],
                         [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
                             this.underlying_coins[this.from_currency]._address,
                             this.underlying_coins[this.to_currency]._address,

@@ -16,6 +16,7 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
+            <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'iearn'}">sUSD</router-link>
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
         </div>
@@ -30,6 +31,7 @@
       <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
       <router-link to="/donate">Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract">git@</a>
+      <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">

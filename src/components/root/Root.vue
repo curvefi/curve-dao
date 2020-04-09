@@ -92,6 +92,14 @@
 	        will be displayed. The exchange rate might surprise you - that’s the
 	        power of Curve.</p>
 
+	        <h3>Source code git</h3>
+	        <p>
+      			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
+	        </p>
+	        <p>
+ 			 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
+ 			</p>
+
 	        <h3>How do I provide liquidity to Curve?</h3>
 
 	        <p>Curve uses <a href="https://compound.finance/ctokens">cTokens</a>,

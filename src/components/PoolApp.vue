@@ -16,6 +16,7 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
+            <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'iearn'}">sUSD</router-link>
             <p>____________</p>
             <router-link to='/'>Home</router-link>
             <router-link to='/combinedstats'>All stats</router-link>
@@ -27,7 +28,7 @@
         </div>
       </div>
 
-      <router-link to='/' class='showmobile'>Home</router-link>
+      <router-link to='/'>Home</router-link>
       <router-link to='/combinedstats' class='showmobile'>All stats</router-link>
       <router-link :to="'/'+currentPool">Buy and sell</router-link>
       <router-link :to="'/' + currentPool + '/deposit'">Deposit</router-link>

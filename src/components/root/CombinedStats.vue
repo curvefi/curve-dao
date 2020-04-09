@@ -12,6 +12,7 @@
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 		      </p>
 		      <stats :pool= 'currency'/>
+		      {{fees[i]}}
 		      <balances-info 
 			      :bal_info = 'bal_infos[currency]'
 			      :total = 'totals[i]'
@@ -161,7 +162,7 @@
 						        let [supply_rate, old_block]  = [values[1], values[2]]
 						        let block = values[3]
 						        this.all_c_rates[key].c_rates[i] = rate * (1 + supply_rate * (block - old_block) / 1e18);
-						    	this.all_fees[i] = parseInt(await this.web3contracts[key].swap.methods.fee().call()) / 1e10;
+						    	//this.all_fees[key][i] = parseInt(await this.web3contracts[key].swap.methods.fee().call()) / 1e10;
 			         		}
 					    }
 				    }
@@ -203,7 +204,7 @@
 				        total += share;
 				    })
 				    this.totals.push(total);
-				    this.fees.push(parseInt(await swap_stats.methods.fee().call()) / 1e10);
+				    this.fees.push(parseInt(await swap_stats.methods.fee().call()) / 1e8);
 				    this.admin_fees.push(parseInt(await swap_stats.methods.admin_fee().call()) / 1e10);
 
 				    var default_account = (await web3.eth.getAccounts())[0];

@@ -11,6 +11,9 @@
                             :style = "{backgroundColor: fromBgColor}"
                             @input='set_to_amount'
                             v-model='fromInput'>
+                            <p class='actualvalue' v-show='swapwrapped'>
+                                ≈ {{actualFromValue(this.fromInput)}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
+                            </p>
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
@@ -34,6 +37,9 @@
                             disabled
                             :style = "{backgroundColor: bgColor}"
                             v-model='toInput'>
+                            <p class='actualvalue' v-show='swapwrapped'>
+                                ≈ {{actualToValue(this.toInput)}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
+                            </p>
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
@@ -112,6 +118,7 @@
             customSlippageDisabled: true,
             swapwrapped: false,
             coins: [],
+            c_rates: [],
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -150,12 +157,21 @@
         },
         methods: {        
             async mounted() {
+                this.c_rates = currentContract.c_rates
                 this.coins = currentContract.underlying_coins
                 if(this.swapwrapped) {
                     this.coins = currentContract.coins
                 }
                 this.disabled = false;
                 this.from_cur_handler()
+            },
+            actualFromValue() {
+                if(!this.swapwrapped) return;
+                return (this.fromInput * this.c_rates[this.from_currency] * this.precisions[this.from_currency]).toFixed(2)
+            },
+            actualToValue() {
+                if(!this.swapwrapped) return;
+                return (this.toInput * this.c_rates[this.to_currency] * this.precisions[this.to_currency]).toFixed(2)
             },
             async set_to_amount() {
                 this.promise.cancel()
@@ -164,6 +180,11 @@
                     let [dy, dy_, dx_, balance] = await promise
                     this.toInput = dy;
                     this.exchangeRate = (dy_ / dx_).toFixed(4);
+                    if(this.swapwrapped) {
+                        let cdy_ = (dy_ * this.c_rates[this.to_currency] * allabis[currentContract.currentContract].wrapped_precisions[this.to_currency])
+                        let cdx_ = (dx_ * this.c_rates[this.from_currency] * allabis[currentContract.currentContract].wrapped_precisions[this.from_currency])
+                        this.exchangeRate = (cdy_ / cdx_).toFixed(4)
+                    }
                     if(this.exchangeRate <= 0.98) this.bgColor = 'red'
                     else this.bgColor= '#505070'
                     if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
@@ -297,6 +318,10 @@
     }
 </script>
 
-<style>
-	
+<style scoped>
+	.actualvalue {
+        margin: 0.5em 0 0 0;
+        text-align: right;
+        font-size: 0.9em;
+    }
 </style>

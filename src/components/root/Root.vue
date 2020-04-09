@@ -47,6 +47,18 @@
                	 		</span></span>
 	                </router-link>
 	            </div>
+	            <div :class="{selected: activePoolLink == 4}">
+	                <router-link to = '/iearn'>
+	                	<span class='index'>4.</span>  
+	                    <span class='pooltext'>sUSD</span>
+	                    <span class='pools'>[(y)sUSD, yCurve]</span>  
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
+	                    <span class='volume'>
+	                    	<!-- Vol: <span :class="{'loading line': volumesData.busd < 0}">
+	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span> -->
+               	 		</span></span>
+	                </router-link>
+	            </div>
 	        </fieldset>
 	    </div>
 
@@ -179,14 +191,14 @@
 	                e.preventDefault();
 	                this.activePoolLink--;
 	            }
-	            if(e.code == 'ArrowDown' && this.activePoolLink < 3) {
+	            if(e.code == 'ArrowDown' && this.activePoolLink < 4) {
 	                e.preventDefault();
 	                this.activePoolLink++;
 	            }
 	            if(e.code.includes('Digit')) {
 	                e.preventDefault();
 	                var digit = e.code.slice(-1);
-	                if(digit > 3) return;
+	                if(digit > 4) return;
 	                this.activePoolLink = digit
 	            }
 	            if(e.code == 'Enter') {
@@ -195,7 +207,7 @@
 	            }
 			},
 			async getAPY() {
-	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi']       
+	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi', 'https://synthetix.curve.fi']       
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
 	            stats = await Promise.all(stats.map(stat=>stat.json()))
 	            for(let i = 0; i < stats.length; i++) {

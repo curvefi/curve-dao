@@ -247,10 +247,11 @@
 		            this.setAllInputBackground('red')
 		        }
 			},
-			async handle_remove_liquidity() {
+			async getMinAmounts() {
+				//use update rates instead
+				await this.update_fee_info();
 				let min_amounts = []
-			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        Vue.set(this.amounts, i, BN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
+				for(let i = 0; i < currentContract.N_COINS; i++) {
 			    	min_amounts[i] = BN(0.97).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {
 						min_amounts[i] = min_amounts[i]
@@ -260,21 +261,32 @@
 					min_amounts[i] = min_amounts[i].times(BN(this.token_balance))
 						            .div(BN(this.token_supply))
 						            .toFixed(0,1)
+				}
+				return min_amounts;
+			},
+			async handle_remove_liquidity() {
+				let min_amounts = []
+			    for (let i = 0; i < currentContract.N_COINS; i++) {
+			        Vue.set(this.amounts, i, BN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
+
 			    }
 			    var txhash;
 			    if (this.share == '---') {
 			        var token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
+			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc) {
+			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
 			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: 1000000
+				        	from: currentContract.default_account, gas: gas
 				        });
 			    	}
 			        else {
 			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawImbalance
+				        	from: currentContract.default_account, gas: gas
 				        })
 			        }
 			    }
@@ -297,10 +309,12 @@
 			        }
 			        else if(this.to_currency == 10) {
 			        	await common.ensure_allowance_zap_out(amount)
+			        	let min_amounts = this.getMinAmounts();
 			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
 			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
 			        }
 			        else {
+			        	let min_amounts = this.getMinAmounts();
 			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
 			        }
 			    }

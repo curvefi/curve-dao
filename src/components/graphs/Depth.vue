@@ -185,6 +185,7 @@
 			    	imax: 100,
 			    	inverse: false,
 			    	unwatch: null,
+			    	lastTimestamp: null,
 			}
 		},
 		async created() {
@@ -211,7 +212,7 @@
 						return init(contract.contracts[p == 'y' ? 'iearn' : p])
 					}))
 					this.chart.showLoading()
-					this.chart.xAxis[0].removePlotLine(1)
+					//this.chart.xAxis[0].removePlotLine(1)
                 	await this.updatePoolInfo();
 					this.mounted()
 				}
@@ -294,19 +295,21 @@
 			changeTime(poolInfo) {
 				console.log(poolInfo)
 				this.poolInfo = poolInfo
+				let timestamp = poolInfo.timestamp || poolInfo[0].timestamp
 				this.chart.setTitle({ 
-					text: helpers.formatDateToHuman(poolInfo.timestamp || poolInfo[0].timestamp),
+					text: helpers.formatDateToHuman(timestamp),
 				})
 				this.chart.update({
 					chart: {
 						marginTop: 40
 					}
 				})
-				this.mounted()
+				this.lastTimestamp = timestamp
+				this.mounted(timestamp)
 			},
-			async mounted() {
+			async mounted(lastTimestamp) {
 				this.chart.showLoading()
-				this.chart.xAxis[0].removePlotLine(1)
+				//this.chart.xAxis[0].removePlotLine(1)
 				this.pools = tradeStore.pools
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
@@ -314,10 +317,9 @@
 
 				//return;
 				this.loading = true;
-
-				while(this.chart.series.length) {
+				/*while(this.chart.series.length) {
 					this.chart.series[0].remove()
-				}
+				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
 				let poolConfigs = this.poolConfigs = pools.map(pool => {
@@ -349,7 +351,6 @@
 
 				//let balanceSum = contract.bal_info[fromCurrency] + contract.bal_info[toCurrency]
 				let balanceSum = 0;
-
 				for(let [key, pool] of tradeStore.pools.entries()) {
 					if(poolConfigs[key].N_COINS-1 < toCurrency || poolConfigs[key].N_COINS-1 < fromCurrency) continue;
 					if(pool == 'y') pool = 'iearn'
@@ -366,6 +367,7 @@
 				let axs = []
 				let ys = []
 				for(let i = 0; i <= imax; i++) {
+					if(lastTimestamp && this.lastTimestamp > lastTimestamp) return;
 					let exp = Math.pow(balanceSum, i / 100)
 					ys.push(exp)
 					for(let j = 0; j < pools.length; j++) {
@@ -432,6 +434,11 @@
                 bids = bids.reverse()
 
 				this.chart.hideLoading()
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
+				this.chart.xAxis[0].removePlotLine(1)
+				if(lastTimestamp && this.lastTimestamp > lastTimestamp) return;
 			    this.$refs.highcharts.chart.addSeries({
 		            name: 'Asks',
 		            data: asks,

@@ -108,7 +108,7 @@
         	async depositc(val, oldval) {
         		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
-        		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i)))
+        		await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
         		await this.calcSlippage()
         	}
         },
@@ -218,6 +218,7 @@
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }
+			    let nonZeroInputs = this.inputs.filter(Number).length
 			    if(this.depositc) {
 			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
@@ -226,15 +227,16 @@
 				}
 				else {
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			    	let gas = contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0
 					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
-						gas: contractGas.depositzap[this.currentPool].deposit
+						gas: gas
 					})
 				}
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
-			async change_currency(i) {
+			async change_currency(i, setInputs = true) {
 	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            if (value > this.wallet_balances[i] * this.rates[i])
@@ -251,12 +253,12 @@
 	                            // proportional
 	                            var newval = value / currentContract.c_rates[i] * this.balances[j] / this.balances[i];
 	                            newval = Math.floor(newval * currentContract.c_rates[j] * 100) / 100;
-	                            Vue.set(this.inputs, j, newval);
+	                            setInputs && Vue.set(this.inputs, j, newval);
 
 	                        } else {
 	                            // same value as we type
 	                            var newval = value;
-	                            Vue.set(this.inputs, j, newval);
+	                            setInputs && Vue.set(this.inputs, j, newval);
 	                        }
 
 	                        // Balance not enough highlight

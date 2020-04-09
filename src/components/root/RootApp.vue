@@ -37,10 +37,11 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-      <router-link :to="'/' + currentPool + '/profit'" class='showmobile'>Profit</router-link>
-      <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
-      <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>
+       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
+      <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>
+      <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='showmobile'>Dune Analytics</a>
+      <router-link to="/donate" class='showmobile'>Donate</router-link>
+      <a href="https://github.com/curvefi/curve-contract" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
     </div>
     <div id="screen">

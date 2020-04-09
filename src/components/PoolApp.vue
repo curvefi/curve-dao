@@ -35,17 +35,16 @@
       <router-link :to="'/' + currentPool + '/withdraw'">Withdraw</router-link>
       <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound'">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'">Stats</router-link>
+      <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
-          <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
           <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-      <router-link :to="'/' + currentPool + '/profit'" class='showmobile'>Profit</router-link>
       <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>

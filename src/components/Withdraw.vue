@@ -39,7 +39,7 @@
                 </li>
                 <li>
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
-                    <label for="withdrawc">Withdraw compounded</label>
+                    <label for="withdrawc">Withdraw wrapped</label>
                 </li>
             </ul>
         </fieldset>

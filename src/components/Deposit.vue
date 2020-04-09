@@ -44,7 +44,7 @@
                 </li>
                 <li>
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
-                    <label for="depositc">Deposit compounded</label>
+                    <label for="depositc">Deposit wrapped</label>
                 </li>
             </ul>
 

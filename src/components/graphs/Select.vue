@@ -111,7 +111,7 @@
 	#poolselect > label {
 		margin-left: 1em;
 	}
-	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+	@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
 		select, button {
 			display: block;
 		}

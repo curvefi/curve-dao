@@ -543,7 +543,7 @@
 	#zoomSelect button {
 		margin-left: 1em;
 	}
-  	@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  	@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
 		#zoomSelect button {
 			margin-left: 0;
 			margin-top: 0.5em;

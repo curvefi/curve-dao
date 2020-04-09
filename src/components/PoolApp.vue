@@ -36,7 +36,7 @@
       <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound'">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'">Stats</router-link>
       <div class='poolsdropdown right'>
-        <button class='simplebutton'>[<span class='yellowchar'>?</span>]</button>
+        <span>?</span>
         <div class='dropdown'>
           <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
@@ -45,11 +45,11 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-      <router-link :to="'/' + currentPool + '/profit'" class='hidemobile'>Profit</router-link>
-      <router-link :to="'/' + currentPool + '/faq'" class='hidemobile'>FAQ</router-link>
-      <router-link :to="'/' + currentPool + '/donate'" class='hidemobile'>Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='hidemobile'>git@</a>
-      <a href="https://github.com/pengiundev/curve-vue" class='hidemobile'>git@UI</a>
+      <router-link :to="'/' + currentPool + '/profit'" class='showmobile'>Profit</router-link>
+      <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
+      <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
+      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>
+      <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
     </div>
     <div id="screen">
         <div class="blue window">
@@ -107,7 +107,7 @@
   a.showmobile {
     display: none;
   }
-  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  @media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
     #hamburger:checked ~ a.showmobile {
       display: block;
     }

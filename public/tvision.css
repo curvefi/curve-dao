@@ -233,7 +233,7 @@ li {
     display: block;
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
   .top-menu-bar {
     padding-bottom: 3px;
   }
@@ -274,7 +274,7 @@ p.exchange-rate {
   display: flex;
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
   .info {
     flex-direction: column;
   }
@@ -299,13 +299,13 @@ div.info table td {
     vertical-align: top;
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
   div.info table td {
     display: block;
   }
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
   #lp-info-container {
     margin-top: 1em;
   }
@@ -317,7 +317,7 @@ div.info table td {
   .top-menu-bar a {
     display: none;
   }
-  #hamburger:checked ~ a, #hamburger:checked ~ div, #hamburger:checked ~ div > a {
+  #hamburger:checked ~ a, #hamburger:checked ~ div:not(.poolsdropdown), #hamburger:checked ~ div > a {
     display: block;
   }
   /*fix selector priority*/
@@ -367,7 +367,7 @@ div.info table td {
     width:30px;
 }
 
-@media only screen and (min-device-width : 480px) {
+@media only screen and (min-device-width : 730px) {
   .border-menu {
     display: none;
   }
@@ -585,7 +585,7 @@ fieldset:nth-child(2) .maxbalance {
   clear: both;
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
   p.exchange-rate {
     text-align: left;
   }
@@ -785,32 +785,54 @@ input[type=range]:focus::-ms-fill-upper {
   margin-bottom: 15px;
 }
 
-.poolsdropdown.right {
-  display: none;
-}
 .poolsdropdown.right .dropdown {
   left: unset;
-  right: 0;
-  transform: none;
+  right: 50%;
+  transform: translateX(50%);
 }
 
+.poolsdropdown > span {
+  padding-left: 1em;
+  padding-right: 1em;
+}
 
-@media only screen and (max-device-width: 1280px) {
+.showmobile {
+  display: none;
+}
+
+.poolsdropdown:not(.right) {
+  margin-right: 1em;
+}
+
+/*@media only screen and (max-device-width: 1280px) {
   .top-menu-bar a {
     margin: 0;
     margin-left: 3px;
   }
+}*/
+
+@media only screen and (max-device-width: 1050px) {
+  .poolsdropdown.right .dropdown {
+    right: 0;
+    transform: none;
+  }
 }
 
-@media only screen and (min-device-width: 1100px) and (max-device-width: 1400px) {
+@media only screen and (max-device-width: 850px) {
+  .top-menu-bar > a {
+    margin-left: 3px;
+    margin-right: 0;
+  }
+}
+
+@media only screen and (min-device-width: 800px) and (max-device-width: 950px) {
   .dropdown {
     left: 40%;
     transform: translateX(-10%);
   }
 }
 
-@media only screen and (min-device-width : 480px) and (max-device-width : 1180px) {
-
+@media only screen and (min-device-width : 730px) and (max-device-width : 1180px) {
   .root .hidemobile {
     display: none;
   }
@@ -819,15 +841,20 @@ input[type=range]:focus::-ms-fill-upper {
   }
 }
 
-@media only screen and (min-device-width : 480px) and (max-device-width : 1100px) {
-  .top-menu-bar a {
-    margin-left: 1em;
-    margin-right: 1em;
-  }
+@media only screen and (min-device-width : 730px) and (max-device-width : 1100px) {
   .hidemobile {
     display: none;
   }
   .poolsdropdown.right {
     display: inline-block;
+  }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
+  .poolsdropdown.right {
+    display: none !important;
+  }
+  .showmobile {
+    display: block;
   }
 }

@@ -27,7 +27,7 @@
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
       <div class='poolsdropdown right'>
-        <button class='simplebutton'>[<span class='yellowchar'>?</span>]</button>
+        <span>?</span>
         <div class='dropdown'>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
@@ -37,12 +37,11 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-      <a href="https://twitter.com/CurveFinance" class='hidemobile'>#Twitter</a>
-      <a href="https://t.me/curvefi" class='hidemobile'>@Telegram</a>
-      <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='hidemobile'>Dune Analytics</a>
-      <router-link to="/donate" class='hidemobile'>Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract" class='hidemobile'>git@</a>
-      <a href="https://github.com/pengiundev/curve-vue" class='hidemobile'>git@UI</a>
+      <router-link :to="'/' + currentPool + '/profit'" class='showmobile'>Profit</router-link>
+      <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
+      <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
+      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>
+      <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">
@@ -98,7 +97,7 @@
 </script>
 
 <style scoped>
-  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  @media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
     .top-menu-bar > .poolsdropdown {
       display: none;
     }

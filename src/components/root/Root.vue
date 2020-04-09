@@ -48,7 +48,7 @@
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 4}">
-	                <router-link to = '/iearn'>
+	                <a href = 'https://iearn.finance/pool'>
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[(y)sUSD, yCurve]</span>  
@@ -57,7 +57,7 @@
 	                    	<!-- Vol: <span :class="{'loading line': volumesData.busd < 0}">
 	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span> -->
                	 		</span></span>
-	                </router-link>
+	                </a>
 	            </div>
 	        </fieldset>
 	    </div>

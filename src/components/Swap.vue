@@ -54,7 +54,13 @@
                 <ul>
                     <li>
                         <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
-                        <label for="inf-approval">Infinite approval - trust this contract forever</label>
+                        <label for="inf-approval">Infinite approval - trust this contract forever
+                            <span class='tooltip'>[?]
+                                <span class='tooltiptext long'>
+                                    Preapprove the contract to to be able to spend any amount of your coins. You will not need to approve again.
+                                </span>
+                            </span>
+                        </label>
                     </li>
                 </ul>
                 <p class='trade-buttons'>

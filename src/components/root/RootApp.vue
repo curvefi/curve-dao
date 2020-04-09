@@ -16,7 +16,7 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
-            <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'iearn'}">sUSD</router-link>
+            <a href="https://iearn.finance/pool" :class="{selected: currentPool == 'iearn'}">sUSD</a>
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
         </div>

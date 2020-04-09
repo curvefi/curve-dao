@@ -749,15 +749,25 @@ input[type=range]:focus::-ms-fill-upper {
   z-index: 1;
 }
 
+.tooltiptext.long {
+  width: 300px;
+  margin-left: -150px;
+  padding: 1em;
+}
+
 .tooltip .tooltiptext::after {
   content: " ";
   position: absolute;
   top: 100%; /* At the bottom of the tooltip */
   left: 50%;
-  margin-left: -5px;
+  transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
   border-color: #3465a4e6 transparent transparent transparent;
+}
+
+.tooltip .tooltiptext.long::after {
+  margin-left: -1em;
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */

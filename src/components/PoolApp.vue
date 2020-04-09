@@ -39,6 +39,7 @@
       <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
       <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
+      <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
     </div>
     <div id="screen">
         <div class="blue window">

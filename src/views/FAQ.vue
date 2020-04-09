@@ -27,6 +27,14 @@
         <p>Using Curve as an exchange user should be significantly less
         risky, but this is not advice.</p>
 
+        <h3>Source code git</h3>
+        <p>
+            <a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
+        </p>
+        <p>
+            <a href="https://github.com/pengiundev/curve-vue">Frontend</a>
+        </p>
+
         <h3>How do I trade on Curve?</h3>
         <p>Before trading, you’ll have to approve Curve to interact with
         your DAI or USDC balance, similar to most DeFi applications.</p>

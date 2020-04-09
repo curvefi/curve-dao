@@ -781,7 +781,7 @@ input[type=range]:focus::-ms-fill-upper {
   margin-bottom: 15px;
 }
 
-@media only screen and (min-device-width : 1100px) and (max-device-width : 1330px) {
+@media only screen and (min-device-width : 1100px) and (max-device-width : 1400px) {
   .dropdown {
     left: 40%;
     transform: translateX(-10%);

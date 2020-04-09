@@ -154,7 +154,7 @@
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)
-            this.$watch(()=>contract.web3, async (val) => {
+            this.$watch(()=>contract.multicall, async (val) => {
                 await this.mounted()
             })
         },
@@ -233,25 +233,78 @@
                 let amount = BN(this.fromInput).times(this.coin_precisions[this.from_currency]).toFixed(0)
                 let parts = 10
                 this.swapPromise.cancel();
+                let defaultCalls = [
+                    [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                        this.underlying_coins[this.from_currency]._address,
+                        this.underlying_coins[this.to_currency]._address,
+                        amount,
+                        10,
+                        this.CONTRACT_FLAG - 0x10000 - 0x20000
+                    ).encodeABI()],
+                    [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                        this.underlying_coins[this.from_currency]._address,
+                        this.underlying_coins[this.to_currency]._address,
+                        amount,
+                        20,
+                        this.CONTRACT_FLAG
+                    ).encodeABI()],
+                    [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                        this.underlying_coins[this.from_currency]._address,
+                        this.underlying_coins[this.to_currency]._address,
+                        amount,
+                        30,
+                        this.CONTRACT_FLAG
+                    ).encodeABI()],
+                ]
+                let calls = defaultCalls.concat();
+                if(this.fromInput < 50000) {
+                    calls = [defaultCalls[0]]
+                }
+                if((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4)) {
+                    calls = defaultCalls.slice(1)
+                    if(this.fromInput < 50000) calls = []
+                    calls.push(
+                        [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                            this.underlying_coins[this.from_currency]._address,
+                            this.underlying_coins[this.to_currency]._address,
+                            amount,
+                            10,
+                            //all multipaths
+                            this.CONTRACT_FLAG
+                        ).encodeABI()],
+                        [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                            this.underlying_coins[this.from_currency]._address,
+                            this.underlying_coins[this.to_currency]._address,
+                            amount,
+                            15,
+                            //minus multipath DAI
+                            this.CONTRACT_FLAG - 0x10000
+                        ).encodeABI()],
+                        [this.onesplit._address, this.onesplit.methods.getExpectedReturn(
+                            this.underlying_coins[this.from_currency]._address,
+                            this.underlying_coins[this.to_currency]._address,
+                            amount,
+                            15,
+                            //minus multipath USDC
+                            this.CONTRACT_FLAG - 0x20000
+                        ).encodeABI()],
+                    )
+                }
+                this.swapPromise.cancel()
                 try {
-                    this.swapPromise = helpers.makeCancelable(
-                            this.onesplit.methods.getExpectedReturn(
-                                this.underlying_coins[this.from_currency]._address,
-                                this.underlying_coins[this.to_currency]._address,
-                                amount,
-                                parts,
-                                this.CONTRACT_FLAG
-                            ).call()
-                        )
+                    let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+                    this.swapPromise = helpers.makeCancelable(aggcalls)
                     let split_swap = await this.swapPromise
-                    console.log(split_swap, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
-                    this.amount_dy = split_swap.returnAmount;
+                    let decoded = split_swap[1].map(hex => web3.eth.abi.decodeParameters(['uint256', 'uint256[10]'], hex))
+                    let max = decoded.reduce((a, b) => a[0] > b[0] ? a : b)
+                    console.log(max, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
+                    this.amount_dy = max[0];
                     this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);
                     if(+this.exchangeRate <= 0.98) this.bgColor = 'red'
                     else this.bgColor= '#505070'
                     if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
                     this.toInput = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).toFixed(2);
-                    this.distribution = split_swap.distribution
+                    this.distribution = max[1]
                     this.disabled = false
                 }
                 catch(err) {

@@ -53,10 +53,22 @@ export const poolMenu = {
 
 export const gas = {
 	swap: {
-		compound: 1200000,
-		usdt: 1200000,
-		iearn: 1600000,
-		busd: 1600000,
+		compound: {
+			exchange: 600000,
+			exchange_underlying: 1200000
+		},
+		usdt: {
+			exchange: 600000,
+			exchange_underlying: 1200000
+		},
+		iearn: {
+			exchange: 800000,
+			exchange_underlying: 1600000
+		},
+		busd: {
+			exchange: 800000,
+			exchange_underlying: 1600000
+		},
 	},
 	withdraw: {
 		compound: {

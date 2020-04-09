@@ -302,7 +302,7 @@
                     if(this.swapwrapped) exchangeMethod = currentContract.swap.methods.exchange
                     await exchangeMethod(i, j, dx, min_dy).send({
                             from: currentContract.default_account,
-                            gas: contractGas.swap[this.currentPool],
+                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange : contractGas.swap[this.currentPool].exchange_underlying,
                         });
                     
                     await common.update_fee_info();

@@ -770,3 +770,10 @@ input[type=range]:focus::-ms-fill-upper {
   margin-top: 0;
   margin-bottom: 15px;
 }
+
+@media only screen and (min-device-width : 1100px) and (max-device-width : 1330px) {
+  .dropdown {
+    left: 40%;
+    transform: translateX(-10%);
+  }
+}

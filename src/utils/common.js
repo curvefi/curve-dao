@@ -45,8 +45,11 @@ export async function ensure_allowance(amounts, plain = false) {
         swap = allabis[currentContract.currentContract].deposit_address;
     }
     let fromContract = coins
+    let calls = []
     for (let i=0; i < currentContract.N_COINS; i++)
-        allowances[i] = await coins[i].methods.allowance(default_account, swap).call();
+        calls.push([coins[i]._address, coins[i].methods.allowance(default_account, swap).encodeABI()])
+    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
+    allowances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex));
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
@@ -69,11 +72,13 @@ export async function ensure_allowance(amounts, plain = false) {
     }
 }
 
-export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract) {
+export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract, wrapped = false) {
     if(!underlying_coins.length) underlying_coins = currentContract.underlying_coins;
+    let coins = underlying_coins 
+    if(wrapped) coins = currentContract.coins
     var default_account = currentContract.default_account
     var amount = cBN(_amount);
-    var current_allowance = cBN(await underlying_coins[i].methods.allowance(default_account, currentContract.swap_address).call());
+    var current_allowance = cBN(await coins[i].methods.allowance(default_account, currentContract.swap_address).call());
 
     if (current_allowance.isEqualTo(amount))
         return false;
@@ -81,8 +86,8 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
         return false;  // It does get spent slowly, but that's ok
 
     if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)))
-        await approve(underlying_coins[i], 0, default_account, toContract);
-    return await approve(underlying_coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
+        await approve(coins[i], 0, default_account, toContract);
+    return await approve(coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
 
 // XXX not needed anymore

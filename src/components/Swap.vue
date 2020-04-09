@@ -14,7 +14,11 @@
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
-                            <label :for="'from_cur_'+i">{{currency | capitalize}}</label>
+                            <label :for="'from_cur_'+i">
+                                <span v-show='!swapwrapped'>{{currency | capitalize}}</span>
+                                <span v-show='swapwrapped'>{{currencies[currency]}}</span>
+                            </label>
+                        </label>
                         </li>
                     </ul>
                 </fieldset>
@@ -33,7 +37,11 @@
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
-                            <label :for="'to_cur_'+i">{{currency | capitalize}}</label>
+                            <label :for="'to_cur_'+i">
+                                <span v-show='!swapwrapped'>{{currency | capitalize}}</span>
+                                <span v-show='swapwrapped'>{{currencies[currency]}}</span>
+                            </label>
+                        </label>
                         </li>
                     </ul>
                 </fieldset>
@@ -62,6 +70,10 @@
                             </span>
                         </label>
                     </li>
+                    <li>
+                        <input id='swapw' type='checkbox' name='swapw' v-model = 'swapwrapped'>
+                        <label for='swapw'>Swap wrapped</label>
+                    </li>
                 </ul>
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade'>Sell</button>
@@ -75,6 +87,7 @@
     import * as common from '../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas} from '../contract'
     import * as helpers from '../utils/helpers'
+    import allabis from '../allabis'
 
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
@@ -97,7 +110,8 @@
             maxSlippage: 1,
             maxInputSlippage: '',
             customSlippageDisabled: true,
-            test: null,
+            swapwrapped: false,
+            coins: [],
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -119,9 +133,16 @@
             },
             to_currency(val, oldval) {
                 this.to_cur_handler()
+            },
+            swapwrapped() {
+                this.mounted()
             }
         },
         computed: {
+            precisions() {
+                if(this.swapwrapped) return allabis[currentContract.currentContract].wrapped_precisions;
+                return allabis[currentContract.currentContract].coin_precisions
+            },
           ...getters,
         },
         mounted() {
@@ -129,6 +150,10 @@
         },
         methods: {        
             async mounted() {
+                this.coins = currentContract.underlying_coins
+                if(this.swapwrapped) {
+                    this.coins = currentContract.coins
+                }
                 this.disabled = false;
                 this.from_cur_handler()
             },
@@ -143,7 +168,7 @@
                     else this.bgColor= '#505070'
                     if(isNaN(this.exchangeRate)) this.exchangeRate = "Not available"
                     let amount = Math.floor(
-                            100 * parseFloat(balance) / currentContract.coin_precisions[this.to_currency]
+                            100 * parseFloat(balance) / this.precisions[this.to_currency]
                         ) / 100
 
                     this.disabled = false;
@@ -178,24 +203,25 @@
                 await this.set_to_amount();
             },
             async set_max_balance() {
-                let balance = await currentContract.underlying_coins[this.from_currency].methods.balanceOf(currentContract.default_account).call();
+                let balance = await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call();
                 let amount = Math.floor(
-                        100 * parseFloat(balance) / currentContract.coin_precisions[this.from_currency]
+                        100 * parseFloat(balance) / this.precisions[this.from_currency]
                     ) / 100
                 this.fromInput = amount.toFixed(2)
                 await this.set_to_amount();
             },
             async highlight_input() {
-                var balance = parseFloat(await currentContract.underlying_coins[this.from_currency].methods.balanceOf(currentContract.default_account).call()) / currentContract.coin_precisions[this.from_currency];
+                let balance = parseFloat(await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call()) /
+                        this.precisions[this.from_currency];
                 if (this.fromInput > balance)
                     this.fromBgColor = 'red'
                 else
                     this.fromBgColor = 'blue'
             },
             async set_from_amount(i) {
-                let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
+                let balance = await this.coins[i].methods.balanceOf(currentContract.default_account).call();
                 let amount = Math.floor(
-                        100 * parseFloat(balance) / currentContract.coin_precisions[i]
+                        100 * parseFloat(balance) / this.precisions[i]
                     ) / 100
                 if (this.fromInput == '' || this.val == 0) {
                     if(!currentContract.default_account) balance = 0
@@ -208,19 +234,24 @@
                     var i = this.from_currency;
                     var j = this.to_currency;
                     var dx_ = this.fromInput;
-                    var dx = cBN(Math.round(dx_ * currentContract.coin_precisions[i])).toFixed(0,1);
+                    var dx = cBN(Math.round(dx_ * this.precisions[i])).toFixed(0,1);
                     let calls = [
                         [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
-                        [currentContract.swap._address, currentContract.swap.methods.get_dy_underlying(i, j, dx).encodeABI()],
-                        [currentContract.underlying_coins[this.to_currency]._address , currentContract.underlying_coins[this.to_currency].methods.balanceOf(currentContract.default_account).encodeABI()]
                     ]
+                    if(!this.swapwrapped)
+                        calls.push([currentContract.swap._address, currentContract.swap.methods.get_dy_underlying(i, j, dx).encodeABI()])
+                    else {
+                        //dx = cBN(dx).times(currentContract.c_rates[i])
+                        calls.push([currentContract.swap._address, currentContract.swap.methods.get_dy(i, j, dx).encodeABI()])
+                    }
+                    calls.push([this.coins[this.to_currency]._address , this.coins[this.to_currency].methods.balanceOf(currentContract.default_account).encodeABI()])
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
                     let [b, get_dy_underlying, balance] = decoded
                     b = +b * currentContract.c_rates[i];
                     if (b >= 0.001) {
                         // In c-units
-                        var dy_ = +get_dy_underlying / currentContract.coin_precisions[j];
+                        var dy_ = +get_dy_underlying / this.precisions[j];
                         var dy = dy_.toFixed(2);
                         resolve([dy, dy_, dx_, balance])
                     }
@@ -238,24 +269,26 @@
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (b >= 0.001) {
-                    var dx = Math.floor(this.fromInput * currentContract.coin_precisions[i]);
-                    var min_dy = Math.floor(this.toInput * (1-maxSlippage) * currentContract.coin_precisions[j]);
+                    var dx = Math.floor(this.fromInput * this.precisions[i]);
+                    var min_dy = Math.floor(this.toInput * (1-maxSlippage) * this.precisions[j]);
                     dx = cBN(dx.toString()).toFixed(0);
                     if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, currentContract.max_allowance)
+                        await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
                     else
-                        await common.ensure_underlying_allowance(i, dx);
+                        await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
                     min_dy = cBN(min_dy.toString()).toFixed(0);
-                    await currentContract.swap.methods.exchange_underlying(i, j, dx, min_dy).send({
+                    let exchangeMethod = currentContract.swap.methods.exchange_underlying
+                    if(this.swapwrapped) exchangeMethod = currentContract.swap.methods.exchange
+                    await exchangeMethod(i, j, dx, min_dy).send({
                             from: currentContract.default_account,
                             gas: contractGas.swap[this.currentPool],
                         });
                     
                     await common.update_fee_info();
                     this.from_cur_handler();
-                    let balance = await currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account).call();
+                    let balance = await this.coins[i].methods.balanceOf(currentContract.default_account).call();
                     let amount = Math.floor(
-                            100 * parseFloat(balance) / currentContract.coin_precisions[i]
+                            100 * parseFloat(balance) / this.precisions[i]
                         ) / 100
                     this.maxBalance = amount;
                 }

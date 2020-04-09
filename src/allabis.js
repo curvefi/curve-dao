@@ -11,6 +11,7 @@ export const yERC20_abi = [{"inputs":[],"payable":false,"stateMutability":"nonpa
 var compound = {
 N_COINS: 2,
 coin_precisions: [1e18, 1e6],
+wrapped_precisions: [1e8, 1e8],
 use_lending: [true, true],
 old_swap_address: '0x2e60CF74d81ac34eB21eEff58Db4D385920ef419',
 swap_address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
@@ -1838,6 +1839,7 @@ old_swap_abi: [
 var usdt = {
   N_COINS: 3,
   coin_precisions: [1e18, 1e6, 1e6],
+  wrapped_precisions: [1e8, 1e8, 1e6],
   use_lending: [true, true, false],
   tethered: [false, false, true],
   swap_address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C',
@@ -2895,6 +2897,7 @@ var usdt = {
 var iearn = {
   N_COINS: 4,
   coin_precisions: [1e18, 1e6, 1e6, 1e18],
+  wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
   swap_address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
@@ -3954,6 +3957,7 @@ var iearn = {
 var busd = {
   N_COINS: 4,
   coin_precisions: [1e18, 1e6, 1e6, 1e18],
+  wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
   swap_address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27',

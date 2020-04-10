@@ -96,7 +96,7 @@ export default {
 		        }
 		        else {
 		            tr = tr.logs.filter(log=>{
-		                return log.address == address && log.topics[2] == '0x000000000000000000000000' + yaddress.substr(2).toLowerCase()
+		                return log.address == address && log.topics[0] == '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' && log.topics[2] == '0x000000000000000000000000' + yaddress.substr(2).toLowerCase()
 		            })
 		        }
 		        if(!tr.length) return false;

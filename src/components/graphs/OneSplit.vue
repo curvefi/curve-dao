@@ -120,7 +120,8 @@
             onesplit: null,
             onesplit_address: '',
             //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
-            swapPromise: helpers.makeCancelable(Promise.resolve())
+            swapPromise: helpers.makeCancelable(Promise.resolve()),
+            usedFlags: '',
 		}),
         computed: {
             CONTRACT_FLAG() {
@@ -212,7 +213,7 @@
                         amount,
                         BN(this.toInput).times(this.coin_precisions[j]).times(BN(1 - maxSlippage)).toFixed(0),
                         this.distribution,
-                        this.CONTRACT_FLAG
+                        this.usedFlags,
                     ).send({
                         from: contract.default_account,
                         gas: 6000000
@@ -289,6 +290,8 @@
                     let split_swap = await this.swapPromise
                     let decoded = split_swap[1].map(hex => web3.eth.abi.decodeParameters(['uint256', 'uint256[10]'], hex))
                     let max = decoded.reduce((a, b) => a[0] > b[0] ? a : b)
+                    this.usedFlags = web3.eth.abi.decodeParameters(['address', 'address', 'uint256', 'uint256', 'uint256'], 
+                                                                    calls[decoded.indexOf(max)][1].slice(10))[4]
                     console.log(max, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
                     this.amount_dy = max[0];
                     this.exchangeRate = BN(this.amount_dy).div(this.coin_precisions[this.to_currency]).div(this.fromInput).toFixed(4);

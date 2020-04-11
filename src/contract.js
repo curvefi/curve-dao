@@ -128,6 +128,7 @@ let initState = {
 const state = Vue.observable({
 	web3: null,
 	multicall: null,
+	allInitContracts: [],
 	contracts: {
 		compound: {
 			currentContract: 'compound',
@@ -285,6 +286,8 @@ export async function init(contract, refresh = false) {
     await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;
   	console.timeEnd('init')
+  	state.allInitContracts.push(contract.currentContract)
+  	console.log([...state.allInitContracts])
   	return;
     let aggcalls = await state.multicall.methods.aggregate(calls).call()
     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))

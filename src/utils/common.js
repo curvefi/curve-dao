@@ -50,7 +50,6 @@ export async function ensure_allowance(amounts, plain = false) {
         calls.push([coins[i]._address, coins[i].methods.allowance(default_account, swap).encodeABI()])
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
     allowances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex));
-    console.log(allowances, "ALLOWANCES")
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
@@ -73,14 +72,14 @@ export async function ensure_allowance(amounts, plain = false) {
     }
 }
 
-export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract, wrapped = false) {
-    if(!underlying_coins.length) underlying_coins = currentContract.underlying_coins;
-    let coins = underlying_coins 
-    if(wrapped) coins = currentContract.coins
+export async function ensure_underlying_allowance(i, _amount, underlying_coins = [], toContract, wrapped = false, contract) {
+    if(!contract) contract = currentContract
+    if(!underlying_coins.length) underlying_coins = contract.underlying_coins;
+    let coins = underlying_coins
+    if(wrapped) coins = contract.coins
     var default_account = currentContract.default_account
     var amount = cBN(_amount);
-    var current_allowance = cBN(await coins[i].methods.allowance(default_account, currentContract.swap_address).call());
-
+    var current_allowance = cBN(await coins[i].methods.allowance(default_account, contract.swap._address).call());
     if (current_allowance.isEqualTo(amount))
         return false;
     if ((cBN(_amount).isEqualTo(currentContract.max_allowance)) & (current_allowance.isGreaterThan(currentContract.max_allowance.div(cBN(2)))))
@@ -156,6 +155,7 @@ export function update_rates(version = 'new', contract) {
 
 export async function update_fee_info(version = 'new', contract, update = true) {
     console.time('updatefeeinfo')
+    let web3 = currentContract.web3 || new Web3(infura_url)
     if(!contract) contract = currentContract
     var swap_abi_stats = allabis[contract.currentContract].swap_abi;
     var swap_address_stats = allabis[contract.currentContract].swap_address;
@@ -184,7 +184,6 @@ export async function update_fee_info(version = 'new', contract, update = true) 
                     ]
     let rates_calls = update_rates(version, contract);
 
-    let web3 = currentContract.web3 || new Web3(infura_url)
     let swap = new web3.eth.Contract(swap_abi_stats, swap_address_stats);
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
         //swap.methods.balances(i)
@@ -204,7 +203,7 @@ function checkTethered(contract, i) {
 }
 
 export async function multiInitState(calls, contract, initContracts = false) {
-    let web3 = contract.web3 || new Web3(infura_url)
+    let web3 = currentContract.web3 || new Web3(infura_url)
     let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
     var default_account = currentContract.default_account;
     let aggcalls = await multicall.methods.aggregate(calls).call()

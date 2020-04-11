@@ -12,7 +12,7 @@
                             @input='set_to_amount'
                             v-model='fromInput'>
                             <p class='actualvalue' v-show='swapwrapped'>
-                                ≈ {{actualFromValue(this.fromInput)}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
+                                ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                             </p>
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
@@ -38,7 +38,7 @@
                             :style = "{backgroundColor: bgColor}"
                             v-model='toInput'>
                             <p class='actualvalue' v-show='swapwrapped'>
-                                ≈ {{actualToValue(this.toInput)}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
+                                ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                             </p>
                         </li>
                         <li v-for='(currency, i) in Object.keys(currencies)'>
@@ -150,6 +150,14 @@
                 if(this.swapwrapped) return allabis[currentContract.currentContract].wrapped_precisions;
                 return allabis[currentContract.currentContract].coin_precisions
             },
+            actualFromValue() {
+                if(!this.swapwrapped) return;
+                return (this.fromInput * this.c_rates[this.from_currency] * this.precisions[this.from_currency]).toFixed(2)
+            },
+            actualToValue() {
+                if(!this.swapwrapped) return;
+                return (this.toInput * this.c_rates[this.to_currency] * this.precisions[this.to_currency]).toFixed(2)
+            },
           ...getters,
         },
         mounted() {
@@ -164,14 +172,6 @@
                 }
                 this.disabled = false;
                 this.from_cur_handler()
-            },
-            actualFromValue() {
-                if(!this.swapwrapped) return;
-                return (this.fromInput * this.c_rates[this.from_currency] * this.precisions[this.from_currency]).toFixed(2)
-            },
-            actualToValue() {
-                if(!this.swapwrapped) return;
-                return (this.toInput * this.c_rates[this.to_currency] * this.precisions[this.to_currency]).toFixed(2)
             },
             async set_to_amount() {
                 this.promise.cancel()

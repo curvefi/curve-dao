@@ -31,7 +31,7 @@
 
 	import {Chart} from 'highcharts-vue'
 	import EventBus from './EventBus'
-	import tradeStore from './tradeStore'
+	import tradeStore, { updatePoolInfo, getters as tradeGetters } from './tradeStore'
 	import stableswap_fns from '../../utils/stableswap_fns'
 	import { getters, contract, LENDING_PRECISION, PRECISION, changeContract, init } from '../../contract'
 	import abis from '../../allabis'
@@ -177,7 +177,6 @@
 				  	},
 				  	pool: 'compound',
 				  	pools: [],
-				  	poolInfo: {},
 				  	interval: 5,
 			    	bbrect: null,
 			    	data: [],
@@ -195,7 +194,7 @@
 				let inits = await Promise.all(tradeStore.pools.map(p=>{
 					return init(contract.contracts[p == 'y' ? 'iearn' : p])
 				}))
-				await this.updatePoolInfo()
+				await updatePoolInfo()
                 this.mounted()
                 this.unwatch();
             })
@@ -213,7 +212,8 @@
 					}))
 					this.chart.showLoading()
 					//this.chart.xAxis[0].removePlotLine(1)
-                	await this.updatePoolInfo();
+                	//no need to as all 4 pools are loaded at page load
+                	//await updatePoolInfo();
 					this.mounted()
 				}
 			},
@@ -269,32 +269,13 @@
 			},
 			async resetChart() {
 				this.chart.setTitle({ text: '' })
-				await this.updatePoolInfo()
+				//await updatePoolInfo()
 				this.mounted()
 			},
-			async updatePoolInfo() {
-				this.poolInfo = []
-				for(let [key, pool] of tradeStore.pools.entries()) {
-					if(pool == 'y') pool = 'iearn'
-					let cont = contract.contracts[pool]
-					if(pool == contract.currentContract) cont = contract
-					//console.log(contract.contracts[pool], "POOL")
-					this.poolInfo[key] = {}
-					this.poolInfo[key].A = await cont.swap.methods.A().call();
-					this.poolInfo[key].fee = cont.fee * 1e10
-					this.poolInfo[key].admin_fee = cont.admin_fee * 1e10
-					this.poolInfo[key].supply = await cont.swap_token.methods.totalSupply().call()
-					this.poolInfo[key].virtual_price = await cont.swap.methods.get_virtual_price().call()
-					this.poolInfo[key].balances = cont.balances;
-					this.poolInfo[key].rates = cont.c_rates.map((r,i)=>+(BN(r).times(PRECISION).times(abis[pool].coin_precisions[i])))
-					this.poolInfo[key].timestamp = (Date.now() / 1000) | 0;
-				}
-			},
-
 			//we can go back in time! Time travelling!
 			changeTime(poolInfo) {
 				console.log(poolInfo)
-				this.poolInfo = poolInfo
+				tradeStore.poolInfo = poolInfo
 				let timestamp = poolInfo.timestamp || poolInfo[0].timestamp
 				this.chart.setTitle({ 
 					text: helpers.formatDateToHuman(timestamp),
@@ -322,15 +303,7 @@
 				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
-				let poolConfigs = this.poolConfigs = pools.map(pool => {
-					return {
-						N_COINS: abis[pool].N_COINS,
-						PRECISION_MUL: abis[pool].coin_precisions.map(p=>1e18/p),
-						USE_LENDING: abis[pool].USE_LENDING,
-						LENDING_PRECISION,
-						PRECISION,
-					}
-				})
+				let poolConfigs = tradeGetters.poolConfigs()
 
 				/*console.log(contract.bal_info.map((b,i)=>b/contract.c_rates[i]))
 				console.log(contract.c_rates)*/
@@ -375,9 +348,9 @@
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
-						let dy = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
+						let dy = await calcWorker.calcPrice({...tradeStore.poolInfo[j], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
 						dy = +(BN(dy).div(abis[pools[j]].coin_precisions[toCurrency]))
-						let dx = await calcWorker.calcPrice({...this.poolInfo[j], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
+						let dx = await calcWorker.calcPrice({...tradeStore.poolInfo[j], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
 						dx = +(BN(dx).div(abis[pools[j]].coin_precisions[fromCurrency]))
 						/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
 						let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/

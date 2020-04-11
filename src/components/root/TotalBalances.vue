@@ -44,6 +44,7 @@
 			    let calls = []
 			    let pools = Object.assign({},allabis)
 			    delete pools.susd
+			    delete pools.y
 			    for(let [key, contract] of Object.entries(pools)) {
 			        tokenContracts[key] = new web3.eth.Contract(ERC20_abi, contract.token_address);
 			        swapContracts[key] = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
@@ -60,6 +61,7 @@
 			    let aggcalls = await multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 			    chunkArr(decoded, 2).map((v, i, arr) => {
+			    	console.log(v[0], v[1], "Vs")
 			    	total = total.plus(BN(v[0]).times(BN(v[1])).div(1e36))
 			    })
 			    this.total = total.toFixed(0);

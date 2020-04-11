@@ -129,6 +129,19 @@ let calc = ({
 		return result;
 	}
 
+	function get_dy(i, j, dx, usefee = false) {
+		let precisions = PRECISION_MUL.map(p=>BN(p));
+		let currentRates = rates.map((r,i) => BN(r).times(precisions[i]))
+		let xp = _xp(currentRates);
+		let x = xp[i].plus(BN(dx).times(currentRates[i]).div(PRECISION))
+		let y = get_y(i, j, x, xp)
+		let dy = (xp[j].minus(y)).times(PRECISION).div(currentRates[j])
+		let _fee = BN(fee).times(dy).div(FEE_DENOMINATOR)
+		if(!usefee) _fee = ZERO
+		console.log(+dy.minus(_fee))
+		return dy.minus(_fee);
+	}
+
 	function get_dy_underlying(i, j, dx, usefee = false) {
 		let precisions = PRECISION_MUL.map(p=>BN(p));
 		let currentRates = rates.map((r,i) => BN(r).times(precisions[i]))
@@ -153,6 +166,7 @@ let calc = ({
 
 	return {
 		get_dy_underlying,
+		get_dy,
 		_xp,
 		//get_dx_underlying,
 	}

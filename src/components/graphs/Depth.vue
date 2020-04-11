@@ -6,6 +6,10 @@
 				<input type='range' min='0' max='300' id='zoom' v-model='zoom'/>
 			</div>
 			<button @click='resetChart'>Reset time interval</button>
+			<span id='linearcontainer'>
+				<input type='checkbox' id='linearscale' v-model='linearscale'>
+				<label for='linearscale'>Linear scale</label>
+			</span>
 <!-- 			<input type='range' min='0' max='110' id='volzoom' v-model='volZoom'/>
  -->	</div>
 <!-- 		<button @click='setExtremes'>Look at actual price * +-0.01</button>
@@ -185,6 +189,7 @@
 			    	inverse: false,
 			    	unwatch: null,
 			    	lastTimestamp: null,
+			    	linearscale: false,
 			}
 		},
 		async created() {
@@ -219,6 +224,16 @@
 			},
 			zoom() {
 				this.setZoom()
+			},
+			linearscale(val) {
+				this.chart.yAxis[1].update({
+					linkedTo: undefined,
+					type: val ? 'linear' : 'logarithmic'
+				})
+				this.chart.yAxis[0].update({
+					type: val ? 'linear' : 'logarithmic'
+				})
+				this.setZoom();
 			},
 /*			volZoom(val) {
 				this.chart.yAxis[0].min = val*100+1
@@ -259,8 +274,9 @@
 				let priceRight = Math.min(max_price, p + (p - min_price))
 
 				let zoom = +this.zoom
-				priceLeft = p - (p - priceLeft) * Math.pow(10, 2 * (zoom / 300 - 1))
-				priceRight = p + (priceRight - p) * Math.pow(10, 2 * (zoom / 300 - 1))
+				let base = this.linearscale ? 30 : 10
+				priceLeft = p - (p - priceLeft) * Math.pow(base, 2 * (zoom / 300 - 1))
+				priceRight = p + (priceRight - p) * Math.pow(base, 2 * (zoom / 300 - 1))
 				this.chart.xAxis[0].setExtremes(priceLeft, priceRight, true, false);
 			},
 			setExtremes() {
@@ -521,5 +537,8 @@
 			margin-left: 0;
 			margin-top: 0.5em;
 		}
+	}
+	#linearcontainer {
+		margin-left: 1em;
 	}
 </style>

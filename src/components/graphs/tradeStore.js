@@ -51,7 +51,6 @@ export async function updatePoolInfo() {
 		if(pool == 'y') pool = 'iearn'
 		let cont = contract.contracts[pool]
 		if(pool == contract.currentContract) cont = contract
-		console.log(key, "KEY")
 		state.poolInfo[key] = {}
 		state.poolInfo[key].A = decoded[key*3];
 		state.poolInfo[key].fee = cont.fee * 1e10

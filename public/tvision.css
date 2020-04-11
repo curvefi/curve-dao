@@ -858,3 +858,47 @@ input[type=range]:focus::-ms-fill-upper {
     display: block;
   }
 }
+
+.exchange {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.exchangefields {
+    display: flex;
+    flex-wrap: wrap;
+}
+.exchangefields > .item:not(.iconcontainer) {
+    flex: 1;
+}
+.iconcontainer {
+    align-self: center;
+    flex: 0.1;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+#exchangeicon {
+    width: 30px;
+    margin-left: 1em;
+    margin-right: 1em;
+    filter: invert(20%) sepia(12%) saturate(9%) hue-rotate(159deg) brightness(93%) contrast(88%);
+    cursor: pointer;
+}
+@media only screen and (max-device-width: 800px) {
+    .exchange {
+        width: 100%;
+    }
+}
+@media only screen and (max-device-width: 700px) {
+    .exchangefields > .item:not(.iconcontainer) {
+        flex-basis: 100%;
+    }
+    .iconcontainer {
+        flex: auto;
+    }
+    #exchangeicon {
+        transform: rotate(90deg);
+    }
+}

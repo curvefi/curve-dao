@@ -14,55 +14,59 @@
             <label for='busdpool1'>bUSD</label>
         </div>
 
-		<div style="display: table; margin: auto" class='swap'>
-            <fieldset style="float: left">
-                <legend>From:</legend>
-                <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
-                <ul>
-                    <li>
-                        <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
-                        :style = "{backgroundColor: fromBgColor}"
-                        @input='set_to_amount'
-                        v-model='fromInput'>
-                        <p class='actualvalue' v-show='swapwrapped'>
-                            ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
-                        </p>
-                    </li>
-                    <li v-for='(currency, i) in Object.keys(currencies)'>
-                        <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
-                        <label :for="'from_cur_'+i">
-                            <span v-show='!swapwrapped'> {{currency | toUpper}} </span>
-                            <span v-show='swapwrapped'> {{currencies[currency]}} </span>
-                        </label>
-                    </li>
-                </ul>
-            </fieldset>
-            <fieldset style="float: left">
-                <legend>To:</legend>
-                <div class='maxbalance'>Max: <span></span> </div>
-                <ul>
-                    <li>
-                        <input type="text" 
-                        id="to_currency" 
-                        name="to_currency" 
-                        value="0.00" 
-                        disabled
-                        :style = "{backgroundColor: bgColor}"
-                        v-model='toInput'>
-                        <p class='actualvalue' v-show='swapwrapped'>
-                            ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
-                        </p>
-                    </li>
-                    <li v-for='(currency, i) in Object.keys(currencies)'>
-                        <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
-                        <label :for="'to_cur_'+i">
-                            <span v-show='!swapwrapped'> {{currency | toUpper}} </span>
-                            <span v-show='swapwrapped'> {{currencies[currency]}} </span>
-                        </label>
-                    </li>
-                </ul>
-            </fieldset>
-            <div class='clearfix'></div>
+		<div class='swap exchange'>
+            <div class='exchangefields'>
+                <fieldset class='item'>
+                    <legend>From:</legend>
+                    <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
+                    <ul>
+                        <li>
+                            <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
+                            :style = "{backgroundColor: fromBgColor}"
+                            @input='set_to_amount'
+                            v-model='fromInput'>
+                            <p class='actualvalue' v-show='swapwrapped'>
+                                ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
+                            </p>
+                        </li>
+                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                            <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
+                            <label :for="'from_cur_'+i">
+                                <span v-show='!swapwrapped'> {{currency | toUpper}} </span>
+                                <span v-show='swapwrapped'> {{currencies[currency]}} </span>
+                            </label>
+                        </li>
+                    </ul>
+                </fieldset>
+                <fieldset class='item iconcontainer' @click='swapInputs'>
+                    <img src='@/assets/exchange-alt-solid.svg' id='exchangeicon'/>
+                </fieldset>
+                <fieldset class='item'>
+                    <legend>To:</legend>
+                    <div class='maxbalance'>Max: <span></span> </div>
+                    <ul>
+                        <li>
+                            <input type="text" 
+                            id="to_currency" 
+                            name="to_currency" 
+                            value="0.00" 
+                            disabled
+                            :style = "{backgroundColor: bgColor}"
+                            v-model='toInput'>
+                            <p class='actualvalue' v-show='swapwrapped'>
+                                ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
+                            </p>
+                        </li>
+                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                            <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
+                            <label :for="'to_cur_'+i">
+                                <span v-show='!swapwrapped'> {{currency | toUpper}} </span>
+                                <span v-show='swapwrapped'> {{currencies[currency]}} </span>
+                            </label>
+                        </li>
+                    </ul>
+                </fieldset>
+            </div>
                 <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
                 <div id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
@@ -81,7 +85,7 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust 1split contract forever</label>
                 </li>
-                <li>
+                <li v-show="['compound', 'usdt'].some(p => pools.includes(p))">
                     <input id='swapc' type='checkbox' name='swapc' v-model = 'swapwrapped'>
                     <label for='swapc'>Swap compounded</label>
 
@@ -205,7 +209,8 @@
             pools() {
                 this.from_cur_handler()
             },
-            swapwrapped() {
+            swapwrapped(val) {
+                if(val) this.pools = this.pools.filter(p=>['compound','usdt'].includes(p))
                 this.from_cur_handler()
             }
         },
@@ -223,6 +228,12 @@
             async mounted() {
                 await this.setup();
                 this.disabled = false;
+                this.from_cur_handler()
+            },
+            swapInputs() {
+                //look no temp variable! :D
+                [this.fromInput, this.toInput] = [this.toInput, this.fromInput]
+                this.from_currency = this.to_currency
                 this.from_cur_handler()
             },
             handleCheck(val) {
@@ -459,12 +470,14 @@
             },
             async set_to_amount() {
                 try {
+                    let minAmount = 10000
+                    if(this.swapwrapped) minAmount *= 50
                     if(this.fromInput == 0) {
                         this.disabled = false;
                         this.toInput = '0.00';
                         return;
                     }
-                    if(this.fromInput < 10000 && !((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))) {
+                    if(this.fromInput < minAmount && !((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))) {
                         this.distribution = null;
                         let [pool, exchangeRate, realExchangeRate] = await this.comparePools()
                         this.bestPool = pool
@@ -522,5 +535,13 @@
         margin: 0.5em 0 0 0;
         text-align: right;
         font-size: 0.9em;
+    }
+    .exchange {
+        width: 60%;
+    }
+    @media only screen and (max-device-width: 1200px) {
+        .exchange {
+            width: 80%;
+        }
     }
 </style>

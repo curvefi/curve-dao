@@ -61,7 +61,6 @@
 			    let aggcalls = await multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 			    chunkArr(decoded, 2).map((v, i, arr) => {
-			    	console.log(v[0], v[1], "Vs")
 			    	total = total.plus(BN(v[0]).times(BN(v[1])).div(1e36))
 			    })
 			    this.total = total.toFixed(0);

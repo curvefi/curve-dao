@@ -137,7 +137,7 @@ router.beforeEach(async (to, from, next) => {
   else if(!['Stats', 'FAQ', 'Donate'].includes(to.name)) {
     next();
     if(!currentContract.initializedContracts) {
-      await init();
+      await init(subdomain);
     }
   }
   else {

@@ -4,7 +4,7 @@
       <legend>Currency reserves</legend>
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
-            <b>{{currency | capitalize}}:</b> 
+            <b>{{currency | capitalize}}:</b>
             <span :class="{'loading line': !bal_info || !bal_info[i]}"> {{bal_info && bal_info[i] | toFixed2}}</span>
           </li>
           <li>

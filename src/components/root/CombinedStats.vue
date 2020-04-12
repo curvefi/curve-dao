@@ -12,7 +12,6 @@
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 		      </p>
 		      <stats :pool= 'currency'/>
-		      {{fees[i]}}
 		      <balances-info 
 			      :bal_info = 'bal_infos[currency]'
 			      :total = 'totals[i]'
@@ -35,6 +34,8 @@
 
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
     import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi } from '../../allabis'
+
+    import * as helpers from '../../utils/helpers'
 
 	export default {
 		metaInfo: {
@@ -80,6 +81,11 @@
           		}
           	})
           },
+          allContracts() {
+          	let pools = {...contracts};
+          	delete pools.y
+          	return pools;
+          },
           error() {
           	return currentContract.error
           },
@@ -102,7 +108,7 @@
 				return pool
 			},
 			async init_contracts() {
-			    for(let [key, contract] of Object.entries(contracts)) {
+			    for(let [key, contract] of Object.entries(this.allContracts)) {
 			    	this.web3contracts[key] = {};
 				    this.web3contracts[key].swap = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
 				    this.web3contracts[key].swap_token = new web3.eth.Contract(ERC20_abi, contract.token_address);
@@ -112,26 +118,26 @@
 			        this.all_underlying_coins[key] = {}
 			        this.all_underlying_coins[key].underlying_coins = [];
 				    for (let i = 0; i < contract.N_COINS; i++) {
-				        var addr = await this.web3contracts[key].swap.methods.coins(i).call();
+				        var addr = contracts[key].coins[i];
 
-				        let cabi = ['iearn','busd', 'susd'].includes(key) ? yERC20_abi : cERC20_abi;
+				        let cabi = ['iearn', 'y', 'busd', 'susd'].includes(key) ? yERC20_abi : cERC20_abi;
 				        if(key == 'susd' && i == 1) {
 				        	cabi = contracts.iearn.swap_abi;
 				        	addr = contracts.iearn.swap_address
 				        }
 				        this.all_coins[key].coins[i] = new web3.eth.Contract(cabi, addr);
-				        var underlying_addr = await this.web3contracts[key].swap.methods.underlying_coins(i).call();
+				        var underlying_addr = contracts[key].underlying_coins[i];
 				        this.all_underlying_coins[key].underlying_coins[i] = new web3.eth.Contract(ERC20_abi, underlying_addr);
 				    }
 			    }
 			},
 
 			async update_rates() {
-			    for(let [key, contract] of Object.entries(contracts)) {
+		        let calls = []
+			    for(let [key, contract] of Object.entries(this.allContracts)) {
 			    	this.all_fees[key] = [];
 			     	this.all_c_rates[key] = {}
 			        this.all_c_rates[key].c_rates = [];
-
 				    for (let i = 0; i < contract.N_COINS; i++) {
 				        /*
 				        rate: uint256 = cERC20(self.coins[i]).exchangeRateStored()
@@ -143,87 +149,121 @@
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
-			         		if(key == 'iearn' || key == 'busd' || (key == 'susd' && i == 0)) {
-					            var rate = parseInt(await this.all_coins[key].coins[i].methods.getPricePerFullShare().call()) / 1e18 / contract.coin_precisions[i];
-			            		this.all_c_rates[key].c_rates[i] = rate;
+			         		if(key == 'iearn' || key == 'y' || key == 'busd' || (key == 'susd' && i == 0)) {
+			            		calls.push([
+			            			this.all_coins[key].coins[i]._address,
+			            			this.all_coins[key].coins[i].methods.getPricePerFullShare().encodeABI()
+			            		])
 			         		}
 			         		else if(key == 'susd' && i == 1) {
-			         			var rate = +(await this.all_coins[key].coins[i].methods.get_virtual_price().call()) / 1e36;
-			            		this.all_c_rates[key].c_rates[i] = rate;
+			         			calls.push([
+			         				this.all_coins[key].coins[i]._address,
+			         				this.all_coins[key].coins[i].methods.get_virtual_price().encodeABI()
+			         			])
 			         		}
-			         		else {     			
-						        let values = await Promise.all([
-						        	this.all_coins[key].coins[i].methods.exchangeRateStored().call(),
-						        	this.all_coins[key].coins[i].methods.supplyRatePerBlock().call(),
-						        	this.all_coins[key].coins[i].methods.accrualBlockNumber().call(),
-						        	web3.eth.getBlockNumber(),
-						        ])
-						        let rate = +values[0] / 1e18 / contract.coin_precisions[i];
-						        let [supply_rate, old_block]  = [values[1], values[2]]
-						        let block = values[3]
-						        this.all_c_rates[key].c_rates[i] = rate * (1 + supply_rate * (block - old_block) / 1e18);
-						    	//this.all_fees[key][i] = parseInt(await this.web3contracts[key].swap.methods.fee().call()) / 1e10;
+			         		else {
+						        
+						        calls.push(
+						        	[
+						        		this.all_coins[key].coins[i]._address,
+						        		this.all_coins[key].coins[i].methods.exchangeRateStored().encodeABI()
+						        	],
+						        	[
+						        		this.all_coins[key].coins[i]._address,
+						        		this.all_coins[key].coins[i].methods.supplyRatePerBlock().encodeABI()
+						        	],
+						        	[
+						        		this.all_coins[key].coins[i]._address,
+						        		this.all_coins[key].coins[i].methods.accrualBlockNumber().encodeABI()
+						        	],
+						        )
 			         		}
 					    }
+					    calls.push([
+					    	this.web3contracts[key].swap._address,
+					    	this.web3contracts[key].swap.methods.balances(i).encodeABI(),
+					    ])	
 				    }
+				    calls.push(
+				    	[
+				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.fee().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.admin_fee().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap_token._address,
+				    		this.web3contracts[key].swap_token.methods.balanceOf(currentContract.default_account).encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap_token._address,
+				    		this.web3contracts[key].swap_token.methods.totalSupply().encodeABI(),
+				    	],
+				    )
 				}
+				return calls;
 			},
 
 			async update_fee_info(version = 'new') {
-				for(let [key, contract] of Object.entries(contracts)) {
+			    let calls = await this.update_rates();
+			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
+			    let block = aggcalls[0]
+			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    let i = 0;
+				for(let [key, contract] of Object.entries(this.allContracts)) {
 					this.bal_infos[key] = []
 					this.l_infos[key] = []
-					var balances = new Array(contract.N_COINS);
-
-				    var swap_abi_stats = contract.swap_abi;
-				    var swap_address_stats = contract.swap_address;
-				    var swap_stats = this.web3contracts[key].swap;
-				    var swap_token_stats = this.web3contracts[key].swap_token;
-
-				    try {
-				    	await this.update_rates();	
+					var total = 0;
+					let ind = i*12;
+					if(i > 1) ind++;
+					if(key == 'compound' || key == 'usdt') {
+					    helpers.chunkArr(decoded.slice(ind, ind+8), 4).map((v, i) => {
+					    	// v is [rate, supply_rate, old_bloc, balance]
+				    	 	let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
+			                let supply_rate = +v[1]
+			                let old_block = +v[2]
+			                let balance = +v[3]
+			                let calcRate = rate * (1 + supply_rate * (block - old_block) / 1e18);
+					        this.all_c_rates[key].c_rates[i] = calcRate;
+					        let calcBalance = balance * this.all_c_rates[key].c_rates[i]
+					        this.bal_infos[key].push(calcBalance)
+					        total += calcBalance
+					    })
+					}
+				    if(key == 'usdt') {
+				    	this.all_c_rates[key].c_rates[2] = 1 / contracts[key].coin_precisions[2]
+				    	let calcBalance = +decoded[ind+8] * this.all_c_rates[key].c_rates[2]
+				    	ind+=1
+				    	this.bal_infos[key].push(calcBalance)
+				    	total+=calcBalance
 				    }
-				    catch(err) {
-				    	console.error(err)
+				    if(key == 'iearn' || key == 'busd' || key == 'susd') {
+				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)
+				    	helpers.chunkArr(slice, 2).map((v, i) => {
+				    		//v is [rate, balance]
+				    		let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
+				    		if(key == 'susd' && i == 1) rate = +v[0] / 1e36
+				    		this.all_c_rates[key].c_rates[i] = rate
+				    		let balance = +v[1]
+				    		let calcBalance = rate*balance
+				    		this.bal_infos[key].push(calcBalance)
+				    		total += calcBalance
+				    	})
+				    	if(key == 'susd') ind -= 4
 				    }
-				    var total = 0;
-				    var promises = [];
-				    let infuraProvider = new Web3(infura_url)
-				    let swapInfura = new infuraProvider.eth.Contract(swap_abi_stats, swap_address_stats);
-				    for (let i = 0; i < contract.N_COINS; i++) {
-				        promises.push(swapInfura.methods.balances(i).call())
-				/*        balances[i] = parseInt(await swap.methods.balances(i).call());
-				        $(bal_info[i]).text((balances[i] * c_rates[i]).toFixed(2));
-				        total += balances[i] * c_rates[i];*/
-				    }
-				    let resolves = await Promise.all(promises)
-				    resolves.forEach((balance, i) => {
-				        balances[i] = +balance;
-				        let share = balances[i] * this.all_c_rates[key].c_rates[i];
-				        this.bal_infos[key].push(share);
-				        total += share;
-				    })
-				    this.totals.push(total);
-				    this.fees.push(parseInt(await swap_stats.methods.fee().call()) / 1e8);
-				    this.admin_fees.push(parseInt(await swap_stats.methods.admin_fee().call()) / 1e10);
-
-				    var default_account = (await web3.eth.getAccounts())[0];
-				    if (default_account) {
-				        var token_balance = parseInt(await swap_token_stats.methods.balanceOf(default_account).call());
-				        if (token_balance > 0) {
-				            var token_supply = parseInt(await swap_token_stats.methods.totalSupply().call());
-				            total = 0;
-				            for (let i=0; i < contract.N_COINS; i++) {
-				                var val = balances[i] * this.all_c_rates[key].c_rates[i] * token_balance / token_supply;
-				                this.l_infos[key].push(val)
-				                total += val;
-				            }
-				            this.totalShares.push(total)
-				        }
-				        else {
-				        	this.totalShares.push(0)
-				        }
-				    }
+				    this.totals.push(total)
+				    this.fees.push(+decoded[ind+8] / 1e8)
+		    		this.admin_fees.push(+decoded[ind+9])
+		    		var totalShare = 0
+				    for (let i=0; i < contracts[key].N_COINS; i++) {
+		                var val = this.bal_infos[key][i] * (+decoded[ind+10]) / (+decoded[ind+11]);
+		                this.l_infos[key].push(val)
+		                totalShare += val;
+		            }
+	            	this.totalShares.push(totalShare)
+	            	i++;
 				}
 			},
 

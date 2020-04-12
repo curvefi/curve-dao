@@ -162,21 +162,22 @@
 			         			])
 			         		}
 			         		else {
-						        
-						        calls.push(
-						        	[
-						        		this.all_coins[key].coins[i]._address,
-						        		this.all_coins[key].coins[i].methods.exchangeRateStored().encodeABI()
-						        	],
-						        	[
-						        		this.all_coins[key].coins[i]._address,
-						        		this.all_coins[key].coins[i].methods.supplyRatePerBlock().encodeABI()
-						        	],
-						        	[
-						        		this.all_coins[key].coins[i]._address,
-						        		this.all_coins[key].coins[i].methods.accrualBlockNumber().encodeABI()
-						        	],
-						        )
+						        if(key != 'usdt') {
+							        calls.push(
+							        	[
+							        		this.all_coins[key].coins[i]._address,
+							        		this.all_coins[key].coins[i].methods.exchangeRateStored().encodeABI()
+							        	],
+							        	[
+							        		this.all_coins[key].coins[i]._address,
+							        		this.all_coins[key].coins[i].methods.supplyRatePerBlock().encodeABI()
+							        	],
+							        	[
+							        		this.all_coins[key].coins[i]._address,
+							        		this.all_coins[key].coins[i].methods.accrualBlockNumber().encodeABI()
+							        	],
+							        )
+						    	}
 			         		}
 					    }
 					    calls.push([
@@ -208,17 +209,21 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
+			    console.log(calls, "ALL CALLS")
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    console.log(decoded, "DECODED CALLS")
 			    let i = 0;
+			    this.bal_infos['usdt'] = []
+			    this.l_infos['usdt'] = []
 				for(let [key, contract] of Object.entries(this.allContracts)) {
 					this.bal_infos[key] = []
 					this.l_infos[key] = []
 					var total = 0;
 					let ind = i*12;
-					if(i > 1) ind++;
-					if(key == 'compound' || key == 'usdt') {
+					if(i > 1) ind-=5;
+					if(key == 'compound') {
 					    helpers.chunkArr(decoded.slice(ind, ind+8), 4).map((v, i) => {
 					    	// v is [rate, supply_rate, old_bloc, balance]
 				    	 	let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
@@ -227,17 +232,20 @@
 			                let balance = +v[3]
 			                let calcRate = rate * (1 + supply_rate * (block - old_block) / 1e18);
 					        this.all_c_rates[key].c_rates[i] = calcRate;
+					        this.all_c_rates['usdt'].c_rates[i] = calcRate;
 					        let calcBalance = balance * this.all_c_rates[key].c_rates[i]
 					        this.bal_infos[key].push(calcBalance)
 					        total += calcBalance
 					    })
 					}
 				    if(key == 'usdt') {
+				    	this.bal_infos.usdt.push(this.all_c_rates['compound'].c_rates[0] * (+decoded[ind]))
+				    	this.bal_infos.usdt.push(this.all_c_rates['compound'].c_rates[1] * (+decoded[ind+1]))
 				    	this.all_c_rates[key].c_rates[2] = 1 / contracts[key].coin_precisions[2]
-				    	let calcBalance = +decoded[ind+8] * this.all_c_rates[key].c_rates[2]
-				    	ind+=1
+				    	let calcBalance = +decoded[ind+2] * this.all_c_rates[key].c_rates[2]
+				    	ind-=5
 				    	this.bal_infos[key].push(calcBalance)
-				    	total+=calcBalance
+				    	total += this.bal_infos.usdt[0] + this.bal_infos.usdt[1] + calcBalance
 				    }
 				    if(key == 'iearn' || key == 'busd' || key == 'susd') {
 				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)

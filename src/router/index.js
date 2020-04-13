@@ -20,6 +20,7 @@ import Index from '../components/Index.vue'
 
 import init from '../init'
 import { getters, contract as currentContract , setCurrencies, changeContract} from '../contract'
+import * as common from '../utils/common.js'
 
 Vue.use(VueRouter)
 
@@ -57,6 +58,17 @@ let routes = [
     ]
   },
   {
+    path: '/compound/withdraw_old',
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'WithdrawOld',
+        component: WithdrawOld
+      },
+    ]
+  },
+  {
     path: '/:pool(compound|usdt|y|iearn|busd)/',
     name: 'Index',
     component: PoolApp,
@@ -79,7 +91,9 @@ let routes = [
       {
         path: 'withdraw_old',
         name: 'WithdrawOld',
-        component: WithdrawOld
+        beforeEnter: (to, from, next) => {
+          return next('/' + to.params.pool + '/withdraw')
+        }
       },
       {
         path: 'stats',
@@ -119,6 +133,7 @@ const router = new VueRouter({
 const pools = ['compound','usdt','y','iearn','busd']
 
 router.beforeEach(async (to, from, next) => {
+  if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()
   //if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
   if(['RootIndex', 'Donate', 'StatsDaily'].includes(to.name)) return next();
   let subdomain;

@@ -268,17 +268,17 @@ export async function init(contract, refresh = false) {
         this.error = 'There was an error connecting. Please refresh page';
     }
 
+    let calls = [];
     if(state.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
-    	state.oldBalance = await state.old_swap_token.methods.balanceOf(state.default_account).call()
+    	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account).encodeABI()])
     }
     state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
     contract.coins = []
     contract.underlying_coins = []
-    let calls = [];
     if(window.location.href.includes('withdraw_old')) 
       calls.push(...(await common.update_fee_info('old', contract, false)))
   	else 

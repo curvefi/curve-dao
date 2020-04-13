@@ -34,7 +34,7 @@
 
         <p style="text-align: center">
             <button id="remove-liquidity" @click='handle_remove_liquidity'>Withdraw</button>
-            <button id="migrate-new" @click='handle_migrate_new'>Migrate</button>
+            <button id="migrate-new" @click='handle_migrate_new'>Migrate from old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </p>
     </div>

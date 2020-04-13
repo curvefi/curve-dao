@@ -309,12 +309,12 @@
 			        }
 			        else if(this.to_currency == 10) {
 			        	await common.ensure_allowance_zap_out(amount)
-			        	let min_amounts = this.getMinAmounts();
+			        	let min_amounts = await this.getMinAmounts();
 			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
 			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
 			        }
 			        else {
-			        	let min_amounts = this.getMinAmounts();
+			        	let min_amounts = await this.getMinAmounts();
 			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
 			        }
 			    }

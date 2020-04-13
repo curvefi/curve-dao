@@ -33,7 +33,7 @@
       <router-link :to="'/'+currentPool">Buy and sell</router-link>
       <router-link :to="'/' + currentPool + '/deposit'">Deposit</router-link>
       <router-link :to="'/' + currentPool + '/withdraw'">Withdraw</router-link>
-      <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound'">Withdraw old</router-link>
+      <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound' && oldBalance > 0">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'">Stats</router-link>
       <router-link :to="'/' + currentPool + '/profit'">Profit</router-link>
       <div class='poolsdropdown right'>

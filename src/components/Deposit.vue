@@ -56,7 +56,7 @@
 
             <p style="text-align: center">
                 <button id="add-liquidity" @click='handle_add_liquidity'>Deposit</button>
-                <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound'">Migrate</button>
+                <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <Slippage/>
             </p>
         </div>

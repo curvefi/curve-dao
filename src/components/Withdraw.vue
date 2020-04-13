@@ -249,7 +249,7 @@
 			},
 			async getMinAmounts() {
 				//use update rates instead
-				await this.update_fee_info();
+				await common.update_fee_info();
 				let min_amounts = []
 				for(let i = 0; i < currentContract.N_COINS; i++) {
 			    	min_amounts[i] = BN(0.97).times(this.share/100).times(BN(this.balances[i]))

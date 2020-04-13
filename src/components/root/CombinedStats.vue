@@ -209,11 +209,9 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
-			    console.log(calls, "ALL CALLS")
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-			    console.log(decoded, "DECODED CALLS")
 			    let i = 0;
 			    this.bal_infos['usdt'] = []
 			    this.l_infos['usdt'] = []

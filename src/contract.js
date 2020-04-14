@@ -231,6 +231,7 @@ const state = Vue.observable({
 export let contract = state
 
 export const getters = {
+	default_account: () => state.default_account || '0x0000000000000000000000000000000000000000',
 	currentPool: () => state.currentContract,
 	oldBalance: () => state.oldBalance,
 	bal_info: () => state.bal_info,
@@ -272,7 +273,7 @@ export async function init(contract, refresh = false) {
     if(state.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
-    	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account).encodeABI()])
+    	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
     state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);

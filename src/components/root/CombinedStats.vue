@@ -196,7 +196,7 @@
 				    	],
 				    	[
 				    		this.web3contracts[key].swap_token._address,
-				    		this.web3contracts[key].swap_token.methods.balanceOf(currentContract.default_account).encodeABI(),
+				    		this.web3contracts[key].swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI(),
 				    	],
 				    	[
 				    		this.web3contracts[key].swap_token._address,

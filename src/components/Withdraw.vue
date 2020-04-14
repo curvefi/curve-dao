@@ -7,7 +7,6 @@
                     <input type="text" 
                     id="liquidity-share" 
                     name="liquidity-share" 
-                    value="0.00" 
                     v-model='share'
                     @input='handle_change_share'
                     @focus='handle_change_share'
@@ -87,7 +86,7 @@
     		Slippage,
     	},
     	data: () => ({
-    		share: '0.00',
+    		share: '100.00',
     		shareStyles: {
     			backgroundColor: '#707070',
     			color: '#d0d0d0',

@@ -49,6 +49,7 @@
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
+      <button class='simplebutton showmobile' @click = 'changeAccounts'>Change accounts</button>
     </div>
     <div id="screen">
         <div class="blue window">

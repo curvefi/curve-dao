@@ -886,6 +886,13 @@ input[type=range]:focus::-ms-fill-upper {
     filter: invert(20%) sepia(12%) saturate(9%) hue-rotate(159deg) brightness(93%) contrast(88%);
     cursor: pointer;
 }
+
+.simplebutton.showmobile {
+  margin: 0 auto;
+  margin-top: 6px;
+}
+
+  
 @media only screen and (max-device-width: 800px) {
     .exchange {
         width: 100%;

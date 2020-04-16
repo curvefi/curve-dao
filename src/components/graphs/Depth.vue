@@ -319,6 +319,8 @@
 				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
+				let allPools = ['compound', 'usdt', 'iearn', 'busd']
+				let poolIdx = pools.map(pool => allPools.indexOf(pool))
 				let poolConfigs = tradeGetters.poolConfigs()
 
 				/*console.log(contract.bal_info.map((b,i)=>b/contract.c_rates[i]))
@@ -364,9 +366,9 @@
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
-						let dy = await calcWorker.calcPrice({...tradeStore.poolInfo[j], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
+						let dy = await calcWorker.calcPrice({...tradeStore.poolInfo[poolIdx[j]], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
 						dy = +(BN(dy).div(abis[pools[j]].coin_precisions[toCurrency]))
-						let dx = await calcWorker.calcPrice({...tradeStore.poolInfo[j], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
+						let dx = await calcWorker.calcPrice({...tradeStore.poolInfo[poolIdx[j]], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
 						dx = +(BN(dx).div(abis[pools[j]].coin_precisions[fromCurrency]))
 						/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
 						let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/

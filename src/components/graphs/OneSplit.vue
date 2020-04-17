@@ -254,6 +254,7 @@
                     return this.underlying_coins[i]
             },
             precisions(i, contractName) {
+                if(!this.swapwrapped) return this.coin_precisions[i]
                 if(!contractName && this.swapwrapped == 1) contractName = 'compound'
                 if(!contractName && this.swapwrapped == 2 && i < 3) contractName = 'iearn'
                 if(!contractName && this.swapwrapped == 2 && i == 3) contractName = 'busd'

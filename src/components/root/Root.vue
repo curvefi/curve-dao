@@ -247,15 +247,15 @@
 		flex: 0.1;
 	}
 	.pooltext {
-		flex: 0.7;
+		flex: 0.6;
 	}
 	.pools {
-		flex: 2.6;
+		flex: 2.2;
 	}
 	.apr {
 		flex: 0.8;
 	}
 	.volume {
-		flex: 1.2;
+		flex: 1;
 	}
 </style>

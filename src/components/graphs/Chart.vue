@@ -492,7 +492,10 @@
 								ohlcData[i].prices[this.pairIdx].push(lastPrice)
 							}
 							ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
-							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>v / abis[pools[j]].coin_precisions[k+(+fromCurrency)])
+							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>{
+								if(k == 0) return v / abis[pools[j]].coin_precisions[fromCurrency]
+								return v / abis[pools[j]].coin_precisions[toCurrency]
+							})
 						}
 					}
 				}

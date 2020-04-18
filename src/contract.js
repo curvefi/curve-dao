@@ -254,7 +254,6 @@ export const getters = {
 export async function init(contract, refresh = false) {
 	console.time('init')
 	//contract = contracts.compound for example
-
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
 	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
 	if(!contract) contract = state

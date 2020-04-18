@@ -29,6 +29,7 @@
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
+          <router-link to="/basictrade">Basic Trade</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
           <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>

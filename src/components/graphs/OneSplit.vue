@@ -68,6 +68,7 @@
                 </fieldset>
             </div>
                 <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
+                <p class='best-pool-text'>Trade routed through: <span id="best-pool">{{bestPoolText}}</span></p>
                 <div id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
                     <label for="slippage05">0.5%</label>
@@ -147,7 +148,7 @@
             usedFlags: '',
             swapwrapped: false,
             poolIndexes: [0, 1, 2, 3, 4],
-            bestPool: 0,
+            bestPool: null,
 		}),
         computed: {
             CONTRACT_FLAG() {
@@ -195,6 +196,17 @@
                 if(!this.swapwrapped) return;
                 return (this.toInput * this.c_rates(this.to_currency)[this.to_currency] * this.precisions(this.to_currency)).toFixed(2)
             },
+            bestPoolText() {
+                let minAmount = 10000
+                if(this.swapwrapped) minAmount *= 50
+                if(this.fromInput > minAmount || (this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))
+                    return '1split'
+                if(this.bestPool === null) return 'Not available'
+                if(this.bestPool == 0) return 'compound'
+                if(this.bestPool == 1) return 'usdt'
+                if(this.bestPool == 2) return 'y'
+                if(this.bestPool == 3) return 'busd'
+            }
         },
         watch: {
             from_currency(val, oldval) {

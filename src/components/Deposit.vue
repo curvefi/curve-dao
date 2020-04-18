@@ -90,7 +90,7 @@
     		inputs: [],
     		amounts: [],
     		bgColors: [],
-    		depositc: true,
+    		depositc: false,
     		coins: [],
     		rates: [],
     		swap_address: currentContract.swap_address,
@@ -150,7 +150,7 @@
             	else {
             		this.coins = currentContract.underlying_coins
             		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
-            		this.swap_address = currentContract.deposit_address
+            		this.swap_address = currentContract.deposit_zap._address
             	}
             },
             setInputStyles(newInputs = false, newContract, oldContract) {

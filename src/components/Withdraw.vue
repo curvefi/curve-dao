@@ -103,7 +103,7 @@
     		amounts: [],
     		to_currency: null,
     		test: null,
-    		withdrawc: true,
+    		withdrawc: false,
     		donate_dust: true,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),

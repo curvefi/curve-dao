@@ -23,13 +23,13 @@
       </div>
 
       <router-link to="/">Home</router-link>
-      <router-link to="/trade">Trade</router-link>
+      <router-link to="/basictrade">Basic trade</router-link>
+      <router-link to="/trade">Advanced trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
-          <router-link to="/basictrade">Basic Trade</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
           <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>

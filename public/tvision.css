@@ -260,12 +260,12 @@ p[id^='chart'] {
     border: 1px solid gray;
 }
 
-p.exchange-rate {
+p.exchange-rate, p.best-pool-text {
     text-align: right;
     padding-right: 0.5em;
 }
 
-#exchange-rate {
+#exchange-rate, #best-pool {
     color: #006000;
     font-weight: bold;
 }

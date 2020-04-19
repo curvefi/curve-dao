@@ -23,8 +23,7 @@
       </div>
 
       <router-link to="/">Home</router-link>
-      <router-link to="/basictrade">Basic trade</router-link>
-      <router-link to="/trade">Advanced trade</router-link>
+      <router-link to="/trade">Trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
       <div class='poolsdropdown right'>

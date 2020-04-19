@@ -86,6 +86,11 @@ let routes = [
     component: PoolApp,
     children: [
       {
+        path: '',
+        name: 'Withdraw',
+        component: Withdraw
+      },
+      {
         path: '*',
         name: 'Withdraw',
         component: Withdraw

@@ -43,7 +43,7 @@
                 </fieldset>
                 <fieldset class='item'>
                     <legend>To:</legend>
-                    <div class='maxbalance'>Max: <span></span> </div>
+                    <div class='maxbalance2'>Max: <span></span> </div>
                     <ul>
                         <li>
                             <input type="text" 

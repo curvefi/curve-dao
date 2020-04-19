@@ -29,7 +29,7 @@
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
-          <router-link to="/rootfaq">Root FAQ</router-link>
+          <router-link to="/rootfaq">FAQ</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
           <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
@@ -38,7 +38,8 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
+      <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
+      <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>
       <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='showmobile'>Dune Analytics</a>
       <router-link to="/donate" class='showmobile'>Donate</router-link>

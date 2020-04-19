@@ -101,7 +101,7 @@
     		show_nobalance_i: 0,
     		bgColor: [],
     		amounts: [],
-    		to_currency: null,
+    		to_currency: 10,
     		test: null,
     		withdrawc: false,
     		donate_dust: true,

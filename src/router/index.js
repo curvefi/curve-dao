@@ -81,7 +81,19 @@ let routes = [
     ]
   },
   {
-    path: '/:pool(compound|usdt|y|iearn|busd|susd)/',
+    path:'/susd',
+    name: 'Index',
+    component: PoolApp,
+    children: [
+      {
+        path: '*',
+        name: 'Withdraw',
+        component: Withdraw
+      }
+    ]
+  },
+  {
+    path: '/:pool(compound|usdt|y|iearn|busd)/',
     name: 'Index',
     component: PoolApp,
     children: [

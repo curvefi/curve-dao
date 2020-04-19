@@ -40,6 +40,10 @@ const currencies = {
 		usdt: 'yUSDT',
 		busd: 'ybUSD'
 	},
+	susd: {
+		susd: 'ySUSD',
+		ycurve: 'yCurve',
+	},
 }
 
 export const allCurrencies = currencies
@@ -48,7 +52,8 @@ export const poolMenu = {
 	compound: 'Compound',
 	usdt: 'USDT',
 	iearn: 'Y',
-	busd: 'bUSD'
+	busd: 'bUSD',
+	susd: 'sUSD-yCurve',
 }
 
 export const gas = {
@@ -274,7 +279,8 @@ export async function init(contract, refresh = false) {
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
-    state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
+    if(contract.currentContract != 'susd')
+    	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
     contract.coins = []
@@ -298,7 +304,7 @@ export async function init(contract, refresh = false) {
     chunkArr(decoded, 2).map((v, i) => {
     	var addr = v[0];
         let coin_abi = cERC20_abi
-        if(['iearn', 'busd'].includes(contract.currentContract)) coin_abi = yERC20_abi
+        if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) coin_abi = yERC20_abi
         contract.coins.push(new web3.eth.Contract(coin_abi, addr));
         var underlying_addr = v[1];
         contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));

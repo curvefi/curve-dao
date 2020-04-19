@@ -5873,7 +5873,7 @@ var susd = {
   N_COINS: 2, 
   tethered: [false, false],
   use_lending: [true, true],
-  coin_precisions: [1e18, 1e6],
+  coin_precisions: [1e18, 1e18],
   underlying_coins: [
     '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
     '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8'],

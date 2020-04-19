@@ -36,13 +36,13 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li>
+                <li v-show = "currentPool != 'susd'">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw wrapped</label>
                 </li>
             </ul>
         </fieldset>
-        <fieldset>
+        <fieldset v-show = "currentPool != 'susd'">
         	<legend>Withdraw % in:</legend>
         	<ul>
         		<li>
@@ -137,6 +137,7 @@
           ...getters,
         },
         mounted() {
+        	if(currentContract.currentContract == 'susd') this.withdrawc = true;
         	this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
         },

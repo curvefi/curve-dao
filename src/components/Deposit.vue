@@ -48,7 +48,7 @@
                     	</span>
                     </label>
                 </li>
-                <li>
+                <li v-show = "currentPool != 'susd'">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
@@ -127,6 +127,7 @@
         },
         methods: {
             async mounted(oldContract) {
+            	if(currentContract.currentContract == 'susd') this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

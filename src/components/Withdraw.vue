@@ -33,6 +33,7 @@
                     value="0.00" 
                     v-model = 'inputs[i]' 
                     :style = "inputStyles[i]"
+                    :disabled = "currentPool == 'susd'"
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
@@ -63,7 +64,6 @@
 
         <p style="text-align: center">
             <button id="remove-liquidity" @click='handle_remove_liquidity'>Withdraw</button>
-            <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </p>
     </div>
@@ -134,7 +134,10 @@
         	}
         },
         computed: {
-          ...getters,
+			...getters,
+        	showMigrateNew() {
+        		return (this.currentPool == 'compound' && this.oldBalance > 0) || this.currentPool == 'susd'
+         	},
         },
         mounted() {
         	if(currentContract.currentContract == 'susd') this.withdrawc = true;
@@ -204,6 +207,7 @@
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i) {
+				if(this.currentPool == 'susd') return;
 				this.to_currency = null
 		        var values = this.inputs.map((x,i) => x / currentContract.c_rates[i])
 		        values = values.map(v=>BN(Math.floor(v).toString()).toFixed(0))
@@ -369,8 +373,11 @@
 					Vue.set(this.inputStyles, i, Object.assign(this.inputStyles[i] || {}, {backgroundColor: bgcolor}))
 				}
 			},
-	        handle_migrate_new() {
-	        	common.handle_migrate_new('new')
+	        async handle_migrate_new() {
+	        	if(this.currentPool == 'compound')
+	        		return common.handle_migrate_new('new')
+	        	this.share = 100
+	        	await this.handle_remove_liquidity();
 	        }
         },
 

@@ -104,6 +104,7 @@ let routes = [
         path: 'withdraw_old',
         name: 'WithdrawOld',
         beforeEnter: (to, from, next) => {
+          if(to.params.pool == 'susd') return next()
           return next('/' + to.params.pool + '/withdraw')
         }
       },

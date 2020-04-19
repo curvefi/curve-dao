@@ -37,10 +37,10 @@
 	#select_pool {
 		margin-bottom: 10px;
 	}
-	#onesplit {
-		margin-top: 30px;
-	}
 	>>>.exchange {
 		width: 80%;
+	}
+	>>>.trade-buttons {
+		margin: 0;
 	}
 </style>

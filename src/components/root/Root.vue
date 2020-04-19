@@ -1,5 +1,8 @@
 <template>
 	<div>
+
+	    <basic-trade />
+
 		<div class="window white">
 	        <fieldset class='poolsdialog'>
 	            <legend>Curve pools</legend>
@@ -64,87 +67,12 @@
 
 	    <total-balances />
 
-	    <div class="window white">
-	        <h2>Curve FAQ</h2>
-	        <h3>What is Curve?</h3>
-	        <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
-	        <p>Curve is an exchange liquidity pool on Ethereum (like <a
-	         href="https://uniswap.exchange/">Uniswap</a>)
-	        designed for (1) extremely efficient stablecoin trading (2) low
-	        risk, supplemental fee income for liquidity providers, without an
-	        opportunity cost.</p>
-
-	        <p>Curve allows users (and smart contracts like
-	        <a href="http://1inch.exchange/">1inch</a>,
-	        <a href="https://paraswap.io/">Paraswap</a>, <a href="https://swap.totle.com/">Totle</a> and <a href="https://dex.ag/">Dex.ag</a>)
-	        to trade between DAI and USDC with a bespoke low slippage, low fee algorithm
-	        designed specifically for stablecoins and earn fees. Behind the scenes, the
-	        liquidity pool is also supplied to the <a href="https://compound.finance/">Compound</a> protocol
-	        or <a href="https://iearn.finance/">iearn.finance</a>
-	        where it generates even more income for liquidity providers.</p>
-
-	        <h3>Has Curve been audited?</h3>
-	        <p>Curve smart contracts were <a href="https://www.curve.fi/audits/01-ToB.pdf">Audited</a> by
-	        Trail of Bits.</p>
-	        <p>However, security audits don't eliminate risks completely.
-	        Please don’t supply your life savings, or assets you
-	        can’t afford to lose, to Curve, especially as a liquidity
-	        provider.</p>
-
-	        <p>Using Curve as an exchange user should be significantly less
-	        risky, but this is not advice.</p>
-
-	        <h3>How do I trade on Curve?</h3>
-	        <p>Before trading, you’ll have to approve Curve to interact with
-	        your stablecoin balance, similar to most DeFi applications.</p>
-
-	        <p>On the exchange page, select the asset you would like to convert (e.g.
-	        USDC), and the quantity (e.g. 1,000) - the exchange rate, and
-	        quantity that you will receive (including and all slippage and fees)
-	        will be displayed. The exchange rate might surprise you - that’s the
-	        power of Curve.</p>
-
-	        <h3>Source code git</h3>
-	        <p>
-      			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
-	        </p>
-	        <p>
- 			 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
- 			</p>
-
-	        <h3>How do I provide liquidity to Curve?</h3>
-
-	        <p>Curve uses <a href="https://compound.finance/ctokens">cTokens</a>,
-	        or <a href="https://docs.iearn.finance/curve">Ytokens</a>
-	        assets for lending while market making, as the
-	        liquidity pool - this ensures that assets are always being put to
-	        work. You will need to acquire cTokens or YTokens if you want to
-	        provide liquidity (you can read the instuctions in each pool's FAQ).</p>
-
-	        <h3>What's "Use maximum amount of coins available"?</h3>
-	        <p>This means using all USDC and DAI in your wallet. This way is
-	        recommended only if you have much less coins than currently in
-	        liquidity pool.</p>
-
-	        <h3>What's "Infinite approval - trust this contract forever"?</h3>
-	        <p>This means that you preapprove the contract to to be able to spend any amount of your coins when you interact with it.
-	        This means that you won't be asked every time to appove the amount of coins you want to transfer to the contract.
-	        </p>
-
-	        <h3>How to withdraw liquidity I provided?</h3>
-	        <p>Go to the withdraw page. If you want
-	        to withdraw some percentage of your liquidity (the preferred way),
-	        type that percentage in the top field.
-	        You can, however, withdraw in a form of individual coins (USDC,
-	        DAI, ...), having the exchange happening for you, if you type amounts in
-	        lower fields. You'll get charge with the exchange fee in the latter
-	        case.</p>
-	    </div>
 	</div>
 </template>
 
 <script>
 	import TotalBalances from './TotalBalances.vue'
+	import BasicTrade from '../graphs/BasicTrade.vue'
 	import abis from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 
@@ -152,7 +80,8 @@
 
 	export default {
 		components: {
-			TotalBalances
+			TotalBalances,
+			BasicTrade,
 		},
 		data: () => ({
 			activePoolLink: 0,
@@ -187,6 +116,7 @@
 		},
 		methods: {
 			handle_pool_change(e) {
+				if(document.querySelector('#from_currency') == document.activeElement) return;
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
 	                e.preventDefault();
 	                this.activePoolLink--;

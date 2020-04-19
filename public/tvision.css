@@ -891,7 +891,6 @@ input[type=range]:focus::-ms-fill-upper {
   margin: 0 auto;
   margin-top: 6px;
 }
-
   
 @media only screen and (max-device-width: 800px) {
     .exchange {

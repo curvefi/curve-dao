@@ -67,9 +67,9 @@
                     </ul>
                 </fieldset>
             </div>
-                <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
-                <p class='best-pool-text'>Trade routed through: <span id="best-pool">{{bestPoolText}}</span></p>
-                <div id='max_slippage'><span>Max slippage:</span> 
+                <p v-show='fromInput > 0' class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
+                <p v-show='fromInput > 0' class='best-pool-text'>Trade routed through: <span id="best-pool">{{bestPoolText}}</span></p>
+                <div v-show='fromInput > 0' id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
                     <label for="slippage05">0.5%</label>
 

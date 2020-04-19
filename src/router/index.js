@@ -16,6 +16,7 @@ const CombinedStats = () => import('../components/root/CombinedStats.vue')
 const StatsDaily = () => import('../components/root/StatsDaily.vue')
 const ChartGraph = () => import('../components/graphs/Chart.vue')
 const BasicTrade = () => import('../components/graphs/BasicTrade.vue')
+const RootFAQ = () => import('../components/root/RootFAQ.vue')
 
 import Index from '../components/Index.vue'
 
@@ -59,8 +60,13 @@ let routes = [
       {
         name: 'StatsDaily',
         path: 'dailystats',
-        component: StatsDaily
-      }
+        component: StatsDaily,
+      },
+      {
+        name: 'RootFAQ',
+        path: '/rootfaq',
+        component: RootFAQ,
+      },
     ]
   },
   {
@@ -141,7 +147,11 @@ const pools = ['compound','usdt','y','iearn','busd']
 router.beforeEach(async (to, from, next) => {
   if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()
   //if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
-  if(['RootIndex', 'Donate', 'StatsDaily'].includes(to.name)) return next();
+  if(['Donate', 'StatsDaily'].includes(to.name)) return next();
+  if(to.name == 'RootIndex') {
+    init('compound');
+    return next();
+  }
   let subdomain;
   if(pools.includes(to.path.split('/')[1])) subdomain = to.path.split('/')[1]
   else subdomain = window.location.hostname.split('.')[0]

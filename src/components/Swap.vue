@@ -311,7 +311,7 @@
                     if(this.swapwrapped || this.currentPool == 'susdnew') exchangeMethod = currentContract.swap.methods.exchange
                     await exchangeMethod(i, j, dx, min_dy).send({
                             from: this.default_account,
-                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange : contractGas.swap[this.currentPool].exchange_underlying,
+                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         });
                     
                     await common.update_fee_info();

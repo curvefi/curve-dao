@@ -220,6 +220,10 @@ export async function multiInitState(calls, contract, initContracts = false) {
         contract.oldBalance = decoded[0];
         decoded = decoded.slice(1);
     }
+    if(initContracts && contract.currentContract == 'susdnew') {
+        contract.oldBalance = decoded[0];
+        decoded = decoded.slice(1);
+    }
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]

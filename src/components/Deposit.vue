@@ -233,7 +233,7 @@
 			    if(this.depositc) {
 			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
-				        gas: 1300000
+				        gas: contractGas.deposit[this.currentPool],
 				    });
 				}
 				else {

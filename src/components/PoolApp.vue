@@ -16,7 +16,7 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
-            <router-link to='/susd/withdraw' :class="{selected: currentPool == 'susd'}">sUSD</router-link>
+            <router-link :to="'/susdnew/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'susdnew'}">sUSD</router-link>
             <!-- <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <router-link to='/'>Home</router-link>
@@ -35,6 +35,7 @@
       <router-link :to="'/' + currentPool + '/deposit'" v-show="currentPool !='susd'">Deposit</router-link>
       <router-link :to="'/' + currentPool + '/withdraw'">Withdraw</router-link>
       <router-link :to="'/' + currentPool + '/withdraw_old'" v-show="currentPool == 'compound' && oldBalance > 0">Withdraw old</router-link>
+      <router-link to="/susd/withdraw" v-show="currentPool == 'susdnew' && oldBalance > 0">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'" v-show="currentPool !='susd'">Stats</router-link>
       <router-link :to="'/' + currentPool + '/profit'" v-show="currentPool !='susd'">Profit</router-link>
       <div class='poolsdropdown right'>

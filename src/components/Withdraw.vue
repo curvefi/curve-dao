@@ -21,7 +21,7 @@
                     <label :for="'currency_'+i">
                     	<span v-show='withdrawc'>
 	                    	{{currencies[currency]}} 
-	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt')">(in {{currency | capitalize}})</span>
+	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdnew'">(in {{currency | capitalize}})</span>
                     	</span>
                     	<span v-show='!withdrawc'>
                         	{{currency | capitalize}}
@@ -64,7 +64,8 @@
         </fieldset>
 
         <p style="text-align: center">
-            <button id="remove-liquidity" @click='handle_remove_liquidity'>Withdraw</button>
+            <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
+            <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </p>
     </div>
@@ -147,6 +148,10 @@
         },
         methods: {
             async mounted() {
+            	if(this.currentPool == 'susdnew') {
+            		this.withdrawc = true;
+            		this.to_currency = null
+            	}
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 

@@ -59,36 +59,44 @@ export const poolMenu = {
 	usdt: 'USDT',
 	iearn: 'Y',
 	busd: 'bUSD',
-	susd: 'sUSD-yCurve',
-	susdnew: 'sUSD plain',
+	susd: 'sUSD-yCurve old',
+	susdnew: 'sUSD',
 }
 
 export const gas = {
 	swap: {
 		compound: {
-			exchange: 600000,
-			exchange_underlying: 1200000
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000
 		},
 		usdt: {
-			exchange: 600000,
-			exchange_underlying: 1200000
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000
 		},
 		iearn: {
-			exchange: 800000,
-			exchange_underlying: 1600000
+			exchange: (i, j) => 800000,
+			exchange_underlying: (i, j) => 1600000
 		},
 		busd: {
-			exchange: 800000,
-			exchange_underlying: 1600000
+			exchange: (i, j) => 800000,
+			exchange_underlying: (i, j) => 1600000
 		},
 		susd: {
-			exchange: 600000,
-			exchange_underlying: 1200000,
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000,
 		},
 		susdnew: {
-			exchange: 600000,
-			exchange_underlying: 1200000,
+			exchange: (i, j) => 300000,
+			exchange_underlying: (i, j) => 300000,
 		}
+	},
+	deposit: {
+		compound: 1300000,
+		usdt: 1300000,
+		iearn: 1300000,
+		busd: 1300000,
+		susd: 1300000,
+		susdnew: 600000,
 	},
 	withdraw: {
 		compound: {
@@ -107,7 +115,7 @@ export const gas = {
 			imbalance: x => 1000000,
 		},
 		susdnew: {
-			imbalance: x => 1000000,
+			imbalance: x => 600000,
 		}
 	},
 	depositzap: {
@@ -138,7 +146,7 @@ export const gas = {
 		},
 		susdnew: {
 			deposit: x => (172664*x + 471691)*1.5,
-			withdraw: 2000000,
+			withdraw: 800000,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5,
 		}
@@ -319,6 +327,11 @@ export async function init(contract, refresh = false) {
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
+    if(contract.currentContract == 'susdnew') {
+    	//balanceOf(address)
+    	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
+    	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
+    }
     if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
@@ -333,13 +346,11 @@ export async function init(contract, refresh = false) {
     	calls.push([contract.swap._address, contract.swap.methods.coins(i).encodeABI()])
     	calls.push([contract.swap._address, contract.swap.methods.underlying_coins(i).encodeABI()])
     }
-    console.log(calls, "CALLS")
     await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;
   	console.timeEnd('init')
   	state.allInitContracts.push(contract.currentContract)
   	console.log([...state.allInitContracts])
-  	console.log('INITIALIZED')
   	return;
     let aggcalls = await state.multicall.methods.aggregate(calls).call()
     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))

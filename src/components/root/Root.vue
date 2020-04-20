@@ -50,15 +50,26 @@
                	 		</span></span>
 	                </router-link>
 	            </div>
-	            <div :class="{selected: activePoolLink == 4}">
+	            <!-- <div :class="{selected: activePoolLink == 4}">
 	                <router-link to = '/susd/withdraw'>
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[(y)sUSD, yCurve]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
 	                    <span class='volume'>
-	                    	<!-- Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span> -->
+	                    	Vol: <span :class="{'loading line': volumesData.busd < 0}">
+	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+               	 		</span></span>
+	                </router-link>
+	            </div> -->
+	            <div :class="{selected: activePoolLink == 4}">
+	                <router-link to = '/susd'>
+	                	<span class='index'>4.</span>  
+	                    <span class='pooltext'>sUSD</span>
+	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[5]}">{{apy[5]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.susdnew < 0}">
+	                    	<span v-show='volumesData.susdnew >= 0'>{{(volumesData.susdnew | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -137,7 +148,7 @@
 	            }
 			},
 			async getAPY() {
-	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi', 'https://synthetix.curve.fi']       
+	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi', 'https://synthetix.curve.fi']
 	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
 	            stats = await Promise.all(stats.map(stat=>stat.json()))
 	            for(let i = 0; i < stats.length; i++) {

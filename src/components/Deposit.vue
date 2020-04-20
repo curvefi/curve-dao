@@ -251,7 +251,7 @@
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
 
-	            if (this.sync_balances) {
+	            if (this.sync_balances && !this.max_balances) {
 	                for (let j = 0; j < currentContract.N_COINS; j++)
 	                    if (j != i) {
 	                        var value_j = this.inputs[j]

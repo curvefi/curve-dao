@@ -149,7 +149,9 @@
 				        old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
 				        rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
 				        */
-			         	if (contract.tethered && contract.tethered[i] && contract.use_lending && !contract.use_lending[i]) {
+			         	if ((contract.tethered && contract.tethered[i] && contract.use_lending && !contract.use_lending[i]) 
+			         		|| contract.currentContract == 'susdnew') {
+			            	console.log("HEREEEEEEEEEEEEEEEEE")
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
@@ -249,7 +251,7 @@
 				    	this.bal_infos[key].push(calcBalance)
 				    	total += this.bal_infos.usdt[0] + this.bal_infos.usdt[1] + calcBalance
 				    }
-				    if(key == 'iearn' || key == 'busd' || key == 'susd') {
+				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew') {
 				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)
 				    	helpers.chunkArr(slice, 2).map((v, i) => {
 				    		//v is [rate, balance]

@@ -256,7 +256,6 @@ export async function multiInitState(calls, contract, initContracts = false) {
     else {
         chunkArr(ratesDecoded ,3).map((v, i) => {
             if(checkTethered(contract, i) || contract.currentContract == 'susdnew') {
-                console.log('this is tethered')
                 Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
             }
             else {            

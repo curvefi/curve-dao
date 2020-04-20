@@ -277,7 +277,15 @@
 			    }
 			    var txhash;
 			    if (this.share == '---') {
-			        var token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();
+			    	var token_amount;
+			        try {
+			        	token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, false).call();
+			        }
+			        catch(err) {
+			        	console.error(err)
+						this.show_nobalance = true;
+						this.show_nobalance_i = this.to_currency;
+			        }
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc) {
@@ -288,6 +296,7 @@
 			    	}
 			        else {
 			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			        	console.log(amounts, "AMOUNTS")
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
@@ -301,7 +310,15 @@
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	await common.ensure_allowance_zap_out(amount)
-			        	let min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
+			        	let min_amount;
+			        	try {
+			        		min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
+			        	}
+			        	catch(err) {
+			        		console.error(err)
+							this.show_nobalance = true;
+							this.show_nobalance_i = this.to_currency;
+			        	}
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
@@ -345,7 +362,14 @@
 				        //this.$refs[ref][0].focus();
 	                let precision = allabis[currentContract.currentContract].coin_precisions[this.to_currency]
 					let zap_values = Array(currentContract.N_COINS).fill(0)
-					zap_values[this.to_currency] = BN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
+					try {
+						zap_values[this.to_currency] = BN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
+					}
+					catch(err) {
+						console.error(err)
+						this.show_nobalance = true;
+						this.show_nobalance_i = this.to_currency;
+					}
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)

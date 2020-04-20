@@ -15,6 +15,7 @@ export default {
 		fromBlock() {
 			if(this.currentPool == 'compound') return '0x91c86f'
 			if(this.currentPool == 'usdt') return '0x904a9c'
+			if(this.currentPool == 'susdv2') return '0x9729a6'
 			return '0x909964'
 		},
 		decodeParameters() {
@@ -38,8 +39,14 @@ export default {
 
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
-		        let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
-		        this.priceData = await res.json();
+				try {
+		        	let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
+		        	this.priceData = await res.json();
+				}
+				catch(err) {
+					console.error(err)
+					this.priceData = []
+				}
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
 			        let symbol = await currentContract.coins[i].methods.symbol().call()
 			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
@@ -66,7 +73,8 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	             if(curr == 'USDT') {
+	            console.log(+prices[i], curr, "PRICES CURR")
+	             if(['DAI','USDC','USDT','sUSD'].includes(curr)) {
 	                available += this.fromNativeCurrent(curr, prices[i])
 	            }
 	            else {
@@ -97,8 +105,14 @@ export default {
 		    if(curr == 'cUSDC') {
 		        return value.div(this.BN(1e14)).toNumber();
 		    }
-	        if(curr == 'USDT') {
-				return value.divRound(this.BN(1e4)).toNumber();
+			if(curr == 'DAI') {
+				return value.divRound(this.BN(1e16)).toNumber()
+			}
+			if(curr == 'USDC' || curr == 'USDT') {
+				return value.divRound(this.BN(1e4)).toNumber()
+			}
+			if(curr == 'sUSD') {
+				return value.divRound(this.BN(1e16)).toNumber();
 			}
 			const decimals = ['yUSDC', 'yUSDT'].includes(curr) ? 6 : 18;
 		    if (decimals === 18) {

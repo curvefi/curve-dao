@@ -44,7 +44,7 @@ const currencies = {
 		susd: 'ySUSD',
 		ycurve: 'yCurve',
 	},
-	susdnew: {
+	susdv2: {
 		dai: 'DAI',
 		usdc: 'USDC',
 		usdt: 'USDT',
@@ -60,7 +60,7 @@ export const poolMenu = {
 	iearn: 'Y',
 	busd: 'bUSD',
 	susd: 'sUSD-yCurve old',
-	susdnew: 'sUSD',
+	susdv2: 'sUSD',
 }
 
 export const gas = {
@@ -85,7 +85,7 @@ export const gas = {
 			exchange: (i, j) => 600000,
 			exchange_underlying: (i, j) => 1200000,
 		},
-		susdnew: {
+		susdv2: {
 			exchange: (i, j) => 300000,
 			exchange_underlying: (i, j) => 300000,
 		}
@@ -96,7 +96,7 @@ export const gas = {
 		iearn: 1300000,
 		busd: 1300000,
 		susd: 1300000,
-		susdnew: 600000,
+		susdv2: 600000,
 	},
 	withdraw: {
 		compound: {
@@ -114,7 +114,7 @@ export const gas = {
 		susd: {
 			imbalance: x => 1000000,
 		},
-		susdnew: {
+		susdv2: {
 			imbalance: x => 600000,
 		}
 	},
@@ -144,7 +144,7 @@ export const gas = {
 			withdrawShare: 1600000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5,
 		},
-		susdnew: {
+		susdv2: {
 			deposit: x => (172664*x + 471691)*1.5,
 			withdraw: 800000,
 			withdrawShare: 1000000,
@@ -327,7 +327,7 @@ export async function init(contract, refresh = false) {
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
-    if(contract.currentContract == 'susdnew') {
+    if(contract.currentContract == 'susdv2') {
     	//balanceOf(address)
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])

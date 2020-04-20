@@ -8,7 +8,7 @@
                         <label :for="'currency_'+i">
                         	<span v-show='depositc'>
                         		{{currencies[currency]}} 
-	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdnew'"> 
+	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'"> 
 	                        		(in {{currency | capitalize}}) 
 	                        	</span>
 	                        </span>
@@ -48,14 +48,14 @@
                     	</span>
                     </label>
                 </li>
-                <li v-show = "!['susd','susdnew'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
             </ul>
 
             <p style="text-align: center">
-            	<!-- :disabled="currentPool == 'susdnew' && slippage < -0.001" -->
+            	<!-- :disabled="currentPool == 'susdv2' && slippage < -0.001" -->
                 <button id="add-liquidity" 
                 	@click='handle_add_liquidity' 
                 	>
@@ -132,7 +132,7 @@
         },
         methods: {
             async mounted(oldContract) {
-            	if(['susd', 'susdnew'].includes(currentContract.currentContract)) this.depositc = true;
+            	if(['susd', 'susdv2'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

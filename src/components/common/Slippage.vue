@@ -14,7 +14,7 @@
       <p class='simple-error' id='nobalance-warning' v-show='show_nobalance'>
       	Warning! Not enough balance for {{noBalanceText}} token in the contract
       </p>
-      <p class='info-message' id='susd-warning' v-show="currentPool == 'susdnew' && showSlippage && slippage < -0.001">
+      <p class='info-message' id='susd-warning' v-show="currentPool == 'susdv2' && showSlippage && slippage < -0.001">
         Please add coins in a balanced proportion
       </p>
 	</div>
@@ -29,7 +29,7 @@
           noBalanceText() {
           	if(!this.show_nobalance) return '';
           	let kv = Object.entries(this.currencies)[this.show_nobalance_i]
-            if(!(this.show_nobalance_i == 2 && this.currentPool == 'usdt') && this.currentPool != 'susdnew') {
+            if(!(this.show_nobalance_i == 2 && this.currentPool == 'usdt') && this.currentPool != 'susdv2') {
               return kv[1] + " (in " + kv[0] + ")";
             }
             return kv[1];

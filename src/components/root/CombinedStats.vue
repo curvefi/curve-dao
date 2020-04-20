@@ -149,7 +149,7 @@
 				        old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
 				        rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
 				        */
-			         	if (contract.tethered && contract.tethered[i] && contract.use_lending && !contract.use_lending[i] || key == 'susdnew') {
+			         	if (contract.tethered && contract.tethered[i] && contract.use_lending && !contract.use_lending[i] || key == 'susdv2') {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
@@ -263,10 +263,10 @@
 				    	})
 				    	if(key == 'susd') ind -= 4
 				    }
-					if(key == 'susdnew') {
+					if(key == 'susdv2') {
 						let slice = decoded.slice(-8)
 						for(let i = 0; i < 4; i++) {
-							this.bal_infos.susdnew.push(this.all_c_rates.susdnew.c_rates[i] * (slice[i]))
+							this.bal_infos.susdv2.push(this.all_c_rates.susdv2.c_rates[i] * (slice[i]))
 						}
 						ind-=8
 					}

@@ -7,7 +7,7 @@ export const state = Vue.observable({
 		usdt: -1,
 		iearn: -1,
 		busd: -1,
-		susdnew: -1,
+		susdv2: -1,
 	},
 	volumeData: {
 		5: {
@@ -16,7 +16,7 @@ export const state = Vue.observable({
 			y: [],
 			busd: [],
 			susd: [],
-			susdnew: [],
+			susdv2: [],
 		},
 		30: {
 			compound: [],
@@ -24,7 +24,7 @@ export const state = Vue.observable({
 			y: [],
 			busd: [],
 			susd: [],
-			susdnew: [],
+			susdv2: [],
 		}
 	},
 	allVolume: {
@@ -32,6 +32,8 @@ export const state = Vue.observable({
 		usdt: [],
 		y: [],
 		busd: [],
+		susd: [],
+		susdv2: [],
 	}
 })
 

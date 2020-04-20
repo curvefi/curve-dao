@@ -21,7 +21,7 @@
                     <label :for="'currency_'+i">
                     	<span v-show='withdrawc'>
 	                    	{{currencies[currency]}} 
-	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdnew'">(in {{currency | capitalize}})</span>
+	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'">(in {{currency | capitalize}})</span>
                     	</span>
                     	<span v-show='!withdrawc'>
                         	{{currency | capitalize}}
@@ -38,7 +38,7 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "!['susd','susdnew'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw wrapped</label>
                 </li>
@@ -47,7 +47,7 @@
         <fieldset v-show = "currentPool != 'susd'">
         	<legend>Withdraw % in:</legend>
         	<ul>
-        		<li v-show = "currentPool != 'susdnew' ">
+        		<li v-show = "currentPool != 'susdv2' ">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>Combination of all coins</label>
         		</li>
@@ -147,7 +147,7 @@
         },
         methods: {
             async mounted() {
-            	if(this.currentPool == 'susdnew') {
+            	if(this.currentPool == 'susdv2') {
             		this.withdrawc = true;
             		this.to_currency = null
             	}

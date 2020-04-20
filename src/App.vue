@@ -21,7 +21,7 @@
     	iearn: 'Yield',
     	busd: 'bUSD',
     	susd: 'sUSD-yCurve old',
-    	susdnew: 'sUSD',
+    	susdv2: 'sUSD',
     }
 
 	export default {

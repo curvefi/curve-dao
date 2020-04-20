@@ -21,6 +21,8 @@
 			      :admin_fee = 'admin_fees[i]'
 			      :pool = 'currency'
 			      :currencies = 'allCurrencies[currency]'
+			      :tokenSupply = 'totalTokenSupplies[i]'
+			      :tokenBalance = 'totalTokenBalances[i]'
 			      />
 	  	</div>
 	</div>
@@ -63,6 +65,8 @@
 			totalShares: [],
 			fees: [],
 			admin_fees: [],
+			totalTokenBalances: [],
+			totalTokenSupplies: [],
 		}),
 		created() {
             this.$watch(()=>currentContract.initializedContracts, val => {
@@ -262,6 +266,8 @@
 				    this.totals.push(total)
 				    this.fees.push(+decoded[ind+8] / 1e8)
 		    		this.admin_fees.push(+decoded[ind+9])
+		    		this.totalTokenBalances.push(+decoded[ind+10])
+		    		this.totalTokenSupplies.push(+decoded[ind+11])
 		    		var totalShare = 0
 				    for (let i=0; i < contracts[key].N_COINS; i++) {
 		                var val = this.bal_infos[key][i] * (+decoded[ind+10]) / (+decoded[ind+11]);

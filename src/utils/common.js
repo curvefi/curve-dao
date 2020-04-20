@@ -176,7 +176,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
         swap_token_address = allabis[contract.currentContract].token_address
     }
 
-    var default_account = currentContract.default_account || '0x0000000000000000000000000000000000000000';
+    var default_account = contract.default_account || '0x0000000000000000000000000000000000000000';
     let calls = [   
                     //.fee()
                     [swap_address_stats, swap_stats.methods.fee().encodeABI()],
@@ -224,6 +224,8 @@ export async function multiInitState(calls, contract, initContracts = false) {
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]
     var token_supply = decoded[3]
+    contract.totalBalance = token_balance
+    contract.totalSupply = token_supply
     let ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS)
     if(initContracts) {
         let contractsDecoded = decoded.slice(-allabis[contract.currentContract].N_COINS*2)

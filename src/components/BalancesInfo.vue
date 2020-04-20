@@ -24,7 +24,7 @@
       </p>
     </fieldset>
     <fieldset id="lp-info-container" v-show='totalShare > 0 && initializedContracts'>
-      <legend>My share:</legend>
+      <legend>My share: ( {{(totalBalance / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
@@ -44,15 +44,26 @@
   import * as helpers from '../utils/helpers'
 
   export default {
-    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies'],
+    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance'],
     methods: {
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)
+      },
+      totalSupply() {
+
       }
     },
     computed: {
       showShares: getters.showShares,
       initializedContracts: getters.initializedContracts,
+      totalSupply() {
+        if(this.tokenSupply) return this.tokenSupply
+        return getters.totalSupply()
+      },
+      totalBalance() {
+        if(this.tokenBalance) return this.tokenBalance
+        return getters.totalBalance()
+      },
     }
   }
 </script>

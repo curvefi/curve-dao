@@ -146,6 +146,8 @@ const state = Vue.observable({
 			l_info: [],
 			totalShare: 0,
 			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
 		},
 		usdt: {
 			currentContract: 'usdt',
@@ -158,6 +160,8 @@ const state = Vue.observable({
 			l_info: [],
 			totalShare: 0,
 			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
 		},
 		iearn: {
 			currentContract: 'iearn',
@@ -170,6 +174,8 @@ const state = Vue.observable({
 			l_info: [],
 			totalShare: 0,
 			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
 		},
 		busd: {
 			currentContract: 'busd',
@@ -182,6 +188,8 @@ const state = Vue.observable({
 			l_info: [],
 			totalShare: 0,
 			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
 		},
 	},
 	currentContract: 'compound',
@@ -202,6 +210,8 @@ const state = Vue.observable({
 	old_swap: null,
 	swap_token: null,
 	old_swap_token: null,
+	totalBalance: null,
+	totalSupply: null,
 	oldBalance: null,
 
 	ERC20Contract: null,
@@ -244,6 +254,8 @@ export const getters = {
 	l_info: () => state.l_info,
 	totalShare: () => state.totalShare,
 	totalShare: () => state.totalShare,
+	totalBalance: () => state.totalBalance / 1e18,
+	totalSupply: () => state.totalSupply / 1e18,
 	currencies: () => state.currencies,
 	fee: () => state.fee * 100,
 	admin_fee: () => state.admin_fee * 100,
@@ -252,7 +264,7 @@ export const getters = {
 	slippage: () => state.slippage,
 	N_COINS: () => state.N_COINS,
 	error: () => state.error,
-	showShares: () => state.showShares
+	showShares: () => state.showShares,
 }
 
 

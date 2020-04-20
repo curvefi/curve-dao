@@ -98,7 +98,7 @@ let routes = [
     ]
   },
   {
-    path: '/:pool(compound|usdt|y|iearn|busd)/',
+    path: '/:pool(compound|usdt|y|iearn|busd|susdnew)/',
     name: 'Index',
     component: PoolApp,
     children: [
@@ -160,7 +160,7 @@ const router = new VueRouter({
   routes
 })
 
-const pools = ['compound','usdt','y','iearn','busd','susd']
+const pools = ['compound','usdt','y','iearn','busd','susd','susdnew']
 
 router.beforeEach(async (to, from, next) => {
   if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()

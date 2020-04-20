@@ -5,11 +5,11 @@
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b>
-            <span :class="{'loading line': !bal_info || !bal_info[i]}"> {{bal_info && bal_info[i] | toFixed2}}</span>
+            <span :class="{'loading line': !bal_info || bal_info[i] === null}"> {{bal_info && bal_info[i] | toFixed2}}</span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
-            <span :class="{'loading line': !total}"> {{total | toFixed2}}</span>
+            <span :class="{'loading line': total === null}"> {{total | toFixed2}}</span>
           </li>
       </ul>
       <p>
@@ -49,9 +49,6 @@
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)
       },
-      totalSupply() {
-
-      }
     },
     computed: {
       showShares: getters.showShares,

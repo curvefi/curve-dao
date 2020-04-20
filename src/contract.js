@@ -44,6 +44,12 @@ const currencies = {
 		susd: 'ySUSD',
 		ycurve: 'yCurve',
 	},
+	susdnew: {
+		dai: 'DAI',
+		usdc: 'USDC',
+		usdt: 'USDT',
+		susd: 'sUSD',
+	},
 }
 
 export const allCurrencies = currencies
@@ -54,6 +60,7 @@ export const poolMenu = {
 	iearn: 'Y',
 	busd: 'bUSD',
 	susd: 'sUSD-yCurve',
+	susdnew: 'sUSD plain',
 }
 
 export const gas = {
@@ -74,6 +81,14 @@ export const gas = {
 			exchange: 800000,
 			exchange_underlying: 1600000
 		},
+		susd: {
+			exchange: 600000,
+			exchange_underlying: 1200000,
+		},
+		susdnew: {
+			exchange: 600000,
+			exchange_underlying: 1200000,
+		}
 	},
 	withdraw: {
 		compound: {
@@ -87,6 +102,12 @@ export const gas = {
 		},
 		busd: {
 			imbalance: x => (12642*x + 474068)*1.5,
+		},
+		susd: {
+			imbalance: x => 1000000,
+		},
+		susdnew: {
+			imbalance: x => 1000000,
 		}
 	},
 	depositzap: {
@@ -114,6 +135,12 @@ export const gas = {
 			withdraw: 2000000,
 			withdrawShare: 1600000,
 			withdrawImbalance: x => (276069*x + 516861)*1.5,
+		},
+		susdnew: {
+			deposit: x => (172664*x + 471691)*1.5,
+			withdraw: 1000000,
+			withdrawShare: 1000000,
+			withdrawImbalance: x => (181733*x + 506125)*1.5,
 		}
 	}
 }
@@ -269,6 +296,7 @@ export const getters = {
 
 
 export async function init(contract, refresh = false) {
+	console.log('INITS')
 	console.time('init')
 	//contract = contracts.compound for example
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();
@@ -291,7 +319,7 @@ export async function init(contract, refresh = false) {
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
-    if(contract.currentContract != 'susd')
+    if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
@@ -305,11 +333,13 @@ export async function init(contract, refresh = false) {
     	calls.push([contract.swap._address, contract.swap.methods.coins(i).encodeABI()])
     	calls.push([contract.swap._address, contract.swap.methods.underlying_coins(i).encodeABI()])
     }
+    console.log(calls, "CALLS")
     await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;
   	console.timeEnd('init')
   	state.allInitContracts.push(contract.currentContract)
   	console.log([...state.allInitContracts])
+  	console.log('INITIALIZED')
   	return;
     let aggcalls = await state.multicall.methods.aggregate(calls).call()
     let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))

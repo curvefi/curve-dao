@@ -7,6 +7,7 @@ Vue.filter('capitalize', function (value) {
 })
 
 Vue.filter('toFixed2', function (value) {
+  if(value === 0) return (+value).toFixed(2)
   if(value == '' || value == undefined) return '';
 	return (+value).toFixed(2);
 })

@@ -131,7 +131,7 @@ export function update_rates(version = 'new', contract) {
         */
         //for usdt pool
         if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
-            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
+            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdnew') {
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
         else if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) {
@@ -204,7 +204,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
 
 function checkTethered(contract, i) {
     return allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
-        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i];
+        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdnew';
 }
 
 export async function multiInitState(calls, contract, initContracts = false) {
@@ -255,7 +255,8 @@ export async function multiInitState(calls, contract, initContracts = false) {
     }
     else {
         chunkArr(ratesDecoded ,3).map((v, i) => {
-            if(checkTethered(contract, i)) {
+            if(checkTethered(contract, i) || contract.currentContract == 'susdnew') {
+                console.log('this is tethered')
                 Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
             }
             else {            

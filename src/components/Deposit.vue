@@ -48,7 +48,7 @@
                     	</span>
                     </label>
                 </li>
-                <li v-show = "currentPool != 'susd'">
+                <li v-show = "!['susd','susdnew'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
@@ -127,11 +127,10 @@
         },
         methods: {
             async mounted(oldContract) {
-            	if(currentContract.currentContract == 'susd') this.depositc = true;
+            	if(['susd', 'susdnew'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-                common.update_fee_info();
                 await this.handle_sync_balances();
                 await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
@@ -163,9 +162,14 @@
 	        	})
             },
             async calcSlippage() {
-            	this.slippagePromise.cancel();
-        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(this.inputs, true))
-        		await this.slippagePromise;
+            	try {
+	            	this.slippagePromise.cancel();
+	        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(this.inputs, true))
+	        		await this.slippagePromise;
+            	}
+            	catch(err) {
+            		console.error(err)
+            	}
             },
             async handle_sync_balances() {
 			    await common.update_fee_info();
@@ -251,7 +255,7 @@
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
 
-	            if (this.sync_balances) {
+	            if (this.sync_balances && !this.max_balances) {
 	                for (let j = 0; j < currentContract.N_COINS; j++)
 	                    if (j != i) {
 	                        var value_j = this.inputs[j]

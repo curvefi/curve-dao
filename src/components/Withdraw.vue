@@ -34,10 +34,11 @@
                     v-model = 'inputs[i]' 
                     :style = "inputStyles[i]"
                     :disabled = "currentPool == 'susd'"
+                    :ref="`inputs${i}`"
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "currentPool != 'susd'">
+                <li v-show = "!['susd','susdnew'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw wrapped</label>
                 </li>
@@ -46,7 +47,7 @@
         <fieldset v-show = "currentPool != 'susd'">
         	<legend>Withdraw % in:</legend>
         	<ul>
-        		<li>
+        		<li v-show = "currentPool != 'susdnew' ">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>Combination of all coins</label>
         		</li>
@@ -337,6 +338,11 @@
 	        		var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
 				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
+/*				        this.inputs = this.inputs.map(v=>0)
+				        Vue.set(this.inputs, this.to_currency, amount / 1e18)
+				        let ref = 'inputs'+this.to_currency
+				        this.handle_change_amounts(this.to_currency);*/
+				        //this.$refs[ref][0].focus();
 	                let precision = allabis[currentContract.currentContract].coin_precisions[this.to_currency]
 					let zap_values = Array(currentContract.N_COINS).fill(0)
 					zap_values[this.to_currency] = BN(await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call())

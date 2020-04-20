@@ -83,6 +83,17 @@ select.tvision {
   border: 1px outset green;
 }
 
+button[disabled] {
+  background: gray;
+  box-shadow: none;
+  border: none;
+}
+button[disabled]:hover {
+  transform: none;
+  box-shadow: none;
+  background: gray;
+}
+
 button.full-width,
 .button.full-width {
   display: block;

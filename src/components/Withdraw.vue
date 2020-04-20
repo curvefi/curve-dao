@@ -62,7 +62,6 @@
 	            </li>
         	</ul>
         </fieldset>
-
         <p style="text-align: center">
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
@@ -176,6 +175,9 @@
             	if(val === this.to_currency) {
             		if(this.withdrawc == false) this.withdrawc = true
             		this.to_currency = null
+
+            		currentContract.slippage = 0
+            		currentContract.showSlippage = false
             	}
             	else {
             		this.withdrawc = false

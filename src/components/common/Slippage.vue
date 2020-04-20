@@ -14,6 +14,9 @@
       <p class='simple-error' id='nobalance-warning' v-show='show_nobalance'>
       	Warning! Not enough balance for {{noBalanceText}} token in the contract
       </p>
+      <p class='info-message' id='susd-warning' v-show="currentPool == 'susdnew' && showSlippage && slippage < -0.001">
+        Please add coins in a balanced proportion
+      </p>
 	</div>
 </template>
 
@@ -35,6 +38,8 @@
     }
 </script>
 
-<style>
-	
+<style scoped>
+	#susd-warning {
+    background: #3465a4e6;
+  }
 </style>

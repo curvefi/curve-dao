@@ -31,7 +31,7 @@
             </fieldset>
             <ul>
                 <li>
-                    <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances' :disabled='disabledButtons' checked v-model='sync_balances'>
+                    <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances_proportion' :disabled='disabledButtons' checked v-model='sync_balances'>
                     <label for="sync-balances">Add all coins in a balanced proportion</label>
                 </li>
                 <li>
@@ -55,7 +55,12 @@
             </ul>
 
             <p style="text-align: center">
-                <button id="add-liquidity" @click='handle_add_liquidity'>Deposit</button>
+            	<!-- :disabled="currentPool == 'susdnew' && slippage < -0.001" -->
+                <button id="add-liquidity" 
+                	@click='handle_add_liquidity' 
+                	>
+                		Deposit
+                </button>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <Slippage/>
             </p>
@@ -197,6 +202,10 @@
 			    }
 			    else
 			        this.disabled = false;
+			},
+			async handle_sync_balances_proportion() {
+				await this.handle_sync_balances();
+				for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
 			},
 			async handle_add_liquidity() {
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>

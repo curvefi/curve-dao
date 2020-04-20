@@ -107,13 +107,13 @@ export const gas = {
 			deposit: x => (225377*x + 522674)*1.5,
 			withdraw: 3500000,
 			withdrawShare: 1600000,
-			withdrawImbalance: x => (276069*x + 516861)*1.5,
+			withdrawImbalance: x => (276069*x + 516861)*2.5,
 		},
 		busd: {
 			deposit: x => (225377*x + 522674)*1.5,
 			withdraw: 3500000,
 			withdrawShare: 1600000,
-			withdrawImbalance: x => (276069*x + 516861)*1.5,
+			withdrawImbalance: x => (276069*x + 516861)*2.5,
 		}
 	}
 }

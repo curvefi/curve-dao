@@ -13,7 +13,7 @@
             <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
             <label for='busdpool1'>bUSD</label>
 
-            <input id='susdpool1' type='checkbox' value='susd' v-model='pools'/>
+            <input id='susdpool1' type='checkbox' value='susdv2' v-model='pools'/>
             <label for='susdpool1'>sUSD</label>
         </div>
 
@@ -127,7 +127,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd', 'susd'],
+            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -468,7 +468,7 @@
                 let realExchangeRate;
                 if(this.swapwrapped) get_to_amount = calcWorker.calcPriceWrapped
                 //without susd
-                for(let i = 0; i < pools.length-1; i++) {
+                for(let i = 0; i < pools.length; i++) {
                     if(poolConfigs[i].N_COINS-1 < this.to_currency || poolConfigs[i].N_COINS-1 < this.from_currency) continue;
                     let dx = this.fromInput * this.precisions(this.from_currency, pools[i])
                     let config = {...poolInfo[i], ...poolConfigs[i]}

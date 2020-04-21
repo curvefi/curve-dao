@@ -201,13 +201,15 @@
 					this.apr = apydata.apy.total[subdomain];
 					this.daily_apr = apydata.apy.day[subdomain];
 					this.weekly_apr = apydata.apy.week[subdomain];
-			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1440m.json`)
+					let period = 1440
+					if(subdomain == 'susd') period = 30
+			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-${period}m.json`)
 			        this.data = await newdata.json()
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
 			        let start_index = this.data.findIndex(el => el.virtual_price > 0)
 			        var start_profit = this.data[start_index].virtual_price / 1e18
 			        var chartData = [];
-			        for (let i = start_index; i < this.data.length; i++) {
+				        for (let i = start_index; i < this.data.length; i++) {
 			                var el = this.data[i];
 			                chartData.push([
 			                    el.timestamp * 1000,

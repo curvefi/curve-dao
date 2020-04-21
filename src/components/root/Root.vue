@@ -150,7 +150,7 @@
 	            let stats = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
 	            stats = await stats.json()
                 this.volumes = stats.volume;
-                volumeStore.volumes = stats.volume
+                volumeStore.state.volumes = stats.volume
 	            for(let [i, pool] of pools.entries()) {
 	                var daily_apy = stats.apy.day[pool];
 	                this.apy.push((daily_apy*100).toFixed(2))

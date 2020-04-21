@@ -6,7 +6,7 @@
 
 	    <total-balances/>
 
-		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
+		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)' v-show="currency != 'susd'">
 		      <p class='text-center'>
 		      	<router-link :to="currency" v-show="currency != 'susd'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>

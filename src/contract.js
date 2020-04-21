@@ -135,13 +135,13 @@ export const gas = {
 		iearn: {
 			deposit: x => (225377*x + 522674)*1.5,
 			withdraw: 3500000,
-			withdrawShare: 1600000,
+			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5,
 		},
 		busd: {
 			deposit: x => (225377*x + 522674)*1.5,
 			withdraw: 3500000,
-			withdrawShare: 1600000,
+			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5,
 		},
 		susdv2: {

@@ -169,6 +169,9 @@
 		methods: {
 			async mounted() {
 				this.loading = true;
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'

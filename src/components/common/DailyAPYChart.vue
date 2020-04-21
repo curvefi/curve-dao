@@ -162,6 +162,9 @@
 				this.loading = false;
 			},
 			async mounted() {
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
 		        let chartData = [];
 		        for(let i = 1; i < this.data.length; i++) {
 		        	var el = this.data[i];
@@ -180,7 +183,7 @@
 		        	color: '#0b0a57'
 		        }, true)
 		        await volumeStore.getDailyVolume(this.pool)
-		        if(this.pool == 'susdv2') {
+		        if(['susd', 'susdv2'].includes(this.pool)) {
 		        	this.chart.yAxis[0].update({
 		        		type: 'linear'
 		        	})

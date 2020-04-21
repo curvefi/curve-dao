@@ -180,7 +180,6 @@
 		        	color: '#0b0a57'
 		        }, true)
 		        await volumeStore.getDailyVolume(this.pool)
-
 		        if(this.pool == 'susdv2') {
 		        	this.chart.yAxis[0].update({
 		        		type: 'linear'

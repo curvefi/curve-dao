@@ -134,7 +134,7 @@
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
 
-			let requests = Object.values(this.pools).map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-1440m.json`))
+			let requests = Object.values(this.pools).map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-${p == 'susd' ? 30 : 1440}m.json`))
 			let data = await Promise.all(requests)
 			for(let [key, res] of data.entries()) {
 				let json = await res.json();

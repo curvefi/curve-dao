@@ -49,9 +49,6 @@
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)
       },
-      totalSupply() {
-
-      }
     },
     computed: {
       showShares: getters.showShares,

@@ -5,7 +5,7 @@
                 <div class='exchangefields'>
                     <fieldset class='item'>
                         <legend>From:</legend>
-                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
+                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance | toFixed2}}</span> </div>
                         <ul>
                             <li>
                                 <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
@@ -86,7 +86,12 @@
                     </li>
                 </ul>
                 <p class='trade-buttons'>
-                    <button id="trade" @click='handle_trade'>Sell</button>
+                    <button id="trade" @click='handle_trade' :disabled='+fromInput > +maxBalance*1.001'>Sell</button>
+                </p>
+                <p class='simple-error' id='no-balance' v-show='+fromInput > +maxBalance*1.001'>
+                    Not enough balance for 
+                    <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
+                    <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
                 </p>
             </div>
         </div>
@@ -257,7 +262,7 @@
                 if (this.fromInput == '' || this.val == 0) {
                     this.fromInput = currentContract.default_account ? amount.toFixed(2) : 0
                 }
-                this.maxBalance = currentContract.default_account ? amount.toFixed(2) : 0;
+                this.maxBalance = currentContract.default_account ? amount : 0;
             },
             setAmountPromise() {
                 let promise = new Promise(async (resolve, reject) => {
@@ -332,5 +337,8 @@
         margin: 0.5em 0 0 0;
         text-align: right;
         font-size: 0.9em;
+    }
+    #no-balance {
+        text-align: center;
     }
 </style>

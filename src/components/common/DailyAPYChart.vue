@@ -163,7 +163,6 @@
 			},
 			async mounted() {
 		        let chartData = [];
-		        console.log(this.data, "THEDATA", this.pool)
 		        for(let i = 1; i < this.data.length; i++) {
 		        	var el = this.data[i];
 		        	let profit = ((el.virtual_price / 1e18) / (this.data[i-1].virtual_price / 1e18)) ** 365 - 1

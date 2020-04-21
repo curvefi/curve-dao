@@ -45,7 +45,6 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	let requests = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-${period}m.json`))
 	requests = await Promise.all(requests)
 	let jsons = await Promise.all(requests.map(r => r.json()))
-	console.log(jsons, "JSONS")
 	for(let [i, data] of jsons.entries()) {
 		state.volumeData[period][pools[i]] = data
 	}
@@ -67,7 +66,6 @@ export async function getDailyVolume(pool, refresh = false) {
 	await fetchVolumeData(pool, refresh, 30)
 	let json = state.volumeData[30][pool];
 	state.volumeData[pool] = json
-	console.log(state.volumeData, "VOL DATA")
 	for(let data of json) {
 		state.allVolume[pool].push([
 			data.timestamp * 1000,

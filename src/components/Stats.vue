@@ -203,15 +203,12 @@
 					this.weekly_apr = apydata.apy.week[subdomain];
 			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1440m.json`)
 			        this.data = await newdata.json()
-			        console.log(this.data[1])
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
 			        let start_index = this.data.findIndex(el => el.virtual_price > 0)
 			        var start_profit = this.data[start_index].virtual_price / 1e18
-			        console.log(start_profit.virtual_price)
 			        var chartData = [];
 			        for (let i = start_index; i < this.data.length; i++) {
 			                var el = this.data[i];
-			                console.log(((el.virtual_price / 1e18) / start_profit - 1) * 100)
 			                chartData.push([
 			                    el.timestamp * 1000,
 			                    ((el.virtual_price / 1e18) / start_profit - 1) * 100
@@ -219,7 +216,6 @@
 			            
 			        }
 				}
-		        console.log(chartData, "ALLDCH")
 		        this.chart.hideLoading();
 		        this.chart.addSeries({
 		        	name: 'Virtual growth of liquidity share',

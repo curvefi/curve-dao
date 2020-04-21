@@ -101,7 +101,7 @@
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
             <p class='info-message gentle-message' v-show='selldisabled'>
-                Only swapping between sUSD/ DAI/USDC/USDT is available for now
+                Only swapping between sUSD/ DAI/USDC/USDT is available currently
             </p>
         </div>
 	</div>

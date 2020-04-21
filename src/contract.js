@@ -304,7 +304,6 @@ export const getters = {
 
 
 export async function init(contract, refresh = false) {
-	console.log('INITS')
 	console.time('init')
 	//contract = contracts.compound for example
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();

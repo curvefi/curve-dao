@@ -89,7 +89,7 @@ export async function getLendingAPY(pool, refresh = false) {
 		let json = state.volumeData[30][pool]
 		let data = json[j]
 		let prevdata = json[j-48]
-		let balances = data.balances.map((b,bi)=>b /= abis[pool].coin_precisions[bi])
+		let balances = data.balances.map((b,bi)=>b /= abis[pool == 'susd' ? 'susdv2' : pool].coin_precisions[bi])
 		let apdrate = data.rates.map((rate, k) => {
 			return (rate / prevdata.rates[k]) - 1
 		})

@@ -218,6 +218,7 @@
 			            
 			        }
 				}
+				
 		        this.chart.hideLoading();
 		        this.chart.addSeries({
 		        	name: 'Virtual growth of liquidity share',

@@ -427,6 +427,7 @@
 		margin-right: 1em;
 	}
 	#withdrawold {
+		margin-left: 3px;
 		color: white;
 	}
 </style>

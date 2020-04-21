@@ -39,9 +39,11 @@ export default {
 
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
+				if(subdomain == 'susdv2') subdomain = 'susd'
 				try {
-		        	let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
-		        	this.priceData = await res.json();
+		        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1m.json`);
+		        	res = await res.json();
+		        	this.priceData = res.map(v=>[v.timestamp, v.virtual_price / 1e18])
 				}
 				catch(err) {
 					console.error(err)

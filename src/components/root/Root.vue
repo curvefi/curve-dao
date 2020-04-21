@@ -12,8 +12,8 @@
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.compound < 0}">
-	                    	<span v-show='volumesData.compound >= 0'>{{(volumesData.compound | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
+	                    	<span v-show='volumes.compound >= 0'>{{(volumes.compound | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -23,8 +23,8 @@
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.usdt < 0}">
-	                    	<span v-show='volumesData.usdt >= 0'>{{(volumesData.usdt | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
+	                    	<span v-show='volumes.usdt >= 0'>{{(volumes.usdt | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -34,8 +34,8 @@
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.iearn < 0}">
-	                    	<span v-show='volumesData.iearn >= 0'>{{(volumesData.iearn | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
+	                    	<span v-show='volumes.y >= 0'>{{(volumes.y | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -45,8 +45,8 @@
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
+	                    	<span v-show='volumes.busd >= 0'>{{(volumes.busd | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -67,16 +67,16 @@
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[5]}">{{apy[5]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.susdnew < 0}">
-	                    	<span v-show='volumesData.susdnew >= 0'>{{(volumesData.susdnew | 0) | formatNumber}}$</span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
+	                    	<span v-show='volumes.susd >= 0'>{{(volumes.susd | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
 	        </fieldset>
 	    </div>
 
-	    <total-balances />
+	    <total-balances :total-volume='totalVolume'/>
 
 	</div>
 </template>
@@ -100,6 +100,7 @@
 			apy: [],
 			start: 0,
 			end: 0,
+			volumes: [],
 		}),
 		created() {
 			var start = new Date();
@@ -119,11 +120,8 @@
 		},
 		computed: {
 			totalVolume() {
-				return volumeStore.totalVolume();
+				return Object.values(this.volumes).reduce((a, b) => a + b, 0)
 			},
-			volumesData() {
-				return volumeStore.state.volumes;
-			}
 		},
 		methods: {
 			handle_pool_change(e) {
@@ -148,12 +146,14 @@
 	            }
 			},
 			async getAPY() {
-	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi', 'https://synthetix.curve.fi']
-	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
-	            stats = await Promise.all(stats.map(stat=>stat.json()))
-	            for(let i = 0; i < stats.length; i++) {
-	                var weekly_apr = stats[i]['daily_apr'];
-	                this.apy.push((weekly_apr*100).toFixed(2))
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd']
+	            let stats = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
+	            stats = await stats.json()
+                this.volumes = stats.volume;
+                volumeStore.volumes = stats.volume
+	            for(let [i, pool] of pools.entries()) {
+	                var daily_apy = stats.apy.day[pool];
+	                this.apy.push((daily_apy*100).toFixed(2))
 	            }
 			}
 		}

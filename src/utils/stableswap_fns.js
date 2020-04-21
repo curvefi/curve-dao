@@ -144,7 +144,6 @@ let calc = ({
 
 	function get_dy_underlying(i, j, dx, usefee = false) {
 		let precisions = PRECISION_MUL.map(p=>BN(p));
-		console.log(rates, precisions, "RATES PRECISIONS")
 		let currentRates = rates.map((r,i) => BN(r).times(precisions[i]))
 		let xp = _xp(currentRates);
 		let x = xp[i].plus(BN(dx).times(precisions[i]));

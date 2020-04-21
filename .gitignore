@@ -21,3 +21,5 @@ yarn-error.log*
 *.sw?
 
 .now
+src/jsons
+src/json

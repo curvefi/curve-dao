@@ -73,7 +73,6 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	            console.log(+prices[i], curr, "PRICES CURR")
 	             if(['DAI','USDC','USDT','sUSD'].includes(curr)) {
 	                available += this.fromNativeCurrent(curr, prices[i])
 	            }
@@ -247,12 +246,15 @@ export default {
 		        	if(exchangeRate == -1) continue;
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
-			            	usd = BN(tokens).div(BN(1e4)).toNumber();
+		            	usd = BN(tokens).div(BN(1e4)).toNumber();
 		          	}
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) {
 		          		if(i == 0 || i == 3) tokens /= 1e16;
 		          		else tokens /= 1e4
 		          		usd = tokens * exchangeRate
+		          	}
+		          	else if(currentContract.currentContract == 'susdv2') {
+		            	usd = this.fromNativeCurrent(curr, this.BN(exchangeRate).mul(this.BN(tokens)))	
 		          	}
 		          	else {
 		            	usd = this.fromNative(curr, this.BN(exchangeRate).mul(this.BN(tokens)))

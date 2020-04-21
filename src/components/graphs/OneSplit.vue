@@ -12,6 +12,9 @@
 
             <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
             <label for='busdpool1'>bUSD</label>
+
+            <input id='susdpool1' type='checkbox' value='susd' v-model='pools'/>
+            <label for='susdpool1'>sUSD</label>
         </div>
 
 		<div class='swap exchange'>
@@ -21,7 +24,7 @@
                     <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
                     <ul>
                         <li>
-                            <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
+                            <input type="text" id="from_currency" :disabled='disabled || selldisabled' name="from_currency" value='0.00'
                             :style = "{backgroundColor: fromBgColor}"
                             @input='set_to_amount'
                             v-model='fromInput'>
@@ -95,7 +98,10 @@
                 </li>
             </ul>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade'>Sell</button>
+                <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
+            </p>
+            <p class='info-message gentle-message' v-show='selldisabled'>
+                Only swapping between sUSD/ DAI/USDC/USDT is available for now
             </p>
         </div>
 	</div>
@@ -121,7 +127,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd'],
+            pools: ['compound', 'usdt', 'y', 'busd', 'susd'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -136,8 +142,8 @@
             customSlippageDisabled: true,
             inf_approval: false,
             distribution: null,
-            //DAI, USDC, USDT, TUSD, BUSD
-            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18],
+            //DAI, USDC, USDT, TUSD, BUSD, sUSD
+            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18],
             swap: [],
             coins: [],
             underlying_coins: [],
@@ -172,7 +178,8 @@
                         usdc: 'USDC',
                         usdt: 'USDT',
                         tusd: 'TUSD',
-                        busd: 'BUSD'
+                        busd: 'BUSD',
+                        susd: 'sUSD'
                     }
                 }
                 if(this.swapwrapped == 1) {
@@ -202,10 +209,12 @@
                 if(this.fromInput > minAmount || (this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))
                     return '1split'
                 if(this.bestPool === null) return 'Not available'
-                if(this.bestPool == 0) return 'compound'
-                if(this.bestPool == 1) return 'usdt'
-                if(this.bestPool == 2) return 'y'
-                if(this.bestPool == 3) return 'busd'
+                return ['compound', 'usdt', 'y', 'busd', 'susd'][this.bestPool]
+            },
+            selldisabled() {
+                if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
+                    return true
+                return false;
             }
         },
         watch: {
@@ -265,6 +274,10 @@
                 else
                     return this.underlying_coins[i]
             },
+            normalizeSUSD(i) {
+                if(i == 5) return 3;
+                return i;
+            },
             precisions(i, contractName) {
                 if(!this.swapwrapped) return this.coin_precisions[i]
                 if(!contractName && this.swapwrapped == 1) contractName = 'compound'
@@ -305,8 +318,8 @@
             },
             async handle_trade() {
                 //handle allowances
-                var i = this.from_currency
-                var j = this.to_currency;
+                var i = this.normalizeSUSD(this.from_currency)
+                var j = this.normalizeSUSD(this.to_currency);
                 let amount = BN(this.fromInput).times(this.precisions(i)).toFixed(0)
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
@@ -314,15 +327,16 @@
                 let pool = contract.currentContract
                 let bestContract = contract;
                 if(this.bestPool > 0) {
+                    let poolIdx = this.bestPool
                     pool = Object.keys(contract.contracts)[this.bestPool]
                     bestContract = contract.contracts[pool]
                 }
                 let address = bestContract.swap._address;
                 if(this.distribution !== null) address = this.onesplit_address
                 if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
+                        await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                     else
-                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                        await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
                 if(this.distribution !== null) {
                     await this.onesplit.methods.swap(
                             this.getCoins(i)._address,
@@ -341,7 +355,7 @@
                     if(this.swapwrapped) exchangeMethod = bestContract.swap.methods.exchange
                     await exchangeMethod(i, j, amount, min_dy).send({
                             from: contract.default_account,
-                            gas: this.swapwrapped ? contractGas.swap[pool].exchange : contractGas.swap[pool].exchange_underlying,
+                            gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),
                         });
                     
                     this.from_cur_handler();
@@ -357,6 +371,7 @@
                 let amount = Math.floor(
                         100 * parseFloat(balance) / this.precisions(i)
                     ) / 100
+
                 if (this.fromInput == '' || this.val == 0) {
                     if(!contract.default_account) balance = 0
                     this.fromInput = amount.toFixed(2)
@@ -452,7 +467,8 @@
                 let get_to_amount = calcWorker.calcPrice
                 let realExchangeRate;
                 if(this.swapwrapped) get_to_amount = calcWorker.calcPriceWrapped
-                for(let i = 0; i < pools.length; i++) {
+                //without susd
+                for(let i = 0; i < pools.length-1; i++) {
                     if(poolConfigs[i].N_COINS-1 < this.to_currency || poolConfigs[i].N_COINS-1 < this.from_currency) continue;
                     let dx = this.fromInput * this.precisions(this.from_currency, pools[i])
                     let config = {...poolInfo[i], ...poolConfigs[i]}
@@ -490,7 +506,18 @@
                         this.toInput = '0.00';
                         return;
                     }
-                    if(this.fromInput < minAmount && !((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))) {
+                    if(this.from_currency == 5 || this.to_currency == 5) {
+                        let dx = BN(this.fromInput * this.precisions(this.from_currency)).toFixed(0, 1)
+                        let actualFromCurrency = this.normalizeSUSD(this.from_currency)
+                        let actualToCurrency = this.normalizeSUSD(this.to_currency)
+                        let dy = await this.swap[2].methods.get_dy_underlying(actualFromCurrency, actualToCurrency, dx).call()
+                        this.bestPool = 4;
+                        dy = +(BN(dy).div(this.precisions(this.to_currency)))
+                        let exchangeRate = dy / dx * this.precisions(this.from_currency)
+                        this.setExchangeRate(exchangeRate)
+                        this.toInput = BN(this.fromInput).times(BN(exchangeRate)).toFixed(2);
+                    }
+                    else if(this.fromInput < minAmount && !((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))) {
                         this.distribution = null;
                         let [pool, exchangeRate, realExchangeRate] = await this.comparePools()
                         this.bestPool = pool
@@ -520,6 +547,7 @@
                 this.onesplit = new contract.web3.eth.Contract(onesplit_abi, this.onesplit_address)
                 this.swap.push(new contract.web3.eth.Contract(contractAbis.iearn.swap_abi, contractAbis.iearn.swap_address));
                 this.swap.push(new contract.web3.eth.Contract(contractAbis.busd.swap_abi, contractAbis.busd.swap_address));
+                this.swap.push(new contract.web3.eth.Contract(contractAbis.susdv2.swap_abi, contractAbis.susdv2.swap_address));
                 this.coins.push(new contract.web3.eth.Contract(cERC20_abi, contractAbis.compound.coins[0]))
                 this.coins.push(new contract.web3.eth.Contract(cERC20_abi, contractAbis.compound.coins[1]))
                 for(let i = 0; i < 4; i++) {
@@ -529,6 +557,11 @@
                 }
                 this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.busd.coins[3]))
                 this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.busd.underlying_coins[3]))
+
+                //susd
+                    //coins and undelying_coins are the same
+                this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.coins[3]))
+                this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.underlying_coins[3]))
             }
 		}
 	}

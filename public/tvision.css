@@ -902,6 +902,10 @@ input[type=range]:focus::-ms-fill-upper {
   margin: 0 auto;
   margin-top: 6px;
 }
+
+.info-message.gentle-message {
+  background-color: #3465a4e6;
+}
   
 @media only screen and (max-device-width: 800px) {
     .exchange {

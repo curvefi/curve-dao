@@ -319,7 +319,7 @@
 				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
-				let allPools = ['compound', 'usdt', 'iearn', 'busd']
+				let allPools = ['compound', 'usdt', 'iearn', 'busd', 'susdv2']
 				let poolIdx = pools.map(pool => allPools.indexOf(pool))
 				let poolConfigs = tradeGetters.poolConfigs()
 

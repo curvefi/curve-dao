@@ -362,7 +362,7 @@
 				//move this to selectPool method
 				let jsonInterval = this.interval;
 				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
-				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool}-${jsonInterval}.json`));
+				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = this.data = await Promise.all(requests.map(r=>r.json()))
 				//tradeStore.data = data;
@@ -459,6 +459,7 @@
 				console.log(+get_dy_underlying, "get_dy_underlying")
 				*/
 				//data = JSON.parse(JSON.stringify(data))
+
 				let ohlcData = []
 				try {
 					for(let i = 0; i < data[0].length; i++) {
@@ -471,6 +472,7 @@
 						for(let j = 0; j < data.length; j++) {
 							if(poolConfigs[j].N_COINS-1 < toCurrency) continue;
 							let v = data[j][i]
+							if(v === undefined) continue;
 							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
 							let get_dy_underlying = await calcWorker.calcPrice(
 								{...v, ...poolConfigs[j]}, fromCurrency, toCurrency, abis[pools[j]].coin_precisions[fromCurrency])

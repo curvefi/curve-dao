@@ -64,6 +64,7 @@
         </fieldset>
         <p style="text-align: center">
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
+            <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susdv2' && oldBalance > 0">Withdraw old</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </p>

@@ -63,7 +63,7 @@
 	                </router-link>
 	            </div> -->
 	            <div :class="{selected: activePoolLink == 4}">
-	                <router-link to = '/susd'>
+	                <router-link to = '/susdv2'>
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  

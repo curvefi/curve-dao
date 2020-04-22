@@ -183,7 +183,7 @@
 		        	color: '#0b0a57'
 		        }, true)
 		        await volumeStore.getDailyVolume(this.pool)
-		        if(['susd', 'susdv2'].includes(this.pool)) {
+		        if(['susd'].includes(this.pool)) {
 		        	this.chart.yAxis[0].update({
 		        		type: 'linear'
 		        	})

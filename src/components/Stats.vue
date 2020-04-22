@@ -205,7 +205,7 @@
 					this.daily_apr = apydata.apy.day[subdomain];
 					this.weekly_apr = apydata.apy.week[subdomain];
 					let period = 1440
-					if(subdomain == 'susd') period = 30
+					//if(subdomain == 'susd') period = 30
 			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-${period}m.json`)
 			        this.data = await newdata.json()
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);

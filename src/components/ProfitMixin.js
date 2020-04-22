@@ -2,6 +2,8 @@ import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
 import { makeCancelable } from '../utils/helpers'
 
+import allabis from '../allabis'
+
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
 
@@ -40,15 +42,9 @@ export default {
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susdv2') subdomain = 'susd'
-				try {
-		        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1m.json`);
-		        	res = await res.json();
-		        	this.priceData = res.map(v=>[v.timestamp, v.virtual_price / 1e18])
-				}
-				catch(err) {
-					console.error(err)
-					this.priceData = []
-				}
+	        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1m.json`);
+	        	res = await res.json();
+	        	this.priceData = res
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
 			        let symbol = await currentContract.coins[i].methods.symbol().call()
 			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
@@ -141,7 +137,9 @@ export default {
 		    };
 		},
 		findClosest(timestamp) {
-		    let dates = this.priceData.data.find(d=>d[0] - timestamp > 0);
+		    let dates = this.priceData.find(d=>d.timestamp - timestamp > 0);
+		    //check if timestamp was before recording, this is only for when timestamp > lastest recorded, get lastest recorded
+		    if(!dates.length) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
 	    fromNative(curr, value) {
@@ -309,8 +307,9 @@ export default {
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 		            let tokens = +transfer[0].data
-		            let exchangeRate = this.findClosest(timestamp)[1]
-		            depositUsdSum += tokens*exchangeRate/1e16
+		            let poolInfoPoint = this.findClosest(timestamp)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            depositUsdSum += usd * 100
 		        }
 		    }
 		    console.timeEnd('timer')
@@ -370,8 +369,9 @@ export default {
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 		            let tokens = +transfer[0].data
-		            let exchangeRate = this.findClosest(timestamp)[1]
-		            withdrawals += tokens*exchangeRate/1e16
+		            let poolInfoPoint = this.findClosest(timestamp)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            withdrawals += usd * 100
 		        }
 
 
@@ -384,16 +384,22 @@ export default {
 		    return withdrawals;
 		},
 
-		async getAvailable(curr) {
+		getAvailableTransfer(amount, balances, supply) {
+			return balances.map((balance, i) => balance / allabis[this.currentPool].coin_precisions[i] * amount / supply).reduce((a, b) => a + b, 0)
+		},
+
+		async getAvailable(curr, amount, balance, supply) {
 		    if(this.cancel) throw new Error('cancel');
 		    let default_account = currentContract.default_account
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method
+		    //balance
 		    const balanceOfCurveContract = await web3.eth.call({
 		        to: tokenAddress,
 		        data: '0x70a08231000000000000000000000000' + this.CURVE.substr(2),
 		    });
+		    //amount
 		    const poolTokensBalance = await web3.eth.call({
 		        to: this.CURVE_TOKEN,
 		        data: '0x70a08231000000000000000000000000' + default_account,
@@ -403,9 +409,16 @@ export default {
 		        to: this.CURVE_TOKEN,
 		        data: '0x18160ddd',
 		    });
+
+		    const get_virtual_price = await web3.eth.call({
+		    	to: this.CURVE,
+		    	data: '0xbb7b8b80'
+		    })
+
 		    return this.BN(balanceOfCurveContract)
 		        .mul(this.BN(poolTokensBalance))
 		        .div(this.BN(poolTokensSupply));
-		}
-	}
+		},
+	},
+
 }

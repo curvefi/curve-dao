@@ -12,7 +12,7 @@
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 		      </p>
 		      <stats :pool= 'currency'/>
-		      <balances-info 
+		      <balances-info
 			      :bal_info = 'bal_infos[currency]'
 			      :total = 'totals[i]'
 			      :l_info = 'l_infos[currency]'
@@ -266,7 +266,9 @@
 					if(key == 'susdv2') {
 						let slice = decoded.slice(-8)
 						for(let i = 0; i < 4; i++) {
-							this.bal_infos.susdv2.push(this.all_c_rates.susdv2.c_rates[i] * (slice[i]))
+							let calcBalance = this.all_c_rates.susdv2.c_rates[i] * (slice[i])
+							this.bal_infos.susdv2.push(calcBalance)
+							total += calcBalance
 						}
 						ind-=8
 					}

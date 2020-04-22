@@ -1,15 +1,34 @@
 <template>
 	<div>
 	    <p class='simple-error' id='highslippage-warning' v-show='showSlippage && slippage < -0.005'>
-	    	<span class='text'>Warning! High slippage(plus pricing)</span>: 
-	    	<span class='percent'>{{(-slippage*100).toFixed(3)}}</span>%
+	    	<span class='text'>
+          Warning! High slippage(plus pricing):
+        <span class='percent'>{{(-slippage*100).toFixed(3)}}</span>%
+          <span class='tooltip'>[?]
+            <span class='tooltiptext long'>
+              Slippage comes from depositing too many coins not in balance, and current coin prices are additionally accounted for
+            </span>
+          </span>
+        </span>
 	    </p>
 	    <p class='info-message' id='slippage-warning' v-show='showSlippage && slippage <= 0 && slippage >= -0.005'>
-	    	<span class='text'>Slippage(plus pricing)</span>: 
-	    	<span class='percent'>{{(-slippage*100).toFixed(3)}}</span>%
+	    	<span class='text'>
+          Slippage(plus pricing):
+        </span>
+        <span class='percent'>{{(-slippage*100).toFixed(3)}}</span>%
+          <span class='tooltip'>[?]
+            <span class='tooltiptext long'>
+              Slippage comes from depositing too many coins not in balance, and current coin prices are additionally accounted for
+            </span>
+          </span>
 	    </p>
 	    <p class='success' id='bonus-window' v-show='showSlippage && slippage > 0'>
 	    	Bonus(plus pricing): <span>{{(slippage*100).toFixed(3)}}</span>%
+        <span class='tooltip'>[?]
+          <span class='tooltiptext long'>
+            Bonus comes as an advantage from current coin prices which usually appears for coins which are low in balance
+          </span>
+        </span>
 	    </p>
       <p class='simple-error' id='nobalance-warning' v-show='show_nobalance'>
       	Warning! Not enough balance for {{noBalanceText}} token in the contract

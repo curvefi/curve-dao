@@ -55,8 +55,8 @@
             </ul>
 
             <p style="text-align: center">
-            	<!-- :disabled="currentPool == 'susdv2' && slippage < -0.001" -->
                 <button id="add-liquidity" 
+                    :disabled="currentPool == 'susdv2' && slippage < -0.03"
                 	@click='handle_add_liquidity' 
                 	>
                 		Deposit

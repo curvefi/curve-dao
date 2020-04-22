@@ -63,7 +63,9 @@
         	</ul>
         </fieldset>
         <p style="text-align: center">
-            <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
+            <button id="remove-liquidity"
+            :disabled="currentPool == 'susdv2' && slippage < -0.03"
+            @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>

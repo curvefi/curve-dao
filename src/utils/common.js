@@ -67,7 +67,7 @@ export async function ensure_allowance(amounts, plain = false) {
             if (cBN(allowances[i]).isLessThan(currentContract.max_allowance.div(cBN(2)))) {
                 if (allowances[i] > 0)
                     await approve(coins[i], 0, default_account, swap);
-                await approve(coins[i], max_allowance, default_account, swap);
+                await approve(coins[i], currentContract.max_allowance, default_account, swap);
             }
         }
     }

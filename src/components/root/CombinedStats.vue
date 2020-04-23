@@ -261,7 +261,7 @@
 				    	this.bal_infos[key].push(calcBalance)
 				    	total += this.bal_infos.usdt[0] + this.bal_infos.usdt[1] + calcBalance
 				    }
-				    if(key == 'iearn' || key == 'busd' || key == 'susd') {
+				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew') {
 				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)
 				    	helpers.chunkArr(slice, 2).map((v, i) => {
 				    		//v is [rate, balance]

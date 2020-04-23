@@ -338,4 +338,7 @@
         text-align: right;
         font-size: 0.9em;
     }
+    #no-balance {
+        text-align: center;
+    }
 </style>

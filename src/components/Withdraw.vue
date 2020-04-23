@@ -191,9 +191,9 @@
             	let calls = []
 			    if (currentContract.default_account) {
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
-			        	calls.push([currentContract.coins[i]._address ,currentContract.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()])
+			        	calls.push([currentContract.coins[i]._address ,currentContract.coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			        }
-			        calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.balanceOf(currentContract.default_account).encodeABI()])
+			        calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    }
 			    else {
 			        this.token_balance = 0;
@@ -226,7 +226,7 @@
 		        this.show_nobalance_i = 0;
 		        let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 		        calls.push([currentContract.swap._address ,currentContract.swap.methods.calc_token_amount(values, false).encodeABI()])
-		        calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.balanceOf(currentContract.default_account).encodeABI()])
+		        calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 		        let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 		        let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 		        decoded.slice(0, currentContract.N_COINS).forEach((v, i) => {
@@ -364,7 +364,7 @@
         		if(this.to_currency !== null && this.to_currency < 10) {
 	        		var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
 				        if (this.share == 100)
-				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
+				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call();
 /*				        this.inputs = this.inputs.map(v=>0)
 				        Vue.set(this.inputs, this.to_currency, amount / 1e18)
 				        let ref = 'inputs'+this.to_currency

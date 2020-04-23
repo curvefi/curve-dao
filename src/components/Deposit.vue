@@ -139,7 +139,7 @@
                 await this.handle_sync_balances();
                 await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
-                	this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).encodeABI()])
+                	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                 let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
                 if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
@@ -180,7 +180,7 @@
 			    await common.update_fee_info();
 			    let calls = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()])
+			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 			    }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()

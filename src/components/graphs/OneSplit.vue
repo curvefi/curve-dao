@@ -288,7 +288,7 @@
                 return contractAbis[contractName].coin_precisions[i]
             },
             async highlight_input() {
-                var balance = parseFloat(await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account).call()) 
+                var balance = parseFloat(await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call()) 
                                 / this.precisions(this.from_currency);
                 if (this.fromInput > balance)
                     this.fromBgColor = 'red'
@@ -296,7 +296,7 @@
                     this.fromBgColor = 'blue'
             },
             async from_cur_handler() {
-                if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account, onesplit_address).call())
+                if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', onesplit_address).call())
                         > contract.max_allowance.div(BN(2)))
                     this.inf_approval = true;
                 else
@@ -359,7 +359,8 @@
                         });
                     
                     this.from_cur_handler();
-                    let balance = await this.getCoins(i).methods.balanceOf(contract.default_account).call();
+                    let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                    if(!contract.default_account) balance = 0
                     let maxAmount = Math.floor(
                             100 * parseFloat(balance) / this.precisions(i)
                         ) / 100
@@ -367,7 +368,8 @@
                 }
             },
             async set_from_amount(i) {
-                let balance = await this.getCoins(i).methods.balanceOf(contract.default_account).call();
+                let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                if(!contract.default_account) balance = 0
                 let amount = Math.floor(
                         100 * parseFloat(balance) / this.precisions(i)
                     ) / 100
@@ -535,7 +537,8 @@
                 }
             },
 			async set_max_balance() {
-                let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account).call();
+                let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                if(!contract.default_account) balance = 0
                 let amount = Math.floor(
                         100 * parseFloat(balance) / this.precisions(this.from_currency)
                     ) / 100

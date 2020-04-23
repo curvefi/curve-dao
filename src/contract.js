@@ -363,7 +363,7 @@ export async function init(contract, refresh = false) {
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
 		let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
-		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account).encodeABI()])
+		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
     if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)

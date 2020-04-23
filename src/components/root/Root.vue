@@ -124,7 +124,8 @@
 			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
-			this.$watch(() => contract.default_account, val => {
+			this.$watch(() => contract.web3, val => {
+				if(!val) return;
 				this.getCurveRewards()
 			})
 		},

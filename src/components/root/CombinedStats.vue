@@ -23,19 +23,22 @@
 			      :currencies = 'allCurrencies[currency]'
 			      :tokenSupply = 'totalTokenSupplies[i]'
 			      :tokenBalance = 'totalTokenBalances[i]'
+			      :staked_info = "currency == 'susdv2' && staked_infos"
+			      :totalStake = 'totalStake'
 			      />
 	  	</div>
 	</div>
 </template>
 
 <script>
+	import Vue from 'vue'
 	import Stats from '../Stats.vue'
 	import BalancesInfo from '../BalancesInfo.vue'
 	import Web3 from 'web3'
 	import TotalBalances from './TotalBalances.vue'
 
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
-    import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi } from '../../allabis'
+    import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
 
     import * as helpers from '../../utils/helpers'
 
@@ -63,6 +66,10 @@
 			bal_infos: {},
 			l_infos: {},
 			totalShares: [],
+
+			staked_infos: [],
+			totalStake: -1,
+
 			fees: [],
 			admin_fees: [],
 			totalTokenBalances: [],
@@ -213,9 +220,14 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
+			    let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account).encodeABI()])
+
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    let curveStakedBalance = decoded[decoded.length-1]
+			    decoded = decoded.slice(0, decoded.length-1)
 			    let i = 0;
 			    this.bal_infos['usdt'] = []
 			    this.l_infos['usdt'] = []
@@ -284,6 +296,17 @@
 		                totalShare += val;
 		            }
 	            	this.totalShares.push(totalShare)
+	            	if(key == 'susdv2') {
+		            	this.totalStake = 0;
+				        if(curveStakedBalance > 0) {
+				            for (let i=0; i < contracts[key].N_COINS; i++) {
+				                var val = this.bal_infos[key][i] * curveStakedBalance / (+decoded[ind+11]);
+				                Vue.set(this.staked_infos, i, val)
+				                this.totalStake += val;
+				            }
+				        }
+				    }
+
 	            	i++;
 				}
 			},

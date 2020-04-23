@@ -37,8 +37,7 @@
           </li>
       </ul>
     </fieldset>
-
-    <fieldset id="lp-info-container" v-show='totalStake > 0 && initializedContracts'>
+    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
       <legend>Staked share: ( {{(totalBalance / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
@@ -79,6 +78,9 @@
       },
       curveStakeBalance() {
         return currentContract.curveStakeBalance
+      },
+      currentPool() {
+        return this.pool || currentContract.currentContract
       }
     }
   }

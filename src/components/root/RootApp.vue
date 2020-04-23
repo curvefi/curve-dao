@@ -31,6 +31,7 @@
         <span>?</span>
         <div class='dropdown'>
           <router-link to="/audits">Audits</router-link>
+          <router-link to="/contracts">Contracts</router-link>
           <router-link to="/rootfaq">FAQ</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>

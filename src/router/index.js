@@ -18,6 +18,7 @@ const ChartGraph = () => import('../components/graphs/Chart.vue')
 const BasicTrade = () => import('../components/graphs/BasicTrade.vue')
 const RootFAQ = () => import('../components/root/RootFAQ.vue')
 const Audits = () => import('../views/Audits.vue')
+const Contracts = () => import('../views/Contracts.vue')
 
 import Index from '../components/Index.vue'
 
@@ -72,6 +73,11 @@ let routes = [
         name: 'RootFAQ',
         path: '/rootfaq',
         component: RootFAQ,
+      },
+      {
+        name: 'Contracts',
+        path: '/contracts',
+        component: Contracts,
       },
     ]
   },

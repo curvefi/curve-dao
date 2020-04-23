@@ -260,6 +260,7 @@ const state = Vue.observable({
 	old_swap: null,
 	swap_token: null,
 	old_swap_token: null,
+
 	totalBalance: null,
 	totalSupply: null,
 	oldBalance: null,
@@ -282,6 +283,8 @@ const state = Vue.observable({
 
 	staked_info: [],
 	totalStake: -1,
+
+	virtual_price: null,
 
 	slippage: 0,
 	showSlippage: false,
@@ -344,7 +347,10 @@ export async function init(contract, refresh = false) {
         this.error = 'There was an error connecting. Please refresh page';
     }
 
-    let calls = [];
+    let calls  = [
+    	//get_virtual_price
+    	[allabis[contract.currentContract].swap_address, '0xbb7b8b80'],
+    ];
     if(contract.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);

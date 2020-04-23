@@ -35,6 +35,9 @@
 
             <span> {{totalShare | toFixed2}}</span>
           </li>
+          <li>
+            <b>Averaged USD balance:</b> {{(totalShare * virtualPrice) | toFixed2}}
+          </li>
       </ul>
     </fieldset>
     <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
@@ -48,6 +51,11 @@
 
             <span> {{totalStake | toFixed2}}</span>
           </li>
+
+          <li>
+            <b>Averaged USD balance:</b> {{(totalStake * virtualPrice) | toFixed2}}
+          </li>
+
       </ul>
     </fieldset>
 
@@ -81,7 +89,10 @@
       },
       currentPool() {
         return this.pool || currentContract.currentContract
-      }
+      },
+      virtualPrice() {
+        return currentContract.virtual_price
+      },
     }
   }
 </script>

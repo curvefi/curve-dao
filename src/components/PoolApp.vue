@@ -42,6 +42,8 @@
         <span>?</span>
         <div class='dropdown'>
           <router-link to="/audits">Audits</router-link>
+          <a :href="'https://etherscan.io/address/' + this.poolAddress">Pool contract</a>
+          <a :href="'https://etherscan.io/address/' + this.tokenAddress">Token contract</a>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
           <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
@@ -82,6 +84,7 @@
   import BalancesInfo from '../components/BalancesInfo.vue'
   import { getters, contract as currentContract, changeContract, poolMenu } from '../contract'
   import init from '../init'
+  import allabis from '../allabis'
 
   export default {
     components: {
@@ -95,6 +98,12 @@
       poolMenu() {
         return poolMenu;
       },
+      poolAddress() {
+        return allabis[this.currentPool].swap_address
+      },
+      tokenAddress() {
+        return allabis[this.currentPool].token_address
+      },
     },
     methods: {
       changePools(pool) {
@@ -104,7 +113,7 @@
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
-      }
+      },
     },
   }
 </script>

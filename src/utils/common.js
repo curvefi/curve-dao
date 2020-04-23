@@ -222,7 +222,8 @@ export async function multiInitState(calls, contract, initContracts = false) {
     }
     if(initContracts && contract.currentContract == 'susdv2') {
         contract.oldBalance = decoded[0];
-        decoded = decoded.slice(1);
+        contract.curveStakedBalance = decoded[1]
+        decoded = decoded.slice(2);
     }
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
@@ -296,6 +297,16 @@ export async function multiInitState(calls, contract, initContracts = false) {
             contract.totalShare = 0;
             contract.showShares = false;
             //no need to set other values as v-show check is done based on totalShare
+        }
+
+        contract.totalStake = 0;
+        if(contract.curveStakedBalance > 0) {
+            for (let i=0; i < contract.N_COINS; i++) {
+                console.log(contract.curveStakedBalance)
+                var val = balances[i] * contract.c_rates[i] * contract.curveStakedBalance / token_supply;
+                Vue.set(contract.staked_info, i, val)
+                contract.totalStake += val;
+            }
         }
     }
 }

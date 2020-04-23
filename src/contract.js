@@ -1,6 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi } from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -239,6 +239,7 @@ const state = Vue.observable({
 			showShares: false,
 			totalSupply: 0,
 			totalBalance: 0,
+			curveRewards: null,
 		}
 	},
 	currentContract: 'compound',
@@ -279,6 +280,9 @@ const state = Vue.observable({
 	totalShare: 0,
 	showShares: false,
 
+	staked_info: [],
+	totalStake: -1,
+
 	slippage: 0,
 	showSlippage: false,
 	showNoBalance: false,
@@ -289,6 +293,9 @@ const state = Vue.observable({
 	default_account: '',
 
 	error: false,
+	curveRewards: null,
+	curveStakedBalance: null,
+
 
 })
 
@@ -314,6 +321,9 @@ export const getters = {
 	N_COINS: () => state.N_COINS,
 	error: () => state.error,
 	showShares: () => state.showShares,
+
+	staked_info: () => state.staked_info,
+	totalStake: () => state.totalStake,
 }
 
 
@@ -342,8 +352,12 @@ export async function init(contract, refresh = false) {
     }
     if(contract.currentContract == 'susdv2') {
     	//balanceOf(address)
+    	
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
+
+		let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		calls.push([curveRewards._address, curveRewards.methods.balanceOf(contract.default_account).encodeABI()])
     }
     if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)

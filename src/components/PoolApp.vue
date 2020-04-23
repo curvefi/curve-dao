@@ -68,6 +68,8 @@
     :total = 'balTotal'
     :l_info = 'l_info'
     :totalShare = 'totalShare'
+    :staked_info = 'staked_info'
+    :totalStake = 'totalStake'
     :fee = 'fee'
     :admin_fee = 'admin_fee'
     :currencies = 'currencies'

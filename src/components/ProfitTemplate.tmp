@@ -19,6 +19,10 @@
             	<span :class="{'loading line': available == -1}">
             		<span v-show='available != -1'> {{(available/100).toFixed(2)}} </span>
             	</span>
+                <span v-show = "currentPool == 'susdv2'">
+                    (<span :class="{'loading line': profitTotalStake === null}"></span>
+                    <span v-show='profitTotalStake !== null'>{{profitTotalStake !==null && profitTotalStake.toFixed(2)}} </span> staked)
+                </span>
             </li>
             <li>
             	<b>Profit:</b>

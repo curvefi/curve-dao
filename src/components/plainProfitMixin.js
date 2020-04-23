@@ -12,12 +12,20 @@ export default {
 		removeliquidityImbalanceTopic: '0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
 		earned: null,
 		paidRewards: null,
+		profitTotalStake: null,
 	}),
 
+	async mounted() {
+		if(currentContract.web3) this.getSNXRewards()
+	},
 
 	async created() {
-		this.$watch(() => currentContract.web3, async (val) => {
-			if(!val) return;
+		this.$watch(() => currentContract.web3, val => val && this.getSNXRewards())
+	},
+
+	methods: {
+
+		async getSNXRewards() {
 			let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 			let calls = [
 				[curveRewards._address, curveRewards.methods.earned(currentContract.default_account).encodeABI()],
@@ -27,6 +35,7 @@ export default {
 			let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 			this.earned = +decoded[0] / 1e18
+			this.profitTotalStake = +decoded[1] / 1e18
 			let rewardLogs = await currentContract.web3.eth.getPastLogs({
 				fromBlock: '0x975bfa',
 				//old fromBlock: '0x932641',
@@ -43,10 +52,7 @@ export default {
 			})
 			let rewards = rewardLogs.map(log=>currentContract.web3.eth.abi.decodeParameter('uint256', log.data) / 1e18).reduce((a, b) => a + b, 0)
 			this.paidRewards = rewards
-		})
-	},
-
-	methods: {
+		},
 
 	    async checkExchangeRateBlocks(block, address, direction, type = 'deposit') {
 		    return 1;

@@ -307,7 +307,6 @@ export async function multiInitState(calls, contract, initContracts = false) {
         contract.totalStake = 0;
         if(contract.curveStakedBalance > 0) {
             for (let i=0; i < contract.N_COINS; i++) {
-                console.log(contract.curveStakedBalance)
                 var val = balances[i] * contract.c_rates[i] * contract.curveStakedBalance / token_supply;
                 Vue.set(contract.staked_info, i, val)
                 contract.totalStake += val;

@@ -48,6 +48,7 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
+      <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>

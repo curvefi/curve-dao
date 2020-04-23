@@ -40,6 +40,7 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
+      <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>

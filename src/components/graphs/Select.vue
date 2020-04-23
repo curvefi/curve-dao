@@ -12,6 +12,9 @@
 
 			<input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
 			<label for='busdpool'>bUSD</label>
+
+			<input id='susdpool' type='checkbox' value='susdv2' v-model='pools'/>
+			<label for='susdpool'>sUSD</label>
 		</div>
 
 		<select class='tvision' v-model='pair'>

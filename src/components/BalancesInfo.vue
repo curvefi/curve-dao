@@ -5,11 +5,11 @@
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b>
-            <span :class="{'loading line': !bal_info || !bal_info[i]}"> {{bal_info && bal_info[i] | toFixed2}}</span>
+            <span :class="{'loading line': !bal_info || bal_info[i] === null}"> {{bal_info && bal_info[i] | toFixed2}}</span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
-            <span :class="{'loading line': !total}"> {{total | toFixed2}}</span>
+            <span :class="{'loading line': total === null}"> {{total | toFixed2}}</span>
           </li>
       </ul>
       <p>
@@ -23,6 +23,7 @@
         <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee && admin_fee.toFixed(3)}}</span>%
       </p>
     </fieldset>
+
     <fieldset id="lp-info-container" v-show='totalShare > 0 && initializedContracts'>
       <legend>My share: ( {{(totalBalance / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='lp-info'>
@@ -34,8 +35,30 @@
 
             <span> {{totalShare | toFixed2}}</span>
           </li>
+          <li>
+            <b>Averaged USD balance:</b> {{(totalShare * virtualPrice) | toFixed2}}
+          </li>
       </ul>
     </fieldset>
+    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
+      <legend>Staked share: ( {{(totalStake / totalSupply * 100).toFixed(3)}}% of pool)</legend>
+      <ul id='stakelp-info'>
+          <li v-for='(currency, i) in Object.keys(currencies)'>
+            <b>{{currency | capitalize}}:</b> 
+            <span> {{staked_info && staked_info[i] | toFixed2}}</span></li>
+          <li>
+            <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
+
+            <span> {{totalStake | toFixed2}}</span>
+          </li>
+
+          <li>
+            <b>Averaged USD balance:</b> {{(totalStake * virtualPrice) | toFixed2}}
+          </li>
+
+      </ul>
+    </fieldset>
+
   </div>
 </template>
 
@@ -44,7 +67,7 @@
   import * as helpers from '../utils/helpers'
 
   export default {
-    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance'],
+    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake'],
     methods: {
       totalCurrencies(currencies) {
         return helpers.totalCurrencies(currencies)
@@ -60,6 +83,15 @@
       totalBalance() {
         if(this.tokenBalance) return this.tokenBalance
         return getters.totalBalance()
+      },
+      curveStakeBalance() {
+        return currentContract.curveStakeBalance
+      },
+      currentPool() {
+        return this.pool || currentContract.currentContract
+      },
+      virtualPrice() {
+        return currentContract.virtual_price
       },
     }
   }

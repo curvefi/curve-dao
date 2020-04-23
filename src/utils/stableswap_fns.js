@@ -36,7 +36,7 @@ let calc = ({
 		for (let _x of xp)
 		    S = S.plus(_x)
 		if (S == 0)
-		    return 0
+		    return ZERO
 
 		let Dprev = ZERO
 		let D = fcopy(S)

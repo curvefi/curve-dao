@@ -1,6 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi } from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -44,6 +44,12 @@ const currencies = {
 		susd: 'ySUSD',
 		ycurve: 'yCurve',
 	},
+	susdv2: {
+		dai: 'DAI',
+		usdc: 'USDC',
+		usdt: 'USDT',
+		susd: 'sUSD',
+	},
 }
 
 export const allCurrencies = currencies
@@ -53,27 +59,44 @@ export const poolMenu = {
 	usdt: 'USDT',
 	iearn: 'Y',
 	busd: 'bUSD',
-	susd: 'sUSD-yCurve',
+	susd: 'sUSD-yCurve old',
+	susdv2: 'sUSD',
 }
 
 export const gas = {
 	swap: {
 		compound: {
-			exchange: 600000,
-			exchange_underlying: 1200000
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000
 		},
 		usdt: {
-			exchange: 600000,
-			exchange_underlying: 1200000
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000
 		},
 		iearn: {
-			exchange: 800000,
-			exchange_underlying: 1600000
+			exchange: (i, j) => 800000,
+			exchange_underlying: (i, j) => 1600000
 		},
 		busd: {
-			exchange: 800000,
-			exchange_underlying: 1600000
+			exchange: (i, j) => 800000,
+			exchange_underlying: (i, j) => 1600000
 		},
+		susd: {
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000,
+		},
+		susdv2: {
+			exchange: (i, j) => 300000,
+			exchange_underlying: (i, j) => 300000,
+		}
+	},
+	deposit: {
+		compound: 1300000,
+		usdt: 1300000,
+		iearn: 1300000,
+		busd: 1300000,
+		susd: 1300000,
+		susdv2: 600000,
 	},
 	withdraw: {
 		compound: {
@@ -87,6 +110,12 @@ export const gas = {
 		},
 		busd: {
 			imbalance: x => (12642*x + 474068)*1.5,
+		},
+		susd: {
+			imbalance: x => 1000000,
+		},
+		susdv2: {
+			imbalance: x => 600000,
 		}
 	},
 	depositzap: {
@@ -114,6 +143,12 @@ export const gas = {
 			withdraw: 3500000,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5,
+		},
+		susdv2: {
+			deposit: x => (172664*x + 471691)*1.5,
+			withdraw: 800000,
+			withdrawShare: 1000000,
+			withdrawImbalance: x => (181733*x + 506125)*2.5,
 		}
 	}
 }
@@ -191,6 +226,21 @@ const state = Vue.observable({
 			totalSupply: 0,
 			totalBalance: 0,
 		},
+		susdv2: {
+			currentContract: 'susdv2',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
+			curveRewards: null,
+		}
 	},
 	currentContract: 'compound',
 	currencies: currencies.compound,
@@ -210,6 +260,7 @@ const state = Vue.observable({
 	old_swap: null,
 	swap_token: null,
 	old_swap_token: null,
+
 	totalBalance: null,
 	totalSupply: null,
 	oldBalance: null,
@@ -230,6 +281,11 @@ const state = Vue.observable({
 	totalShare: 0,
 	showShares: false,
 
+	staked_info: [],
+	totalStake: -1,
+
+	virtual_price: null,
+
 	slippage: 0,
 	showSlippage: false,
 	showNoBalance: false,
@@ -240,6 +296,9 @@ const state = Vue.observable({
 	default_account: '',
 
 	error: false,
+	curveRewards: null,
+	curveStakedBalance: null,
+
 
 })
 
@@ -265,6 +324,9 @@ export const getters = {
 	N_COINS: () => state.N_COINS,
 	error: () => state.error,
 	showShares: () => state.showShares,
+
+	staked_info: () => state.staked_info,
+	totalStake: () => state.totalStake,
 }
 
 
@@ -285,13 +347,25 @@ export async function init(contract, refresh = false) {
         this.error = 'There was an error connecting. Please refresh page';
     }
 
-    let calls = [];
+    let calls  = [
+    	//get_virtual_price
+    	[allabis[contract.currentContract].swap_address, '0xbb7b8b80'],
+    ];
     if(contract.currentContract == 'compound') {
 	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
 	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
-    if(contract.currentContract != 'susd')
+    if(contract.currentContract == 'susdv2') {
+    	//balanceOf(address)
+    	
+    	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
+    	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
+
+		let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    }
+    if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);

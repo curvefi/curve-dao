@@ -5883,9 +5883,1017 @@ var susd = {
 
 }
 
+var susdv2 = {
+	swap_abi: [
+	 {
+	  "name": "TokenExchange",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "buyer",
+	    "indexed": true
+	   },
+	   {
+	    "type": "int128",
+	    "name": "sold_id",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "tokens_sold",
+	    "indexed": false
+	   },
+	   {
+	    "type": "int128",
+	    "name": "bought_id",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "tokens_bought",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "TokenExchangeUnderlying",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "buyer",
+	    "indexed": true
+	   },
+	   {
+	    "type": "int128",
+	    "name": "sold_id",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "tokens_sold",
+	    "indexed": false
+	   },
+	   {
+	    "type": "int128",
+	    "name": "bought_id",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "tokens_bought",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "AddLiquidity",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "provider",
+	    "indexed": true
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "token_amounts",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "fees",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "invariant",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "token_supply",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "RemoveLiquidity",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "provider",
+	    "indexed": true
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "token_amounts",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "fees",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "token_supply",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "RemoveLiquidityImbalance",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "provider",
+	    "indexed": true
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "token_amounts",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "fees",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "invariant",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "token_supply",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "CommitNewAdmin",
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "deadline",
+	    "indexed": true,
+	    "unit": "sec"
+	   },
+	   {
+	    "type": "address",
+	    "name": "admin",
+	    "indexed": true
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "NewAdmin",
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "admin",
+	    "indexed": true
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "CommitNewParameters",
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "deadline",
+	    "indexed": true,
+	    "unit": "sec"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "A",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "fee",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "admin_fee",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "name": "NewParameters",
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "A",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "fee",
+	    "indexed": false
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "admin_fee",
+	    "indexed": false
+	   }
+	  ],
+	  "anonymous": false,
+	  "type": "event"
+	 },
+	 {
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "address[4]",
+	    "name": "_coins"
+	   },
+	   {
+	    "type": "address[4]",
+	    "name": "_underlying_coins"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_pool_token"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "_A"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "_fee"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "constructor"
+	 },
+	 {
+	  "name": "get_virtual_price",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1570535
+	 },
+	 {
+	  "name": "calc_token_amount",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "amounts"
+	   },
+	   {
+	    "type": "bool",
+	    "name": "deposit"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 6103471
+	 },
+	 {
+	  "name": "add_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "amounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_mint_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 9331701
+	 },
+	 {
+	  "name": "get_dy",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "j"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "dx"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 3489637
+	 },
+	 {
+	  "name": "get_dy_underlying",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "j"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "dx"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 3489467
+	 },
+	 {
+	  "name": "exchange",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "j"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "dx"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_dy"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 7034253
+	 },
+	 {
+	  "name": "exchange_underlying",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "j"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "dx"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_dy"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 7050488
+	 },
+	 {
+	  "name": "remove_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_amount"
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "min_amounts"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 241191
+	 },
+	 {
+	  "name": "remove_liquidity_imbalance",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "amounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "max_burn_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 9330864
+	 },
+	 {
+	  "name": "commit_new_parameters",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "amplification"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "new_fee"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "new_admin_fee"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 146045
+	 },
+	 {
+	  "name": "apply_new_parameters",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 133452
+	 },
+	 {
+	  "name": "revert_new_parameters",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 21775
+	 },
+	 {
+	  "name": "commit_transfer_ownership",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "address",
+	    "name": "_owner"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 74452
+	 },
+	 {
+	  "name": "apply_transfer_ownership",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 60508
+	 },
+	 {
+	  "name": "revert_transfer_ownership",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 21865
+	 },
+	 {
+	  "name": "withdraw_admin_fees",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 23448
+	 },
+	 {
+	  "name": "kill_me",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 37818
+	 },
+	 {
+	  "name": "unkill_me",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 21955
+	 },
+	 {
+	  "name": "coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2130
+	 },
+	 {
+	  "name": "underlying_coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2160
+	 },
+	 {
+	  "name": "balances",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2190
+	 },
+	 {
+	  "name": "A",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2021
+	 },
+	 {
+	  "name": "fee",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2051
+	 },
+	 {
+	  "name": "admin_fee",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2081
+	 },
+	 {
+	  "name": "owner",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2111
+	 },
+	 {
+	  "name": "admin_actions_deadline",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "unit": "sec",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2141
+	 },
+	 {
+	  "name": "transfer_ownership_deadline",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "unit": "sec",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2171
+	 },
+	 {
+	  "name": "future_A",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2201
+	 },
+	 {
+	  "name": "future_fee",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2231
+	 },
+	 {
+	  "name": "future_admin_fee",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2261
+	 },
+	 {
+	  "name": "future_owner",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 2291
+	 }
+	],
+	deposit_abi: [
+	 {
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "address[4]",
+	    "name": "_coins"
+	   },
+	   {
+	    "type": "address[4]",
+	    "name": "_underlying_coins"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_curve"
+	   },
+	   {
+	    "type": "address",
+	    "name": "_token"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "constructor"
+	 },
+	 {
+	  "name": "add_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_mint_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 166032
+	 },
+	 {
+	  "name": "remove_liquidity",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_amount"
+	   },
+	   {
+	    "type": "uint256[4]",
+	    "name": "min_uamounts"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 101481
+	 },
+	 {
+	  "name": "remove_liquidity_imbalance",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256[4]",
+	    "name": "uamounts"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "max_burn_amount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 125088
+	 },
+	 {
+	  "name": "calc_withdraw_one_coin",
+	  "outputs": [
+	   {
+	    "type": "uint256",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 3881771
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "remove_liquidity_one_coin",
+	  "outputs": [],
+	  "inputs": [
+	   {
+	    "type": "uint256",
+	    "name": "_token_amount"
+	   },
+	   {
+	    "type": "int128",
+	    "name": "i"
+	   },
+	   {
+	    "type": "uint256",
+	    "name": "min_uamount"
+	   },
+	   {
+	    "type": "bool",
+	    "name": "donate_dust"
+	   }
+	  ],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function"
+	 },
+	 {
+	  "name": "withdraw_donated_dust",
+	  "outputs": [],
+	  "inputs": [],
+	  "constant": false,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 63973
+	 },
+	 {
+	  "name": "coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1680
+	 },
+	 {
+	  "name": "underlying_coins",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [
+	   {
+	    "type": "int128",
+	    "name": "arg0"
+	   }
+	  ],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1710
+	 },
+	 {
+	  "name": "curve",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1541
+	 },
+	 {
+	  "name": "token",
+	  "outputs": [
+	   {
+	    "type": "address",
+	    "name": ""
+	   }
+	  ],
+	  "inputs": [],
+	  "constant": true,
+	  "payable": false,
+	  "type": "function",
+	  "gas": 1571
+	 }
+	],
+	N_COINS: 4,
+	coin_precisions: [1e18, 1e6, 1e6, 1e18],
+	tethered: [false, false, true, false],
+	use_lending: [false, false, false, false],
+	swap_address: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD',
+	token_address: '0xC25a3A3b969415c80451098fa907EC722572917F',
+	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+	deposit_address: '0xFCBa3E75865d2d561BE8D220616520c171F12851',
+	underlying_coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',],
+	coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',],
+}
+
 export let onesplit_address = '0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E'
 
 export let onesplit_abi = [{"inputs":[{"internalType":"contract IOneSplit","name":"impl","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newImpl","type":"address"}],"name":"ImplementationUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_AAVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_BANCOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_BDAI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CHAI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_COMPOUND","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_BINANCE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_COMPOUND","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_USDT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_Y","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_FULCRUM","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_IEARN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_KYBER","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_OASIS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_SMART_TOKEN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_UNISWAP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_BANCOR_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_OASIS_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_UNISWAP_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_MULTI_PATH_ETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"parts","type":"uint256"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"getExpectedReturn","outputs":[{"internalType":"uint256","name":"returnAmount","type":"uint256"},{"internalType":"uint256[]","name":"distribution","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"minReturn","type":"uint256"},{"internalType":"uint256","name":"parts","type":"uint256"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"goodSwap","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"oneSplitImpl","outputs":[{"internalType":"contract IOneSplit","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IOneSplit","name":"impl","type":"address"}],"name":"setNewImpl","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"minReturn","type":"uint256"},{"internalType":"uint256[]","name":"distribution","type":"uint256[]"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"swap","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
 
+export let sCurveRewards_abi = [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"RewardAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"}],"name":"RewardPaid","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Staked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawn","type":"event"},{"constant":true,"inputs":[],"name":"DURATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"earned","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"exit","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"getReward","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"lastTimeRewardApplicable","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"lastUpdateTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"reward","type":"uint256"}],"name":"notifyRewardAmount","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"periodFinish","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"rewardPerToken","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"rewardPerTokenStored","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"rewardRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"rewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"_rewardDistribution","type":"address"}],"name":"setRewardDistribution","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"snx","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"stake","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"uni","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"userRewardPerTokenPaid","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdraw","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
 
-export default {compound, usdt, iearn, y: iearn, busd, susd}
+export let sCurveRewards_address = '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92'
+
+export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2}

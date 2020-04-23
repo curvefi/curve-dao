@@ -17,6 +17,8 @@ const StatsDaily = () => import('../components/root/StatsDaily.vue')
 const ChartGraph = () => import('../components/graphs/Chart.vue')
 const BasicTrade = () => import('../components/graphs/BasicTrade.vue')
 const RootFAQ = () => import('../components/root/RootFAQ.vue')
+const Audits = () => import('../views/Audits.vue')
+const Contracts = () => import('../views/Contracts.vue')
 
 import Index from '../components/Index.vue'
 
@@ -63,9 +65,19 @@ let routes = [
         component: StatsDaily,
       },
       {
+        name: 'Audits',
+        path: 'audits',
+        component: Audits,
+      },
+      {
         name: 'RootFAQ',
         path: '/rootfaq',
         component: RootFAQ,
+      },
+      {
+        name: 'Contracts',
+        path: '/contracts',
+        component: Contracts,
       },
     ]
   },
@@ -98,7 +110,7 @@ let routes = [
     ]
   },
   {
-    path: '/:pool(compound|usdt|y|iearn|busd)/',
+    path: '/:pool(compound|usdt|y|iearn|busd|susdv2)/',
     name: 'Index',
     component: PoolApp,
     children: [
@@ -145,6 +157,11 @@ let routes = [
         name: 'Profit',
         component: ProfitRouter
       },
+      {
+        path: 'audits',
+        name: 'Audits',
+        component: Audits,
+      },
     ]
   },
   {
@@ -160,12 +177,12 @@ const router = new VueRouter({
   routes
 })
 
-const pools = ['compound','usdt','y','iearn','busd','susd']
+const pools = ['compound','usdt','y','iearn','busd','susd', 'susdv2']
 
 router.beforeEach(async (to, from, next) => {
   if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()
   //if(from.path.includes('profit') && to.path.includes('profit')) return window.location.href = to.path
-  if(['Donate', 'StatsDaily'].includes(to.name)) return next();
+  if(['Donate', 'StatsDaily', 'Audits'].includes(to.name)) return next();
   if(to.name == 'RootIndex') {
     init('compound');
     return next();

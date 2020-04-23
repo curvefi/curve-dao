@@ -321,6 +321,8 @@
 				  	poolConfigs: null,
 				  	fromCurrency: null,
 				  	toCurrency: null,
+				  	inverse: false,
+				  	ohlcData: [],
 		  }
 		},
 		created() {
@@ -347,10 +349,100 @@
 			}
 		},
 		methods: {
-			async mounted() {
+			async loadData() {
+				let jsonInterval = this.interval;
+				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
+				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
+				let requests = await Promise.all(urls)
+				this.data = await Promise.all(requests.map(r=>r.json()))
+			},
+			async loadRecentData(timestamp) {
+				await this.loadData();
+				let newData = this.data.map(json => json.filter(data => data.timestamp > timestamp))
+				
+				let [ohlc, volume] = await this.processData(newData)
 
+			    ohlc.map(point => this.chart.series[0].addPoint(point, false))
+				volume.map(point=>this.chart.series[1].addPoint(point, false))
+
+		        this.chart.redraw()
+			},
+			async processData(data) {
+				this.ohlcData = []
+				try {
+					for(let i = 0; i < data[0].length; i++) {
+						this.ohlcData[i] = {}
+						this.ohlcData[i].timestamp = data[0][i].timestamp
+						this.ohlcData[i].prices = {}
+						this.ohlcData[i].prices[this.pairIdx] = []
+						this.ohlcData[i].volume = {}
+						this.ohlcData[i].volume[this.pairIdx] = []
+						for(let j = 0; j < data.length; j++) {
+							if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
+							let v = data[j][i]
+							if(v === undefined) continue;
+							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
+							let get_dy_underlying = await calcWorker.calcPrice(
+								{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, abis[this.pools[j]].coin_precisions[this.fromCurrency])
+							let calcprice = +(BN(get_dy_underlying).div(abis[this.pools[j]].coin_precisions[this.toCurrency]))
+							if(this.inverse) calcprice = 1 / calcprice
+							if(v.prices[this.pairIdx]) {
+								if(this.inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
+								v.prices[this.pairIdx].push(calcprice)
+							}
+							else {
+								v.prices[this.pairIdx] = [calcprice]
+								v.volume[this.pairIdx] = [0]
+							}
+							if(i == data[0].length-1) {
+								let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
+								let lastPrice = await contract.swap.methods
+														.get_dy_underlying(this.fromCurrency, this.toCurrency, dx).call()
+								lastPrice = +(BN(lastPrice)).div(abis[this.pools[j]].coin_precisions[this.toCurrency])
+								this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
+							}
+							this.ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
+							this.ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>{
+								if(k == 0) return v / abis[this.pools[j]].coin_precisions[this.fromCurrency]
+								return v / abis[this.pools[j]].coin_precisions[this.toCurrency]
+							})
+						}
+					}
+				}
+				catch(err) {
+					console.error(err)
+				}
+
+			    let ohlc = []
+			    let volume = []
+			    let dataLength = this.ohlcData.length
+			        // set the allowed units for data grouping
+
+			    for (let i = 0; i < dataLength; i ++) {
+			    	let len = this.ohlcData[i].prices[this.pairIdx].length
+
+			    	let ohlcPoint = [
+			            this.ohlcData[i].timestamp*1000, // the date
+			            this.ohlcData[i].prices[this.pairIdx][0], // open
+			            Math.max(...this.ohlcData[i].prices[this.pairIdx]), // high
+			            Math.min(...this.ohlcData[i].prices[this.pairIdx]), // low
+			            this.ohlcData[i].prices[this.pairIdx][len-1] // close
+			        ]
+			        ohlc.push(ohlcPoint);
+			        let volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
+			        if(this.inverse) volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
+			        let volumePoint = [
+			            this.ohlcData[i].timestamp*1000, // the date
+			            volumeData.reduce((a, b) => a + b, 0) // the volume
+			        ]
+			        volume.push(volumePoint);
+			    }
+
+			    return [ohlc, volume]
+			},
+			async mounted() {
 				this.chart.showLoading();
-				this.pools = tradeStore.pools;
+				this.pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p);
 				this.pairIdx = tradeStore.pairIdx
 				this.pairVal = tradeStore.pairVal
 				this.interval = tradeStore.interval;
@@ -360,14 +452,9 @@
 
 				//return;
 				//move this to selectPool method
-				let jsonInterval = this.interval;
-				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
-				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool}-${jsonInterval}.json`));
-				let requests = await Promise.all(urls)
-				let data = this.data = await Promise.all(requests.map(r=>r.json()))
-				//tradeStore.data = data;
-				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
-				let poolConfigs = this.poolConfigs = pools.map(pool => {
+				await this.loadData()
+
+				this.poolConfigs = this.pools.map(pool => {
 					return {
 						N_COINS: abis[pool].N_COINS,
 						PRECISION_MUL: abis[pool].coin_precisions.map(p=>1e18/p),
@@ -379,170 +466,19 @@
 
 				let fromCurrency = this.fromCurrency = this.pairIdx.split('-')[0]
 				let toCurrency = this.toCurrency = this.pairIdx.split('-')[1]
-				let inverse = false;
+				this.inverse = false;
 				if(fromCurrency > toCurrency) {
-					inverse = true;
+					this.inverse = true;
 					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 
-
-/*				let A = await contract.swap.methods.A().call();
-				let fee = await contract.swap.methods.fee().call()
-				let admin_fee = await contract.swap.methods.fee().call()
-				let supply = await contract.swap_token.methods.totalSupply().call()
-				let virtual_price = await contract.swap.methods.get_virtual_price().call()
-				let balances = []
-				let rates = []
-				for(let i = 0; i < 2; i++) {
-					balances[i] = await contract.swap.methods.balances(i).call();
-					balances[i] = await contract.swap.methods.balances(i).call();
-					var rate = parseInt(await contract.coins[i].methods.exchangeRateStored().call()) / 1e18 / contract.coin_precisions[i];
-		            var supply_rate = parseInt(await contract.coins[i].methods.supplyRatePerBlock().call());
-		            var old_block = parseInt(await contract.coins[i].methods.accrualBlockNumber().call());
-		            var block = await web3.eth.getBlockNumber();
-		            rates[i] = rate * (1 + supply_rate * (block - old_block) / 1e18);
-				}
-				rates[0] = rates[0] * 1e36
-				rates[1] = rates[1] * 1e24;
-				let timestamp = (Date.now() / 1000) | 0;
-
-				let now = {
-					A,
-					fee,
-					admin_fee,
-					supply,
-					virtual_price,
-					balances,
-					rates,
-					timestamp,
-				}
-
-				let backthen = {
-				    "A": 900,
-				    "fee": 4000000,
-				    "admin_fee": 4000000,
-				    "supply": 7.267255607935256e+23,
-				    "virtual_price": 1006852215150595300,
-				    "timestamp": 1584291599,
-				    "balances": [
-				      196432500571782,
-				      3300071302423743
-				    ],
-				    "rates": [
-				      2.037255586806981e+26,
-				      210068692819438
-				    ],
-				    "volume": {
-				      "0-1": [
-				        7.457819316127888e+21,
-				        7813068889
-				      ]
-				    },
-				    "prices": {
-				      "0-1": [
-				        0.9502120652613583,
-				        0.9553191996987546,
-				        0.9558984125801876,
-				        0.9561538089038809,
-				        0.9560588329908627
-				      ]
-				    }
-				  }
-
-				let calc = stableswap_fns({
-					...data[619],
-					...compound,
-				});
-
-				let get_dy_underlying = calc.get_dy_underlying(0, 1, 1 * 1e18)
-				console.log(+get_dy_underlying, "get_dy_underlying")
-				*/
-				//data = JSON.parse(JSON.stringify(data))
-				let ohlcData = []
-				try {
-					for(let i = 0; i < data[0].length; i++) {
-						ohlcData[i] = {}
-						ohlcData[i].timestamp = data[0][i].timestamp
-						ohlcData[i].prices = {}
-						ohlcData[i].prices[this.pairIdx] = []
-						ohlcData[i].volume = {}
-						ohlcData[i].volume[this.pairIdx] = []
-						for(let j = 0; j < data.length; j++) {
-							if(poolConfigs[j].N_COINS-1 < toCurrency) continue;
-							let v = data[j][i]
-							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
-							let get_dy_underlying = await calcWorker.calcPrice(
-								{...v, ...poolConfigs[j]}, fromCurrency, toCurrency, abis[pools[j]].coin_precisions[fromCurrency])
-							let calcprice = +(BN(get_dy_underlying).div(abis[pools[j]].coin_precisions[toCurrency]))
-							if(inverse) calcprice = 1 / calcprice
-							if(v.prices[this.pairIdx]) {
-								if(inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
-								v.prices[this.pairIdx].push(calcprice)
-							}
-							else {
-								v.prices[this.pairIdx] = [calcprice]
-								v.volume[this.pairIdx] = [0]
-							}
-							if(i == data[0].length-1) {
-								let dx = BN(abis[pools[j]].coin_precisions[fromCurrency]).toFixed(0)
-								let lastPrice = await contract.swap.methods
-														.get_dy_underlying(fromCurrency, toCurrency, dx).call()
-								lastPrice = +(BN(lastPrice)).div(abis[pools[j]].coin_precisions[toCurrency])
-								ohlcData[i].prices[this.pairIdx].push(lastPrice)
-							}
-							ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
-							ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>{
-								if(k == 0) return v / abis[pools[j]].coin_precisions[fromCurrency]
-								return v / abis[pools[j]].coin_precisions[toCurrency]
-							})
-						}
-					}
-				}
-				catch(err) {
-					console.error(err)
-				}
+				let [ohlc, volume] = await this.processData(this.data)
 
 			    // split the data set into ohlc and volume
-			    var ohlc = [],
-			        volume = [],
-			        dataLength = ohlcData.length
-			        // set the allowed units for data grouping
 
-			    for (let i = 0; i < dataLength; i ++) {
-			    	let len = ohlcData[i].prices[this.pairIdx].length
-/*			    	console.log(ohlcData[i].timestamp*1000, // the date
-			            ohlcData[i].prices[this.pairIdx][0], // open
-			            Math.max(...ohlcData[i].prices[this.pairIdx]), // high
-			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
-			            ohlcData[i].prices[this.pairIdx][len-1] // close
-			        )*/
-			        ohlc.push([
-			            ohlcData[i].timestamp*1000, // the date
-			            ohlcData[i].prices[this.pairIdx][0], // open
-			            Math.max(...ohlcData[i].prices[this.pairIdx]), // high
-			            Math.min(...ohlcData[i].prices[this.pairIdx]), // low
-			            ohlcData[i].prices[this.pairIdx][len-1] // close
-			        ]);
-			        let volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
-			        if(inverse) volumeData = ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
-			        volume.push([
-			            ohlcData[i].timestamp*1000, // the date
-			            volumeData.reduce((a, b) => a + b, 0) // the volume
-			        ]);
-/*
-			        if(inverse) {
-			        	ohlc = ohlc.map(p => p.map((v, i) => i > 0 ? 1/v : v))
-			        	volume = volume.map((p, i) => {
-			        		p[1] = data[i].volume[this.pairIdx][1] / abis[this.pool].coin_precisions[toCurrency]
-			        		return p;
-			        	})
-			        }*/
-			        if(i == dataLength/20 || i == dataLength/10 || i == dataLength/5 || i == dataLength/2 || i == dataLength-1) {
-					    this.$refs.highcharts.chart.series[0].setData(ohlc)
-					    this.$refs.highcharts.chart.series[1].setData(volume)
-			        }
-			    }
+			    this.$refs.highcharts.chart.series[0].setData(ohlc)
+			    this.$refs.highcharts.chart.series[1].setData(volume)
 		        console.log(this.$refs.highcharts.chart)
 		        this.chart.setTitle({text: this.pairVal.toUpperCase()})
 /*		        this.chart.update({
@@ -559,6 +495,12 @@
 		        this.chart.redraw();
 		        this.chart.hideLoading();
 			    this.loading = false;
+
+
+				setInterval(async () => {
+					this.loadRecentData(this.data[0][this.data[0].length-1].timestamp)
+					EventBus.$emit('updateDepth')
+				}, this.interval.slice(0, -1) * 60000)
 			}
 		}
 	}

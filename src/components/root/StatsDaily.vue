@@ -9,10 +9,12 @@
 
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
 			<p class='text-center'>
-		      	<router-link :to="currency" v-show="currency != 'susd'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
+		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd'">
+		      		beta.curve.fi/{{currency == 'iearn' ? 'y' : currency == 'susd' ? 'susdv2' : currency}}
+		      	</router-link>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>
-			<daily-chart :data = 'poolData[i]' :pool='currency' :volume = 'volumesData[currency]' />
+			<daily-chart :data = 'poolData[i]' :pool="currency == 'iearn' ? 'y' : currency" :volume = 'volumesData[currency]' />
 		</div>
 	</div>
 </template>
@@ -55,7 +57,7 @@
 				usdt: 'usdt',
 				iearn: 'y',
 				busd: 'busd',
-				susd: 'synthetix',
+				susd: 'susd',
 			},
 			chartdata: {
 				title: {
@@ -132,17 +134,16 @@
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
 
-			let requests = Object.values(this.pools).map(p => fetch(`https://${p}.curve.fi/stats.json`))
+			let requests = Object.values(this.pools).map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-${p == 'susd' ? 30 : 1440}m.json`))
 			let data = await Promise.all(requests)
 			for(let [key, res] of data.entries()) {
 				let json = await res.json();
-
 				let chartData = [];
-		        for(let i = 1440; i < json.data.length; i+=300) {
-		        	var el = json.data[i];
-		        	let profit = (el[1] / json.data[i-1440][1]) ** 365 - 1
+		        for(let i = 1; i < json.length; i++) {
+		        	var el = json[i];
+		        	let profit = ((el.virtual_price / 1e18) / (json[i-1].virtual_price / 1e18)) ** 365 - 1
 		        	chartData.push([
-		        		el[0] * 1000,
+		        		el.timestamp * 1000,
 		        		profit * 100,
 		        	])
 		        }
@@ -152,20 +153,21 @@
 		        	data: chartData,
 		        })
 
-				this.poolData.push(json.data);
+				this.poolData.push(json);
 			}
 
-			let pools = Object.values(this.pools).slice(0, 4)
+/*			let pools = Object.values(this.pools).slice(0, 4)
 	        requests = pools.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-30m.json`))
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
+			console.log(jsons)*/
 			let volumeSeries = []
-			let allPools = ['compound', 'usdt', 'y', 'busd']
+			let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
 
 			for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
 				volumeSeries.push([
 					volumeStore.state.allVolume.compound[i][0],
-					allPools.map(p=>volumeStore.state.allVolume[p][i][1]).reduce((a ,b) => (+a) + (+b), 0)
+					allPools.map(p=>volumeStore.state.allVolume[p][i] && volumeStore.state.allVolume[p][i][1] || 0).reduce((a ,b) => (+a) + (+b), 0)
 				])
 			}
 

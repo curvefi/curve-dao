@@ -15,7 +15,7 @@
 		        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
-	    	<p>Daily volume: 
+	    	<p v-show = "pool != 'susd'">Daily volume: 
 	    		<span :class="{'loading line': volumeData < 0}">
 	    			<span v-show='volumeData >= 0'> {{(volumeData | 0) | formatNumber}}$</span>	
 	    		</span>
@@ -139,7 +139,9 @@
         computed: {
           ...getters,
           volumeData() {
-          	return volumeStore.state.volumes[this.pool || this.currentPool]
+          	let pool = this.pool || this.currentPool;
+          	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
+          	return volumeStore.state.volumes[pool]
           }
         },
         created() {
@@ -167,30 +169,59 @@
 		methods: {
 			async mounted() {
 				this.loading = true;
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
 				let subdomain = this.pool || this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
-				
-				let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
-				let json = await res.json()
+				if(subdomain == 'susdv2') subdomain = 'susd'
 
-				this.apr = json.apr;
-				this.daily_apr = json.daily_apr;
-				this.weekly_apr = json.weekly_apr;
-		        var data = json.data
-		        this.data = data;
-		        var step_size = Math.max(Math.round(data.length / 500), 1);
-		        var start_profit = data[0][1]
-		        var chartData = [];
-		        for (let i = 0; i < data.length; i++) {
-		            if ((i % step_size == 0) | (i == data.length - 1)) {
-		                var el = data[i];
-		                chartData.push([
-		                    el[0] * 1000,
-		                    (el[1] / start_profit - 1) * 100
-		                ]);
-		            }
-		        }
+				if(subdomain == 'synthetix') {
+					let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
+					let json = await res.json()
+					this.apr = json.apr;
+					this.daily_apr = json.daily_apr;
+					this.weekly_apr = json.weekly_apr;
+			        var data = json.data
+			        this.data = data;
+			        var step_size = Math.max(Math.round(data.length / 500), 1);
+			        var start_profit = data[0][1]
+			        var chartData = [];
+			        for (let i = 0; i < data.length; i++) {
+			            if ((i % step_size == 0) | (i == data.length - 1)) {
+			                var el = data[i];
+			                chartData.push([
+			                    el[0] * 1000,
+			                    (el[1] / start_profit - 1) * 100
+			                ]);
+			            }
+			        }
+				}
+				else {				
+					let apydata = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
+					apydata = await apydata.json();
+					this.apr = apydata.apy.total[subdomain];
+					this.daily_apr = apydata.apy.day[subdomain];
+					this.weekly_apr = apydata.apy.week[subdomain];
+					let period = 1440
+					//if(subdomain == 'susd') period = 30
+			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-${period}m.json`)
+			        this.data = await newdata.json()
+			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
+			        let start_index = this.data.findIndex(el => el.virtual_price > 0)
+			        var start_profit = this.data[start_index].virtual_price / 1e18
+			        var chartData = [];
+				        for (let i = start_index; i < this.data.length; i++) {
+			                var el = this.data[i];
+			                chartData.push([
+			                    el.timestamp * 1000,
+			                    ((el.virtual_price / 1e18) / start_profit - 1) * 100
+			                ]);
+			            
+			        }
+				}
+				
 		        this.chart.hideLoading();
 		        this.chart.addSeries({
 		        	name: 'Virtual growth of liquidity share',

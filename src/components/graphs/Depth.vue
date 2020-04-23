@@ -195,12 +195,9 @@
 		async created() {
 			//EventBus.$on('selected', this.selectPool)
 			EventBus.$on('changeTime', this.changeTime)
+			EventBus.$on('updateDepth', this.updateDepth)
 			this.unwatch = this.$watch(()=>contract.initializedContracts, async (val) => {
-				let inits = await Promise.all(tradeStore.pools.map(p=>{
-					return init(contract.contracts[p == 'y' ? 'iearn' : p])
-				}))
-				await updatePoolInfo()
-                this.mounted()
+				this.updateDepth()
                 this.unwatch();
             })
 		},
@@ -255,6 +252,7 @@
 		beforeDestroy() {
 			//EventBus.$off('selected', this.selectPool)
 			EventBus.$off('changeTime', this.changeTime)
+			EventBus.$off('updateDepth', this.updateDepth)
 		},
 		computed: {
 			selectChange() {
@@ -262,6 +260,13 @@
 			}
 		},
 		methods: {
+			async updateDepth() {
+				let inits = await Promise.all(tradeStore.pools.map(p=>{
+					return init(contract.contracts[p == 'y' ? 'iearn' : p])
+				}))
+				await updatePoolInfo()
+                this.mounted()
+			},
 			setZoom() {
                 let data1 = this.chart.series[1].xData
                 let data2 = this.chart.series[0].xData
@@ -319,7 +324,7 @@
 				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
-				let allPools = ['compound', 'usdt', 'iearn', 'busd']
+				let allPools = ['compound', 'usdt', 'iearn', 'busd', 'susdv2']
 				let poolIdx = pools.map(pool => allPools.indexOf(pool))
 				let poolConfigs = tradeGetters.poolConfigs()
 

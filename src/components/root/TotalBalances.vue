@@ -21,17 +21,23 @@
     import { contract } from '../../contract'
 
 	export default {
+		props: {
+			totalVolume: {
+				default: undefined,
+			}
+		},
 		data: () => ({
 			total: '',
 		}),
 		computed: {
 			volume() {
-				return volumeStore.totalVolume();
+				return this.totalVolume !== undefined ? this.totalVolume : volumeStore.totalVolume() 
 			}
 		},
 		async created() {
 			this.totalBalances()
-			this.dailyVolume()
+			if(this.totalVolume === undefined)
+				this.dailyVolume()
 		},
 		methods: {
 			async totalBalances() {
@@ -66,8 +72,8 @@
 			    this.total = total.toFixed(0);
 			},
 			async dailyVolume() {
-				var pools = ['compound', 'usdt', 'y', 'busd']
-	            volumeStore.getVolumes(pools);
+				var pools = ['compound', 'usdt', 'y', 'busd', 'susd']
+	            await volumeStore.getVolumes(pools);
 			}
 		}
 

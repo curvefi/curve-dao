@@ -8,7 +8,7 @@
                         <label :for="'currency_'+i">
                         	<span v-show='depositc'>
                         		{{currencies[currency]}} 
-	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt')"> 
+	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'"> 
 	                        		(in {{currency | capitalize}}) 
 	                        	</span>
 	                        </span>
@@ -31,7 +31,7 @@
             </fieldset>
             <ul>
                 <li>
-                    <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances' :disabled='disabledButtons' checked v-model='sync_balances'>
+                    <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances_proportion' :disabled='disabledButtons' checked v-model='sync_balances'>
                     <label for="sync-balances">Add all coins in a balanced proportion</label>
                 </li>
                 <li>
@@ -48,14 +48,19 @@
                     	</span>
                     </label>
                 </li>
-                <li v-show = "currentPool != 'susd'">
+                <li v-show = "!['susd','susdv2'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
             </ul>
 
             <p style="text-align: center">
-                <button id="add-liquidity" @click='handle_add_liquidity'>Deposit</button>
+                <button id="add-liquidity" 
+                    :disabled="currentPool == 'susdv2' && slippage < -0.03"
+                	@click='handle_add_liquidity' 
+                	>
+                		Deposit
+                </button>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <Slippage/>
             </p>
@@ -127,15 +132,14 @@
         },
         methods: {
             async mounted(oldContract) {
-            	if(currentContract.currentContract == 'susd') this.depositc = true;
+            	if(['susd', 'susdv2'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-                common.update_fee_info();
                 await this.handle_sync_balances();
                 await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
-                	this.coins[i].methods.allowance(currentContract.default_account, this.swap_address).encodeABI()])
+                	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                 let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
                 if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
@@ -163,15 +167,20 @@
 	        	})
             },
             async calcSlippage() {
-            	this.slippagePromise.cancel();
-        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(this.inputs, true))
-        		await this.slippagePromise;
+            	try {
+	            	this.slippagePromise.cancel();
+	        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(this.inputs, true))
+	        		await this.slippagePromise;
+            	}
+            	catch(err) {
+            		console.error(err)
+            	}
             },
             async handle_sync_balances() {
 			    await common.update_fee_info();
 			    let calls = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()])
+			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 			    }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
@@ -193,6 +202,10 @@
 			    }
 			    else
 			        this.disabled = false;
+			},
+			async handle_sync_balances_proportion() {
+				await this.handle_sync_balances();
+				for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
 			},
 			async handle_add_liquidity() {
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
@@ -229,7 +242,7 @@
 			    if(this.depositc) {
 			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
-				        gas: 1300000
+				        gas: contractGas.deposit[this.currentPool],
 				    });
 				}
 				else {

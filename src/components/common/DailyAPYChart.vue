@@ -162,25 +162,19 @@
 				this.loading = false;
 			},
 			async mounted() {
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
 		        let chartData = [];
-		        for(let i = 1440; i < this.data.length; i+=300) {
+		        for(let i = 1; i < this.data.length; i++) {
 		        	var el = this.data[i];
-		        	let profit = (el[1] / this.data[i-1440][1]) ** 365 - 1
+		        	let profit = ((el.virtual_price / 1e18) / (this.data[i-1].virtual_price / 1e18)) ** 365 - 1
 		        	chartData.push([
-		        		el[0] * 1000,
+		        		el.timestamp * 1000,
 		        		profit * 100,
 		        	])
 		        }
 
-		        if(this.pool == 'susd') {
-		        	this.chart.get('volumeAxis').remove();
-		        	this.chart.yAxis[0].update({
-		            	height: '100%',
-		            	labels: {
-		            		step: 10,
-		            	}
-		        	}, false)
-		        }
 		        this.chart.setSize(undefined, 600)
 		        this.chart.addSeries({
 		        	name: 'Daily APY',
@@ -188,30 +182,29 @@
 		        	data: chartData,
 		        	color: '#0b0a57'
 		        }, true)
-		        if(this.pool != 'susd') {
-			        await volumeStore.getDailyVolume(this.pool)
-			        
-		    		let lendingrates = await volumeStore.getLendingAPY(this.pool)
+		        await volumeStore.getDailyVolume(this.pool)
+		        if(['susd'].includes(this.pool)) {
+		        	this.chart.yAxis[0].update({
+		        		type: 'linear'
+		        	})
+		        }
 
-		    		this.chart.addSeries({
-		    			name: 'Lending APY',
-		    			data: lendingrates,
-		    		})
+	    		let lendingrates = await volumeStore.getLendingAPY(this.pool)
 
-			        let volumeSeries = volumeStore.state.allVolume[this.pool]
+	    		this.chart.addSeries({
+	    			name: 'Lending APY',
+	    			data: lendingrates,
+	    		})
 
-			        this.chart.addSeries({
-			        	type: 'column',
-			        	name: 'Volume',
-			        	data: volumeSeries,
-			        	color: '#0b0a57',
-			        	yAxis: 1,
-			        })
+		        let volumeSeries = volumeStore.state.allVolume[this.pool]
 
-		    	}
-
-
-
+		        this.chart.addSeries({
+		        	type: 'column',
+		        	name: 'Volume',
+		        	data: volumeSeries,
+		        	color: '#0b0a57',
+		        	yAxis: 1,
+		        })
 
 		        this.chart.redraw();
 		        this.chart.hideLoading();

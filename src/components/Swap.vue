@@ -273,7 +273,7 @@
                     let calls = [
                         [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
                     ]
-                    if(!this.swapwrapped)
+                    if(!this.swapwrapped && this.currentPool != 'susdv2')
                         calls.push([currentContract.swap._address, currentContract.swap.methods.get_dy_underlying(i, j, dx).encodeABI()])
                     else {
                         //dx = cBN(dx).times(currentContract.c_rates[i])
@@ -313,10 +313,10 @@
                         await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped) exchangeMethod = currentContract.swap.methods.exchange
+                    if(this.swapwrapped || this.currentPool == 'susdv2') exchangeMethod = currentContract.swap.methods.exchange
                     await exchangeMethod(i, j, dx, min_dy).send({
                             from: this.default_account,
-                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange : contractGas.swap[this.currentPool].exchange_underlying,
+                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         });
                     
                     await common.update_fee_info();

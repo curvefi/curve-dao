@@ -16,7 +16,7 @@
             <router-link :to="'/usdt/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'usdt'}">USDT</router-link>
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
-            <router-link to='/susd/withdraw' :class="{selected: currentPool == 'susd'}">sUSD</router-link>
+            <router-link :to="'/susdv2/' + ($route.path.split('/')[2] || '')" :class="{selected: currentPool == 'susdv2'}">sUSD</router-link>
 <!--             <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
@@ -30,6 +30,8 @@
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
+          <router-link to="/audits">Audits</router-link>
+          <router-link to="/contracts">Contracts</router-link>
           <router-link to="/rootfaq">FAQ</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
@@ -39,6 +41,7 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
+      <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>

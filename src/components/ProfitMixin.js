@@ -2,6 +2,8 @@ import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
 import { makeCancelable } from '../utils/helpers'
 
+import allabis from '../allabis'
+
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
 
@@ -15,6 +17,7 @@ export default {
 		fromBlock() {
 			if(this.currentPool == 'compound') return '0x91c86f'
 			if(this.currentPool == 'usdt') return '0x904a9c'
+			if(this.currentPool == 'susdv2') return '0x9729a6'
 			return '0x909964'
 		},
 		decodeParameters() {
@@ -38,8 +41,10 @@ export default {
 
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
-		        let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
-		        this.priceData = await res.json();
+				if(subdomain == 'susdv2') subdomain = 'susd'
+	        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1m.json`);
+	        	res = await res.json();
+	        	this.priceData = res
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
 			        let symbol = await currentContract.coins[i].methods.symbol().call()
 			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
@@ -66,7 +71,7 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	             if(curr == 'USDT') {
+	             if(['DAI','USDC','USDT','sUSD'].includes(curr)) {
 	                available += this.fromNativeCurrent(curr, prices[i])
 	            }
 	            else {
@@ -97,8 +102,14 @@ export default {
 		    if(curr == 'cUSDC') {
 		        return value.div(this.BN(1e14)).toNumber();
 		    }
-	        if(curr == 'USDT') {
-				return value.divRound(this.BN(1e4)).toNumber();
+			if(curr == 'DAI') {
+				return value.divRound(this.BN(1e16)).toNumber()
+			}
+			if(curr == 'USDC' || curr == 'USDT') {
+				return value.divRound(this.BN(1e4)).toNumber()
+			}
+			if(curr == 'sUSD') {
+				return value.divRound(this.BN(1e16)).toNumber();
 			}
 			const decimals = ['yUSDC', 'yUSDT'].includes(curr) ? 6 : 18;
 		    if (decimals === 18) {
@@ -126,7 +137,9 @@ export default {
 		    };
 		},
 		findClosest(timestamp) {
-		    let dates = this.priceData.data.find(d=>d[0] - timestamp > 0);
+		    let dates = this.priceData.find(d=>d.timestamp - timestamp > 0);
+		    //check if timestamp was before recording, this is only for when timestamp > lastest recorded, get lastest recorded
+		    if(!dates.length) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
 	    fromNative(curr, value) {
@@ -233,12 +246,15 @@ export default {
 		        	if(exchangeRate == -1) continue;
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
-			            	usd = BN(tokens).div(BN(1e4)).toNumber();
+		            	usd = BN(tokens).div(BN(1e4)).toNumber();
 		          	}
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) {
 		          		if(i == 0 || i == 3) tokens /= 1e16;
 		          		else tokens /= 1e4
 		          		usd = tokens * exchangeRate
+		          	}
+		          	else if(currentContract.currentContract == 'susdv2') {
+		            	usd = this.fromNativeCurrent(curr, this.BN(exchangeRate).mul(this.BN(tokens)))	
 		          	}
 		          	else {
 		            	usd = this.fromNative(curr, this.BN(exchangeRate).mul(this.BN(tokens)))
@@ -291,8 +307,9 @@ export default {
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 		            let tokens = +transfer[0].data
-		            let exchangeRate = this.findClosest(timestamp)[1]
-		            depositUsdSum += tokens*exchangeRate/1e16
+		            let poolInfoPoint = this.findClosest(timestamp)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            depositUsdSum += usd * 100
 		        }
 		    }
 		    console.timeEnd('timer')
@@ -352,8 +369,9 @@ export default {
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 		            let tokens = +transfer[0].data
-		            let exchangeRate = this.findClosest(timestamp)[1]
-		            withdrawals += tokens*exchangeRate/1e16
+		            let poolInfoPoint = this.findClosest(timestamp)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            withdrawals += usd * 100
 		        }
 
 
@@ -366,16 +384,22 @@ export default {
 		    return withdrawals;
 		},
 
-		async getAvailable(curr) {
+		getAvailableTransfer(amount, balances, supply) {
+			return balances.map((balance, i) => balance / allabis[this.currentPool].coin_precisions[i] * amount / supply).reduce((a, b) => a + b, 0)
+		},
+
+		async getAvailable(curr, amount, balance, supply) {
 		    if(this.cancel) throw new Error('cancel');
 		    let default_account = currentContract.default_account
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method
+		    //balance
 		    const balanceOfCurveContract = await web3.eth.call({
 		        to: tokenAddress,
 		        data: '0x70a08231000000000000000000000000' + this.CURVE.substr(2),
 		    });
+		    //amount
 		    const poolTokensBalance = await web3.eth.call({
 		        to: this.CURVE_TOKEN,
 		        data: '0x70a08231000000000000000000000000' + default_account,
@@ -385,9 +409,16 @@ export default {
 		        to: this.CURVE_TOKEN,
 		        data: '0x18160ddd',
 		    });
+
+		    const get_virtual_price = await web3.eth.call({
+		    	to: this.CURVE,
+		    	data: '0xbb7b8b80'
+		    })
+
 		    return this.BN(balanceOfCurveContract)
 		        .mul(this.BN(poolTokensBalance))
 		        .div(this.BN(poolTokensSupply));
-		}
-	}
+		},
+	},
+
 }

@@ -12,8 +12,8 @@
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.compound < 0}">
-	                    	<span v-show='volumesData.compound >= 0'>{{(volumesData.compound | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
+	                    	<span v-show='volumes.compound >= 0'>{{(volumes.compound | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -23,8 +23,8 @@
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.usdt < 0}">
-	                    	<span v-show='volumesData.usdt >= 0'>{{(volumesData.usdt | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
+	                    	<span v-show='volumes.usdt >= 0'>{{(volumes.usdt | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -34,8 +34,8 @@
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.iearn < 0}">
-	                    	<span v-show='volumesData.iearn >= 0'>{{(volumesData.iearn | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
+	                    	<span v-show='volumes.y >= 0'>{{(volumes.y | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
@@ -45,27 +45,49 @@
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
+	                    	<span v-show='volumes.busd >= 0'>{{(volumes.busd | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
-	            <div :class="{selected: activePoolLink == 4}">
+	            <!-- <div :class="{selected: activePoolLink == 4}">
 	                <router-link to = '/susd/withdraw'>
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[(y)sUSD, yCurve]</span>  
 	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
 	                    <span class='volume'>
-	                    	<!-- Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span> -->
+	                    	Vol: <span :class="{'loading line': volumesData.busd < 0}">
+	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+               	 		</span></span>
+	                </router-link>
+	            </div> -->
+	            <div :class="{selected: activePoolLink == 4}">
+	                <router-link to = '/susdv2'>
+	                	<span class='index'>4.</span>  
+	                    <span class='pooltext'>sUSD</span>
+	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
+	                    <span class='apr'>
+	                    	<span>
+	                    		APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>
+	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
+	                    			<span class='tooltip'>SNX
+		                                <span class='tooltiptext'>
+		                                    SNX LP reward annualized
+		                                </span>
+		                            </span>)
+	                    		</span>
+	                    	</span>
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
+	                    	<span v-show='volumes.susd >= 0'>{{(volumes.susd | 0) | formatNumber}}$</span>
                	 		</span></span>
 	                </router-link>
 	            </div>
 	        </fieldset>
 	    </div>
 
-	    <total-balances />
+	    <total-balances :total-volume='totalVolume'/>
 
 	</div>
 </template>
@@ -73,10 +95,12 @@
 <script>
 	import TotalBalances from './TotalBalances.vue'
 	import BasicTrade from '../graphs/BasicTrade.vue'
-	import abis from '../../allabis'
+	import allabis, { ERC20_abi, sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 
 	import * as helpers from '../../utils/helpers'
+
+	import { contract } from '../../contract'
 
 	export default {
 		components: {
@@ -89,6 +113,8 @@
 			apy: [],
 			start: 0,
 			end: 0,
+			volumes: [],
+			snxRewards: null,
 		}),
 		created() {
 			var start = new Date();
@@ -98,6 +124,10 @@
 			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
+			this.$watch(() => contract.web3, val => {
+				if(!val) return;
+				this.getCurveRewards()
+			})
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
@@ -108,13 +138,24 @@
 		},
 		computed: {
 			totalVolume() {
-				return volumeStore.totalVolume();
+				return Object.values(this.volumes).reduce((a, b) => a + b, 0)
 			},
-			volumesData() {
-				return volumeStore.state.volumes;
-			}
 		},
 		methods: {
+			async getCurveRewards() {
+				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
+				let calls = [
+					[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
+					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
+				]
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
+				let snxPrice = await request.json();
+				snxPrice = snxPrice.quotes.USD.price;
+				this.snxRewards = 365 * 64000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement) return;
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
@@ -137,12 +178,14 @@
 	            }
 			},
 			async getAPY() {
-	            var urls = ['https://compound.curve.fi', 'https://usdt.curve.fi', 'https://y.curve.fi', 'https://busd.curve.fi', 'https://synthetix.curve.fi']       
-	            let stats = await Promise.all(urls.map(url=>fetch(url+'/stats.json')))
-	            stats = await Promise.all(stats.map(stat=>stat.json()))
-	            for(let i = 0; i < stats.length; i++) {
-	                var weekly_apr = stats[i]['daily_apr'];
-	                this.apy.push((weekly_apr*100).toFixed(2))
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd']
+	            let stats = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
+	            stats = await stats.json()
+                this.volumes = stats.volume;
+                volumeStore.state.volumes = stats.volume
+	            for(let [i, pool] of pools.entries()) {
+	                var daily_apy = stats.apy.day[pool];
+	                this.apy.push((daily_apy*100).toFixed(2))
 	            }
 			}
 		}
@@ -177,15 +220,15 @@
 		flex: 0.1;
 	}
 	.pooltext {
-		flex: 0.6;
+		flex: 0.5;
 	}
 	.pools {
-		flex: 2.2;
+		flex: 1.8;
 	}
 	.apr {
 		flex: 0.8;
 	}
 	.volume {
-		flex: 1;
+		flex: 0.7;
 	}
 </style>

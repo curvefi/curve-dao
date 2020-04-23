@@ -19,6 +19,10 @@
             	<span :class="{'loading line': available == -1}">
             		<span v-show='available != -1'> {{(available/100).toFixed(2)}} </span>
             	</span>
+                <span v-show = "currentPool == 'susdv2'">
+                    (<span :class="{'loading line': profitTotalStake === null}"></span>
+                    <span v-show='profitTotalStake !== null'>{{profitTotalStake !==null && profitTotalStake.toFixed(2)}} </span> staked)
+                </span>
             </li>
             <li>
             	<b>Profit:</b>
@@ -26,6 +30,18 @@
             		<span v-show='available != -1 '> {{((available + withdrawals - deposits)/100).toFixed(2)}}</span>
             	</span>
             </li>
+            <br>
+            <ul v-show="currentPool == 'susdv2'" class='snxrewards'>
+
+                <a href='https://blog.synthetix.io/new-curve-pool-launch/' class='tooltip'>[?]</a>
+
+                <li :class="{'loading line': earned === null}">
+                    <b>Pending SNX LP rewards:</b> <span v-show='earned !== null'> {{(+earned).toFixed(2)}} SNX</span>
+                </li>
+                <li :class="{'loading line': earned === null}">
+                    <b>Paid SNX LP rewards:</b> <span v-show='paidRewards !== null'> {{(+paidRewards).toFixed(2)}} SNX</span>
+                </li>
+            </ul>
         </ul>
     </fieldset>
 </div>

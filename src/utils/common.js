@@ -131,7 +131,7 @@ export function update_rates(version = 'new', contract) {
         */
         //for usdt pool
         if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
-            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]) {
+            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdv2') {
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
         else if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) {
@@ -204,7 +204,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
 
 function checkTethered(contract, i) {
     return allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
-        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i];
+        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdv2';
 }
 
 export async function multiInitState(calls, contract, initContracts = false) {
@@ -213,12 +213,22 @@ export async function multiInitState(calls, contract, initContracts = false) {
     var default_account = currentContract.default_account;
     let aggcalls = await multicall.methods.aggregate(calls).call()
     var block = +aggcalls[0]
-    let decoded = aggcalls[1].map((hex, i) => 
-        (initContracts && contract.currentContract == 'compound' && i == 0 || i >= aggcalls[1].length-allabis[contract.currentContract].N_COINS*2) ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)
+    //initContracts && contract.currentContract == 'compound' && i == 0 || 
+    let decoded = aggcalls[1].map((hex, i) =>
+        (i >= aggcalls[1].length-allabis[contract.currentContract].N_COINS*2) ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex)
     )
+    if(initContracts) {
+        contract.virtual_price = decoded[0] / 1e18;
+        decoded = decoded.slice(1);
+    }
     if(initContracts && contract.currentContract == 'compound') {
         contract.oldBalance = decoded[0];
         decoded = decoded.slice(1);
+    }
+    if(initContracts && contract.currentContract == 'susdv2') {
+        contract.oldBalance = decoded[0];
+        contract.curveStakedBalance = decoded[1]
+        decoded = decoded.slice(2);
     }
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
@@ -255,7 +265,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
     }
     else {
         chunkArr(ratesDecoded ,3).map((v, i) => {
-            if(checkTethered(contract, i)) {
+            if(checkTethered(contract, i) || contract.currentContract == 'susdv2') {
                 Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
             }
             else {            
@@ -292,6 +302,15 @@ export async function multiInitState(calls, contract, initContracts = false) {
             contract.totalShare = 0;
             contract.showShares = false;
             //no need to set other values as v-show check is done based on totalShare
+        }
+
+        contract.totalStake = 0;
+        if(contract.curveStakedBalance > 0) {
+            for (let i=0; i < contract.N_COINS; i++) {
+                var val = balances[i] * contract.c_rates[i] * contract.curveStakedBalance / token_supply;
+                Vue.set(contract.staked_info, i, val)
+                contract.totalStake += val;
+            }
         }
     }
 }

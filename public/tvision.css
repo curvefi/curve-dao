@@ -783,6 +783,7 @@ input[type=range]:focus::-ms-fill-upper {
 
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
+  text-align: center;
   visibility: visible;
 }
 
@@ -922,4 +923,17 @@ input[type=range]:focus::-ms-fill-upper {
     #exchangeicon {
         transform: rotate(90deg);
     }
+}
+
+.root .window {
+  max-width: 700px;
+}
+
+.snxrewards a {
+  margin-left: 0;
+  margin-bottom: 7px;
+}
+
+.snxrewards > li {
+  display: block;
 }

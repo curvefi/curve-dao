@@ -67,7 +67,18 @@
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
+	                    <span class='apr'>
+	                    	<span>
+	                    		APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>
+	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
+	                    			<span class='tooltip'>SNX
+		                                <span class='tooltiptext'>
+		                                    SNX LP reward annualized
+		                                </span>
+		                            </span>)
+	                    		</span>
+	                    	</span>
+	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
 	                    	<span v-show='volumes.susd >= 0'>{{(volumes.susd | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -84,10 +95,12 @@
 <script>
 	import TotalBalances from './TotalBalances.vue'
 	import BasicTrade from '../graphs/BasicTrade.vue'
-	import abis from '../../allabis'
+	import allabis, { ERC20_abi, sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 
 	import * as helpers from '../../utils/helpers'
+
+	import { contract } from '../../contract'
 
 	export default {
 		components: {
@@ -101,6 +114,7 @@
 			start: 0,
 			end: 0,
 			volumes: [],
+			snxRewards: null,
 		}),
 		created() {
 			var start = new Date();
@@ -110,6 +124,9 @@
 			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
+			this.$watch(() => contract.default_account, val => {
+				this.getCurveRewards()
+			})
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
@@ -124,6 +141,20 @@
 			},
 		},
 		methods: {
+			async getCurveRewards() {
+				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
+				let calls = [
+					[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
+					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
+				]
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
+				let snxPrice = await request.json();
+				snxPrice = snxPrice.quotes.USD.price;
+				this.snxRewards = 365 * 64000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement) return;
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
@@ -188,15 +219,15 @@
 		flex: 0.1;
 	}
 	.pooltext {
-		flex: 0.6;
+		flex: 0.5;
 	}
 	.pools {
-		flex: 2.2;
+		flex: 1.8;
 	}
 	.apr {
 		flex: 0.8;
 	}
 	.volume {
-		flex: 1;
+		flex: 0.7;
 	}
 </style>

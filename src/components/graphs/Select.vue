@@ -24,6 +24,7 @@
 			<option v-for = 'v in intervals' :value='v'>{{v}}</option>
 		</select>
 		<button @click="emitSelect">Select</button>
+		<button @click="emitUpdate">Update charts</button>
 	</div>
 </template>
 
@@ -57,6 +58,9 @@
 				tradeStore.pairVal = this.pair.val
 				tradeStore.interval = this.interval
 				//EventBus.$emit('selected', this.pool, this.pair, this.interval)
+			},
+			emitUpdate() {
+				EventBus.$emit('updateCharts')
 			}
 		},
 		computed: {

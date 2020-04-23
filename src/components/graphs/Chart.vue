@@ -327,6 +327,7 @@
 		},
 		created() {
 			//EventBus.$on('selected', this.selectPool);
+			EventBus.$on('updateCharts', this.loadData)
 		},
 		watch: {
 			selectChange() {

@@ -19,6 +19,7 @@ const BasicTrade = () => import('../components/graphs/BasicTrade.vue')
 const RootFAQ = () => import('../components/root/RootFAQ.vue')
 const Audits = () => import('../views/Audits.vue')
 const Contracts = () => import('../views/Contracts.vue')
+const CurvePay = () => import('../components/CurvePay.vue')
 
 import Index from '../components/Index.vue'
 
@@ -78,6 +79,11 @@ let routes = [
         name: 'Contracts',
         path: '/contracts',
         component: Contracts,
+      },
+      {
+        path: 'curvepay',
+        name: 'CurvePay',
+        component: CurvePay,
       },
     ]
   },

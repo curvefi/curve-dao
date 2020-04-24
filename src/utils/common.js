@@ -247,6 +247,8 @@ export async function multiInitState(calls, contract, initContracts = false) {
             var underlying_addr = v[1];
             contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
         })
+        window[contract.currentContract].coins = contract.coins
+        window[contract.currentContract].underlying_coins = contract.underlying_coins
         ratesDecoded = decoded.slice(4+allabis[contract.currentContract].N_COINS, decoded.length-allabis[contract.currentContract].N_COINS*2)
     }
 

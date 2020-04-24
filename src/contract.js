@@ -369,6 +369,9 @@ export async function init(contract, refresh = false) {
     	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
+    window[contract.currentContract] = {};
+    window[contract.currentContract].swap = contract.swap
+    window[contract.currentContract].swap_token = contract.swap_token
     contract.coins = []
     contract.underlying_coins = []
     if(window.location.href.includes('withdraw_old')) 

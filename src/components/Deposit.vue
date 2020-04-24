@@ -21,10 +21,9 @@
 	                        :id="'currency_'+i" 
 	                        :disabled='disabled' 
 	                        name="from_cur" 
-	                        value="0.00" 
-	                        v-model='inputs[i]'
+	                        :value = 'inputsFormat(i)'
 	                        :style = "{backgroundColor: bgColors[i]}"
-	                        @input='change_currency(i)'
+	                        @input='change_currency(i, true, $event)'
 	                    >
                     </li>
                 </ul>
@@ -119,7 +118,7 @@
         	async depositc(val, oldval) {
         		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
-        		await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
+        		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
         		await this.calcSlippage()
         	}
         },
@@ -146,6 +145,13 @@
                 	this.inf_approval = false
                 this.disabledButtons = false;
             },
+        	inputsFormat(i) {
+        		if(this.inputs[i]) {
+        			console.log(this.inputs[i], "INPUTS")
+        			return (+this.inputs[i]).toFixed(2)
+        		}
+        		return '0.00'
+        	},
             changeSwapInfo(val) {
             	if(val) {
 	            	this.coins = currentContract.coins
@@ -195,8 +201,9 @@
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
 			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
 			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
-			            var val = Math.floor(amount * 100) / 100;
-			            val = val.toFixed(2)
+			            var val = amount
+			            //var val = Math.floor(amount * 100) / 100;
+			            //val = val.toFixed(2)
 			            Vue.set(this.inputs, i, val)
 			        }
 			    }
@@ -218,6 +225,7 @@
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
 			        if(Math.abs(balance/amount-1) < 0.005) {
+			        	console.log("HEREEEE")
 			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
 			        }
 			        else {
@@ -257,7 +265,10 @@
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
-			async change_currency(i, setInputs = true) {
+			async change_currency(i, setInputs = true, event) {
+				if(event) {
+					this.inputs[i] = event.target.value
+				}
 	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            if (value > this.wallet_balances[i] * this.rates[i])

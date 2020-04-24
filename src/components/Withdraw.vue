@@ -30,13 +30,12 @@
                     <input type="text" 
                     :id="'currency_'+i" 
                     name="from_cur" 
-                    value="0.00" 
-                    v-model = 'inputs[i]' 
+                    :value = 'inputsFormat(i)'
                     :style = "inputStyles[i]"
                     :disabled = "currentPool == 'susd'"
                     :ref="`inputs${i}`"
-                    @input='handle_change_amounts(i)'
-                    @focus='handle_change_amounts(i)'>
+                    @input='handle_change_amounts(i, $event)'
+                    @focus='handle_change_amounts(i, $event)'>
                 </li>
                 <li v-show = "!['susd','susdv2'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
@@ -161,6 +160,13 @@
             	await this.update_balances();
             	this.handle_change_share();
             },
+            inputsFormat(i) {
+        		if(this.inputs[i]) {
+        			console.log(this.inputs[i], "INPUTS")
+        			return (+this.inputs[i]).toFixed(2)
+        		}
+        		return '0.00'
+        	},
             setInputStyles(newInputs = false, newContract, oldContract) {
 	        	if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
 				if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
@@ -217,7 +223,11 @@
 				})
 				this.token_supply = +decoded[decoded.length-1]
 			},
-			async handle_change_amounts(i) {
+			async handle_change_amounts(i, event) {
+				if(event) {
+					this.inputs[i] = event.target.value
+					return;
+				}
 				if(this.currentPool == 'susd') return;
 				this.to_currency = null
 		        var values = this.inputs.map((x,i) => x / currentContract.c_rates[i])
@@ -383,7 +393,7 @@
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)
-			        this.inputs[this.to_currency] = real_values[this.to_currency].toFixed(2)
+			        this.inputs[this.to_currency] = real_values[this.to_currency]
 				    await this.calcSlippage([], false, zap_values, this.to_currency)
         		}
 
@@ -397,7 +407,7 @@
 			    if(this.to_currency !== null && this.to_currency < 10) return;
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
-			            Vue.set(this.inputs, i, (this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply).toFixed(2))
+			            Vue.set(this.inputs, i, (this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply))
 			        }
 			        else {
 			            Vue.set(this.inputs, i, 0)

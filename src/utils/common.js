@@ -314,7 +314,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
                 Vue.set(contract.staked_info, i, val)
                 contract.totalStake += val;
             }
-            contract.usdStake = token_balance * contract.virtual_price / 1e18;
+            contract.usdStake = contract.curveStakedBalance * contract.virtual_price / 1e18;
         }
     }
 }

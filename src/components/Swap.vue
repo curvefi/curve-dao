@@ -82,7 +82,7 @@
                     </li>
                     <li>
                         <input id='swapw' type='checkbox' name='swapw' v-model = 'swapwrapped'>
-                        <label for='swapw'>Swap wrapped</label>
+                        <label for='swapw' v-show = "currentPool != 'susdv2'">Swap wrapped</label>
                     </li>
                 </ul>
                 <p class='trade-buttons'>

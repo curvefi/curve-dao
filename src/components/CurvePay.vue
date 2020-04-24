@@ -46,6 +46,9 @@
 		watch: {
 			amount() {
 				this.highlight_amount();
+			},
+			token() {
+				this.highlight_amount();
 			}
 		},
 		computed: {
@@ -98,9 +101,9 @@
 			},
 			highlight_amount() {
 				let index = this.tokenNames.indexOf(this.token)
-				let maxAmount = BN(this.balances[index]).div(BN(this.virtual_prices[index]));
+				let maxAmount = BN(this.balances[index]).times(BN(this.virtual_prices[index]));
 				console.log(+maxAmount, 'max amount')
-				if(this.amount > maxAmount) this.bgColor = 'red'
+				if(BN(this.amount).times(BN(1e36)).gt(maxAmount)) this.bgColor = 'red'
 				else this.bgColor = 'blue'
 			}
 		},

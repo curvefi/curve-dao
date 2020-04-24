@@ -16,7 +16,6 @@ export const state = Vue.observable({
 			y: [],
 			busd: [],
 			susd: [],
-			susdv2: [],
 		},
 		30: {
 			compound: [],
@@ -24,7 +23,6 @@ export const state = Vue.observable({
 			y: [],
 			busd: [],
 			susd: [],
-			susdv2: [],
 		}
 	},
 	allVolume: {
@@ -33,7 +31,6 @@ export const state = Vue.observable({
 		y: [],
 		busd: [],
 		susd: [],
-		susdv2: [],
 	}
 })
 

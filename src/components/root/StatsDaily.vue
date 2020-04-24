@@ -57,7 +57,7 @@
 				usdt: 'usdt',
 				iearn: 'y',
 				busd: 'busd',
-				susd: 'susd',
+				susdv2: 'susdv2',
 			},
 			chartdata: {
 				title: {
@@ -134,7 +134,9 @@
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
 
-			let requests = Object.values(this.pools).map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-${p == 'susd' ? 30 : 1440}m.json`))
+			let requests = Object.values(this.pools)
+							.map(p => p == 'susdv2' ? 'susd' : p)
+							.map(p => fetch(`https://beta.curve.fi/raw-stats/${p}-1440m.json`))
 			let data = await Promise.all(requests)
 			for(let [key, res] of data.entries()) {
 				let json = await res.json();
@@ -162,7 +164,7 @@
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			console.log(jsons)*/
 			let volumeSeries = []
-			let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
+			let allPools = ['compound', 'usdt', 'y', 'busd', 'susdv2']
 
 			for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
 				volumeSeries.push([

@@ -182,21 +182,16 @@
 		        	data: chartData,
 		        	color: '#0b0a57'
 		        }, true)
-		        await volumeStore.getDailyVolume(this.pool)
+
 		        if(['susd'].includes(this.pool)) {
 		        	this.chart.yAxis[0].update({
 		        		type: 'linear'
 		        	})
 		        }
 
-	    		let lendingrates = await volumeStore.getLendingAPY(this.pool)
+		        await volumeStore.getDailyVolume(this.pool)
 
-	    		this.chart.addSeries({
-	    			name: 'Lending APY',
-	    			data: lendingrates,
-	    		})
-
-		        let volumeSeries = volumeStore.state.allVolume[this.pool]
+		        let volumeSeries = volumeStore.state.allVolume[this.pool == 'susdv2' ? 'susd' : this.pool]
 
 		        this.chart.addSeries({
 		        	type: 'column',
@@ -205,6 +200,18 @@
 		        	color: '#0b0a57',
 		        	yAxis: 1,
 		        })
+
+		        let lendingrates;
+		        if(this.pool != 'susdv2')    	
+	    			lendingrates = await volumeStore.getLendingAPY(this.pool)
+		        else
+		        	lendingrates = volumeSeries.map(data => [data[0], 0])
+
+	    		this.chart.addSeries({
+	    			name: 'Lending APY',
+	    			data: lendingrates,
+	    		})
+
 
 		        this.chart.redraw();
 		        this.chart.hideLoading();

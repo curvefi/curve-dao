@@ -62,6 +62,9 @@
 				return maxAmount;
 			}
 		},
+		mounted() {
+			contract.default_account && contract.multicall && this.mounted();
+		},
 		created() {
 			this.$watch(() => contract.default_account && contract.multicall, (val) => {
 				if(!val) return;

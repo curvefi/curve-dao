@@ -2,7 +2,7 @@
 	<div>
  		<div class='window white'>
  			<fieldset>
- 				<legend>Daily APY % and volume <span class='tooltip'>[?]<span class='tooltiptext'>(on annual basis)</span></span></legend>
+ 				<legend>Daily APY % and volume <span class='tooltip'>[?]<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span></legend>
  				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
  			</fieldset>
  		</div>

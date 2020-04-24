@@ -1,6 +1,6 @@
 <template>
 	<fieldset>
-		<legend>Daily APY % <span class='tooltip'>[?]<span class='tooltiptext'>(on annual basis)</span></span></legend>
+		<legend>Daily APY % <span class='tooltip'>[?]<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span></legend>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
     	<p v-show='volume != -1'>Daily volume: 
     		<span :class="{'loading line': !volume}">

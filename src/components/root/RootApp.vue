@@ -27,6 +27,7 @@
       <router-link to="/trade">Trade</router-link>
       <router-link to="/combinedstats">Stats</router-link>
       <router-link to="/dailystats">Daily stats</router-link>
+      <router-link to="/curvepay">Pay</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>

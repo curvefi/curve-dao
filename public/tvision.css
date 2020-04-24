@@ -830,7 +830,7 @@ input[type=range]:focus::-ms-fill-upper {
   }
 }
 
-@media only screen and (max-device-width: 850px) {
+@media only screen and (max-device-width: 890px) {
   .top-menu-bar > a {
     margin-left: 3px;
     margin-right: 0;

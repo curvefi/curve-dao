@@ -10,7 +10,7 @@
 					<select class='tvision' v-model = 'token' >
 						<option v-for = 'v in tokenNames' :value='v'>{{v}}</option>
 					</select>
-					<div id='balance'>Balance: {{(currentBalance / 1e18).toFixed(2)}}</div>
+					<div id='balance'>Balance: {{(currentBalance / 1e36 ).toFixed(2)}}$</div>
 
 				<div class='flex-break'></div>
 				<div>Amount in {{token}}: {{crvAmount}}</div>
@@ -41,21 +41,22 @@
 			virtual_prices: [],
 			amount: '0.00',
 			to: null,
+			bgColor: 'blue'
 		}),
+		watch: {
+			amount() {
+				this.highlight_amount();
+			}
+		},
 		computed: {
 			currentBalance() {
-				return this.balances[this.tokenNames.indexOf(this.token)] || 0
+				let index = this.tokenNames.indexOf(this.token)
+				return (this.balances[index] * this.virtual_prices[index]) || 0
 			},
 			crvAmount() {
 				let index = this.tokenNames.indexOf(this.token)
 				let maxAmount = BN(this.amount).div(BN(this.virtual_prices[index]).div(1e18)).toFixed(2);
 				return maxAmount;
-			},
-			bgColor() {
-				let index = this.tokenNames.indexOf(this.token)
-				let maxAmount = BN(this.balances[index]).div(BN(this.virtual_prices[index]));
-				if(this.amount > maxAmount) return 'red'
-				return 'blue'
 			}
 		},
 		created() {
@@ -94,6 +95,13 @@
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				this.balances = decoded.filter((_, i) => i % 2 == 0)
 				this.virtual_prices = decoded.filter((_, i) => i % 2 != 0)
+			},
+			highlight_amount() {
+				let index = this.tokenNames.indexOf(this.token)
+				let maxAmount = BN(this.balances[index]).div(BN(this.virtual_prices[index]));
+				console.log(+maxAmount, 'max amount')
+				if(this.amount > maxAmount) this.bgColor = 'red'
+				else this.bgColor = 'blue'
 			}
 		},
 	}

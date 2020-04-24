@@ -39,8 +39,8 @@
 			swaps: [],
 			balances: [],
 			virtual_prices: [],
-			amount: '0.1',
-			to: '0xB95d07Ea54bE71d479ab0780a7236EF691A870eF',
+			amount: '0.00',
+			to: null,
 		}),
 		computed: {
 			currentBalance() {

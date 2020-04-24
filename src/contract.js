@@ -96,7 +96,7 @@ export const gas = {
 		iearn: 1300000,
 		busd: 1300000,
 		susd: 1300000,
-		susdv2: 600000,
+		susdv2: 1000000,
 	},
 	withdraw: {
 		compound: {

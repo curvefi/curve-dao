@@ -470,7 +470,7 @@
 				this.inverse = false;
 				if(fromCurrency > toCurrency) {
 					this.inverse = true;
-					[fromCurrency, toCurrency] = [toCurrency, fromCurrency]
+					[this.fromCurrency, this.toCurrency] = [this.toCurrency, this.fromCurrency]
 					this.pairIdx = `${fromCurrency}-${toCurrency}`
 				}
 

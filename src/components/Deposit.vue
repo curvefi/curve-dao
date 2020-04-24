@@ -209,13 +209,14 @@
 			},
 			async handle_add_liquidity() {
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
-						[currentContract.coins[i]._address, currentContract.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
+						[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
 					)
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>web3.eth.abi.decodeParameter('uint256',hex))
 				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
+			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
 			        if(Math.abs(balance/amount-1) < 0.005) {
 			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
 			        }

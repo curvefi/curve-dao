@@ -74,6 +74,7 @@
 				},
 	            yAxis: [
 		            {
+		            	id: 'apyAxis',
 		            	opposite: false,
 		            	type: 'logarithmic',
 	        			title: {
@@ -198,18 +199,47 @@
 		        	name: 'Volume',
 		        	data: volumeSeries,
 		        	color: '#0b0a57',
-		        	yAxis: 1,
+		        	yAxis: 'volumeAxis',
 		        })
 
 		        let lendingrates;
+		        let lendingAxis = 'apyAxis'
 		        if(this.pool != 'susdv2')    	
 	    			lendingrates = await volumeStore.getLendingAPY(this.pool)
-		        else
+		        else {
 		        	lendingrates = volumeSeries.map(data => [data[0], 0])
+		        	lendingAxis = 'lendingAxis'
+		        	this.chart.addAxis({
+		            	id: 'lendingAxis',
+		            	opposite: false,
+		            	type: 'linear',
+		            	title: {
+		            		text: 'Lending rates',
+		            		style: {
+		            			color: 'black'
+		            		},
+		            	},
+		            	labels: {
+		            		x: 40,
+		            		style: {
+		            			color: 'black',
+		            		},
+		            	},
+		            	tickPixelInterval: 10,
+		            	top: '65%',
+		            	height: '5%',
+		            })
+		            this.chart.yAxis[1].update({
+		            	top: '70%',
+		            	height: '30%',
+		            })
+
+		        }
 
 	    		this.chart.addSeries({
 	    			name: 'Lending APY',
 	    			data: lendingrates,
+	    			yAxis: lendingAxis,
 	    		})
 
 

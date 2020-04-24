@@ -164,7 +164,7 @@
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			console.log(jsons)*/
 			let volumeSeries = []
-			let allPools = ['compound', 'usdt', 'y', 'busd', 'susdv2']
+			let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
 
 			for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
 				volumeSeries.push([

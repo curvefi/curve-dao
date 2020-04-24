@@ -36,7 +36,7 @@
             <span> {{totalShare | toFixed2}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{(totalShare * virtualPrice) | toFixed2}}
+            <b>Averaged USD balance:</b> {{(usdShare) | toFixed2}}
           </li>
       </ul>
     </fieldset>
@@ -53,7 +53,7 @@
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{(totalStake * virtualPrice) | toFixed2}}
+            <b>Averaged USD balance:</b> {{(usdStake) | toFixed2}}
           </li>
 
       </ul>
@@ -93,6 +93,12 @@
       virtualPrice() {
         return currentContract.virtual_price
       },
+      usdShare() {
+        return getters.usdShare()
+      },
+      usdStake() {
+        return getters.usdStake()
+      }
     }
   }
 </script>

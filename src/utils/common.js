@@ -298,6 +298,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
                 contract.totalShare += val;
                 Vue.set(contract.l_info, i, val)
             }
+            contract.usdShare = token_balance * contract.virtual_price / 1e18;
             contract.showShares = true;
         }
         else {
@@ -313,6 +314,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
                 Vue.set(contract.staked_info, i, val)
                 contract.totalStake += val;
             }
+            contract.usdStake = token_balance * contract.virtual_price / 1e18;
         }
     }
 }

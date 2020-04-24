@@ -183,6 +183,8 @@ const state = Vue.observable({
 			showShares: false,
 			totalSupply: 0,
 			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
 		},
 		usdt: {
 			currentContract: 'usdt',
@@ -197,6 +199,8 @@ const state = Vue.observable({
 			showShares: false,
 			totalSupply: 0,
 			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
 		},
 		iearn: {
 			currentContract: 'iearn',
@@ -211,6 +215,8 @@ const state = Vue.observable({
 			showShares: false,
 			totalSupply: 0,
 			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
 		},
 		busd: {
 			currentContract: 'busd',
@@ -225,6 +231,8 @@ const state = Vue.observable({
 			showShares: false,
 			totalSupply: 0,
 			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
 		},
 		susdv2: {
 			currentContract: 'susdv2',
@@ -240,6 +248,8 @@ const state = Vue.observable({
 			totalSupply: 0,
 			totalBalance: 0,
 			curveRewards: null,
+			usdShare: null,
+			usdStake: null,
 		}
 	},
 	currentContract: 'compound',
@@ -299,6 +309,9 @@ const state = Vue.observable({
 	curveRewards: null,
 	curveStakedBalance: null,
 
+	usdShare: null,
+	usdStake: null,
+
 
 })
 
@@ -327,6 +340,9 @@ export const getters = {
 
 	staked_info: () => state.staked_info,
 	totalStake: () => state.totalStake,
+
+	usdShare: () => state.usdShare,
+	usdStake: () => state.usdStake,
 }
 
 

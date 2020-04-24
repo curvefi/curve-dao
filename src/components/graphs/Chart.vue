@@ -378,6 +378,7 @@
 						this.ohlcData[i].prices[this.pairIdx] = []
 						this.ohlcData[i].volume = {}
 						this.ohlcData[i].volume[this.pairIdx] = []
+						console.log(this.pairIdx, "PAIR IDX")
 						for(let j = 0; j < data.length; j++) {
 							if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
 							let v = data[j][i]
@@ -471,7 +472,7 @@
 				if(fromCurrency > toCurrency) {
 					this.inverse = true;
 					[this.fromCurrency, this.toCurrency] = [this.toCurrency, this.fromCurrency]
-					this.pairIdx = `${fromCurrency}-${toCurrency}`
+					this.pairIdx = `${this.fromCurrency}-${this.toCurrency}`
 				}
 
 				let [ohlc, volume] = await this.processData(this.data)

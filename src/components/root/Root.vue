@@ -11,7 +11,7 @@
 	                	<span class='index'>0.</span>  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
+	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span> <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
 	                    	<span v-show='volumes.compound >= 0'>{{(volumes.compound | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -22,7 +22,7 @@
 	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
+	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span> <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
 	                    	<span v-show='volumes.usdt >= 0'>{{(volumes.usdt | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -33,7 +33,7 @@
 	                	<span class='index'>2.</span>  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
+	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span> <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
 	                    	<span v-show='volumes.y >= 0'>{{(volumes.y | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -44,7 +44,7 @@
 	                	<span class='index'>3.</span>  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
+	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span> <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
 	                    	<span v-show='volumes.busd >= 0'>{{(volumes.busd | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -69,7 +69,7 @@
 	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
 	                    <span class='apr'>
 	                    	<span>
-	                    		APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>
+	                    		<span class='tooltip'>APY:<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span> <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>
 	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX
 		                                <span class='tooltiptext'>
@@ -131,6 +131,7 @@
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
+			contract.web3 && this.getCurveRewards();
 	        this.getAPY()
 		},
 		beforeDestroy() {

@@ -353,7 +353,7 @@ export async function init(contract, refresh = false) {
 	if(contract && (contract.currentContract == state.currentContract || state.contracts[contract.currentContract].initializedContracts) && !refresh) return Promise.resolve();
 	if(!contract) contract = state
 	try {
-        let networkId = await web3.eth.net.getId();
+        let networkId = await state.web3.eth.net.getId();
         if(networkId != 1) {
             this.error = 'Error: wrong network type. Please switch to mainnet';
         }
@@ -368,8 +368,8 @@ export async function init(contract, refresh = false) {
     	[allabis[contract.currentContract].swap_address, '0xbb7b8b80'],
     ];
     if(contract.currentContract == 'compound') {
-	    state.old_swap = new web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
-	    state.old_swap_token = new web3.eth.Contract(ERC20_abi, old_token_address);
+	    state.old_swap = new state.web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
+	    state.old_swap_token = new state.web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
     if(contract.currentContract == 'susdv2') {
@@ -378,13 +378,13 @@ export async function init(contract, refresh = false) {
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
-		let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		let curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
     if(!['susd'].includes(contract.currentContract))
-    	state.deposit_zap = new web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
-    contract.swap = new web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
-    contract.swap_token = new web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
+    	state.deposit_zap = new state.web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
+    contract.swap = new state.web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
+    contract.swap_token = new state.web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
     window[contract.currentContract] = {};
     window[contract.currentContract].swap = contract.swap
     window[contract.currentContract].swap_token = contract.swap_token
@@ -405,14 +405,14 @@ export async function init(contract, refresh = false) {
   	console.log([...state.allInitContracts])
   	return;
     let aggcalls = await state.multicall.methods.aggregate(calls).call()
-    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('address', hex))
+    let decoded = aggcalls[1].map(hex => state.web3.eth.abi.decodeParameter('address', hex))
     chunkArr(decoded, 2).map((v, i) => {
     	var addr = v[0];
         let coin_abi = cERC20_abi
         if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) coin_abi = yERC20_abi
-        contract.coins.push(new web3.eth.Contract(coin_abi, addr));
+        contract.coins.push(new state.web3.eth.Contract(coin_abi, addr));
         var underlying_addr = v[1];
-        contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
+        contract.underlying_coins.push(new state.web3.eth.Contract(ERC20_abi, underlying_addr));
     })
 }
 
@@ -424,12 +424,12 @@ export const allState = Vue.observable({
 export async function getAllUnderlying() {
 	for([key, contract] of Object.entries(allabis)) {
 		if(key == 'susd') continue;
-		allState.swap[key] = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
+		allState.swap[key] = new state.web3.eth.Contract(contract.swap_abi, contract.swap_address);
         allState.underlying_coins[key] = [];
 		for(let i = 0; i < contract.N_COINS; i++) {
 			var addr = await allState.swap[key].methods.coins(i).call();
 	        var underlying_addr = await allState.swap[key].swap.methods.underlying_coins(i).call();
-	        allState.underlying_coins[key][i] = new web3.eth.Contract(ERC20_abi, underlying_addr);
+	        allState.underlying_coins[key][i] = new state.web3.eth.Contract(ERC20_abi, underlying_addr);
 		}
 	}
 }

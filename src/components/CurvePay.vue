@@ -74,8 +74,8 @@
 		methods: {
 			async mounted() {
 				let abis = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y');
-				this.contracts = abis.map(pool => new web3.eth.Contract(ERC20_abi, allabis[pool].token_address))
-				this.swaps = abis.map(pool => new web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
+				this.contracts = abis.map(pool => new contract.web3.eth.Contract(ERC20_abi, allabis[pool].token_address))
+				this.swaps = abis.map(pool => new contract.web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
 				this.updateBalances();
 			},
 			async pay() {
@@ -98,7 +98,7 @@
 					]
 				})
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
 				this.balances = decoded.filter((_, i) => i % 2 == 0)
 				this.virtual_prices = decoded.filter((_, i) => i % 2 != 0)
 			},

@@ -209,7 +209,7 @@
 			    }
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 				if(currentContract.default_account) {
 					decoded.slice(0, currentContract.N_COINS).map((v, i) => {
 						Vue.set(this.wallet_balances, i, +v)
@@ -238,7 +238,7 @@
 		        calls.push([currentContract.swap._address ,currentContract.swap.methods.calc_token_amount(values, false).encodeABI()])
 		        calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 		        let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-		        let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+		        let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 		        decoded.slice(0, currentContract.N_COINS).forEach((v, i) => {
 		        	let coin_balance = +v * currentContract.c_rates[i]
 		            if(coin_balance < this.inputs[i]) {

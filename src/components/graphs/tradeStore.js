@@ -46,7 +46,7 @@ export async function updatePoolInfo() {
 		)
 	}
 	let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-	let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+	let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
 	for(let [key, pool] of state.pools.entries()) {
 		if(pool == 'y') pool = 'iearn'
 		let cont = contract.contracts[pool]

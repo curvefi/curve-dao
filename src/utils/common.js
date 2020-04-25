@@ -50,7 +50,7 @@ export async function ensure_allowance(amounts, plain = false) {
     for (let i=0; i < currentContract.N_COINS; i++)
         calls.push([coins[i]._address, coins[i].methods.allowance(default_account, swap).encodeABI()])
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
-    allowances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex));
+    allowances = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex));
     if (amounts) {
         // Non-infinite
         for (let i=0; i < currentContract.N_COINS; i++) {
@@ -363,7 +363,7 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     }
     calls.push(...[...Array(currentContract.N_COINS).keys()].map(i => [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()]))
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
-    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
     let [virtual_price, token_amount, ...balances] = decoded
     let Sv = +virtual_price * (+token_amount) / 1e36;
     for(let i = 0; i < currentContract.N_COINS; i++) {

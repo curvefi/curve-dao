@@ -46,8 +46,8 @@ export const onboard = Onboard({
   networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.
   subscriptions: {
     wallet: wallet => {
-       window.web3 = new Web3(wallet.provider)
-       localStorage.setItem('selectedWallet', wallet.name)
+      state.contract.web3 = window.web3 = new Web3(wallet.provider)
+      localStorage.setItem('selectedWallet', wallet.name)
     },
     network: network => {
       if(network != 1) {
@@ -119,9 +119,9 @@ async function init(init = true, name) {
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
     state.contract.web3 = window.web3
-    state.contract.multicall = new web3.eth.Contract(multicall_abi, multicall_address)
+    state.contract.multicall = new state.contract.web3.eth.Contract(multicall_abi, multicall_address)
 
-    var default_account = (await web3.eth.getAccounts())[0];
+    var default_account = (await state.contract.web3.eth.getAccounts())[0];
     state.contract.default_account = default_account;
     if(init) await state.init(name);
     state.contract.initializedContracts = true;

@@ -34,7 +34,7 @@ export default {
 		async mounted() {
 			try {			
 		        common.update_fee_info();
-		        this.BN = web3.utils.toBN
+		        this.BN = currentContract.web3.utils.toBN
 		        this.CURVE = currentContract.swap_address;
 		        this.CURVE_TOKEN = currentContract.token_address;
 
@@ -75,7 +75,7 @@ export default {
 	                available += this.fromNativeCurrent(curr, prices[i])
 	            }
 	            else {
-		            const exchangeRate = await web3.eth.call({
+		            const exchangeRate = await currentContract.web3.eth.call({
 		                to: this.ADDRESSES[curr],
 		                data: '0xbd6d894d',
 		            });
@@ -113,16 +113,16 @@ export default {
 			}
 			const decimals = ['yUSDC', 'yUSDT'].includes(curr) ? 6 : 18;
 		    if (decimals === 18) {
-		        return Number(web3.utils.fromWei(value.toFixed(0)));
+		        return Number(currentContract.web3.utils.fromWei(value.toFixed(0)));
 		    }
 		    return value.toNumber() / 10 ** decimals;
 		},
 		async convertValuesCurrent(curr) {
-		    const usdPool = await web3.eth.call({
+		    const usdPool = await currentContract.web3.eth.call({
 		        to: ADDRESSES[curr],
 		        data: '0x7137ef99',
 		    });
-		    const tokensSupply = await web3.eth.call({
+		    const tokensSupply = await currentContract.web3.eth.call({
 		        to: ADDRESSES[curr],
 		        data: '0x18160ddd',
 		    });
@@ -156,18 +156,18 @@ export default {
 		        fromBlock = '0x'+parseInt(block-1).toString(16)
 		        toBlock = '0x'+parseInt(block+1).toString(16)
 		    }
-		    let mints = await web3.eth.getPastLogs({
+		    let mints = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
 		        toBlock: toBlock,
 		        address: address,
-		        //web3.utils.sha3('Mint(address,uint256,uint256)')
+		        //currentContract.web3.utils.sha3('Mint(address,uint256,uint256)')
 		        topics: [
 		            '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f',
 		        ],
 		    });
 		    if(mints.length) {
 		        let mint = mints[0]
-		        let mintevent = web3.eth.abi.decodeParameters(['address','uint256','uint256'], mint.data)
+		        let mintevent = currentContract.web3.eth.abi.decodeParameters(['address','uint256','uint256'], mint.data)
 		        let exchangeRate;
 		        if(mintevent[1] == 0 || mintevent[2] == 0) return -1
 		        exchangeRate = this.BN(mintevent[1]).div(this.BN(mintevent[2]));
@@ -182,7 +182,7 @@ export default {
 	    async getExchangeRate(blockNumber, address, value, type) {
 		    let exchangeRate = await this.checkExchangeRateBlocks(blockNumber, address, 0);
 		    let exchangeRatePast, exchangeRateFuture;
-		    let currentBlock = await web3.eth.getBlockNumber();
+		    let currentBlock = await currentContract.web3.eth.getBlockNumber();
 		    let pastCurrentBlock = false;
 		    if(exchangeRate === false) {
 		        let i = blockNumber;
@@ -218,7 +218,7 @@ export default {
 		            return exchangeRatePast.exchangeRate;
 		        }
 
-		        if(web3.utils.isBN(exchangeRateFuture.exchangeRate)) {
+		        if(currentContract.web3.utils.isBN(exchangeRateFuture.exchangeRate)) {
 		        	exchangeRateFuture.exchangeRate = exchangeRateFuture.exchangeRate.toNumber()
 		        	exchangeRatePast.exchangeRate = exchangeRatePast.exchangeRate.toNumber()
 		        }
@@ -277,7 +277,7 @@ export default {
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
 		    }
 
-		    const poolTokensReceivings = await web3.eth.getPastLogs({
+		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
 		        toBlock: 'latest',
 		        address: this.CURVE_TOKEN,
@@ -296,12 +296,12 @@ export default {
 		    console.time('timer')
 		    for (const hash of txs) {
 		    	if(this.cancel) throw new Error('cancel');
-		        const receipt = await web3.eth.getTransactionReceipt(hash);
-		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
+		        const receipt = await currentContract.web3.eth.getTransactionReceipt(hash);
+		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
 		        let addliquidity = receipt.logs.filter(log=>log.topics[0] == this.addliquidityTopic)
 		        if(addliquidity.length) {
-		            let cTokens = (web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
+		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
 		            depositUsdSum += await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')
 		        }
 		        else {
@@ -333,7 +333,7 @@ export default {
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
 			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
 		    }
-		    const logs = await web3.eth.getPastLogs({
+		    const logs = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
 		        toBlock: 'latest',
 		        address: currentContract.token_address,
@@ -349,11 +349,11 @@ export default {
 
 		    for(let log of logs) {
 		    	if(this.cancel) throw new Error('cancel');
-		        const receipt = await web3.eth.getTransactionReceipt(log.transactionHash);
-		        let timestamp = (await web3.eth.getBlock(receipt.blockNumber)).timestamp;
+		        const receipt = await currentContract.web3.eth.getTransactionReceipt(log.transactionHash);
+		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        if(removeliquidity.length) {
-		            let cTokens = (web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
+		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
 		            withdrawals += await this.calculateAmount(cTokens, log.blockNumber)
 		            continue;
 		        }
@@ -363,7 +363,7 @@ export default {
 		        	if(['compound','usdt'].includes(this.currentPool)) {
 		        		decodeParameters = this.decodeParametersWithdrawal1
 		        	}
-		            let decoded = web3.eth.abi.decodeParameters(decodeParameters, removeliquidity[0].data)
+		            let decoded = currentContract.web3.eth.abi.decodeParameters(decodeParameters, removeliquidity[0].data)
 		            withdrawals += await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
 		        }
 		        else {
@@ -395,22 +395,22 @@ export default {
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method
 		    //balance
-		    const balanceOfCurveContract = await web3.eth.call({
+		    const balanceOfCurveContract = await currentContract.web3.eth.call({
 		        to: tokenAddress,
 		        data: '0x70a08231000000000000000000000000' + this.CURVE.substr(2),
 		    });
 		    //amount
-		    const poolTokensBalance = await web3.eth.call({
+		    const poolTokensBalance = await currentContract.web3.eth.call({
 		        to: this.CURVE_TOKEN,
 		        data: '0x70a08231000000000000000000000000' + default_account,
 		    });
 		    //totalSupply
-		    const poolTokensSupply = await web3.eth.call({
+		    const poolTokensSupply = await currentContract.web3.eth.call({
 		        to: this.CURVE_TOKEN,
 		        data: '0x18160ddd',
 		    });
 
-		    const get_virtual_price = await web3.eth.call({
+		    const get_virtual_price = await currentContract.web3.eth.call({
 		    	to: this.CURVE,
 		    	data: '0xbb7b8b80'
 		    })

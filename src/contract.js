@@ -86,8 +86,8 @@ export const gas = {
 			exchange_underlying: (i, j) => 1200000,
 		},
 		susdv2: {
-			exchange: (i, j) => 400000,
-			exchange_underlying: (i, j) => 400000,
+			exchange: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
+			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
 		}
 	},
 	deposit: {

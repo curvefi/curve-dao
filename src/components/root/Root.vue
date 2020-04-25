@@ -124,14 +124,14 @@
 			var end = new Date();
 			end.setHours(23,59,59,999);
 			this.end = end.getTime() / 1000
-			this.$watch(() => contract.web3, val => {
+			this.$watch(() => contract.web3 && contract.multicall, val => {
 				if(!val) return;
 				this.getCurveRewards()
 			})
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
-			contract.web3 && this.getCurveRewards();
+			contract.web3 && contract.multicall && this.getCurveRewards();
 	        this.getAPY()
 		},
 		beforeDestroy() {

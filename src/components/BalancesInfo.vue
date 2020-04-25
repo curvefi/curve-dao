@@ -9,7 +9,7 @@
           </li>
           <li>
             <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
-            <span :class="{'loading line': total === null}"> {{total | toFixed2}}</span>
+            <span :class="{'loading line': totalBalances === null}"> {{totalBalances | toFixed2}}</span>
           </li>
       </ul>
       <p>
@@ -92,6 +92,9 @@
       },
       virtualPrice() {
         return currentContract.virtual_price
+      },
+      totalBalances() {
+        return this.bal_info.reduce((a, b) => a + b, 0)
       },
       usdShare() {
         return getters.usdShare()

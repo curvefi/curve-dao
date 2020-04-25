@@ -168,7 +168,7 @@ let initState = {
 const state = Vue.observable({
 	web3: null,
 	multicall: null,
-	allInitContracts: [],
+	allInitContracts: new Set(),
 	contracts: {
 		compound: {
 			currentContract: 'compound',
@@ -368,7 +368,7 @@ export async function init(contract, refresh = false) {
     	[allabis[contract.currentContract].swap_address, '0xbb7b8b80'],
     ];
     if(contract.currentContract == 'compound') {
-	    state.old_swap = new state.web3.eth.Contract(allabis[state.currentContract].old_swap_abi, old_swap_address);
+	    state.old_swap = new state.web3.eth.Contract(allabis.compound.old_swap_abi, old_swap_address);
 	    state.old_swap_token = new state.web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
@@ -401,7 +401,7 @@ export async function init(contract, refresh = false) {
     await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;
   	console.timeEnd('init')
-  	state.allInitContracts.push(contract.currentContract)
+  	state.allInitContracts = new Set(state.allInitContracts.add(contract.currentContract))
   	console.log([...state.allInitContracts])
   	return;
     let aggcalls = await state.multicall.methods.aggregate(calls).call()

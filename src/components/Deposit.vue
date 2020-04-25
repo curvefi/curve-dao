@@ -147,7 +147,6 @@
             },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
-        			console.log(this.inputs[i], "INPUTS")
         			return (+this.inputs[i]).toFixed(2)
         		}
         		return '0.00'
@@ -225,8 +224,7 @@
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
 			        if(Math.abs(balance/amount-1) < 0.005) {
-			        	console.log("HEREEEE")
-			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
+			            Vue.set(this.amounts, i, BN(balance).div(currentContract.coin_precisions[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1));
 			        }
 			        else {
 			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
@@ -243,7 +241,7 @@
 			    	await common.ensure_allowance(amounts, true)
 			    }
 			    var token_amount = 0;
-			    if(total_supply > 0) {    
+			    if(total_supply > 0) {
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }

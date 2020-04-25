@@ -21,10 +21,9 @@
 	                        :id="'currency_'+i" 
 	                        :disabled='disabled' 
 	                        name="from_cur" 
-	                        value="0.00" 
-	                        v-model='inputs[i]'
+	                        :value = 'inputsFormat(i)'
 	                        :style = "{backgroundColor: bgColors[i]}"
-	                        @input='change_currency(i)'
+	                        @input='change_currency(i, true, $event)'
 	                    >
                     </li>
                 </ul>
@@ -119,7 +118,7 @@
         	async depositc(val, oldval) {
         		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
-        		await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
+        		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
         		await this.calcSlippage()
         	}
         },
@@ -141,11 +140,18 @@
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
                 	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-                let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+                let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                 if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
                 	this.inf_approval = false
                 this.disabledButtons = false;
             },
+        	inputsFormat(i) {
+        		if(this.inputs[i]) {
+        			console.log(this.inputs[i], "INPUTS")
+        			return (+this.inputs[i]).toFixed(2)
+        		}
+        		return '0.00'
+        	},
             changeSwapInfo(val) {
             	if(val) {
 	            	this.coins = currentContract.coins
@@ -184,7 +190,7 @@
 			    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 			    }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 			    helpers.chunkArr(decoded, 2).map((v, i) => {
 			    	Vue.set(this.wallet_balances, i, +v[0])
 			    	if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0)
@@ -195,8 +201,9 @@
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
 			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
 			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
-			            var val = Math.floor(amount * 100) / 100;
-			            val = val.toFixed(2)
+			            var val = amount
+			            //var val = Math.floor(amount * 100) / 100;
+			            //val = val.toFixed(2)
 			            Vue.set(this.inputs, i, val)
 			        }
 			    }
@@ -213,11 +220,12 @@
 					)
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-				let decoded = aggcalls[1].map(hex=>web3.eth.abi.decodeParameter('uint256',hex))
+				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
 				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
 			        if(Math.abs(balance/amount-1) < 0.005) {
+			        	console.log("HEREEEE")
 			            Vue.set(this.amounts, i, BN(balance).toFixed(0,1));
 			        }
 			        else {
@@ -257,7 +265,10 @@
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
-			async change_currency(i, setInputs = true) {
+			async change_currency(i, setInputs = true, event) {
+				if(event) {
+					this.inputs[i] = event.target.value
+				}
 	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            if (value > this.wallet_balances[i] * this.rates[i])

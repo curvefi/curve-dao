@@ -281,7 +281,7 @@
                     }
                     calls.push([this.coins[this.to_currency]._address , this.coins[this.to_currency].methods.balanceOf(this.default_account).encodeABI()])
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-                    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+                    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                     let [b, get_dy_underlying, balance] = decoded
                     b = +b * currentContract.c_rates[i];
                     if (b >= 0.001) {

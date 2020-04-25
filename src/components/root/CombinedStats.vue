@@ -122,8 +122,8 @@
 			async init_contracts() {
 			    for(let [key, contract] of Object.entries(this.allContracts)) {
 			    	this.web3contracts[key] = {};
-				    this.web3contracts[key].swap = new web3.eth.Contract(contract.swap_abi, contract.swap_address);
-				    this.web3contracts[key].swap_token = new web3.eth.Contract(ERC20_abi, contract.token_address);
+				    this.web3contracts[key].swap = new currentContract.web3.eth.Contract(contract.swap_abi, contract.swap_address);
+				    this.web3contracts[key].swap_token = new currentContract.web3.eth.Contract(ERC20_abi, contract.token_address);
 
 			        this.all_coins[key] = {}
 			        this.all_coins[key].coins = [];
@@ -137,9 +137,9 @@
 				        	cabi = contracts.iearn.swap_abi;
 				        	addr = contracts.iearn.swap_address
 				        }
-				        this.all_coins[key].coins[i] = new web3.eth.Contract(cabi, addr);
+				        this.all_coins[key].coins[i] = new currentContract.web3.eth.Contract(cabi, addr);
 				        var underlying_addr = contracts[key].underlying_coins[i];
-				        this.all_underlying_coins[key].underlying_coins[i] = new web3.eth.Contract(ERC20_abi, underlying_addr);
+				        this.all_underlying_coins[key].underlying_coins[i] = new currentContract.web3.eth.Contract(ERC20_abi, underlying_addr);
 				    }
 			    }
 			},
@@ -221,12 +221,12 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
-			    let curveRewards = new web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+			    let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account).encodeABI()])
 
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
-			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 			    let curveStakedBalance = decoded[decoded.length-1]
 			    decoded = decoded.slice(0, decoded.length-1)
 			    let i = 0;

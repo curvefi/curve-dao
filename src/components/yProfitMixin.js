@@ -18,15 +18,15 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	            const exchangeRate = await web3.eth.call({
+	            const exchangeRate = await currentContract.web3.eth.call({
 	                to: this.ADDRESSES[curr],
 	                data: '0xbd6d894d',
 	            });
-	            const usdPool = await web3.eth.call({
+	            const usdPool = await currentContract.web3.eth.call({
 	                to: this.ADDRESSES[curr],
 	                data: '0x7137ef99',
 	            });
-	            const tokensSupply = await web3.eth.call({
+	            const tokensSupply = await currentContract.web3.eth.call({
 	                to: this.ADDRESSES[curr],
 	                data: '0x18160ddd',
 	            });
@@ -60,7 +60,7 @@ export default {
 		    let yaddress = Object.values(this.ADDRESSES)[index];
 		    let mints;
 		    if(type == 'deposit') {
-		        mints = await web3.eth.getPastLogs({
+		        mints = await currentContract.web3.eth.getPastLogs({
 		            fromBlock: fromBlock,
 		            toBlock: toBlock,
 		            address: address,
@@ -73,7 +73,7 @@ export default {
 		        });
 		    }
 		    else {
-		        mints = await web3.eth.getPastLogs({
+		        mints = await currentContract.web3.eth.getPastLogs({
 		            fromBlock: fromBlock,
 		            toBlock: toBlock,
 		            address: yaddress,
@@ -90,7 +90,7 @@ export default {
 		        let mint = mints[0]
 		        if(direction == -1) mint = mints[mints.length-1]
 		        console.log(mint)
-		        let tr = await web3.eth.getTransactionReceipt(mint.transactionHash)
+		        let tr = await currentContract.web3.eth.getTransactionReceipt(mint.transactionHash)
 		        if(type=='deposit') {
 		            tr = tr.logs.filter(log=>log.address == yaddress && log.topics[1] == '0x0000000000000000000000000000000000000000000000000000000000000000')
 		        }

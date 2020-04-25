@@ -144,6 +144,7 @@
 		},
 		methods: {
 			async getCurveRewards() {
+				console.log(contract.web3, "WEB333")
 				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
 				let calls = [
@@ -151,7 +152,7 @@
 					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
 				]
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
-				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
 				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
 				let snxPrice = await request.json();
 				snxPrice = snxPrice.quotes.USD.price;

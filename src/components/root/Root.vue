@@ -144,7 +144,6 @@
 		},
 		methods: {
 			async getCurveRewards() {
-				console.log(contract.web3, "WEB333")
 				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
 				let calls = [

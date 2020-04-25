@@ -76,7 +76,8 @@
 										.filter((k, i, all)=>all.indexOf(k) === i && all.lastIndexOf(k) !== i)
 				}
 				else {
-					duplicates = Object.keys(allCurrencies[this.pools])
+					console.log(allCurrencies)
+					duplicates = Object.keys(allCurrencies[this.pools[0] == 'y' ? 'iearn' : this.pools[0]])
 				}
 				var pairs = []
 				for(let [i, val] of duplicates.entries()) {

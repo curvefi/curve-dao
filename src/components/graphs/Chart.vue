@@ -378,7 +378,6 @@
 						this.ohlcData[i].prices[this.pairIdx] = []
 						this.ohlcData[i].volume = {}
 						this.ohlcData[i].volume[this.pairIdx] = []
-						console.log(this.pairIdx, "PAIR IDX")
 						for(let j = 0; j < data.length; j++) {
 							if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
 							let v = data[j][i]

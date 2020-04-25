@@ -16,11 +16,11 @@ export default {
 	}),
 
 	async mounted() {
-		if(currentContract.web3) this.getSNXRewards()
+		if(currentContract.default_account && currentContract.multicall) this.getSNXRewards()
 	},
 
 	async created() {
-		this.$watch(() => currentContract.web3, val => val && this.getSNXRewards())
+		this.$watch(() => currentContract.default_account && currentContract.multicall, val => val && this.getSNXRewards())
 	},
 
 	methods: {

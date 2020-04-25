@@ -307,7 +307,7 @@
 			        }
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
-			        if(this.withdrawc) {
+			        if(this.withdrawc || this.currentPool == 'susdv2') {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
 			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
 				        	from: currentContract.default_account, gas: gas

@@ -21,9 +21,9 @@
 	                        :id="'currency_'+i" 
 	                        :disabled='disabled' 
 	                        name="from_cur" 
-	                        :value = 'inputsFormat(i)'
+	                        v-model = 'inputs[i]'
 	                        :style = "{backgroundColor: bgColors[i]}"
-	                        @input='change_currency(i, true, $event)'
+	                        @input='change_currency(i, true)'
 	                    >
                     </li>
                 </ul>
@@ -202,8 +202,8 @@
 			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
 			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
 			            var val = amount
-			            //var val = Math.floor(amount * 100) / 100;
-			            //val = val.toFixed(2)
+			            var val = Math.floor(amount * 100) / 100;
+			            val = val.toFixed(2)
 			            Vue.set(this.inputs, i, val)
 			        }
 			    }

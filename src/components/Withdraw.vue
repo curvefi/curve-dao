@@ -321,7 +321,7 @@
 			    	}
 			        else {
 			        	let inputs = this.inputs;
-			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) || v < 0.01 ? this.calc_balances[i].toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
+			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) || v < 0.01 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({

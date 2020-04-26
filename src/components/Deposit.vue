@@ -211,7 +211,7 @@
 			},
 			async handle_sync_balances_proportion() {
 				await this.handle_sync_balances();
-				for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
+				//for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
 			},
 			async handle_add_liquidity() {
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>

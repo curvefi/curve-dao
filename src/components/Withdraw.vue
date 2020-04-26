@@ -292,7 +292,7 @@
 			async handle_remove_liquidity() {
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	let useMax = BN(this.calc_balances[i]).div(BN(this.inputs[i])).minus(1).lte(BN(0.00005))
+			    	let useMax = BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01)) || this.inputs[i] < 0.01
 			    	if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}
@@ -321,7 +321,7 @@
 			    	}
 			        else {
 			        	let inputs = this.inputs;
-			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).div(BN(v)).minus(1).lte(BN(0.00005)) ? this.calc_balances[i].toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
+			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) || v < 0.01 ? this.calc_balances[i].toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({

@@ -255,9 +255,17 @@
 				else {
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			    	let gas = contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0
+			    	console.warn(this.inputs, 'inputs', amounts, 'uamounts', 
+			    		this.amounts, 'amounts', currentContract.swap._address, 'swap address', currentContract.coin_precisions, 'coin precisions', 
+			    		currentContract.c_rates, 'c rates',
+			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
+			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
 					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
+					})
+					.once('transactionHash', hash => {
+						console.warn(hash, 'tx hash')
 					})
 				}
 			    await this.handle_sync_balances();

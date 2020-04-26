@@ -202,7 +202,7 @@
 			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
 			            var val = amount
 			            var val = Math.floor(amount * 100) / 100;
-			            val = val.toFixed(2)
+			            if(val == 0) val = '0.00'
 			            Vue.set(this.inputs, i, val)
 			        }
 			    }
@@ -253,7 +253,7 @@
 				    });
 				}
 				else {
-			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			    	let gas = contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0
 			    	console.warn(this.inputs, 'inputs', amounts, 'uamounts', 
 			    		this.amounts, 'amounts', currentContract.swap._address, 'swap address', currentContract.coin_precisions, 'coin precisions', 

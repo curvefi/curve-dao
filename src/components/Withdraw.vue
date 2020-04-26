@@ -97,6 +97,7 @@
     		inputs: [],
     		inputStyles: [],
     		wallet_balances: [],
+    		calc_balances: [],
     		balances: [],
     		token_balance: 0,
     		token_supply: 0,
@@ -196,7 +197,7 @@
             	let calls = []
 			    if (currentContract.default_account) {
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
-			        	calls.push([currentContract.coins[i]._address ,currentContract.coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+			        	calls.push([currentContract.underlying_coins[i]._address ,currentContract.underlying_coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			        }
 			        calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    }
@@ -211,7 +212,7 @@
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 				if(currentContract.default_account) {
 					decoded.slice(0, currentContract.N_COINS).map((v, i) => {
-						Vue.set(this.wallet_balances, i, +v)
+						Vue.set(this.wallet_balances, i, +v / allabis[this.currentPool].coin_precisions[i])
 					})
 					this.token_balance = +decoded[currentContract.N_COINS]
 					decoded = decoded.slice(currentContract.N_COINS+1)			
@@ -291,8 +292,13 @@
 			async handle_remove_liquidity() {
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			        Vue.set(this.amounts, i, BN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
-
+			    	let useMax = BN(this.calc_balances[i]).div(BN(this.inputs[i])).minus(1).lte(BN(0.00005))
+			    	if(useMax) {
+			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
+			    	}
+			    	else {
+			        	Vue.set(this.amounts, i, BN(Math.floor(this.inputs[i] / currentContract.c_rates[i]).toString()).toFixed(0,1)); // -> c-tokens
+			    	}
 			    }
 			    var txhash;
 			    if (this.share == '---') {
@@ -314,7 +320,8 @@
 				        });
 			    	}
 			        else {
-			        	let amounts = this.inputs.map((v, i) => BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
+			        	let inputs = this.inputs;
+			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).div(BN(v)).minus(1).lte(BN(0.00005)) ? this.calc_balances[i].toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
 			        	await common.ensure_allowance_zap_out(token_amount)
 			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
@@ -340,7 +347,7 @@
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
-    							BN(min_amount).times(BN(0.97)).toFixed(0), 
+    							BN(min_amount).times(BN(0.97)).toFixed(0, 1), 
     							this.donate_dust)
 			        		.send({
 			        			from: currentContract.default_account,
@@ -391,7 +398,7 @@
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)
-			        this.inputs[this.to_currency] = real_values[this.to_currency].toFixed(2)
+			        this.inputs[this.to_currency] = BN(real_values[this.to_currency]).toFixed(2,1)
 				    await this.calcSlippage([], false, zap_values, this.to_currency)
         		}
 
@@ -405,10 +412,13 @@
 			    if(this.to_currency !== null && this.to_currency < 10) return;
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
-			            Vue.set(this.inputs, i, (this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply).toFixed(2))
+			        	let value = BN(this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply)
+			        	Vue.set(this.calc_balances, i, value)
+			            Vue.set(this.inputs, i, value.toFixed(2, 1))
 			        }
 			        else {
-			            Vue.set(this.inputs.toFixed(2), i, 0)
+			        	Vue.set(this.calc_balances, i, 0)
+			            Vue.set(this.inputs, i, 0)
 			        }
 			        Vue.set(this.inputStyles, i, {
 			        	backgroundColor: '#707070',

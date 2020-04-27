@@ -2,7 +2,7 @@ import Vue from "vue";
 import BigNumber from 'bignumber.js'
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
-import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi } from '../allabis'
+import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_address } from '../allabis'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -114,6 +114,16 @@ export function init_menu() {
         if(el.href.slice(0,-1) == window.location.origin)
             el.classList.add('selected')
     })
+}
+
+export async function ensure_stake_allowance(amount) {
+    var default_account = currentContract.default_account;
+    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, sCurveRewards_address).call());
+    if(allowance.lt(amount)) {
+        if(allowance.gt(0))
+            await approve(currentContract.swap_token, 0, default_account, sCurveRewards_address)
+        await approve(currentContract.swap_token, amount, default_account, sCurveRewards_address)
+    }
 }
 
 

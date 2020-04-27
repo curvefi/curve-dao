@@ -60,6 +60,13 @@
                 	>
                 		Deposit
                 </button>
+                <button 
+                	id='add-liquidity-stake' 
+                	v-show="currentPool == 'susdv2'" 
+                	:disabled = 'slippage < -0.03'
+                	@click = 'deposit_stake'>
+                	Deposit and stake
+                </button>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <Slippage/>
             </p>
@@ -213,7 +220,10 @@
 				await this.handle_sync_balances();
 				//for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
 			},
-			async handle_add_liquidity() {
+			deposit_stake() {
+				this.handle_add_liquidity(true)
+			},
+			async handle_add_liquidity(stake = false) {
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
 						[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
 					)
@@ -246,11 +256,13 @@
 			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }
 			    let nonZeroInputs = this.inputs.filter(Number).length
+			    let receipt;
+			    let minted = 0;
 			    if(this.depositc) {
-			    	await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
+			    	receipt = await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    });
+				    })
 				}
 				else {
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
@@ -260,12 +272,25 @@
 			    		currentContract.c_rates, 'c rates',
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
-					await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
+					receipt = await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})
 					.once('transactionHash', hash => {
 						console.warn(hash, 'tx hash')
+					})
+				}
+				minted = BN(
+					Object.values(receipt.events).filter(event => {
+						return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+								&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
+								&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
+					})[0].raw.data)
+				if(stake) {
+					await common.ensure_stake_allowance(minted)
+					await currentContract.curveRewards.methods.stake(minted).send({
+						from: currentContract.default_account,
+						gas: 200000,
 					})
 				}
 			    await this.handle_sync_balances();

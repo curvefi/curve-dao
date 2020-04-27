@@ -65,18 +65,28 @@
 	            </li>
         	</ul>
         </fieldset>
-        <div style="text-align: center">
-            <div class='info-message gentle-message' id='amount-warning' v-show = 'token_balance === 0'>
+        <div id='withdraw_buttons'>
+            <div class='info-message gentle-message' id='amount-warning' v-show = '(token_balance + staked_balance) === 0'>
 	        	You don't have any available amount to withdraw
-	        	<div v-show="currentPool == 'susdv2'">
+	        	<!-- <div v-show="currentPool == 'susdv2'">
 	        		(You have {{(staked_balance / 1e18) | toFixed2}} staked)
-	        	</div>
+	        	</div> -->
 	      	</div>
             <button id="remove-liquidity"
-            :disabled="currentPool == 'susdv2' && slippage < -0.03"
-            @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
+	            :disabled="currentPool == 'susdv2' && slippage < -0.03"
+	            @click='handle_remove_liquidity' v-show="currentPool != 'susd'">
+        		Withdraw
+        	</button>
+        	<button 
+        		id='remove-liquidity-unstake'
+        		v-show = "currentPool == 'susdv2' && staked_balance > 0 "
+        		:disabled = 'slippage < -0.03'
+        		@click='handle_remove_liquidity(true)'>
+        		Withdraw & exit
+        	</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
+            <a href = 'https://mintr.synthetix.io/' id='mintr'>Mintr</a>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
     </div>
@@ -267,11 +277,10 @@
 		                this.show_nobalance |= false;
 		        })
 		        try {
-		            var availableAmount = +decoded[decoded.length-2]
-		            availableAmount = availableAmount / (1 - currentContract.fee * currentContract.N_COINS / (4 * (currentContract.N_COINS - 1)))
-		            var maxAvailableAmount = +decoded[decoded.length-1];
-
-		            if(availableAmount > maxAvailableAmount) {
+		            var availableAmount = BN(decoded[decoded.length-2])
+		            availableAmount = availableAmount.div(BN(1 - currentContract.fee * currentContract.N_COINS / (4 * (currentContract.N_COINS - 1))))
+		            var maxAvailableAmount = BN(decoded[decoded.length-1]);
+		            if(availableAmount.gt(maxAvailableAmount.plus(BN(this.staked_balance)))) {
 		                this.setAllInputBackground('red')
 		            }
 		            else {
@@ -307,7 +316,25 @@
 				}
 				return min_amounts;
 			},
-			async handle_remove_liquidity() {
+			async unstake(amount) {
+				await new Promise(resolve => {
+					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
+						.send({
+							from: currentContract.default_account,
+							gas: 125000,
+						})
+						.once('transactionHash', resolve)
+				})
+				await new Promise(resolve => {
+					currentContract.curveRewards.methods.getReward()
+						.send({
+							from: currentContract.default_account,
+							gas: 200000,
+						})
+						.once('transactionHash', resolve)
+				})
+			},
+			async handle_remove_liquidity(unstake = false) {
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	let useMax = BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01)) || this.inputs[i] < 0.01
@@ -329,6 +356,8 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
+    				if(unstake) 
+						this.token_balance < token_amount && await this.unstake(BN(token_amount).minus(BN(this.token_balance)))
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
@@ -348,9 +377,12 @@
 			        }
 			    }
 			    else {
-			        var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
+			        var amount = BN(Math.floor(this.share / 100 * (this.token_balance + this.staked_balance)).toString())
 			        if (this.share == 100)
-			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
+			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call()).plus(BN(this.staked_balance));
+					if(unstake) 
+						BN(this.token_balance).lt(amount) && await this.unstake(BN(amount).minus(BN(this.token_balance)))
+					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	await common.ensure_allowance_zap_out(amount)
 			        	let min_amount;
@@ -473,5 +505,12 @@
 	}
 	#amount-warning {
 		margin-bottom: 1em;
+	}
+	#mintr {
+		margin-left: 1em;
+	}
+	#withdraw_buttons {
+		text-align: center;
+		margin-top: 3px;
 	}
 </style>

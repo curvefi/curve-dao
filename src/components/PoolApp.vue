@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <router-link to='/'>Home</router-link>
+      <router-link to='/'>Root</router-link>
       <router-link to='/combinedstats' class='showmobile'>All stats</router-link>
       <router-link :to="'/'+currentPool" v-show="currentPool !='susd'">Buy and sell</router-link>
       <router-link :to="'/' + currentPool + '/deposit'" v-show="currentPool !='susd'">Deposit</router-link>

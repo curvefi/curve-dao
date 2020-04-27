@@ -250,6 +250,7 @@ const state = Vue.observable({
 			curveRewards: null,
 			usdShare: null,
 			usdStake: null,
+			curveRewards: null,
 		}
 	},
 	currentContract: 'compound',
@@ -312,6 +313,7 @@ const state = Vue.observable({
 	usdShare: null,
 	usdStake: null,
 
+	curveRewards: null,
 
 })
 
@@ -378,8 +380,8 @@ export async function init(contract, refresh = false) {
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
-		let curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
-		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
     if(!['susd'].includes(contract.currentContract))
     	state.deposit_zap = new state.web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)

@@ -1,7 +1,11 @@
 <template>
 	<div class="window white add-liquidity">
         <fieldset class="percentage">
-            <legend>Share of liquidity (%)</legend>
+            <legend>
+            	Share of liquidity (%)
+        		<input id='showstaked' type='checkbox' name='showstaked' v-model = 'showstaked'>
+        		<label for='showstaked' v-show="currentPool == 'susdv2'"> Show staked </label>
+            </legend>
             <ul>
                 <li>
                     <input type="text" 
@@ -61,14 +65,20 @@
 	            </li>
         	</ul>
         </fieldset>
-        <p style="text-align: center">
+        <div style="text-align: center">
+            <div class='info-message gentle-message' id='amount-warning' v-show = 'token_balance === 0'>
+	        	You don't have any available amount to withdraw
+	        	<div v-show="currentPool == 'susdv2'">
+	        		(You have {{(staked_balance / 1e18) | toFixed2}} staked)
+	        	</div>
+	      	</div>
             <button id="remove-liquidity"
             :disabled="currentPool == 'susdv2' && slippage < -0.03"
             @click='handle_remove_liquidity' v-show="currentPool != 'susd'">Withdraw</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
-        </p>
+        </div>
     </div>
 </template>
 
@@ -76,7 +86,7 @@
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas } from '../contract'
-    import allabis from '../allabis'
+    import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
@@ -99,7 +109,8 @@
     		wallet_balances: [],
     		calc_balances: [],
     		balances: [],
-    		token_balance: 0,
+    		staked_balance: null,
+    		token_balance: null,
     		token_supply: 0,
     		show_nobalance: false,
     		show_nobalance_i: 0,
@@ -109,6 +120,7 @@
     		test: null,
     		withdrawc: false,
     		donate_dust: true,
+    		showstaked: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -144,9 +156,13 @@
          	},
         },
         mounted() {
+        	if(this.currentPool == 'susdv2') {
+        		this.showstaked = true
+        	}
+        	this.$watch(() => this.showstaked, this.handle_change_share)
         	if(currentContract.currentContract == 'susd') this.withdrawc = true;
         	this.setInputStyles(true)
-            if(currentContract.initializedContracts) this.mounted();
+            //if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
             async mounted() {
@@ -207,6 +223,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
+		    	if(this.currentPool == 'susdv2') calls.push([sCurveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -217,10 +234,11 @@
 					this.token_balance = +decoded[currentContract.N_COINS]
 					decoded = decoded.slice(currentContract.N_COINS+1)			
 				}
-				decoded.map((v, i) => {
+				decoded.slice(0, currentContract.N_COINS+1 + currentContract.N_COINS).map((v, i) => {
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
+				this.staked_balance = +decoded[decoded.length-2]
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
@@ -374,12 +392,15 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
-            	currentContract.showSlippage = false;
+				let token_balance = this.showstaked ? this.token_balance + this.staked_balance : this.token_balance
+	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
         		if(this.to_currency !== null && this.to_currency < 10) {
-	        		var amount = BN(Math.floor(this.share / 100 * this.token_balance).toString()).toFixed(0,1);
-				        if (this.share == 100)
-				            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call();
+	        		var amount = BN(Math.floor(this.share / 100 * token_balance).toString()).toFixed(0,1);
+			        if (this.share == 100) {
+			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call();
+			            if(this.showstaked) amount = BN(amount).plus(BN(this.staked_balance)).toFixed(0,1)
+			        }
 /*				        this.inputs = this.inputs.map(v=>0)
 				        Vue.set(this.inputs, this.to_currency, amount / 1e18)
 				        let ref = 'inputs'+this.to_currency
@@ -412,7 +433,7 @@
 			    if(this.to_currency !== null && this.to_currency < 10) return;
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
-			        	let value = BN(this.share / 100 * this.balances[i] * currentContract.c_rates[i] * this.token_balance / this.token_supply)
+			        	let value = BN(this.share / 100 * this.balances[i] * currentContract.c_rates[i] * token_balance / this.token_supply)
 			        	Vue.set(this.calc_balances, i, value)
 			            Vue.set(this.inputs, i, value.toFixed(2, 1))
 			        }
@@ -449,5 +470,8 @@
 	#withdrawold {
 		margin-left: 3px;
 		color: white;
+	}
+	#amount-warning {
+		margin-bottom: 1em;
 	}
 </style>

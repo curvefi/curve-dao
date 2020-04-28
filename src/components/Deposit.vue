@@ -69,7 +69,7 @@
                 </button>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
-                	Waiting for deposit transaction to confirm before staking <span class='loading line'></span>
+                	{{waitingMessage}} <span class='loading line'></span>
                 </div>
                 <Slippage/>
             </p>
@@ -109,6 +109,7 @@
     		rates: [],
     		swap_address: currentContract.swap_address,
     		show_loading: false,
+    		waitingMessage: '',
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -246,6 +247,7 @@
 			        }
 				})
 				let total_supply = +decoded[decoded.length-1];
+				this.waitingMessage = 'Please approve spending your coins'
 			    if (this.inf_approval)
 			        await common.ensure_allowance(false, !this.depositc)
 			    else if(this.depositc) {
@@ -255,6 +257,7 @@
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			    	await common.ensure_allowance(amounts, true)
 			    }
+				this.waitingMessage = 'Waiting for deposit transaction to confirm before staking'
 			    var token_amount = 0;
 			    if(total_supply > 0) {
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
@@ -310,11 +313,14 @@
 								&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
 					})[0].raw.data)
 				if(stake) {
+					this.waitingMessage = `Please approve staking ${minted.toFixed(2,1)} of your sCurve tokens`
 					await common.ensure_stake_allowance(minted)
+					this.waitingMessage = 'Waiting for stake transaction to confirm'
 					await currentContract.curveRewards.methods.stake(minted).send({
 						from: currentContract.default_account,
 						gas: 200000,
 					})
+					this.show_loading = false;
 				}
 			    await this.handle_sync_balances();
 			    common.update_fee_info();

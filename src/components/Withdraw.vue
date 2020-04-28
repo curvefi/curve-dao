@@ -86,7 +86,9 @@
         	</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
-            <a href = 'https://mintr.synthetix.io/' id='mintr'>Mintr</a>
+            <div id='mintr'>
+                <a href = 'https://mintr.synthetix.io/'>Manage staking in Mintr</a>
+            </div>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
     </div>
@@ -519,6 +521,7 @@
 		margin-bottom: 1em;
 	}
 	#mintr {
+        margin-top: 3em;
 		margin-left: 1em;
 	}
 	#withdraw_buttons {

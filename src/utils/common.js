@@ -9,10 +9,11 @@ var cBN = (val) => new BigNumber(val);
 
 export function approve(contract, amount, account, toContract) {
     if(!toContract) toContract = currentContract.swap_address
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
                 contract.methods.approve(toContract, cBN(amount).toFixed(0,1))
                 .send({from: account, gas: 100000})
-                .once('transactionHash', function(hash) {resolve(true);});
+                .once('transactionHash', function(hash) {resolve(true)})
+                .catch(err => reject(err));
             });
 }
 

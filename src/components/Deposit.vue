@@ -313,13 +313,14 @@
 								&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
 					})[0].raw.data)
 				if(stake) {
-					this.waitingMessage = `Please approve staking ${minted.toFixed(2,1)} of your sCurve tokens`
+					this.waitingMessage = `Please approve staking ${minted.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
 					await common.ensure_stake_allowance(minted)
 					this.waitingMessage = 'Waiting for stake transaction to confirm'
 					await currentContract.curveRewards.methods.stake(minted).send({
 						from: currentContract.default_account,
 						gas: 200000,
 					})
+					this.waitingMessage = ''
 					this.show_loading = false;
 				}
 			    await this.handle_sync_balances();

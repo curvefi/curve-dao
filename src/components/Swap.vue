@@ -88,6 +88,9 @@
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade' :disabled='+fromInput > +maxBalance*1.001'>Sell</button>
                 </p>
+                <div class='info-message gentle-message' v-show='show_loading'>
+                    {{waitingMessage}} <span class='loading line'></span>
+                </div>
                 <p class='simple-error' id='no-balance' v-show='+fromInput > +maxBalance*1.001'>
                     Not enough balance for 
                     <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
@@ -128,6 +131,8 @@
             swapwrapped: false,
             coins: [],
             c_rates: [],
+            show_loading: false,
+            waitingMessage: '',
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -298,6 +303,7 @@
                 return helpers.makeCancelable(promise);
             },
             async handle_trade() {
+                this.show_loading = true;
                 var i = this.from_currency
                 var j = this.to_currency;
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
@@ -307,18 +313,37 @@
                     var dx = Math.floor(this.fromInput * this.precisions[i]);
                     var min_dy = Math.floor(this.toInput * (1-maxSlippage) * this.precisions[j]);
                     dx = cBN(dx.toString()).toFixed(0);
-                    if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
-                    else
-                        await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
+                    this.waitingMessage = `Please approve ${this.fromInput} ${(Object.keys(this.currencies)[this.from_currency]).toUpperCase()} for exchange`
+                    try {
+                        if (this.inf_approval)
+                            await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
+                        else
+                            await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
+                    }
+                    catch(err) {
+                        console.error(err)
+                        this.waitingMessage = '',
+                        this.show_loading = false
+                        throw err;
+                    }
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
                     if(this.swapwrapped || this.currentPool == 'susdv2') exchangeMethod = currentContract.swap.methods.exchange
-                    await exchangeMethod(i, j, dx, min_dy).send({
+                    this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
+                    try {
+                        await exchangeMethod(i, j, dx, min_dy).send({
                             from: this.default_account,
                             gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         });
-                    
+                    }
+                    catch(err) {
+                        console.error(err)
+                        this.waitingMessage = '';
+                        this.show_loading = '';
+                        throw err;
+                    }
+                    this.waitingMessage = ''
+                    this.show_loading = false;
                     await common.update_fee_info();
                     this.from_cur_handler();
                     let balance = await this.coins[i].methods.balanceOf(this.default_account).call();

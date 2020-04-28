@@ -87,7 +87,10 @@
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <div id='mintr'>
-                <a href = 'https://mintr.synthetix.io/'>Manage staking in Mintr</a>
+                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
+            </div>
+            <div class='info-message gentle-message' v-show='show_loading'>
+                {{waitingMessage}} <span class='loading line'></span>
             </div>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
@@ -133,6 +136,8 @@
     		withdrawc: false,
     		donate_dust: true,
     		showstaked: false,
+            show_loading: false,
+            waitingMessage: '',
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -331,30 +336,41 @@
 				return min_amounts;
 			},
 			async unstake(amount, exit = false) {
-				await new Promise(resolve => {
-					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
-						.send({
-							from: currentContract.default_account,
-							gas: 125000,
-						})
-						.once('transactionHash', resolve)
-				})
-                if(exit) {
-    				await new Promise(resolve => {
-    					currentContract.curveRewards.methods.getReward()
+                this.waitingMessage = `Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal`;
+                try {
+    				await new Promise((resolve, reject) => {
+    					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
     						.send({
     							from: currentContract.default_account,
-    							gas: 200000,
+    							gas: 125000,
     						})
     						.once('transactionHash', resolve)
+                            .catch(err => reject(err))
     				})
+                    if(exit) {
+        				await new Promise((resolve, reject) => {
+        					currentContract.curveRewards.methods.getReward()
+        						.send({
+        							from: currentContract.default_account,
+        							gas: 200000,
+        						})
+        						.once('transactionHash', resolve)
+                                .catch(err => reject(err))
+        				})
+                    }
+                }
+                catch(err) {
+                    this.waitingMessage = ''
+                    this.show_loading = false;
+                    throw err
                 }
 			},
 			async handle_remove_liquidity(unstake = false) {
+                this.show_loading = true;
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	let useMax = this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01)) || this.inputs[i] < 0.01
-			    	if(useMax) {
+			    	let useMax = this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01))
+                    if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}
 			    	else {
@@ -372,24 +388,42 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
+                    console.log(this.token_balance.toString(), token_amount)
 					if(this.token_balance.lt(BN(token_amount)) || unstake) 
 						await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
-			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: gas
-				        });
+                        this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+                        try {
+    			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
+    				        	from: currentContract.default_account, gas: gas
+    				        });
+                        }
+                        catch(err) {
+                            this.waitingMessage = ''
+                            this.show_loading = false
+                            throw err;
+                        }
 			    	}
 			        else {
 			        	let inputs = this.inputs;
 			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) || v < 0.01 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
-			        	await common.ensure_allowance_zap_out(token_amount)
-			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
-				        	from: currentContract.default_account, gas: gas
-				        })
+                        this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
+                        try {
+    			        	await common.ensure_allowance_zap_out(token_amount)
+                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+    			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
+    				        	from: currentContract.default_account, gas: gas
+    				        })
+                        }
+                        catch(err) {
+                            this.waitingMessage = ''
+                            this.show_loading = false;
+                            throw err;
+                        }
 			        }
 			    }
 			    else {
@@ -421,14 +455,31 @@
 			        		})
 			        }
 			        else if(this.to_currency == 10) {
-			        	await common.ensure_allowance_zap_out(amount)
-			        	let min_amounts = await this.getMinAmounts();
-			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
-			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
+                        this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
+                        try {
+    			        	await common.ensure_allowance_zap_out(amount)
+    			        	let min_amounts = await this.getMinAmounts();
+                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+    			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
+    			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
+                        }
+                        catch(err) {
+                            this.waitingMessage = ''
+                            this.show_loading = false
+                            throw err;
+                        }
 			        }
 			        else {
-			        	let min_amounts = await this.getMinAmounts();
-			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
+                        try {
+    			        	let min_amounts = await this.getMinAmounts();
+                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+    			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
+                        }
+                        catch(err) {
+                            this.waitingMessage = ''
+                            this.show_loading = false
+                            throw err;
+                        }
 			        }
 			    }
 			    if(this.share == '---') {
@@ -436,6 +487,8 @@
 			            this.handle_change_amounts(i);
 			        }
 			    }
+                this.show_loading = false;
+                this.waitingMessage = ''
 			    await this.update_balances();
 			    await common.update_fee_info();
 			},
@@ -521,7 +574,7 @@
 		margin-bottom: 1em;
 	}
 	#mintr {
-        margin-top: 3em;
+        margin-top: 1em;
 		margin-left: 1em;
 	}
 	#withdraw_buttons {

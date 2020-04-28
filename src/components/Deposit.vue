@@ -310,14 +310,14 @@
 				    }
 				}
 				this.waitingMessage = ''
-				if(!stake) this.show_loading = false
-				minted = BN(
-					Object.values(receipt.events).filter(event => {
-						return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
-								&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
-								&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
-					})[0].raw.data)
-				if(stake) {
+				if(!stake ) this.show_loading = false
+				if(stake && this.pool == 'susdv2') {
+					minted = BN(
+						Object.values(receipt.events).filter(event => {
+							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
+									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
+						})[0].raw.data)
 					this.waitingMessage = `Please approve staking ${minted.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
 					await common.ensure_stake_allowance(minted)
 					this.waitingMessage = 'Waiting for stake transaction to confirm'

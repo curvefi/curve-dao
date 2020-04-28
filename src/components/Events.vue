@@ -69,6 +69,14 @@
 					<label for='gotopage'> Go to: </label>
 					<input id='gotopage' type='text' v-model='gotopage'>
 					<button @click='goTo'>Go</button>
+					<label for='perpage'>Per page:</label>
+					<select class='tvision' v-model='perPage' id='perpage'>
+						<option value='10'>10</option>
+						<option value='20'>20</option>
+						<option value='50'>50</option>
+						<option value='100'>100</option>
+						<option value='300'>300</option>
+					</select>
 				</div>
 			</div>
 		</fieldset>
@@ -273,6 +281,10 @@
 		margin-left: 0.5em;
 	}
 
+	select.tvision {
+		box-shadow: none;
+		margin-left: 10px;
+	}
 
 
 	.tui-table {

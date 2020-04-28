@@ -63,12 +63,12 @@
 				    </tbody>
 				</table>
 				<div id='pages'>
-					<button @click='page--'>Prev</button>
+					<button @click='page > 0 && page--'>Prev</button>
 					Page: {{page}} (of {{pages}})
-					<button @click='page++'>Next</button>
+					<button @click='page < pages && page++'>Next</button>
 					<label for='gotopage'> Go to: </label>
 					<input id='gotopage' type='text' v-model='gotopage'>
-					<button @click='page = gotopage'>Go</button>
+					<button @click='goTo'>Go</button>
 				</div>
 			</div>
 		</fieldset>
@@ -212,6 +212,12 @@
 			getPool(event) {
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
 				return pool == 'iearn' ? 'y' : pool
+			},
+			goTo() {
+				if(+this.gotopage >= 0 && +this.gotopage <= this.pages)
+					this.page = this.gotopage
+				else
+					this.page = 0
 			}
 
 		}
@@ -347,5 +353,5 @@
 	  border: 2px solid black;
 	  padding: 10px;
 	  vertical-align: top; }
-  
+
 </style>

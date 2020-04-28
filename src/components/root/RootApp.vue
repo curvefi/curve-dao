@@ -32,6 +32,7 @@
         <span>?</span>
         <div class='dropdown'>
           <router-link to="/audits">Audits</router-link>
+          <router-link to="/events">Events</router-link>
           <router-link to="/contracts">Contracts</router-link>
           <router-link to="/rootfaq">FAQ</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
@@ -43,6 +44,7 @@
         </div>
       </div>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
+      <router-link to="/events" class='showmobile'>Events</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>

@@ -43,6 +43,7 @@
         <span>?</span>
         <div class='dropdown'>
           <router-link to="/audits">Audits</router-link>
+          <router-link to="/events">Events</router-link>
           <a :href="'https://etherscan.io/address/' + this.poolAddress">Pool contract</a>
           <a :href="'https://etherscan.io/address/' + this.tokenAddress">Token contract</a>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
@@ -52,6 +53,7 @@
         </div>
       </div>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
+      <router-link to="/events" class='showmobile'>Events</router-link>
       <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>

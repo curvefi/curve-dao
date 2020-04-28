@@ -20,6 +20,7 @@ const RootFAQ = () => import('../components/root/RootFAQ.vue')
 const Audits = () => import('../views/Audits.vue')
 const Contracts = () => import('../views/Contracts.vue')
 const CurvePay = () => import('../components/CurvePay.vue')
+const Events = () => import('../components/Events.vue')
 
 import Index from '../components/Index.vue'
 
@@ -85,6 +86,11 @@ let routes = [
         name: 'CurvePay',
         component: CurvePay,
       },
+      {
+        path: 'events',
+        name: 'Events',
+        component: Events,
+      }
     ]
   },
   {

@@ -6870,6 +6870,7 @@ var susdv2 = {
 	],
 	N_COINS: 4,
 	coin_precisions: [1e18, 1e6, 1e6, 1e18],
+	wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
 	tethered: [false, false, true, false],
 	use_lending: [false, false, false, false],
 	swap_address: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD',

@@ -328,7 +328,7 @@
 				}
 				return min_amounts;
 			},
-			async unstake(amount) {
+			async unstake(amount, exit = false) {
 				await new Promise(resolve => {
 					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
 						.send({
@@ -337,14 +337,16 @@
 						})
 						.once('transactionHash', resolve)
 				})
-				await new Promise(resolve => {
-					currentContract.curveRewards.methods.getReward()
-						.send({
-							from: currentContract.default_account,
-							gas: 200000,
-						})
-						.once('transactionHash', resolve)
-				})
+                if(exit) {
+    				await new Promise(resolve => {
+    					currentContract.curveRewards.methods.getReward()
+    						.send({
+    							from: currentContract.default_account,
+    							gas: 200000,
+    						})
+    						.once('transactionHash', resolve)
+    				})
+                }
 			},
 			async handle_remove_liquidity(unstake = false) {
 				let min_amounts = []
@@ -369,7 +371,7 @@
 						this.show_nobalance_i = this.to_currency;
 			        }
 					if(this.token_balance.lt(BN(token_amount)) || unstake) 
-						await this.unstake(BN(token_amount).minus(BN(this.token_balance)))
+						await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
@@ -393,7 +395,7 @@
 			        if (this.share == 100)
 			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call()).plus(BN(this.staked_balance));
 					if(this.token_balance.lt(amount) || unstake)
-						await this.unstake(BN(amount).minus(BN(this.token_balance)))
+						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	await common.ensure_allowance_zap_out(amount)

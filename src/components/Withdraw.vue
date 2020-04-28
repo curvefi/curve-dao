@@ -86,7 +86,7 @@
         	</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
-            <div id='mintr'>
+            <div id='mintr' v-show="currentPool == 'susdv2'">
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
             </div>
             <div class='info-message gentle-message' v-show='show_loading'>
@@ -267,7 +267,8 @@
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
-				this.staked_balance = BN(decoded[decoded.length-2])
+				if(this.currentPool == 'susdv2') this.staked_balance = BN(decoded[decoded.length-2])
+                else this.staked_balance = BN(0)
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
@@ -388,7 +389,7 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
-					if(this.token_balance.lt(BN(token_amount)) || unstake) 
+					if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
 						await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
@@ -431,7 +432,7 @@
 			        var amount = BN(this.share).div(BN(100)).times(this.token_balance.plus(this.staked_balance))
 			        if (this.share == 100)
 			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call()).plus(BN(this.staked_balance));
-					if(this.token_balance.lt(amount) || unstake)
+					if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
 						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {

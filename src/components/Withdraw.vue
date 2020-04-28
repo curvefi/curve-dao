@@ -182,7 +182,7 @@
         	this.$watch(() => this.showstaked, this.handle_change_share)
         	if(currentContract.currentContract == 'susd') this.withdrawc = true;
         	this.setInputStyles(true)
-            //if(currentContract.initializedContracts) this.mounted();
+            if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
             async mounted() {
@@ -388,18 +388,17 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
-                    console.log(this.token_balance.toString(), token_amount)
 					if(this.token_balance.lt(BN(token_amount)) || unstake) 
 						await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
-                        this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                         try {
+                            this.waitingMessage = 'Please confirm withdrawal transaction'
     			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
-    				        });
+    				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -409,15 +408,17 @@
 			    	}
 			        else {
 			        	let inputs = this.inputs;
-			        	let amounts = this.inputs.map((v, i) => BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) || v < 0.01 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
+			        	let amounts = this.inputs.map((v, i) => this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
                         try {
     			        	await common.ensure_allowance_zap_out(token_amount)
-                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+                            this.waitingMessage = 'Please confirm withdrawal transaction'
     			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
-    				        })
+    				        }).once('transactionHash', () => {
+                                this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+                            })
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -434,16 +435,18 @@
 						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
+                        this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
 			        	await common.ensure_allowance_zap_out(amount)
-			        	let min_amount;
-			        	try {
-			        		min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
-			        	}
-			        	catch(err) {
-			        		console.error(err)
-							this.show_nobalance = true;
-							this.show_nobalance_i = this.to_currency;
-			        	}
+                        let min_amount;
+                        try {
+                            min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
+                        }
+                        catch(err) {
+                            console.error(err)
+                            this.show_nobalance = true;
+                            this.show_nobalance_i = this.to_currency;
+                        }
+                        this.waitingMessage = 'Please confirm withdrawal transaction'
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
@@ -452,16 +455,17 @@
 			        		.send({
 			        			from: currentContract.default_account,
 			        			gas: contractGas.depositzap[this.currentPool].withdraw,
-			        		})
+			        		}).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
 			        }
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
                         try {
     			        	await common.ensure_allowance_zap_out(amount)
+                            this.waitingMessage = 'Please confirm withdrawal transaction'
     			        	let min_amounts = await this.getMinAmounts();
-                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
     			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
-    			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare});
+    			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
+                            .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -472,8 +476,9 @@
 			        else {
                         try {
     			        	let min_amounts = await this.getMinAmounts();
-                            this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
-    			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000});
+                            this.waitingMessage = 'Please confirm withdrawal transaction'
+    			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
+                            .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }
                         catch(err) {
                             this.waitingMessage = ''

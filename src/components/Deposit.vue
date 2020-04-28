@@ -230,6 +230,7 @@
 				this.handle_add_liquidity(true)
 			},
 			async handle_add_liquidity(stake = false) {
+				this.show_loading = true
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
 						[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
 					)
@@ -257,7 +258,6 @@
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			    	await common.ensure_allowance(amounts, true)
 			    }
-				this.waitingMessage = 'Waiting for deposit transaction to confirm before staking'
 			    var token_amount = 0;
 			    if(total_supply > 0) {
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
@@ -267,10 +267,11 @@
 			    let receipt;
 			    let minted = 0;
 			    if(this.depositc) {
+                    this.waitingMessage = 'Please confirm deposit transaction'
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    })
+				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : ''}`)
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -289,11 +290,13 @@
 			    		currentContract.c_rates, 'c rates',
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
+                    this.waitingMessage = 'Please confirm deposit transaction'
 					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})
 					.once('transactionHash', hash => {
+						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : ''}`
 						console.warn(hash, 'tx hash')
 					})
 					try {
@@ -306,6 +309,8 @@
 				    	}
 				    }
 				}
+				this.waitingMessage = ''
+				if(!stake) this.show_loading = false
 				minted = BN(
 					Object.values(receipt.events).filter(event => {
 						return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()

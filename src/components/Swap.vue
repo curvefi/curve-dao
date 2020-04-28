@@ -326,15 +326,22 @@
                         this.show_loading = false
                         throw err;
                     }
+                    this.waitingMessage = `Please confirm swap 
+                                            from ${this.fromInput} ${(Object.keys(this.currencies)[this.from_currency]).toUpperCase()} 
+                                            for min ${min_dy / this.precisions[j]} ${(Object.keys(this.currencies)[this.to_currency]).toUpperCase()}`
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
                     if(this.swapwrapped || this.currentPool == 'susdv2') exchangeMethod = currentContract.swap.methods.exchange
-                    this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
                     try {
-                        await exchangeMethod(i, j, dx, min_dy).send({
-                            from: this.default_account,
-                            gas: this.swapwrapped ? contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
-                        });
+                        await exchangeMethod(i, j, dx, min_dy)
+                            .send({
+                                from: this.default_account,
+                                gas: this.swapwrapped ? 
+                                        contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
+                            })
+                            .once('transactionHash', () => {
+                                this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
+                            });
                     }
                     catch(err) {
                         console.error(err)

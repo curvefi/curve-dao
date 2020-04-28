@@ -56,7 +56,7 @@
             <p style="text-align: center">
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03"
-                	@click='handle_add_liquidity' 
+                	@click='handle_add_liquidity()' 
                 	>
                 		Deposit
                 </button>
@@ -259,10 +259,19 @@
 			    let receipt;
 			    let minted = 0;
 			    if(this.depositc) {
-			    	receipt = await currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
+			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
 				    })
+				    try {
+				    	receipt = await add_liquidity
+				    }
+				    catch(err) {
+				    	if(err.code == -32603) {
+				    		await common.setTimeout(300)
+				    		receipt = await add_liquidity
+				    	}
+				    }
 				}
 				else {
 			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
@@ -272,13 +281,22 @@
 			    		currentContract.c_rates, 'c rates',
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
-					receipt = await currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
+					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})
 					.once('transactionHash', hash => {
 						console.warn(hash, 'tx hash')
 					})
+					try {
+				    	receipt = await add_liquidity
+				    }
+				    catch(err) {
+				    	if(err.code == -32603) {
+				    		await common.setTimeout(300)
+				    		receipt = await add_liquidity
+				    	}
+				    }
 				}
 				minted = BN(
 					Object.values(receipt.events).filter(event => {

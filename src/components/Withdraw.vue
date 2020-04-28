@@ -66,7 +66,7 @@
         	</ul>
         </fieldset>
         <div id='withdraw_buttons'>
-            <div class='info-message gentle-message' id='amount-warning' v-show = '(token_balance + staked_balance) === 0'>
+            <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
 	        	You don't have any available amount to withdraw
 	        	<!-- <div v-show="currentPool == 'susdv2'">
 	        		(You have {{(staked_balance / 1e18) | toFixed2}} staked)
@@ -74,7 +74,7 @@
 	      	</div>
             <button id="remove-liquidity"
 	            :disabled="currentPool == 'susdv2' && slippage < -0.03"
-	            @click='handle_remove_liquidity' v-show="currentPool != 'susd'">
+	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
         		Withdraw
         	</button>
         	<button 
@@ -164,6 +164,9 @@
         	showMigrateNew() {
         		return (this.currentPool == 'compound' && this.oldBalance > 0) || this.currentPool == 'susd'
          	},
+         	nobalance() {
+         		return this.staked_balance && this.token_balance.plus(this.staked_balance).eq(BN(0))
+         	}
         },
         mounted() {
         	if(this.currentPool == 'susdv2') {
@@ -183,8 +186,10 @@
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 
+
                 await common.update_fee_info();
-            	await this.update_balances();
+                await this.update_balances();
+                this.setCalcBalances()
             	this.handle_change_share();
             },
             inputsFormat(i) {
@@ -219,6 +224,13 @@
             		this.to_currency = val
             	}
             },
+            setCalcBalances() {
+                for (let i = 0; i < currentContract.N_COINS; i++) {
+                    let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
+                    let value = BN(100 / 100 * this.balances[i] * currentContract.c_rates[i] * token_balance / this.token_supply)
+                    Vue.set(this.calc_balances, i, value)
+                }
+            },
             async update_balances() {
             	let calls = []
 			    if (currentContract.default_account) {
@@ -228,7 +240,7 @@
 			        calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    }
 			    else {
-			        this.token_balance = 0;
+			        this.token_balance = BN(0);
 			    }
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
@@ -241,14 +253,14 @@
 					decoded.slice(0, currentContract.N_COINS).map((v, i) => {
 						Vue.set(this.wallet_balances, i, +v / allabis[this.currentPool].coin_precisions[i])
 					})
-					this.token_balance = +decoded[currentContract.N_COINS]
+					this.token_balance = BN(decoded[currentContract.N_COINS])
 					decoded = decoded.slice(currentContract.N_COINS+1)			
 				}
 				decoded.slice(0, currentContract.N_COINS+1 + currentContract.N_COINS).map((v, i) => {
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
-				this.staked_balance = +decoded[decoded.length-2]
+				this.staked_balance = BN(decoded[decoded.length-2])
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
@@ -337,7 +349,7 @@
 			async handle_remove_liquidity(unstake = false) {
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	let useMax = BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01)) || this.inputs[i] < 0.01
+			    	let useMax = this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01)) || this.inputs[i] < 0.01
 			    	if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}
@@ -356,8 +368,8 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
-    				if(unstake) 
-						this.token_balance < token_amount && await this.unstake(BN(token_amount).minus(BN(this.token_balance)))
+					if(this.token_balance.lt(BN(token_amount)) || unstake) 
+						await this.unstake(BN(token_amount).minus(BN(this.token_balance)))
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
@@ -377,11 +389,11 @@
 			        }
 			    }
 			    else {
-			        var amount = BN(Math.floor(this.share / 100 * (this.token_balance + this.staked_balance)).toString())
+			        var amount = BN(this.share).div(BN(100)).times(this.token_balance.plus(this.staked_balance))
 			        if (this.share == 100)
 			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call()).plus(BN(this.staked_balance));
-					if(unstake) 
-						BN(this.token_balance).lt(amount) && await this.unstake(BN(amount).minus(BN(this.token_balance)))
+					if(this.token_balance.lt(amount) || unstake)
+						await this.unstake(BN(amount).minus(BN(this.token_balance)))
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
 			        	await common.ensure_allowance_zap_out(amount)
@@ -424,11 +436,11 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
-				let token_balance = this.showstaked ? this.token_balance + this.staked_balance : this.token_balance
+				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
         		if(this.to_currency !== null && this.to_currency < 10) {
-	        		var amount = BN(Math.floor(this.share / 100 * token_balance).toString()).toFixed(0,1);
+	        		var amount = BN(this.share).div(BN(100)).times(token_balance).toFixed(0,1);
 			        if (this.share == 100) {
 			            amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call();
 			            if(this.showstaked) amount = BN(amount).plus(BN(this.staked_balance)).toFixed(0,1)
@@ -466,11 +478,9 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
 			        	let value = BN(this.share / 100 * this.balances[i] * currentContract.c_rates[i] * token_balance / this.token_supply)
-			        	Vue.set(this.calc_balances, i, value)
 			            Vue.set(this.inputs, i, value.toFixed(2, 1))
 			        }
 			        else {
-			        	Vue.set(this.calc_balances, i, 0)
 			            Vue.set(this.inputs, i, 0)
 			        }
 			        Vue.set(this.inputStyles, i, {

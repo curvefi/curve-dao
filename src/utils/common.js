@@ -400,3 +400,7 @@ export async function calc_slippage(values, deposit, zap_values, to_currency) {
     currentContract.slippage = slippage;
     currentContract.showSlippage = true;
 }
+
+export async function setTimeout(timeout) {
+    return new Promise(resolve => setTimeout(resolve, timeout))
+}

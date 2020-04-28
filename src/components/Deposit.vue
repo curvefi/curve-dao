@@ -311,7 +311,7 @@
 				}
 				this.waitingMessage = ''
 				if(!stake ) this.show_loading = false
-				if(stake && this.pool == 'susdv2') {
+				if(stake && this.currentPool == 'susdv2') {
 					minted = BN(
 						Object.values(receipt.events).filter(event => {
 							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()

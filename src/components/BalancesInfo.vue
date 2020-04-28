@@ -8,7 +8,7 @@
             <span :class="{'loading line': !bal_info || bal_info[i] === null}"> {{bal_info && bal_info[i] | toFixed2}}</span>
           </li>
           <li>
-            <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
+            <b>{{totalCurrencies(currencies)}}:</b> 
             <span :class="{'loading line': totalBalances === null}"> {{totalBalances | toFixed2}}</span>
           </li>
       </ul>
@@ -31,7 +31,7 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{l_info && l_info[i] | toFixed2}}</span></li>
           <li>
-            <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
+            <b>{{totalCurrencies(currencies)}}:</b> 
 
             <span> {{totalShare | toFixed2}}</span>
           </li>
@@ -47,7 +47,7 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{staked_info && staked_info[i] | toFixed2}}</span></li>
           <li>
-            <b>{{totalCurrencies(currencies) | capitalize}}:</b> 
+            <b>{{totalCurrencies(currencies)}}:</b> 
 
             <span> {{totalStake | toFixed2}}</span>
           </li>
@@ -70,7 +70,9 @@
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake'],
     methods: {
       totalCurrencies(currencies) {
-        return helpers.totalCurrencies(currencies)
+        if(this.currentPool != 'susdv2')
+          return Object.keys(currencies).join('+').toUpperCase();
+        return Object.values(currencies).join('+');
       },
     },
     computed: {

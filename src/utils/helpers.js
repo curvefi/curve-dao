@@ -1,10 +1,6 @@
 import Vue from 'vue'
 
-Vue.filter('capitalize', function (value) {
-  if(value == 'susd') return 'sUSD';
-  if(value == 'ycurve') return 'yCurve';
-	return value.toUpperCase();
-})
+Vue.filter('capitalize', capitalize)
 
 Vue.filter('toFixed2', function (value) {
   if(value === 0) return (+value).toFixed(2)
@@ -13,6 +9,12 @@ Vue.filter('toFixed2', function (value) {
 })
 
 Vue.filter('toUpper', val => val.toUpperCase())
+
+export function capitalize(value) {
+  if(value == 'susd') return 'sUSD';
+  if(value == 'ycurve') return 'yCurve';
+  return value.toUpperCase();
+}
 
 export function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);

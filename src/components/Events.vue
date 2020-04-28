@@ -205,6 +205,7 @@
 				let contractAddress = event.address
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
 				if(event.event == 'TokenExchange') return Object.values(allCurrencies[pool])[i]
+				if(pool == 'susdv2' && i == 3) return 'sUSD'
 				return Object.keys(allCurrencies[pool])[i].toUpperCase()
 			},
 			formatAmount(event, type) {

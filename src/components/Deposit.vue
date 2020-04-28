@@ -68,6 +68,9 @@
                 	Deposit and stake
                 </button>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
+                <div class='info-message gentle-message' v-show='show_loading'>
+                	Waiting for deposit transaction to confirm before staking <span class='loading line'></span>
+                </div>
                 <Slippage/>
             </p>
         </div>
@@ -105,6 +108,7 @@
     		coins: [],
     		rates: [],
     		swap_address: currentContract.swap_address,
+    		show_loading: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -221,6 +225,7 @@
 				//for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
 			},
 			deposit_stake() {
+				this.show_loading = true;
 				this.handle_add_liquidity(true)
 			},
 			async handle_add_liquidity(stake = false) {

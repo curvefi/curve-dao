@@ -153,7 +153,7 @@
 				for(let [i, data] of jsons.entries()) {
 					let pool = fetchpools[i]
 					//really have to change everything to use the same names!
-					this.rates[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool] = data[0].rates
+					this.rates[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool] = data[data.length-1].rates
 				}
 				this.subscriptions = []
 				this.page = 0

@@ -370,7 +370,8 @@
                 this.show_loading = true;
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
-			    	let useMax = this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(this.inputs[i])).lte(BN(0.01))
+                    let maxDiff = BN(this.calc_balances[i]).minus(BN(this.inputs[i]))
+			    	let useMax = this.calc_balances[i] > 0 && maxDiff.lte(BN(0.01)) && maxDiff > 0
                     if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}
@@ -409,7 +410,10 @@
 			    	}
 			        else {
 			        	let inputs = this.inputs;
-			        	let amounts = this.inputs.map((v, i) => this.calc_balances[i] > 0 && BN(this.calc_balances[i]).minus(BN(v)).lte(BN(0.01)) ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
+			        	let amounts = this.inputs.map((v, i) => {
+                            let maxDiff = BN(this.calc_balances[i]).minus(BN(v))
+                            return this.calc_balances[i] > 0 && maxDiff.lte(BN(0.01)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
+                        })
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
                         try {

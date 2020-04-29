@@ -321,7 +321,7 @@
 					this.waitingMessage = `Please approve staking ${minted.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
 					await common.ensure_stake_allowance(minted)
 					this.waitingMessage = 'Waiting for stake transaction to confirm'
-					await currentContract.curveRewards.methods.stake(minted).send({
+					await currentContract.curveRewards.methods.stake(minted.toFixed(0,1)).send({
 						from: currentContract.default_account,
 						gas: 200000,
 					})

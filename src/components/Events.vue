@@ -54,10 +54,14 @@
 				            	</a>
 				            </td>
 				            <td>
-				            	{{ getPool(event) }}
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ getPool(event) }}
+				            	</a>
 				            </td>
-				            <td> 
-				            	{{ event.event }}
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ event.event }}
+				            	</a>
 		            	 	</td>
 				        </tr>
 				    </tbody>
@@ -267,6 +271,9 @@
 	tbody tr td {
 		padding: 0;
 		color: black;
+	}
+	tbody tr td:nth-child(5) a, tbody tr td:nth-child(6) a {
+		font-weight: normal;
 	}
 	#pages {
 		text-align: center;

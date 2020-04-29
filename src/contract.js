@@ -168,6 +168,7 @@ let initState = {
 const state = Vue.observable({
 	web3: null,
 	multicall: null,
+	walletName: null,
 	allInitContracts: new Set(),
 	contracts: {
 		compound: {

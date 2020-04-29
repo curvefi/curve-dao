@@ -86,7 +86,7 @@
 <script>
   import BalancesInfo from '../components/BalancesInfo.vue'
   import { getters, contract as currentContract, changeContract, poolMenu } from '../contract'
-  import init from '../init'
+  import init, { onboard } from '../init'
   import allabis from '../allabis'
 
   export default {
@@ -113,6 +113,7 @@
         changeContract(pool)
       },
       async changeAccounts() {
+        if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)

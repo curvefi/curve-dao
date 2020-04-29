@@ -65,7 +65,7 @@
 
 <script>
   import { getters, contract as currentContract, changeContract, poolMenu } from '../../contract'
-  import init from '../../init'
+  import init, { onboard } from '../../init'
 
   export default {
     metaInfo: {
@@ -92,13 +92,14 @@
       ...getters,
       poolMenu() {
         return poolMenu;
-      },
+      }
     },
     methods: {
       changePools(pool) {
         changeContract(pool)
       },
       async changeAccounts() {
+        if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)

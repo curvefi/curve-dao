@@ -355,7 +355,16 @@
 				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
 				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
-				this.data = await Promise.all(requests.map(r=>r.json()))
+				let data = []
+				for(let r of requests) {
+					let json = await r.json()
+					if(json.length != 1000 && requests.length > 1) {
+						let fill = new Array(1000-json.length).fill({})
+						json = fill.concat(json)
+					}
+					data.push(json)
+				}
+				this.data = data
 			},
 			async loadRecentData(timestamp) {
 				await this.loadData();
@@ -381,6 +390,7 @@
 						for(let j = 0; j < data.length; j++) {
 							if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
 							let v = data[j][i]
+							if(Object.keys(v).length === 0 && v.constructor === Object) continue;
 							if(v === undefined) continue;
 							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
 							let get_dy_underlying = await calcWorker.calcPrice(
@@ -418,16 +428,15 @@
 			    let volume = []
 			    let dataLength = this.ohlcData.length
 			        // set the allowed units for data grouping
-
 			    for (let i = 0; i < dataLength; i ++) {
-			    	let len = this.ohlcData[i].prices[this.pairIdx].length
+			    	let len = this.ohlcData[i].prices[this.pairIdx].length-1
 
 			    	let ohlcPoint = [
 			            this.ohlcData[i].timestamp*1000, // the date
 			            this.ohlcData[i].prices[this.pairIdx][0], // open
 			            Math.max(...this.ohlcData[i].prices[this.pairIdx]), // high
 			            Math.min(...this.ohlcData[i].prices[this.pairIdx]), // low
-			            this.ohlcData[i].prices[this.pairIdx][len-1] // close
+			            this.ohlcData[i].prices[this.pairIdx][len] // close
 			        ]
 			        ohlc.push(ohlcPoint);
 			        let volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])

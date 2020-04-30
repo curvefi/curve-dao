@@ -301,7 +301,8 @@
 				let contractAddress = event.address
 				let amount = type == 0 ? event.returnValues.tokens_sold : event.returnValues.tokens_bought
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
-				if(event.event == 'TokenExchange') return amount / allabis[pool].wrapped_precisions[i] * (this.rates[pool][i] / 1e18)
+				let precisions = 1e18 * allabis[pool].coin_precisions[i]
+				if(event.event == 'TokenExchange') return amount * (this.rates[pool][i] / precisions)
 				return amount / allabis[pool].coin_precisions[i]
 			},
 			getPool(event) {

@@ -32,6 +32,26 @@
 				        </tr>
 				    </thead>
 				    <tbody>
+				    	<tr class='loadingtr' v-show='!exchanges.length'>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    		<td>
+				    			<span class='loading line'></span>
+				    		</td>
+				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
@@ -126,7 +146,9 @@
 				iearn: [],
 				busd: [],
 				susdv2: [],
-			}
+			},
+			latestBlock: null,
+			maxBlocks: 1000,
 		}),
 		computed: {
 			...getters,
@@ -165,22 +187,27 @@
 		methods: {
 			async selectPools() {
 				for(let subscription of this.subscriptions) subscription.unsubscribe()
+				await this.getRates();
 				this.exchanges = []
-				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
-				let requests = await Promise.all(fetchpools.map(pool => fetch(`https://beta.curve.fi/raw-stats/${pool}-1m.json`)))
-				let jsons = await Promise.all(requests.map(request => request.json()))
-				for(let [i, data] of jsons.entries()) {
-					let pool = fetchpools[i]
-					//really have to change everything to use the same names!
-					this.rates[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool] = data[data.length-1].rates
-				}
+				
 				this.subscriptions = []
 				this.page = 0
 				this.gotopage = 0
+				this.latestBlock = await web3.eth.getBlockNumber()
 				let results = this.pools.map(pool => {
 					return [
-						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(this.tokenExchangeUnderlyingEvent, { fromBlock: this.fromBlock }),
-						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(this.tokenExchangeEvent, { fromBlock: this.fromBlock }),
+						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(
+							this.tokenExchangeUnderlyingEvent,
+							{ 
+								fromBlock: this.latestBlock - this.maxBlocks
+							}
+						),
+						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(
+							this.tokenExchangeEvent,
+							{ 
+								fromBlock: this.latestBlock - this.maxBlocks
+							}
+						),
 					]
 				})
 				results = await Promise.all(results.flat())
@@ -203,9 +230,11 @@
 					this.subscriptions.push(subscription)
 				})
 			},
-			async getRates() {
+			async getRates(pool) {
+				let pools = pool ? [pool] : this.pools
+				console.log(pools, "POOLS")
 				let calls = []
-				for(let [i, pool] of this.pools.entries()) {
+				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					for(let j = 0; j < abi.N_COINS; j++) {
 						let address = abi.coins[j]
@@ -249,7 +278,7 @@
 				console.log(decoded)
 				//how many decoded elements per pool
 				let poolCalls = [6, 6, 4, 4]
-				for(let [i, pool] of this.pools.entries()) {
+				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					let ind = 0
 					if(i > 0) ind = poolCalls.slice(0,i).reduce((a, b) => a + b, 0)
@@ -259,6 +288,7 @@
 						else if(['iearn', 'busd'].includes(pool)) {
 							let rate = +decoded[ind+j]
 							this.c_rates[pool][j] = rate / 1e18 / abi.coin_precisions[j]
+							console.log(this.c_rates[pool][j], "RATE")
 						}
 						else {
 							let rate = +decoded[ind+j*3] / 1e18 / abi.coin_precisions[j]
@@ -276,6 +306,15 @@
 				this.swapContracts = Object.keys(allabis)
 					.filter(pool => this.pools.includes(pool))
 					.map(pool => new web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
+
+				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
+				let requests = await Promise.all(fetchpools.map(pool => fetch(`https://beta.curve.fi/raw-stats/${pool}-1m.json`)))
+				let jsons = await Promise.all(requests.map(request => request.json()))
+				for(let [i, data] of jsons.entries()) {
+					let pool = fetchpools[i]
+					//really have to change everything to use the same names!
+					this.rates[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool] = data[data.length-1].rates
+				}
 
 				//get rates
 				await this.getRates();
@@ -301,7 +340,7 @@
 				let contractAddress = event.address
 				let amount = type == 0 ? event.returnValues.tokens_sold : event.returnValues.tokens_bought
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
-				if(event.event == 'TokenExchange') return amount / allabis[pool].wrapped_precisions[i] * (this.rates[pool][i] / 1e18)
+				if(event.event == 'TokenExchange') return amount * (this.c_rates[pool][i])
 				return amount / allabis[pool].coin_precisions[i]
 			},
 			getPool(event) {
@@ -376,6 +415,9 @@
 		margin-left: 10px;
 	}
 
+	.loadingtr {
+		text-align: center;
+	}
 
 	.tui-table {
 	  border: 2px solid #a8a8a8;

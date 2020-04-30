@@ -352,8 +352,9 @@
 		methods: {
 			async loadData() {
 				let jsonInterval = this.interval;
-				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
-				if(jsonInterval == '1h') jsonInterval = '1440m'
+				let intervalIndex = tradeStore.intervals.indexOf(jsonInterval)
+				if(intervalIndex > 3) jsonInterval = '30m'
+				if(intervalIndex > 7) jsonInterval = '1440m'
 				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = []

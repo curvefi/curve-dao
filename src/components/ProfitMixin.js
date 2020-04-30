@@ -32,7 +32,7 @@ export default {
 	},
 	methods: {
 		async mounted() {
-			try {			
+			try {
 		        common.update_fee_info();
 		        this.BN = currentContract.web3.utils.toBN
 		        this.CURVE = currentContract.swap_address;
@@ -52,19 +52,29 @@ export default {
 
 			    this.deposits = await this.getDeposits();
 			    this.withdrawals = await this.getWithdrawals();
-			    let available = 0;
-		        let promises = [];
-		        for(let curr of Object.keys(this.ADDRESSES)) {
-		            promises.push(this.getAvailable(curr))
-		        }
-		        let prices = await Promise.all(promises);
-		        
-		        this.available = await this.calculateAvailable(prices);
+			    //this.available = await this.getAvailableBalance()
+			    this.available = currentContract.totalShare * 100
+			    this.profit = (this.available + this.getStakedBalance()) + this.withdrawals - this.deposits
 			}
 			catch(err) {
 				console.error(err);
 				this.clearCache();
 			}
+	    },
+
+	    getStakedBalance() {
+	    	return 0;
+	    }, 
+
+	    async getAvailableBalance() {
+	    	let available = 0;
+	        let promises = [];
+	        for(let curr of Object.keys(this.ADDRESSES)) {
+	            promises.push(this.getAvailable(curr))
+	        }
+	        let prices = await Promise.all(promises);
+	        
+	        return await this.calculateAvailable(prices);
 	    },
 
 	    async calculateAvailable(prices) {
@@ -75,6 +85,7 @@ export default {
 	                available += this.fromNativeCurrent(curr, prices[i])
 	            }
 	            else {
+	            	//exchangeRateCurrent
 		            const exchangeRate = await currentContract.web3.eth.call({
 		                to: this.ADDRESSES[curr],
 		                data: '0xbd6d894d',
@@ -242,7 +253,6 @@ export default {
 		            let address = currentContract.coins[i]._address
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
 		            let exchangeRate = await this.getExchangeRate(block, address, '', type)
-		        	
 		        	if(exchangeRate == -1) continue;
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {

@@ -27,7 +27,7 @@
             <li>
             	<b>Profit:</b>
             	<span :class="{'loading line': available == -1}">
-            		<span v-show='available != -1 '> {{((available + withdrawals - deposits)/100).toFixed(2)}}</span>
+            		<span v-show='available != -1 '> {{(profit/100).toFixed(2)}}</span>
             	</span>
             </li>
             <br>

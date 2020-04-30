@@ -25,6 +25,10 @@ export default {
 
 	methods: {
 
+		getStakedBalance() {
+			return currentContract.totalStake * 100
+		},
+
 		async getSNXRewards() {
 			let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 			let calls = [

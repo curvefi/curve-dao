@@ -18,22 +18,16 @@ export default {
 	    	let available = 0;
 	    	for(let i = 0; i < prices.length; i++) {
 	            let curr = Object.keys(this.ADDRESSES)[i]
-	            const exchangeRate = await currentContract.web3.eth.call({
+	            
+	            const getPricePerFullShare = await currentContract.web3.eth.call({
 	                to: this.ADDRESSES[curr],
-	                data: '0xbd6d894d',
+	                data: '0x77c7b8fc',
 	            });
-	            const usdPool = await currentContract.web3.eth.call({
-	                to: this.ADDRESSES[curr],
-	                data: '0x7137ef99',
-	            });
-	            const tokensSupply = await currentContract.web3.eth.call({
-	                to: this.ADDRESSES[curr],
-	                data: '0x18160ddd',
-	            });
+
 	            available += this.fromNativeCurrent(curr,
-	                cBN(usdPool)
-	                .multipliedBy(cBN(prices[i].toString()))
-	                .div(tokensSupply)
+	                cBN(getPricePerFullShare)
+	                .multipliedBy(cBN(prices[i].toString())
+	                .div(1e18))
 	            );
 	        }
 	        return available*100;

@@ -35,6 +35,7 @@ export default {
 		deposits: -1,
 		withdrawals: -1,
 		available: -1,
+        profit: -1,
 		profit: '',
 		BN: '',
 		priceData: '',

@@ -247,7 +247,7 @@
 				return init(contract.contracts[p == 'y' ? 'iearn' : p])
 			}))
 			await this.updatePoolInfo();*/
-			//this.mounted();
+			contract.multicall && this.updateDepth();
 		},
 		beforeDestroy() {
 			//EventBus.$off('selected', this.selectPool)

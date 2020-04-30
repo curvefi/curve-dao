@@ -353,6 +353,7 @@
 			async loadData() {
 				let jsonInterval = this.interval;
 				if(tradeStore.intervals.indexOf(jsonInterval) > 3) jsonInterval = '30m'
+				if(jsonInterval == '1h') jsonInterval = '1440m'
 				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = []
@@ -396,6 +397,7 @@
 							let get_dy_underlying = await calcWorker.calcPrice(
 								{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, abis[this.pools[j]].coin_precisions[this.fromCurrency])
 							let calcprice = +(BN(get_dy_underlying).div(abis[this.pools[j]].coin_precisions[this.toCurrency]))
+							if(calcprice == 0) continue;
 							if(this.inverse) calcprice = 1 / calcprice
 							if(v.prices[this.pairIdx]) {
 								if(this.inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
@@ -473,9 +475,8 @@
 						PRECISION,
 					}
 				})
-
-				let fromCurrency = this.fromCurrency = this.pairIdx.split('-')[0]
-				let toCurrency = this.toCurrency = this.pairIdx.split('-')[1]
+				let fromCurrency = this.fromCurrency = tradeStore.pairIdx.split('-')[0]
+				let toCurrency = this.toCurrency = tradeStore.pairIdx.split('-')[1]
 				this.inverse = false;
 				if(fromCurrency > toCurrency) {
 					this.inverse = true;

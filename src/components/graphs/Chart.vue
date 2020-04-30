@@ -148,6 +148,15 @@
 				                }
 		                    },
 		                    {
+		                        type: 'minute',
+		                        count: 1000,
+		                        text: '10m',
+		                        dataGrouping: {
+			                 	   forced: true,
+				                    units: [['minute', [10]]]
+				                }
+		                    },
+		                    {
 		                    	type: 'minute',
 		                    	count: 1500,
 		                    	text: '15m',
@@ -353,8 +362,8 @@
 			async loadData() {
 				let jsonInterval = this.interval;
 				let intervalIndex = tradeStore.intervals.indexOf(jsonInterval)
-				if(intervalIndex > 3) jsonInterval = '30m'
-				if(intervalIndex > 7) jsonInterval = '1440m'
+				if(intervalIndex >= tradeStore.intervals.indexOf('30m')) jsonInterval = '30m'
+				if(intervalIndex >= tradeStore.intervals.indexOf('1d')) jsonInterval = '1440m'
 				let urls = tradeStore.pools.map(pool=>fetch(`https://beta.curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = []

@@ -130,6 +130,7 @@
         	async depositc(val, oldval) {
         		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
+        		this.highlightAllInputs();
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
         		await this.calcSlippage()
         	}
@@ -174,6 +175,7 @@
             		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
             		this.swap_address = currentContract.deposit_zap._address
             	}
+            	console.log(currentContract.c_rates, "C RATES")
             },
             setInputStyles(newInputs = false, newContract, oldContract) {
 				if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
@@ -249,6 +251,7 @@
 			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 				})
+				console.log(this.amounts, "AMOUNTS")
 
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
@@ -274,7 +277,7 @@
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : ''}`)
+				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`)
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -299,7 +302,7 @@
 						gas: gas
 					})
 					.once('transactionHash', hash => {
-						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : ''}`
+						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`
 						console.warn(hash, 'tx hash')
 					})
 					try {
@@ -334,16 +337,23 @@
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},
+			highlightAllInputs() {
+				for(let i = 0; i < currentContract.N_COINS; i++) this.highlightInputs(i)
+			},
+			highlightInputs(i) {
+				let value = this.inputs[i]
+				if (value > this.wallet_balances[i] * this.rates[i])
+	                Vue.set(this.bgColors, i, 'red');
+	            else
+	                Vue.set(this.bgColors, i, 'blue');
+			},
 			async change_currency(i, setInputs = true, event) {
 				if(event) {
 					this.inputs[i] = event.target.value
 				}
 	            await this.calcSlippage()
 	            var value = this.inputs[i]
-	            if (value > this.wallet_balances[i] * this.rates[i])
-	                Vue.set(this.bgColors, i, 'red');
-	            else
-	                Vue.set(this.bgColors, i, 'blue');
+	            this.highlightInputs(i)
 
 	            if (this.sync_balances && !this.max_balances) {
 	                for (let j = 0; j < currentContract.N_COINS; j++)

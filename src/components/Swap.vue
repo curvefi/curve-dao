@@ -187,6 +187,10 @@
                 this.disabled = false;
                 this.from_cur_handler()
             },
+            getCurrency(i) {
+                if(!this.swapwrapped) return (Object.keys(this.currencies)[i]).toUpperCase()
+                return Object.values(this.currencies)[i] 
+            },
             swapInputs() {
                 //look no temp variable! :D
                 [this.fromInput, this.toInput] = [this.toInput, this.fromInput]
@@ -308,12 +312,14 @@
                 var j = this.to_currency;
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
                 let maxSlippage = this.maxSlippage / 100;
+                let currency = (Object.keys(this.currencies)[this.from_currency]).toUpperCase()
+                if(this.swapwrapped) currency = Object.values(this.currencies)[this.from_currency]
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (b >= 0.001) {
                     var dx = Math.floor(this.fromInput * this.precisions[i]);
                     var min_dy = Math.floor(this.toInput * (1-maxSlippage) * this.precisions[j]);
                     dx = cBN(dx.toString()).toFixed(0);
-                    this.waitingMessage = `Please approve ${this.fromInput} ${(Object.keys(this.currencies)[this.from_currency]).toUpperCase()} for exchange`
+                    this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
                     try {
                         if (this.inf_approval)
                             await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
@@ -327,8 +333,8 @@
                         throw err;
                     }
                     this.waitingMessage = `Please confirm swap 
-                                            from ${this.fromInput} ${(Object.keys(this.currencies)[this.from_currency]).toUpperCase()} 
-                                            for min ${min_dy / this.precisions[j]} ${(Object.keys(this.currencies)[this.to_currency]).toUpperCase()}`
+                                            from ${this.fromInput} ${this.getCurrency(this.from_currency)}
+                                            for min ${min_dy / this.precisions[j]} ${this.getCurrency(this.to_currency)}`
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
                     if(this.swapwrapped || this.currentPool == 'susdv2') exchangeMethod = currentContract.swap.methods.exchange

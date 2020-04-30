@@ -47,7 +47,7 @@ let routes = [
         component: BasicTrade,
       },
       {
-        path: '/trade',
+        path: '/trade/:params(.*)?',
         name: 'Trade',
         component: ChartGraph,
       },

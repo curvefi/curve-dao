@@ -18,7 +18,7 @@
 		</div>
 
 		<select class='tvision' v-model='pair'>
-			<option v-for = 'v in pairs' :value='v'>{{v.val | toUpper}}</option>
+			<option v-for = 'v in allPairs' :value='v'>{{v.val | toUpper}}</option>
 		</select>
 		<select class='tvision' v-model='interval'>
 			<option v-for = 'v in intervals' :value='v'>{{v}}</option>
@@ -47,12 +47,50 @@
 			interval: tradeStore.interval,
 			intervals: tradeStore.intervals
 		}),
+		watch: {
+			pools(val) {
+				this.pushState()
+			},
+			pair() {
+				this.pushState()
+			},
+			interval() {
+				this.pushState()
+			}
+		},
+		created() {
+			this.$watch(() => contract.web3, this.mounted)
+		},
 		mounted() {
-			this.pair = this.pairs[0];
-			//this.$emit('selected', this.pool, this.pair, this.interval)
+			contract.web3 && this.mounted()
 		},
 		methods: {
+			async mounted() {
+				let params = this.$route.params.params
+				if(params && params.length) {
+					params = params.split('/')
+					//is the url like /DAI-USDC/30m
+					//or is it like /compound,usdt,y,busd,susdv2/DAI-USDC/30m
+					let pair = params[params.length - 2];
+					let interval = params[params.length - 1];
+					if(params.length == 3)
+						this.pools = params[0].split('_')
+					this.pair = this.allPairs.find(p => p.val == pair.toLowerCase())
+					this.interval = interval
+					this.emitSelect()
+				}
+				else
+					this.pair = this.pairs[0];
+				//this.$emit('selected', this.pool, this.pair, this.interval)
+			},
 			emitSelect() {
+				let currenciesPools = Object.values(allCurrencies).map(v=>Object.keys(v))
+				let pairPools = this.isUnique(this.pair.val)
+				if(pairPools.length == 1) {
+					let pairPoolIndex = currenciesPools.map(v=>v.join()).indexOf(pairPools[0].join())
+					let pool = Object.keys(allCurrencies)[pairPoolIndex]
+					this.pools = tradeStore.pools = [pool]
+				}
 				tradeStore.pools = this.pools
 				tradeStore.pairIdx = this.pair.idx
 				tradeStore.pairVal = this.pair.val
@@ -61,9 +99,37 @@
 			},
 			emitUpdate() {
 				EventBus.$emit('updateCharts')
-			}
+			},
+			pushState() {
+				history.pushState({}, null, '/trade/' + this.pools.join('_') + '/' + this.pair.val.toUpperCase() + '/' + this.interval)
+			},
+			isUnique(pair) {
+				let [i, j] = pair.split('-').map(p => p.toLowerCase())
+				return Object.values(allCurrencies)
+					.map(v=>Object.keys(v))
+					.filter(currs => currs.includes(i) && currs.includes(j))
+			},
 		},
 		computed: {
+			allPairs() {
+				let currencies = Object.assign({}, allCurrencies)
+				delete currencies.susd
+				let pairs = Object.values(currencies).filter(p=>p != 'susd').map(v=>Object.keys(v))
+				let allPairs = []
+				for(let pair of pairs) {
+					for(let [i, val] of pair.entries()) {
+						for(let [j, val1] of pair.entries()) {
+							if(i != j && allPairs.find(p=>p.val == `${val}-${val1}`) === undefined) {
+								allPairs.push({
+									idx: `${i}-${j}`,
+									val: `${val}-${val1}`
+								})
+							}
+						}
+					}
+				}
+				return allPairs
+			},
 			pairs() {
 				//this.pools.map(p=>Object.entriesallCurrencies[this.pool])
 				if(!this.pools.length) return []
@@ -76,7 +142,6 @@
 										.filter((k, i, all)=>all.indexOf(k) === i && all.lastIndexOf(k) !== i)
 				}
 				else {
-					console.log(allCurrencies)
 					duplicates = Object.keys(allCurrencies[this.pools[0] == 'y' ? 'iearn' : this.pools[0]])
 				}
 				var pairs = []

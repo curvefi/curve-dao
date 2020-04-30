@@ -215,7 +215,7 @@
 					this.chart.showLoading()
 					//this.chart.xAxis[0].removePlotLine(1)
                 	//no need to as all 4 pools are loaded at page load
-                	//await updatePoolInfo();
+                	await updatePoolInfo();
 					this.mounted()
 				}
 			},
@@ -295,7 +295,6 @@
 			},
 			//we can go back in time! Time travelling!
 			changeTime(poolInfo) {
-				console.log(poolInfo)
 				tradeStore.poolInfo = poolInfo
 				let timestamp = poolInfo.timestamp || poolInfo[0].timestamp
 				this.chart.setTitle({ 
@@ -324,9 +323,10 @@
 				}*/
 
 				let pools = tradeStore.pools.map(p=>p == 'y' ? 'iearn' : p)
-				let allPools = ['compound', 'usdt', 'iearn', 'busd', 'susdv2']
+				let allPools = pools
 				let poolIdx = pools.map(pool => allPools.indexOf(pool))
 				let poolConfigs = tradeGetters.poolConfigs()
+
 
 				/*console.log(contract.bal_info.map((b,i)=>b/contract.c_rates[i]))
 				console.log(contract.c_rates)*/

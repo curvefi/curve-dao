@@ -241,12 +241,15 @@
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
 			        if(Math.abs(balance/amount-1) < 0.005) {
-			            Vue.set(this.amounts, i, BN(balance).div(currentContract.coin_precisions[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1));
+			        	if(!this.depositc) balance = BN(balance).div(currentContract.coin_precisions[i])
+			        	else balance = BN(balance)
+			            Vue.set(this.amounts, i, balance.toFixed(0,1));
 			        }
 			        else {
 			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 				})
+
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
 			    if (this.inf_approval)

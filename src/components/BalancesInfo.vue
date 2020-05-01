@@ -28,11 +28,23 @@
       </p>
       <ul>
         <li>
-          <b>Virtual price: </b>
+          <b>
+            Virtual price: 
+          </b>
           <span :class="{'loading line': virtualPrice === null}"> {{ (virtualPrice).toFixed(4) }} </span>
+          <span class='tooltip'>[?]
+            <span class='tooltiptext'>
+              Average dollar value of pool token
+            </span>
+          </span>
         </li>
         <li>
-          <b>A: </b>
+          <b class='tooltip'>
+            A: 
+            <span class='tooltiptext long'>
+              Amplification coefficient chosen from fluctation of prices around 1
+            </span>
+          </b>
           <span :class="{'loading line': A === null}"> {{ A }} </span>
         </li>
         <li v-show = 'admin_actions_deadline !== null && admin_actions_deadline !== 0'>
@@ -141,3 +153,14 @@
     }
   }
 </script>
+
+<style scoped>
+  .tooltip .tooltiptext {
+    font-weight: normal;
+    background-color: #aaaaaa;
+    color: black;
+  }
+  .tooltip .tooltiptext::after {
+    border-color: #aaaaaa transparent transparent transparent;
+  }
+</style>

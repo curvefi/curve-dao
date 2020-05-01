@@ -35,7 +35,7 @@
           <b>A: </b>
           <span :class="{'loading line': A === null}"> {{ A }} </span>
         </li>
-        <li>
+        <li v-show = 'admin_actions_deadline !== null && admin_actions_deadline !== 0'>
           <b>Future A: </b>
           <span :class="{'loading line': future_A === null}"> {{ future_A }} </span>
         </li>

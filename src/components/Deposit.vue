@@ -67,6 +67,9 @@
                 	@click = 'deposit_stake'>
                 	Deposit and stake
                 </button>
+                <div id='mintr' v-show="currentPool == 'susdv2'">
+	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
+	            </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
                 	{{waitingMessage}} <span class='loading line'></span>
@@ -130,7 +133,7 @@
         	async depositc(val, oldval) {
         		this.changeSwapInfo(val)
         		await this.handle_sync_balances()
-        		this.highlightAllInputs();
+        		!this.max_balances && this.highlightAllInputs();
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
         		await this.calcSlippage()
         	}
@@ -175,7 +178,6 @@
             		this.rates = currentContract.coin_precisions.map(cp=>1/cp)
             		this.swap_address = currentContract.deposit_zap._address
             	}
-            	console.log(currentContract.c_rates, "C RATES")
             },
             setInputStyles(newInputs = false, newContract, oldContract) {
 				if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
@@ -251,7 +253,6 @@
 			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
 			        }
 				})
-				console.log(this.amounts, "AMOUNTS")
 
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
@@ -326,7 +327,7 @@
 						})[0].raw.data)
 					this.waitingMessage = `Please approve staking ${minted.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
 					await common.ensure_stake_allowance(minted)
-					this.waitingMessage = 'Waiting for stake transaction to confirm'
+					this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
 					await currentContract.curveRewards.methods.stake(minted.toFixed(0,1)).send({
 						from: currentContract.default_account,
 						gas: 200000,
@@ -391,5 +392,10 @@
 <style>
 	#add-liquidity {
 		margin-right: 1em;
+	}
+	#mintr {
+        margin-top: 1em;
+		margin-left: 1em;
+		text-align: center;
 	}
 </style>

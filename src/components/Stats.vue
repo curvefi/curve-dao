@@ -25,6 +25,11 @@
 		        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
+	    	<p>Recent monthly APY: 
+	        	<span id="monthly-apr" :class="{'loading line': loading}">
+		        	<span v-show='!loading'> {{monthly_apr*100 | toFixed2}}% </span>
+		    	</span>
+	    	</p>
 	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool'/>
 	    </div>
 	</div>
@@ -204,6 +209,7 @@
 					this.apr = apydata.apy.total[subdomain];
 					this.daily_apr = apydata.apy.day[subdomain];
 					this.weekly_apr = apydata.apy.week[subdomain];
+					this.monthly_apr = apydata.apy.month[subdomain];
 					let period = 1440
 					//if(subdomain == 'susd') period = 30
 			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-${period}m.json`)

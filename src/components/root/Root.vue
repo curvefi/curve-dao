@@ -11,7 +11,17 @@
 	                	<span class='index'>0.</span>  
 	                    <span class='pooltext'>Compound</span> 
 	                    <span class='pools'>[(c)DAI, (c)USDC]</span>  
-	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span> <span :class="{'loading line': !apy[0]}">{{apy[0]}}</span>%</span>
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+		                    	<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[0]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[0]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[0]}}%</div>
+		                    		<div>Total APY: {{apy[0]}}%</div>
+		                    	</span>
+		                    </span>
+                    	<span :class="{'loading line': !daily_apy[0]}">{{daily_apy[0]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
 	                    	<span v-show='volumes.compound >= 0'>{{(volumes.compound | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -22,7 +32,18 @@
 	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>USDT</span>
 	                    <span class='pools'>[(c)DAI, (c)USDC, USDT]</span>  
-	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span> <span :class="{'loading line': !apy[1]}">{{apy[1]}}</span>%</span>
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[1]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[1]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[1]}}%</div>
+		                    		<div>Total APY: {{apy[1]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[1]}">{{daily_apy[1]}}</span>%
+	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
 	                    	<span v-show='volumes.usdt >= 0'>{{(volumes.usdt | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -33,7 +54,18 @@
 	                	<span class='index'>2.</span>  
 	                    <span class='pooltext'>Y</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)TUSD]</span>  
-	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span> <span :class="{'loading line': !apy[2]}">{{apy[2]}}</span>%</span>
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[2]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[2]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[2]}}%</div>
+		                    		<div>Total APY: {{apy[2]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[2]}">{{daily_apy[2]}}</span>%
+	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
 	                    	<span v-show='volumes.y >= 0'>{{(volumes.y | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -44,7 +76,18 @@
 	                	<span class='index'>3.</span>  
 	                    <span class='pooltext'>BUSD</span>
 	                    <span class='pools'>[(y)DAI, (y)USDC, (y)USDT, (y)BUSD]</span>  
-	                    <span class='apr'><span class='tooltip'>APY:<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span> <span :class="{'loading line': !apy[3]}">{{apy[3]}}</span>%</span>
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[3]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[3]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[3]}}%</div>
+		                    		<div>Total APY: {{apy[3]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[3]}">{{daily_apy[3]}}</span>%
+	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
 	                    	<span v-show='volumes.busd >= 0'>{{(volumes.busd | 0) | formatNumber}}$</span>
                	 		</span></span>
@@ -55,7 +98,7 @@
 	                	<span class='index'>4.</span>  
 	                    <span class='pooltext'>sUSD</span>
 	                    <span class='pools'>[(y)sUSD, yCurve]</span>  
-	                    <span class='apr'>APY: <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>%</span>
+	                    <span class='apr'>APY: <span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>%</span>
 	                    <span class='volume'>
 	                    	Vol: <span :class="{'loading line': volumesData.busd < 0}">
 	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
@@ -69,7 +112,16 @@
 	                    <span class='pools'>[DAI, USDC, USDT, sUSD]</span>  
 	                    <span class='apr'>
 	                    	<span>
-	                    		<span class='tooltip'>APY:<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span> <span :class="{'loading line': !apy[4]}">{{apy[4]}}</span>
+	                    		<span class='tooltip'>APY:
+	                    			<span class='tooltiptext long'>
+			                    		<div>Pool APY + Lending APY (annualized)</div>
+			                    		<div>Daily APY: {{daily_apy[4]}}%</div>
+			                    		<div>Weekly APY: {{weekly_apy[4]}}%</div>
+			                    		<div>Monthly APY: {{+monthly_apy[4] == 0 ? 'N/A' : monthly_apy[4]}}%</div>
+			                    		<div>Total APY: {{apy[4]}}%</div>
+			                    	</span>
+	                    		</span> 
+	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>
 	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX
 		                                <span class='tooltiptext'>
@@ -110,6 +162,9 @@
 		data: () => ({
 			activePoolLink: 0,
 			pools: ['compound','usdt','y','busd'],
+			daily_apy: [],
+			weekly_apy: [],
+			monthly_apy: [],
 			apy: [],
 			start: 0,
 			end: 0,
@@ -186,7 +241,13 @@
                 volumeStore.state.volumes = stats.volume
 	            for(let [i, pool] of pools.entries()) {
 	                var daily_apy = stats.apy.day[pool];
-	                this.apy.push((daily_apy*100).toFixed(2))
+	                var weekly_apy = stats.apy.week[pool];
+	                var monthly_apy = stats.apy.month[pool];
+	                var apy = stats.apy.total[pool];
+	                this.daily_apy.push((daily_apy*100).toFixed(2))
+	                this.weekly_apy.push((weekly_apy*100).toFixed(2))
+	                this.monthly_apy.push((monthly_apy*100).toFixed(2))
+	                this.apy.push((apy*100).toFixed(2))
 	            }
 			}
 		}
@@ -231,5 +292,21 @@
 	}
 	.volume {
 		flex: 0.7;
+	}
+	.tooltip {
+		position: relative;
+	}
+	.tooltiptext.long {
+		max-width: 250px;
+		position: absolute;
+		margin-left: 0;
+		transform: translateX(-50%) translateX(6px);
+	}
+	.tooltiptext.long > div {
+		padding-left: 1em;
+		text-align: left;
+	}
+	.tooltiptext.long > div:hover {
+		background: none;
 	}
 </style>

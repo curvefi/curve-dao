@@ -503,7 +503,7 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
-                if(this.to_currency == null && this.withdrawc == false) this.withdrawc = true
+                if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

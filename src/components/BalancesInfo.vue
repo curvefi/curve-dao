@@ -13,15 +13,37 @@
           </li>
       </ul>
       <p>
-        <b>Fee:</b> 
-        <span id='fee-info' :class="{'loading line': !fee}">
-          <span v-show = 'fee'> {{fee && fee.toFixed(3)}}</span>
-        </span>%
+        <ul>
+          <li>
+            <b>Fee:</b> 
+            <span id='fee-info' :class="{'loading line': !fee}">
+            </span>
+            <span v-show = 'fee'> {{fee && fee.toFixed(3)}}</span>
+          </span>%
+          <li>
+            <b>Admin fee:</b> 
+            <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee && admin_fee.toFixed(3)}}</span>%
+          </li>
+        </ul>
       </p>
-      <p>
-        <b>Admin fee:</b> 
-        <span id='admin-fee-info' :class="{'loading line': admin_fee}"> {{admin_fee && admin_fee.toFixed(3)}}</span>%
-      </p>
+      <ul>
+        <li>
+          <b>Virtual price: </b>
+          <span :class="{'loading line': virtualPrice === null}"> {{ (virtualPrice).toFixed(4) }} </span>
+        </li>
+        <li>
+          <b>A: </b>
+          <span :class="{'loading line': A === null}"> {{ A }} </span>
+        </li>
+        <li>
+          <b>Future A: </b>
+          <span :class="{'loading line': future_A === null}"> {{ future_A }} </span>
+        </li>
+        <li v-show = 'admin_actions_deadline !== null && admin_actions_deadline !== 0'>
+          <b>Action deadline: </b>
+          <div :class="{'loading line': admin_actions_deadline === null}"> {{ admin_actions_readable }} </div>
+        </li>
+      </ul>
     </fieldset>
 
     <fieldset id="lp-info-container" v-show='totalShare > 0 && initializedContracts'>
@@ -93,7 +115,7 @@
         return this.pool || currentContract.currentContract
       },
       virtualPrice() {
-        return currentContract.virtual_price
+        return currentContract.virtual_price || 0
       },
       totalBalances() {
         return this.bal_info.reduce((a, b) => a + b, 0)
@@ -103,7 +125,19 @@
       },
       usdStake() {
         return getters.usdStake()
-      }
+      },
+      A() {
+        return (getters.A() * 1e18) | 0
+      },
+      future_A() {
+        return (getters.future_A() * 1e18) | 0
+      },
+      admin_actions_readable() {
+        return helpers.formatDateToHuman(this.admin_actions_deadline)
+      },
+      admin_actions_deadline() {
+        return getters.admin_actions_deadline()
+      },
     }
   }
 </script>

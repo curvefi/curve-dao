@@ -297,6 +297,9 @@ const state = Vue.observable({
 	totalStake: -1,
 
 	virtual_price: null,
+	A: null,
+	future_A: null,
+	admin_actions_deadline: null,
 
 	slippage: 0,
 	showSlippage: false,
@@ -334,6 +337,9 @@ export const getters = {
 	currencies: () => state.currencies,
 	fee: () => state.fee * 100,
 	admin_fee: () => state.admin_fee * 100,
+	A: () => state.A,
+	future_A: () => state.future_A,
+	admin_actions_deadline: () => state.admin_actions_deadline, 
 	initializedContracts: () => state.initializedContracts,
 	showSlippage: () => state.showSlippage,
 	slippage: () => state.slippage,
@@ -369,6 +375,12 @@ export async function init(contract, refresh = false) {
     let calls  = [
     	//get_virtual_price
     	[allabis[contract.currentContract].swap_address, '0xbb7b8b80'],
+    	//A
+    	[allabis[contract.currentContract].swap_address, '0xf446c1d0'],
+    	//future_A
+        [allabis[contract.currentContract].swap_address, '0xb4b577ad'],
+        //admin_actions_deadline
+        [allabis[contract.currentContract].swap_address, '0x405e28f8'],
     ];
     if(contract.currentContract == 'compound') {
 	    state.old_swap = new state.web3.eth.Contract(allabis.compound.old_swap_abi, old_swap_address);

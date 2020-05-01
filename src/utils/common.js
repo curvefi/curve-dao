@@ -230,7 +230,10 @@ export async function multiInitState(calls, contract, initContracts = false) {
     )
     if(initContracts) {
         contract.virtual_price = decoded[0] / 1e18;
-        decoded = decoded.slice(1);
+        contract.A = decoded[1] / 1e18;
+        contract.future_A = decoded[2] / 1e18;
+        contract.admin_actions_deadline = decoded[3] / 1e18;
+        decoded = decoded.slice(4);
     }
     if(initContracts && contract.currentContract == 'compound') {
         contract.oldBalance = decoded[0];

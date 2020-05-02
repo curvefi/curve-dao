@@ -186,7 +186,7 @@
 						this.inputs.push('0.00')
 					}
 					if(allabis[oldContract].N_COINS - allabis[newContract].N_COINS > 0) {
-						this.inputs.splice(allabis[newContract].N_COINS,1)
+						this.inputs = this.inputs.filter((_, i) => i < allabis[newContract].N_COINS)
 					}
 				}
 				else if(newInputs) {

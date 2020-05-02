@@ -63,12 +63,12 @@ export async function getVolumes(pools, refresh = false) {
     state.volumes = stats.volume;
 }
 
-export async function getDailyVolume(pool, refresh = false) {
+export async function getDailyVolume(pool, refresh = false, interval = 30) {
 	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
 
 	if(state.allVolume[pool].length && !refresh) return;
-	await fetchVolumeData(pool, refresh, 30)
-	let json = state.volumeData[30][pool];
+	await fetchVolumeData(pool, refresh, interval)
+	let json = state.volumeData[interval][pool];
 	state.volumeData[pool] = json
 	for(let data of json) {
 		state.allVolume[pool].push([
@@ -82,17 +82,17 @@ export async function getDailyVolume(pool, refresh = false) {
 }
 
 
-export async function getLendingAPY(pool, refresh = false) {
+export async function getLendingAPY(pool, refresh = false, interval = 30) {
 	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
-	if(!state.volumeData[30][pool].length)
-		await fetchVolumeData(pool, refresh, 30)
+	if(!state.volumeData[interval][pool].length)
+		await fetchVolumeData(pool, refresh, interval)
 
 	let lendingrates = []
 
-	for(let j = 48; j < state.volumeData[30][pool].length; j += 4) {
-		let json = state.volumeData[30][pool]
+	for(let j = 1; j < state.volumeData[interval][pool].length; j++) {
+		let json = state.volumeData[interval][pool]
 		let data = json[j]
-		let prevdata = json[j-48]
+		let prevdata = json[j-1]
 		let balances = data.balances.map((b,bi)=>b /= abis[pool == 'susd' ? 'susdv2' : pool].coin_precisions[bi])
 		let apdrate = data.rates.map((rate, k) => {
 			return (rate / prevdata.rates[k]) - 1

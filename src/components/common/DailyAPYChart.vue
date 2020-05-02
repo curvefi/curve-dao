@@ -190,7 +190,7 @@
 		        	})
 		        }
 
-		        await volumeStore.getDailyVolume(this.pool)
+		        await volumeStore.getDailyVolume(this.pool, false, 1440)
 
 		        let volumeSeries = volumeStore.state.allVolume[this.pool == 'susdv2' ? 'susd' : this.pool]
 
@@ -205,7 +205,7 @@
 		        let lendingrates;
 		        let lendingAxis = 'apyAxis'
 		        if(this.pool != 'susdv2')    	
-	    			lendingrates = await volumeStore.getLendingAPY(this.pool)
+	    			lendingrates = await volumeStore.getLendingAPY(this.pool, false, 1440)
 		        else {
 		        	lendingrates = volumeSeries.map(data => [data[0], 0])
 		        	lendingAxis = 'lendingAxis'

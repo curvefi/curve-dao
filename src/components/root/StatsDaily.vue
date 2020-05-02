@@ -130,8 +130,8 @@
 					let volumeSeries = []
 					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
 					let data = volumeStore.state.allVolume
-					data.susdv2 = new Array(1000-data.susd.length).fill({}).concat(data.susd)
-					for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
+					data.susdv2 = new Array(volumeStore.state.allVolume.compound.length-data.susd.length).fill({}).concat(data.susd)
+					for(let i = 0; i < volumeStore.state.allVolume.compound.length; i++) {
 						volumeSeries.push([
 							volumeStore.state.allVolume.compound[i][0],
 							allPools.map(p=>{

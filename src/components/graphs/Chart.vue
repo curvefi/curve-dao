@@ -440,7 +440,7 @@
 			    let volume = []
 			    let dataLength = this.ohlcData.length
 			        // set the allowed units for data grouping
-			    for (let i = 0; i < dataLength; i ++) {
+			    for (let i = 0; i < dataLength; i++) {
 			    	let len = this.ohlcData[i].prices[this.pairIdx].length-1
 
 			    	let ohlcPoint = [

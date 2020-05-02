@@ -86,7 +86,6 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
         return false;
     if ((cBN(_amount).isEqualTo(currentContract.max_allowance)) & (current_allowance.isGreaterThan(currentContract.max_allowance.div(cBN(2)))))
         return false;  // It does get spent slowly, but that's ok
-
     if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)))
         await approve(coins[i], 0, default_account, toContract);
     return await approve(coins[i], cBN(amount).toFixed(0,1), default_account, toContract);

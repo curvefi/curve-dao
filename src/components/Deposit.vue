@@ -244,7 +244,7 @@
 				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
-			        if(Math.abs(balance/amount-1) < 0.005) {
+			        if(Math.abs(balance/amount-1) < 0.01) {
 			        	if(!this.depositc) balance = BN(balance).div(currentContract.coin_precisions[i])
 			        	else balance = BN(balance)
 			            Vue.set(this.amounts, i, balance.toFixed(0,1));

@@ -5,7 +5,7 @@
                 <div class='exchangefields'>
                     <fieldset class='item'>
                         <legend>From:</legend>
-                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance | toFixed2}}</span> </div>
+                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalanceText | toFixed2}}</span> </div>
                         <ul>
                             <li>
                                 <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
@@ -71,7 +71,7 @@
                 </div>
                 <ul>
                     <li>
-                        <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
+                        <input id="inf-approval" type="checkbox" name="inf-approval" v-model='inf_approval'>
                         <label for="inf-approval">Infinite approval - trust this contract forever
                             <span class='tooltip'>[?]
                                 <span class='tooltiptext long'>
@@ -121,6 +121,7 @@
             fromInput: 0,
             toInput: 0,
             maxBalance: 0,
+            maxBalanceText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
             exchangeRate: 'Not available',
             bgColor: '#505070',
@@ -157,6 +158,13 @@
             },
             swapwrapped() {
                 this.mounted()
+            },
+            maxBalance() {
+                let amount = Math.floor(
+                        100 * parseFloat(this.maxBalance) / this.precisions[this.from_currency]
+                    ) / 100
+
+                this.maxBalanceText = currentContract.default_account ? amount.toFixed(2) : 0;
             }
         },
         computed: {
@@ -228,7 +236,9 @@
                 this.promise = helpers.makeCancelable(promise)
             },
             async from_cur_handler() {
-                if (cBN(await currentContract.underlying_coins[this.from_currency].methods.allowance(this.default_account, currentContract.swap_address).call()) > currentContract.max_allowance.div(cBN(2)))
+                let currentAllowance = cBN(await currentContract.underlying_coins[this.from_currency].methods.allowance(this.default_account, currentContract.swap_address).call())
+                let maxAllowance = currentContract.max_allowance.div(cBN(2))
+                if (currentAllowance.gt(maxAllowance))
                     this.inf_approval = true;
                 else
                     this.inf_approval = false;
@@ -271,7 +281,7 @@
                 if (this.fromInput == '' || this.val == 0) {
                     this.fromInput = currentContract.default_account ? amount.toFixed(2) : 0
                 }
-                this.maxBalance = currentContract.default_account ? amount : 0;
+                this.maxBalance = currentContract.default_account ? balance : 0;
             },
             setAmountPromise() {
                 let promise = new Promise(async (resolve, reject) => {
@@ -279,6 +289,7 @@
                     var j = this.to_currency;
                     var dx_ = this.fromInput;
                     var dx = cBN(Math.round(dx_ * this.precisions[i])).toFixed(0,1);
+
                     let calls = [
                         [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
                     ]
@@ -317,8 +328,9 @@
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 if (b >= 0.001) {
                     var dx = Math.floor(this.fromInput * this.precisions[i]);
+                    if(Math.abs(1 - (dx/this.maxBalance)) < 0.01) dx = this.maxBalance
                     var min_dy = Math.floor(this.toInput * (1-maxSlippage) * this.precisions[j]);
-                    dx = cBN(dx.toString()).toFixed(0);
+                    dx = cBN(dx.toString()).toFixed(0,1);
                     this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
                     try {
                         if (this.inf_approval)
@@ -360,10 +372,7 @@
                     await common.update_fee_info();
                     this.from_cur_handler();
                     let balance = await this.coins[i].methods.balanceOf(this.default_account).call();
-                    let amount = Math.floor(
-                            100 * parseFloat(balance) / this.precisions[i]
-                        ) / 100
-                    this.maxBalance = amount;
+                    this.maxBalance = balance;
                 }
             }
         }

@@ -35,7 +35,6 @@ export default {
 
 	    async checkExchangeRateBlocks(block, address, direction, type = 'deposit') {
 		    let default_account = currentContract.default_account
-		    default_account = '0x39415255619783A2E71fcF7d8f708A951d92e1b6'
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let fromBlock = '0x'+parseInt(block-100).toString(16)

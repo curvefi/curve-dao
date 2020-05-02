@@ -217,6 +217,10 @@
 							y: (vol / arr.reduce((a, b) => a + b, 0)) * 100
 						})
 					})
+				let highest = piechartdata.map(data=>data.y).indexOf(Math.max(...piechartdata.map(data => data.y)))
+				console.log(highest, "HIGHEST")
+				piechartdata[highest].sliced = true;
+				piechartdata[highest].selected = true;
 				this.piechart.addSeries({
 					name: 'Volume %',
 					data: piechartdata,

@@ -68,41 +68,45 @@ export const onboard = Onboard({
     }
   },
   walletSelect: {
-      wallets: [
-        { walletName: "metamask" },
-        {
-          walletName: "trezor",
-          appUrl: "https://beta.curve.fi",
-          email: "info@curve.fi",
-          rpcUrl:
-            "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
-        },
-        {
-          walletName: "ledger",
-          rpcUrl:
-            "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
-        },
-        { walletName: "dapper" },
-        { walletName: "coinbase" },
-        { walletName: "status" },
-        {
-          walletName: "portis",
-          apiKey: "a3bb2525-5101-4a9c-b300-febc6319c3b4"
-        },
-        { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
-        { walletName: "torus" },
-        { walletName: "squarelink", apiKey: "db2074f87c34f247593c" },
-        { walletName: "authereum" },
-        { walletName: "trust" },
-        {
-          walletName: "walletConnect",
-          infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"
-        },
-        { walletName: "opera" },
-        { walletName: "operaTouch" },
-        { walletName: "unilogin" },
-      ]
-    },
+    wallets: [
+      { walletName: "metamask" },
+      {
+        walletName: "trezor",
+        appUrl: "https://beta.curve.fi",
+        email: "info@curve.fi",
+        rpcUrl:
+          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
+      },
+      {
+        walletName: "ledger",
+        rpcUrl:
+          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
+      },
+      { walletName: "dapper" },
+      { walletName: "coinbase" },
+      { walletName: "status" },
+      {
+        walletName: "portis",
+        apiKey: "a3bb2525-5101-4a9c-b300-febc6319c3b4"
+      },
+      { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
+      { walletName: "torus" },
+      { walletName: "squarelink", apiKey: "db2074f87c34f247593c" },
+      { walletName: "authereum" },
+      { walletName: "trust" },
+      {
+        walletName: "walletConnect",
+        infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"
+      },
+      { walletName: "opera" },
+      { walletName: "operaTouch" },
+      { walletName: "unilogin" },
+    ]
+  },
+  walletCheck: [
+    { checkName: 'derivationPath' },
+    { checkName: 'accounts' },
+  ],
 
 });
 

@@ -5,7 +5,11 @@
       <ul id='balances-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b>
-            <span :class="{'loading line': !bal_info || bal_info[i] === null}"> {{bal_info && bal_info[i] | toFixed2}}</span>
+            <span :class="{'loading line': !bal_info || bal_info[i] === null}"> 
+              <span v-show='bal_info && bal_info[i]'> 
+                {{bal_info && bal_info[i] | toFixed2}} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
+              </span>
+            </span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 

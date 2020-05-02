@@ -274,8 +274,8 @@
                 else
                     return this.underlying_coins[i]
             },
-            normalizeSUSD(i) {
-                if(i == 5) return 3;
+            normalizeCurrency(i) {
+                if(i > 3) return 3
                 return i;
             },
             precisions(i, contractName) {
@@ -312,8 +312,8 @@
             },
             async handle_trade() {
                 //handle allowances
-                var i = this.normalizeSUSD(this.from_currency)
-                var j = this.normalizeSUSD(this.to_currency);
+                var i = this.normalizeCurrency(this.from_currency)
+                var j = this.normalizeCurrency(this.to_currency);
                 let amount = BN(this.fromInput).times(this.precisions(i)).toFixed(0)
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
@@ -331,9 +331,9 @@
                     bestContract.swap._address = address
                 }
                 if (this.inf_approval)
-                        await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
+                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                     else
-                        await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
                 if(this.distribution !== null) {
                     await this.onesplit.methods.swap(
                             this.getCoins(i)._address,
@@ -470,10 +470,12 @@
                     }
                     //BUSD only in b pool
                     else if(this.from_currency == 4 || this.to_currency == 4) {
+                        let from_currency = this.from_currency == 4 ? 3 : this.from_currency
+                        let to_currency = this.to_currency == 4 ? 3 : this.to_currency
                         calls = [
                             [
                                 this.swap[3]._address,
-                                this.swap[3].methods.get_dy_underlying(this.from_currency, this.to_currency, dx.toFixed(0,1)).encodeABI()
+                                this.swap[3].methods.get_dy_underlying(from_currency, to_currency, dx.toFixed(0,1)).encodeABI()
                             ]
                         ]
                     }
@@ -573,8 +575,8 @@
                     }
                     if(this.from_currency == 5 || this.to_currency == 5) {
                         let dx = BN(this.fromInput * this.precisions(this.from_currency)).toFixed(0, 1)
-                        let actualFromCurrency = this.normalizeSUSD(this.from_currency)
-                        let actualToCurrency = this.normalizeSUSD(this.to_currency)
+                        let actualFromCurrency = this.normalizeCurrency(this.from_currency)
+                        let actualToCurrency = this.normalizeCurrency(this.to_currency)
                         let dy = await this.swap[2].methods.get_dy_underlying(actualFromCurrency, actualToCurrency, dx).call()
                         this.bestPool = 4;
                         dy = +(BN(dy).div(this.precisions(this.to_currency)))

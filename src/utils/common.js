@@ -187,6 +187,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
     }
 
     var default_account = contract.default_account || '0x0000000000000000000000000000000000000000';
+    default_account = '0x39415255619783A2E71fcF7d8f708A951d92e1b6'
     let calls = [   
                     //.fee()
                     [swap_address_stats, swap_stats.methods.fee().encodeABI()],

@@ -31,7 +31,6 @@
 		props: ['data', 'currency'],
 		data: () => ({
 			titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
-
 			chartdata: {
 				chart: {
 					panning: true,
@@ -104,7 +103,8 @@
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
-			}
+			},
+			chart: null,
 		}),
 		watch: {
 			data(val) {

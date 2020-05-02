@@ -276,6 +276,7 @@ export default {
 
 	    async getDeposits() {
 		    let default_account = currentContract.default_account
+		    default_account = '0x39415255619783A2E71fcF7d8f708A951d92e1b6'
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let depositUsdSum = 0;
@@ -333,6 +334,7 @@ export default {
 
 		async getWithdrawals(address) {
 		    let default_account = currentContract.default_account
+		    default_account = '0x39415255619783A2E71fcF7d8f708A951d92e1b6'
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    let fromBlock = this.fromBlock;
@@ -381,8 +383,9 @@ export default {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 		            if(transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
 		            let tokens = +transfer[0].data
+		            console.log(tokens, "TRANSFER")
 		            let poolInfoPoint = this.findClosest(timestamp)
-		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
 		            withdrawals += usd * 100
 		        }
 
@@ -396,13 +399,17 @@ export default {
 		    return withdrawals;
 		},
 
-		getAvailableTransfer(amount, balances, supply) {
-			return balances.map((balance, i) => balance / allabis[this.currentPool].coin_precisions[i] * amount / supply).reduce((a, b) => a + b, 0)
+		getAvailableTransfer(amount, poolInfoPoint) {
+			return poolInfoPoint.balances
+					.map((balance, i) => balance / allabis[this.currentPool].coin_precisions[i] * amount / poolInfoPoint.supply)
+					.reduce((a, b) => a + b, 0)
+					* (poolInfoPoint.virtual_price / 1e18)
 		},
 
 		async getAvailable(curr, amount, balance, supply) {
 		    if(this.cancel) throw new Error('cancel');
 		    let default_account = currentContract.default_account
+		    default_account = '0x39415255619783A2E71fcF7d8f708A951d92e1b6'
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method

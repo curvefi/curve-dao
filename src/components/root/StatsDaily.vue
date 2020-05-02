@@ -148,10 +148,13 @@
 						color: '#0b0a57',
 						yAxis: 1,
 					})
+
+					this.chart.hideLoading()
 				}
 
 			})
 			this.chart = this.$refs.highcharts.chart
+			this.chart.showLoading()
 			var start = new Date();
 			start.setHours(0,0,0,0);
 			this.start = start.getTime() / 1000

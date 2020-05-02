@@ -74,7 +74,7 @@ export async function getDailyVolume(pool, refresh = false) {
 		state.allVolume[pool].push([
 			data.timestamp * 1000,
 			Object.entries(data.volume).map(([k, v]) => {
-    			let precisions = abis[pool].coin_precisions[k.split('-')[0]]
+    			let precisions = abis[pool == 'susd' ? 'susdv2' : pool].coin_precisions[k.split('-')[0]]
     			return v[0] / precisions
     		}).reduce((a, b) => a + b, 0)
 		])

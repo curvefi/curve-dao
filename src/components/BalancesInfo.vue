@@ -159,6 +159,10 @@
 </script>
 
 <style scoped>
+  .tooltip {
+    margin-left: 0;
+  }
+  
   .tooltip .tooltiptext {
     font-weight: normal;
     background-color: #aaaaaa;

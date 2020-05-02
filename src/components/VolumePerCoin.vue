@@ -203,9 +203,11 @@
 				let week = 7 * day
 				let month = 30.42 * day
 				let all = Date.now()
+				let interval = 1000 * 60 * 60 * 24;
+				let startDayUTC = Math.floor(Date.now() / interval) * interval
 				let filtered = this.volumes.map(vol=> {
 					return vol.filter(data=>{
-						return data[0] > Date.now() - week
+						return data[0] > startDayUTC - week
 					})
 					.map(data => data[1])
 					.reduce((a, b) => {

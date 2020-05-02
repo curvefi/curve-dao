@@ -319,7 +319,7 @@ export default {
 		            let tokens = +transfer[0].data
 		            if(transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
 		            let poolInfoPoint = this.findClosest(timestamp)
-		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint.balances, poolInfoPoint.supply)
+		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
 		            depositUsdSum += usd * 100
 		        }
 		    }

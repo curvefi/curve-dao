@@ -147,6 +147,7 @@
         },
         methods: {
             async mounted(oldContract) {
+
             	if(['susd', 'susdv2'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
@@ -180,8 +181,17 @@
             	}
             },
             setInputStyles(newInputs = false, newContract, oldContract) {
-				if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
-				if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+				if(oldContract) {
+					for(let i = 0; i < allabis[newContract].N_COINS - allabis[oldContract].N_COINS; i++) {
+						this.inputs.push('0.00')
+					}
+					if(allabis[oldContract].N_COINS - allabis[newContract].N_COINS > 0) {
+						this.inputs.splice(allabis[newContract].N_COINS,1)
+					}
+				}
+				else if(newInputs) {
+					this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+				}
 	        	this.bgColors = Array(currentContract.N_COINS).fill({
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',

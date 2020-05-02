@@ -207,10 +207,7 @@
 					}, 0)
 				})
 				let piechartdata = []
-				this.volumes
-					.map(vol=>vol.filter(data=>data[0] > Date.now() / 1000 - 604800000)
-									.map(data => data[1])
-									.reduce((a, b) => (+a) + +(b), 0))
+				filtered
 					.forEach((vol, i, arr) => {
 						piechartdata.push({
 							name: this.currencies[i],
@@ -218,7 +215,6 @@
 						})
 					})
 				let highest = piechartdata.map(data=>data.y).indexOf(Math.max(...piechartdata.map(data => data.y)))
-				console.log(highest, "HIGHEST")
 				piechartdata[highest].sliced = true;
 				piechartdata[highest].selected = true;
 				this.piechart.addSeries({

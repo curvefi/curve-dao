@@ -501,7 +501,13 @@
                 let aggcalls = await contract.multicall.methods.aggregate(calls).call()
                 let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
                 let poolRates = calls.map((call, i) => [call[0], decoded[i]])
-                return poolRates.reduce((a, b) => +a[1] > +b[1] ? a : b)
+                return poolRates.reduce((a, b) => {
+                    if(b[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
+                        let precisions = this.precisions(this.to_currency)
+                        return (+a[1] / precisions > (+b[1] / precisions + 2)) ? a : b 
+                    }
+                    else return +a[1] > +b[1] ? a : b
+                })
             },
             async comparePools() {
                 let pools = this.pools;

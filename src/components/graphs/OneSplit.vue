@@ -296,12 +296,6 @@
                     this.fromBgColor = 'blue'
             },
             async from_cur_handler() {
-                if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', onesplit_address).call())
-                        > contract.max_allowance.div(BN(2)))
-                    this.inf_approval = true;
-                else
-                    this.inf_approval = false;
-
                 await this.set_from_amount(this.from_currency);
                 await this.set_to_amount();
             },
@@ -608,6 +602,11 @@
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
                         this.bestPool = 5
                     }
+                    let address = this.swap[this.bestPool]._address
+                    if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))
+                        this.inf_approval = true;
+                    else
+                        this.inf_approval = false;
                     //show converted exchange rate when swapping wrapped coins?
                     this.setExchangeRate(exchangeRate)
                     this.toInput = BN(this.fromInput).times(BN(exchangeRate)).toFixed(2);
@@ -638,6 +637,8 @@
                     this.swap.push(new contract.web3.eth.Contract(contractAbis[pool].swap_abi, contractAbis[pool].swap_address))
                     this.addresses.push({address: contractAbis[pool].swap_address, pool: pool})
                 }
+
+                this.swap.push(this.onesplit)
 
                 this.coins.push(new contract.web3.eth.Contract(cERC20_abi, contractAbis.compound.coins[0]))
                 this.coins.push(new contract.web3.eth.Contract(cERC20_abi, contractAbis.compound.coins[1]))

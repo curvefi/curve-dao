@@ -125,6 +125,32 @@
 			}
 		},
 		async mounted() {
+			this.$watch(()=>volumeStore.state.allVolume.susd.length, val => {
+				if(val) {
+					let volumeSeries = []
+					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
+					let data = volumeStore.state.allVolume
+					data.susdv2 = new Array(1000-data.susd.length).fill({}).concat(data.susd)
+					for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
+						volumeSeries.push([
+							volumeStore.state.allVolume.compound[i][0],
+							allPools.map(p=>{
+								p = p == 'susd' ? 'susdv2' : p
+								return volumeStore.state.allVolume[p][i] && volumeStore.state.allVolume[p][i][1] || 0
+							}).reduce((a ,b) => (+a) + (+b), 0)
+						])
+					}
+
+					this.chart.addSeries({
+			        	type: 'column',
+						name: 'Volume',
+						data: volumeSeries,
+						color: '#0b0a57',
+						yAxis: 1,
+					})
+				}
+
+			})
 			this.chart = this.$refs.highcharts.chart
 			var start = new Date();
 			start.setHours(0,0,0,0);
@@ -163,23 +189,6 @@
 			requests = await Promise.all(requests)
 			let jsons = await Promise.all(requests.map(r => r.json()))
 			console.log(jsons)*/
-			let volumeSeries = []
-			let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
-
-			for(let i = 0; i < volumeStore.state.allVolume.compound.length; i ++) {
-				volumeSeries.push([
-					volumeStore.state.allVolume.compound[i][0],
-					allPools.map(p=>volumeStore.state.allVolume[p][i] && volumeStore.state.allVolume[p][i][1] || 0).reduce((a ,b) => (+a) + (+b), 0)
-				])
-			}
-
-			this.chart.addSeries({
-	        	type: 'column',
-				name: 'Volume',
-				data: volumeSeries,
-				color: '#0b0a57',
-				yAxis: 1,
-			})
 
             volumeStore.getVolumes(Object.values(this.pools));
 		},

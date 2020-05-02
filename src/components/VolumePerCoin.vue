@@ -3,6 +3,9 @@
 		<div class='window white'>
 			<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		</div>
+		<div class='window white'>
+			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
+		</div>
 		<div v-for='(currency, n) in currencies'>
 			<volume-per-coin-stats :data = 'volumes[n]' :currency = 'currency'></volume-per-coin-stats>
 		</div>
@@ -125,9 +128,43 @@
 	            	enabled: true,
 	            }
 			},
+			piechartdata: {
+				chart: {
+			        plotBackgroundColor: null,
+			        plotBorderWidth: null,
+			        plotShadow: false,
+			        type: 'pie'
+			    },
+			    title: {
+			        text: 'Share of volume per coin for last week'
+			    },
+			    tooltip: {
+			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+			    },
+			    accessibility: {
+			        point: {
+			            valueSuffix: '%'
+			        }
+			    },
+			    plotOptions: {
+			        pie: {
+			            allowPointSelect: true,
+			            cursor: 'pointer',
+			            dataLabels: {
+			                enabled: true,
+			                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+			            }
+			        }
+			    },
+			    series: [],
+			    legend: {
+			    	enabled: true,
+			    }
+			},
 			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
 			volumes: [],
 			chart: null,
+			piechart: null,
 		}),
 		async created() {
 			let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
@@ -147,6 +184,9 @@
 		async mounted() {
 			this.chart = this.$refs.highcharts.chart;
 			this.chart.showLoading();
+
+			this.piechart = this.$refs.piecharts.chart;
+			this.piechart.showLoading()
 		},
 		methods: {
 			async mounted() {
@@ -157,6 +197,31 @@
 					})
 				}
 				this.chart.hideLoading();
+				let filtered = this.volumes.map(vol=> {
+					return vol.filter(data=>{
+						return data[0] > Date.now() - 604800000
+					})
+					.map(data => data[1])
+					.reduce((a, b) => {
+						return (+a) + (+b)
+					}, 0)
+				})
+				let piechartdata = []
+				this.volumes
+					.map(vol=>vol.filter(data=>data[0] > Date.now() / 1000 - 604800000)
+									.map(data => data[1])
+									.reduce((a, b) => (+a) + +(b), 0))
+					.forEach((vol, i, arr) => {
+						piechartdata.push({
+							name: this.currencies[i],
+							y: (vol / arr.reduce((a, b) => a + b, 0)) * 100
+						})
+					})
+				this.piechart.addSeries({
+					name: 'Volume %',
+					data: piechartdata,
+				})
+				this.piechart.hideLoading()
 			}
 		}
 	}

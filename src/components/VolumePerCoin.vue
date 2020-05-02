@@ -170,8 +170,8 @@
 			let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
 			await volumeStore.fetchVolumeData(pools, false, 1440)
 			let data = volumeStore.state.volumeData[1440]
-			data.busd = (new Array(68-data.busd.length).fill({})).concat(data.busd)
-			data.susd = (new Array(68-data.susd.length).fill({})).concat(data.susd)
+			data.busd = (new Array(data.compound.length-data.busd.length).fill({})).concat(data.busd)
+			data.susd = (new Array(data.compound.length-data.susd.length).fill({})).concat(data.susd)
 			pools = Object.entries(data)
 
 			this.volumes = await volumeWorker.getVolumePerCoin(data, pools, allabis)

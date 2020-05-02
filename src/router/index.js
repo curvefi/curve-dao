@@ -21,6 +21,7 @@ const Audits = () => import('../views/Audits.vue')
 const Contracts = () => import('../views/Contracts.vue')
 const CurvePay = () => import('../components/CurvePay.vue')
 const Events = () => import('../components/Events.vue')
+const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
 
 import Index from '../components/Index.vue'
 
@@ -90,6 +91,11 @@ let routes = [
         path: 'events',
         name: 'Events',
         component: Events,
+      },
+      {
+        path: 'volumepercoin',
+        name: 'VolumePerCoin',
+        component: VolumePerCoin,
       }
     ]
   },

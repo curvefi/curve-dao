@@ -13,4 +13,39 @@ let calcPriceWrapped = (config, fromCurrency, toCurrency, precisions, usefee = f
 	return calc.get_dy(fromCurrency,toCurrency,precisions,usefee).toString(10)
 }
 
-Comlink.expose({calcPrice:calcPrice, calcPriceWrapped:calcPriceWrapped});
+let normalizeCoinIdx = (i, pool) => {
+	if(pool == 'susd' && i == 3) return 5;
+	if(pool == 'busd' && i == 3) return 4;
+	return i;
+}
+
+let getVolumePerCoin = (data, pools, allabis) => {
+	let volumes = [[],[],[],[],[],[]]
+	for(let i = 0; i < data.compound.length; i++) {
+		let timestamp = data.compound[i].timestamp
+		for(let j = 0; j < pools.length; j++) {
+			let key = Object.keys(data)[j]
+			let v = data[key][i]
+			if(Object.keys(v).length === 0 && v.constructor === Object) continue;
+			let vol = Object.entries(v.volume)
+			for(let [pair, val] of vol) {
+				let [m, n] = pair.split('-')
+				let volSold = val[0]
+				let volBought = val[1]
+				let normM = normalizeCoinIdx(m, key)
+				let normN = normalizeCoinIdx(n, key)
+				volumes[normM].push([
+					v.timestamp * 1000,
+					volSold / allabis[key == 'y' ? 'iearn' : key == 'susd' ? 'susdv2' : key].coin_precisions[m]
+				])
+				volumes[normN].push([
+					v.timestamp * 1000,
+					volBought / allabis[key == 'y' ? 'iearn' : key == 'susd' ? 'susdv2' : key].coin_precisions[n]
+				])
+			}
+		}
+	}
+	return volumes
+}
+
+Comlink.expose({calcPrice:calcPrice, calcPriceWrapped:calcPriceWrapped, getVolumePerCoin});

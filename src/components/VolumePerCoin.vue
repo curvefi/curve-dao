@@ -168,9 +168,10 @@
 		}),
 		async created() {
 			let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
-			await volumeStore.fetchVolumeData(pools, false, 30)
-			let data = volumeStore.state.volumeData[30]
-			data.susd = (new Array(1000-data.susd.length).fill({})).concat(data.susd)
+			await volumeStore.fetchVolumeData(pools, false, 1440)
+			let data = volumeStore.state.volumeData[1440]
+			data.busd = (new Array(68-data.busd.length).fill({})).concat(data.busd)
+			data.susd = (new Array(68-data.susd.length).fill({})).concat(data.susd)
 			pools = Object.entries(data)
 
 			this.volumes = await volumeWorker.getVolumePerCoin(data, pools, allabis)
@@ -197,9 +198,14 @@
 					})
 				}
 				this.chart.hideLoading();
+
+				let day = 24 * 60 * 60 * 1000
+				let week = 7 * day
+				let month = 30.42 * day
+				let all = Date.now()
 				let filtered = this.volumes.map(vol=> {
 					return vol.filter(data=>{
-						return data[0] > Date.now() - 604800000
+						return data[0] > Date.now() - week
 					})
 					.map(data => data[1])
 					.reduce((a, b) => {

@@ -23,6 +23,13 @@ export const state = Vue.observable({
 			y: [],
 			busd: [],
 			susd: [],
+		},
+		1440: {
+			compound: [],
+			usdt: [],
+			y: [],
+			busd: [],
+			susd: [],
 		}
 	},
 	allVolume: {

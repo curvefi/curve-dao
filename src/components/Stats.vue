@@ -70,6 +70,7 @@
 			apr: '',
 			daily_apr: '',
 			weekly_apr: '',
+			monthly_apr: '',
 			chartdata: {
 				chart: {
 					panning: true,

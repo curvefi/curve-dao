@@ -134,7 +134,7 @@
         return currentContract.virtual_price || 0
       },
       totalBalances() {
-        return this.bal_info.reduce((a, b) => a + b, 0)
+        return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
       },
       usdShare() {
         return getters.usdShare()

@@ -20,7 +20,10 @@
             <!-- <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <router-link to='/'>Home</router-link>
+            <router-link to='/trade'>Trade</router-link>
             <router-link to='/combinedstats'>All stats</router-link>
+            <router-link to='/dailystats'>Daily stats</router-link>
+            <router-link to='/volumepercoin'>Coin volumes</router-link>
             <a href="https://twitter.com/CurveFinance">#Twitter</a>
             <a href="https://t.me/curvefi">@Telegram</a>
             <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>

@@ -20,6 +20,7 @@
 <!--             <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
+            <button class='simplebutton walletlink' @click = 'walletLink'>Wallet link</button>
         </div>
       </div>
 
@@ -66,7 +67,7 @@
 
 <script>
   import { getters, contract as currentContract, changeContract, poolMenu } from '../../contract'
-  import init, { onboard } from '../../init'
+  import init, { onboard, walletLink, initWalletLink } from '../../init'
 
   export default {
     metaInfo: {
@@ -100,11 +101,18 @@
         changeContract(pool)
       },
       async changeAccounts() {
+        let selectedWallet = localStorage.getItem('selectedWallet')
+        if(selectedWallet == 'walletlink') walletLink.disconnect()
         if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
-      }
+      },
+      async changeWalletLink() {
+        currentContract.totalShare = 0
+        currentContract.totalStake = -1
+        init(true, null, true)
+      },
     },
   }
 </script>

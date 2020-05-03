@@ -936,3 +936,7 @@ input[type=range]:focus::-ms-fill-upper {
 .snxrewards > li {
   display: block;
 }
+
+.walletlink {
+  margin-top: 3px;
+}

@@ -26,6 +26,7 @@
             <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
+            <button class='simplebutton walletlink' @click = 'changeWalletLink'>Wallet link</button>
         </div>
       </div>
 
@@ -86,7 +87,7 @@
 <script>
   import BalancesInfo from '../components/BalancesInfo.vue'
   import { getters, contract as currentContract, changeContract, poolMenu } from '../contract'
-  import init, { onboard } from '../init'
+  import init, { onboard, walletLink, initWalletLink } from '../init'
   import allabis from '../allabis'
 
   export default {
@@ -113,10 +114,17 @@
         changeContract(pool)
       },
       async changeAccounts() {
+        let selectedWallet = localStorage.getItem('selectedWallet')
+        if(selectedWallet == 'walletlink') walletLink.disconnect()
         if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
+      },
+      async changeWalletLink() {
+        currentContract.totalShare = 0
+        currentContract.totalStake = -1
+        init(true, null, true)
       },
     },
   }

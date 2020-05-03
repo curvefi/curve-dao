@@ -41,6 +41,54 @@ import { multicall_address, multicall_abi } from './allabis'
   providerOptions // required
 });*/
 
+
+
+const wallets = [
+  { walletName: "metamask" },
+  {
+    walletName: "trezor",
+    appUrl: "https://beta.curve.fi",
+    email: "info@curve.fi",
+    rpcUrl:
+      "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
+  },
+  {
+    walletName: "ledger",
+    rpcUrl:
+      "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
+  },
+  { walletName: "dapper" },
+  { walletName: "coinbase" },
+  { walletName: "status" },
+  { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
+  { walletName: "authereum" },
+  { walletName: "trust" },
+  {
+    walletName: "walletConnect",
+    infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"
+  },
+  { 
+    walletName: "walletLink",
+    appName: 'Curve Finance',
+    appLogoUrl: 'https://www.curve.fi/logo.svg',
+    rpcUrl:
+      "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",
+  },
+  {
+    walletName: "portis",
+    apiKey: "a3bb2525-5101-4a9c-b300-febc6319c3b4"
+  },
+  { walletName: "torus" },
+  { walletName: "squarelink", apiKey: "db2074f87c34f247593c" },
+  { walletName: "opera" },
+  { walletName: "operaTouch" },
+  { walletName: "unilogin" },
+]
+
+if(web3 && web3.currentProvider.isTrust) {
+  wallets.find(wallet => wallet.walletName == 'trust').preferred = true
+}
+
 export const onboard = Onboard({
   dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
   networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.
@@ -68,47 +116,7 @@ export const onboard = Onboard({
     }
   },
   walletSelect: {
-    wallets: [
-      { walletName: "metamask" },
-      {
-        walletName: "trezor",
-        appUrl: "https://beta.curve.fi",
-        email: "info@curve.fi",
-        rpcUrl:
-          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
-      },
-      {
-        walletName: "ledger",
-        rpcUrl:
-          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b"
-      },
-      { walletName: "dapper" },
-      { walletName: "coinbase" },
-      { walletName: "status" },
-      {
-        walletName: "portis",
-        apiKey: "a3bb2525-5101-4a9c-b300-febc6319c3b4"
-      },
-      { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
-      { walletName: "torus" },
-      { walletName: "squarelink", apiKey: "db2074f87c34f247593c" },
-      { walletName: "authereum" },
-      { walletName: "trust" },
-      {
-        walletName: "walletConnect",
-        infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"
-      },
-      { walletName: "opera" },
-      { walletName: "operaTouch" },
-      { walletName: "unilogin" },
-      { 
-        walletName: "walletLink",
-        appName: 'Curve Finance',
-        appLogoUrl: 'https://www.curve.fi/logo.svg',
-        rpcUrl:
-          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",
-      }
-    ]
+    wallets: wallets,
   },
   walletCheck: [
     { checkName: 'connect' },

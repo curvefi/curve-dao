@@ -113,8 +113,6 @@
         changeContract(pool)
       },
       async changeAccounts() {
-        let selectedWallet = localStorage.getItem('selectedWallet')
-        if(selectedWallet == 'walletlink') walletLink.disconnect()
         if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0

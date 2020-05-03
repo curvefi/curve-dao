@@ -20,7 +20,6 @@
 <!--             <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
-            <button class='simplebutton walletlink' @click = 'walletLink'>Wallet link</button>
         </div>
       </div>
 
@@ -101,8 +100,6 @@
         changeContract(pool)
       },
       async changeAccounts() {
-        let selectedWallet = localStorage.getItem('selectedWallet')
-        if(selectedWallet == 'walletlink') walletLink.disconnect()
         if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0

@@ -238,7 +238,6 @@
             async from_cur_handler() {
                 let currentAllowance = cBN(await this.coins[this.from_currency].methods.allowance(this.default_account, currentContract.swap_address).call())
                 let maxAllowance = currentContract.max_allowance.div(cBN(2))
-                console.log(currentAllowance, maxAllowance, currentAllowance.gt(maxAllowance))
                 if (currentAllowance.gt(maxAllowance))
                     this.inf_approval = true;
                 else

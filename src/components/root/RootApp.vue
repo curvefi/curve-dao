@@ -67,7 +67,7 @@
 
 <script>
   import { getters, contract as currentContract, changeContract, poolMenu } from '../../contract'
-  import init, { onboard, walletLink, initWalletLink } from '../../init'
+  import init, { onboard } from '../../init'
 
   export default {
     metaInfo: {
@@ -107,11 +107,6 @@
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
-      },
-      async changeWalletLink() {
-        currentContract.totalShare = 0
-        currentContract.totalStake = -1
-        init(true, null, true)
       },
     },
   }

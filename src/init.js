@@ -6,7 +6,6 @@ import Authereum from "authereum";
 import BurnerConnectProvider from "@burner-wallet/burner-connect-provider";
 */
 import Onboard from 'bnc-onboard'
-import WalletLink from 'walletlink'
 
 import * as common from './utils/common.js'
 import * as state from './contract.js'
@@ -102,9 +101,18 @@ export const onboard = Onboard({
       { walletName: "opera" },
       { walletName: "operaTouch" },
       { walletName: "unilogin" },
+      { 
+        walletName: "walletLink",
+        appName: 'Curve Finance',
+        appLogoUrl: 'https://www.curve.fi/logo.svg',
+        rpcUrl:
+          "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",
+      }
     ]
   },
   walletCheck: [
+    { checkName: 'connect' },
+    { checkName: 'network' },
     { checkName: 'derivationPath' },
     { checkName: 'accounts' },
   ],
@@ -121,16 +129,10 @@ async function init(init = true, name, walletlink = false) {
   window.web3provider = web3;*/
   try {
     state.contract.initializedContracts = false;
-    let selectedWallet = localStorage.getItem('selectedWallet')
-    if(selectedWallet != 'walletlink' && !walletlink) {
-      let userSelectedWallet = await onboard.walletSelect(selectedWallet);
-      if(userSelectedWallet) await onboard.walletCheck();
-      else window.web3 = new Web3(infura_url)
-      state.contract.web3 = window.web3
-    }
-    else {
-      initWalletLink();
-    }
+    let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
+    if(userSelectedWallet) await onboard.walletCheck();
+    else window.web3 = new Web3(infura_url)
+    state.contract.web3 = window.web3
     state.contract.multicall = new state.contract.web3.eth.Contract(multicall_abi, multicall_address)
 
     var default_account = (await state.contract.web3.eth.getAccounts())[0];
@@ -143,22 +145,6 @@ async function init(init = true, name, walletlink = false) {
     console.error(err)
   }
 
-}
-
-export const walletLink = new WalletLink({
-  appName: "Curve Finance",
-  appLogoUrl: "https://www.curve.fi/logo.svg",
-  darkMode: false
-})
-
-export let walletlinketh;
-export let walletlinkweb3
-
-export async function initWalletLink() {
-  walletlinketh = walletLink.makeWeb3Provider('https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b', 1)
-  state.contract.web3 = window.web3 = new Web3(walletlinketh)
-  state.contract.default_account = (await walletlinketh.send('eth_requestAccounts'))[0]
-  localStorage.setItem('selectedWallet', 'walletlink')
 }
 
 export default init;

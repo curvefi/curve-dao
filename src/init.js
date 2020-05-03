@@ -85,7 +85,7 @@ const wallets = [
   { walletName: "unilogin" },
 ]
 
-if(web3 && web3.currentProvider.isTrust) {
+if(window.web3 && window.web3.currentProvider.isTrust) {
   wallets.find(wallet => wallet.walletName == 'trust').preferred = true
 }
 

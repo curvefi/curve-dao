@@ -599,7 +599,6 @@
                         bestdy_ = dy_
                         let [pool1, exchangeRate1, dy_1split] = result[1]
                         let useOneSplit = ((this.fromInput * exchangeRate1) - (this.fromInput * exchangeRate)) > 2
-                        console.log(this.fromInput * exchangeRate1, this.fromInput*exchangeRate)
                         if(exchangeRate < exchangeRate1 && useOneSplit) {
                             exchangeRate = exchangeRate1
                             pool = '1split'

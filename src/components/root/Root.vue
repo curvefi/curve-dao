@@ -160,7 +160,7 @@
 			BasicTrade,
 		},
 		data: () => ({
-			activePoolLink: 0,
+			activePoolLink: -1,
 			pools: ['compound','usdt','y','busd'],
 			daily_apy: [],
 			weekly_apy: [],
@@ -214,6 +214,7 @@
 			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement) return;
+				if(this.activePoolLink == -1) return this.activePoolLink = 0
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
 	                e.preventDefault();
 	                this.activePoolLink--;

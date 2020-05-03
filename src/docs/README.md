@@ -138,6 +138,45 @@ wasn't accepted for too long.
 
 Used to exchange `DAI<>USDC` (and analogues in future deployments).
 
+## Calculating approximate token amount to mint/burn for deposit/withdrawal
+```python
+def calc_token_amount(amounts: uint256[N_COINS], deposit: bool) -> uint256:
+```
+This read-only method accepts an array of `amounts` and a `deposit` bool param 
+and returns an approximate amount of pool tokens you'll receive.
+
+## Depositing into the pool
+
+```python
+def add_liquidity(amounts: uint256[N_COINS], min_mint_amount: uint256):
+```
+
+This method accepts an array of `amounts` to deposit and minimum amount `min_mint_amount` 
+of pool tokens to receive. It reverts if minted tokens are less than specified `min_mint_amount`.
+You can calculate the `min_mint_amount` using `calc_token_amount` for the same inputs and multiplying
+by 99% for example.
+
+## Withdrawing share from the pool
+
+```python
+def remove_liquidity(_amount: uint256, min_amounts: uint256[N_COINS]):
+```
+
+This method accepts a token amount `_amount` to withdraw from the pool and an array of
+minimum coin amounts `min_amounts` to receive. Reverts if any of the received coin amounts
+is less than specified.
+
+```python
+def remove_liquidity_imbalance(amounts: uint256[N_COINS], max_burn_amount: uint256):
+```
+
+This method is used when you want to remove liquidity from the pool in uneven amounts. That can give
+**slippage** or **bonus** depending on if the coin is low or high in the pool.
+
+This method accepts an array of coin amounts to remove from the pool and max amount of pool tokens to burn
+`max_burn_amount`. Reverts if amount of burned pool tokens is bigger than specified `max_burn_amount`.
+
+
 ## Bonus: measuring profits
 
 ```python

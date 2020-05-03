@@ -166,6 +166,8 @@ This method accepts a token amount `_amount` to withdraw from the pool and an ar
 minimum coin amounts `min_amounts` to receive. Reverts if any of the received coin amounts
 is less than specified.
 
+## Withdrawing in imbalance from the pool
+
 ```python
 def remove_liquidity_imbalance(amounts: uint256[N_COINS], max_burn_amount: uint256):
 ```

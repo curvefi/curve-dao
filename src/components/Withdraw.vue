@@ -72,6 +72,18 @@
 	            </li>
         	</ul>
         </fieldset>
+        <div id='max_slippage' v-show='showWithdrawSlippage'><span>Max slippage:</span> 
+            <input id="slippage05" type="radio" name="slippage" value='1' v-model='maxSlippage'>
+            <label for="slippage05">1%</label>
+
+            <input id="slippage1" type="radio" name="slippage" checked value='3' v-model='maxSlippage'>
+            <label for="slippage1">3%</label>
+
+            <input id="custom_slippage" type="radio" name="slippage" value='-' @click='customippageDisabled = false'>
+            <label for="custom_slippage" @click='customSlippageDisabled = false'>
+                <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
+            </label>
+        </div>
         <div id='withdraw_buttons'>
             <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
 	        	You don't have any available amount to withdraw
@@ -145,6 +157,10 @@
     		showstaked: false,
             show_loading: false,
             waitingMessage: '',
+            showWithdrawSlippage: false,
+            maxSlippage: 3,
+            maxInputSlippage: '',
+            customSlippageDisabled: true,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -180,7 +196,12 @@
          	},
          	nobalance() {
          		return this.staked_balance && this.token_balance.plus(this.staked_balance).eq(BN(0))
-         	}
+         	},
+            getMaxSlippage() {
+                let maxSlippage = this.maxSlippage;
+                if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
+                return (100 - maxSlippage)/100
+            }
         },
         mounted() {
         	if(this.currentPool == 'susdv2') {
@@ -288,6 +309,7 @@
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
+                this.showWithdrawSlippage = true
                 this.show_nobalance = false
 				if(event) {
 					this.inputs[i] = event.target.value
@@ -345,7 +367,7 @@
 				await common.update_fee_info();
 				let min_amounts = []
 				for(let i = 0; i < currentContract.N_COINS; i++) {
-			    	min_amounts[i] = BN(0.97).times(this.share/100).times(BN(this.balances[i]))
+			    	min_amounts[i] = BN(this.getMaxSlippage).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {
 						min_amounts[i] = min_amounts[i]
 										.times(allabis[currentContract.currentContract].coin_precisions[i])
@@ -476,7 +498,7 @@
 			        	await currentContract.deposit_zap.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
-    							BN(min_amount).times(BN(0.97)).toFixed(0, 1), 
+    							BN(min_amount).times(BN(this.getMaxSlippage)).toFixed(0, 1), 
     							this.donate_dust)
 			        		.send({
 			        			from: currentContract.default_account,
@@ -524,8 +546,10 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
+                this.showWithdrawSlippage = false
                 this.show_nobalance = false
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
+                if(this.to_currency != 10 && this.to_currency != null) this.showWithdrawSlippage = true
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

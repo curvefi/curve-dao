@@ -8,7 +8,7 @@
 						<input type='text' :style = "{backgroundColor: bgColor}" v-model='amount' id='payamount'>
 					</div>
 					<select class='tvision' v-model = 'token' >
-						<option v-for = '(v, i) in tokenNames' :value='v'>{{v}} {{balances[i] && (balances[i] / 1e18).toFixed(2)}}</option>
+						<option v-for = '(v, i) in tokenNames' :value='v'>{{v}} {{balances[i] && '$' + (balances[i] * virtual_prices[i] / 1e36).toFixed(2)}}</option>
 					</select>
 					<div id='balance' @click='setMaxBalance'>
 						Balance: {{(currentBalance / 1e36 ).toFixed(2)}}$

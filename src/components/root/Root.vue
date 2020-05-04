@@ -213,7 +213,8 @@
 				this.snxRewards = 365 * 64000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
 			},
 			handle_pool_change(e) {
-				if(document.querySelector('#from_currency') == document.activeElement) return;
+				if(document.querySelector('#from_currency') == document.activeElement 
+					|| document.querySelector('#custom_slippage_input') == document.activeElement) return;
 				if(this.activePoolLink == -1) return this.activePoolLink = 0
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
 	                e.preventDefault();

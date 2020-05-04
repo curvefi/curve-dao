@@ -206,8 +206,17 @@
         		return '0.00'
         	},
             setInputStyles(newInputs = false, newContract, oldContract) {
-	        	if(oldContract) this.inputs = this.inputs.map((v, i) => i > allabis[oldContract].N_COINS ? '0.00' : this.inputs[i])
-				if(newInputs) this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+	        	if(oldContract) {
+                    for(let i = 0; i < allabis[newContract].N_COINS - allabis[oldContract].N_COINS; i++) {
+                        this.inputs.push('0.00')
+                    }
+                    if(allabis[oldContract].N_COINS - allabis[newContract].N_COINS > 0) {
+                        this.inputs = this.inputs.filter((_, i) => i < allabis[newContract].N_COINS)
+                    }
+                }
+                else if(newInputs) {
+                    this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+                }
 	        	this.inputStyles = Array(Object.keys(this.currencies).length).fill({
 	        		backgroundColor: '#707070',
 	        		color: '#d0d0d0',
@@ -272,6 +281,7 @@
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
+                this.show_nobalance = false
 				if(event) {
 					this.inputs[i] = event.target.value
 					return;
@@ -285,18 +295,18 @@
 		        let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 		        calls.push([currentContract.swap._address ,currentContract.swap.methods.calc_token_amount(values, false).encodeABI()])
 		        calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
-		        let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-		        let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
-		        decoded.slice(0, currentContract.N_COINS).forEach((v, i) => {
-		        	let coin_balance = +v * currentContract.c_rates[i]
-		            if(coin_balance < this.inputs[i]) {
-		                this.show_nobalance |= true;
-		                this.show_nobalance_i = i;
-		            }
-		            else
-		                this.show_nobalance |= false;
-		        })
 		        try {
+                    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+                    decoded.slice(0, currentContract.N_COINS).forEach((v, i) => {
+                        let coin_balance = +v * currentContract.c_rates[i]
+                        if(coin_balance < this.inputs[i]) {
+                            this.show_nobalance |= true;
+                            this.show_nobalance_i = i;
+                        }
+                        else
+                            this.show_nobalance |= false;
+                    })
 		            var availableAmount = BN(decoded[decoded.length-2])
 		            availableAmount = availableAmount.div(BN(1 - currentContract.fee * currentContract.N_COINS / (4 * (currentContract.N_COINS - 1))))
 		            var maxAvailableAmount = BN(decoded[decoded.length-1]);
@@ -316,6 +326,10 @@
 		        }
 		        catch(err) {
 		            console.error(err)
+                    this.show_nobalance = true;
+                    this.show_nobalance_i = currentContract.bal_info.findIndex((balance, i) => {
+                        return +this.inputs[i] > +balance
+                    });
 		            this.setAllInputBackground('red')
 		        }
 			},
@@ -503,6 +517,7 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
+                this.show_nobalance = false
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
@@ -525,8 +540,10 @@
 					}
 					catch(err) {
 						console.error(err)
-						this.show_nobalance = true;
-						this.show_nobalance_i = this.to_currency;
+                        if(this.share != '') {
+    						this.show_nobalance = true;
+    						this.show_nobalance_i = this.to_currency;
+                        }
 					}
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)

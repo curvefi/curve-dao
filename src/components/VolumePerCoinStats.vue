@@ -71,7 +71,7 @@
 	            yAxis: {
 	            	opposite: false,
 	            	title: {
-	            		text: 'Volume',
+	            		text: 'Trading Volume',
 	            		style: {
 	            			color: 'black'
 	            		}
@@ -91,7 +91,7 @@
 	            	},
 	            },
 		        series: [{
-		        	name: 'Volume per coin',
+		        	name: 'Trading Volume per coin',
 		        	lineWidth: 2,
 		        	data: [],
 		        	color: '#0b0a57'
@@ -117,7 +117,7 @@
 			this.chart = this.$refs.highcharts.chart;
 			this.chart.showLoading()
 			this.chart.setTitle({
-				text: `Total volume per day for ${this.currency}`,
+				text: `Total trading volume per day for ${this.currency}`,
 			})
 		},
 		

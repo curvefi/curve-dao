@@ -15,7 +15,7 @@
 		        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
-	    	<p v-show = "pool != 'susd'">Daily volume: 
+	    	<p v-show = "pool != 'susd'">Daily trading volume: 
 	    		<span :class="{'loading line': volumeData < 0}">
 	    			<span v-show='volumeData >= 0'> {{(volumeData | 0) | formatNumber}}$</span>	
 	    		</span>

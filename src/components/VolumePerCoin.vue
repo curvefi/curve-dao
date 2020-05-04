@@ -92,7 +92,7 @@
 	            yAxis: {
 	            	opposite: false,
 	            	title: {
-	            		text: 'Total volume per day per coin',
+	            		text: 'Total trading volume per day per coin',
 	            		style: {
 	            			color: 'black'
 	            		},
@@ -136,7 +136,7 @@
 			        type: 'pie'
 			    },
 			    title: {
-			        text: 'Share of volume per coin for last week'
+			        text: 'Share of trading volume per coin for last week'
 			    },
 			    tooltip: {
 			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -226,7 +226,7 @@
 				piechartdata[highest].sliced = true;
 				piechartdata[highest].selected = true;
 				this.piechart.addSeries({
-					name: 'Volume %',
+					name: 'Trading Volume %',
 					data: piechartdata,
 				})
 				this.piechart.hideLoading()

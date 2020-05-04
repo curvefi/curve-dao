@@ -2,7 +2,7 @@
 	<div>
  		<div class='window white'>
  			<fieldset>
- 				<legend>Daily APY % and volume <span class='tooltip'>[?]<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span></legend>
+ 				<legend>Daily APY % and trading volume <span class='tooltip'>[?]<span class='tooltiptext long'>Daily Pool APY + Lending APY (annualized)</span></span></legend>
  				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
  			</fieldset>
  		</div>
@@ -83,7 +83,7 @@
 		            	//type: 'logarithmic',
 		            	opposite: false,
 		            	title: {
-		            		text: 'Volume',
+		            		text: 'Trading volume',
 		            		style: {
 		            			color: 'black'
 		            		},
@@ -105,7 +105,7 @@
 	                valueDecimals: 3,
 	                pointFormatter() {
                 		let value = Math.floor(this.y * 100) / 100 + '%';
-                		if(this.series.name == 'Volume') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${this.y.toFixed(0)}</b><br/>`
+                		if(this.series.name == 'Trading Volume') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${this.y.toFixed(0)}</b><br/>`
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
@@ -143,7 +143,7 @@
 
 					this.chart.addSeries({
 			        	type: 'column',
-						name: 'Volume',
+						name: 'Trading Volume',
 						data: volumeSeries,
 						color: '#0b0a57',
 						yAxis: 1,

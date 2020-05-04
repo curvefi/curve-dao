@@ -2,7 +2,7 @@
 	<fieldset>
 		<legend>Daily APY % <span class='tooltip'>[?]<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span></legend>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-    	<p v-show='volume != -1'>Daily volume: 
+    	<p v-show='volume != -1'>Daily trading volume: 
     		<span :class="{'loading line': !volume}">
     			<span v-show='volume'> {{(volume | 0) | formatNumber}}$</span>	
     		</span>
@@ -102,7 +102,7 @@
 		            	//type: 'logarithmic',
 		            	opposite: false,
 		            	title: {
-		            		text: 'Volume',
+		            		text: 'Trading Volume',
 		            		style: {
 		            			color: 'black'
 		            		},
@@ -140,7 +140,7 @@
                 		let value = Math.floor(this.y * 100) / 100 + '%';
 	                	if(this.series.name == 'Daily APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-	                	if(this.series.name === 'Volume') return `<span style="color:${this.color}">●</span> ${this.series.name} : <b>${this.y.toFixed(2)}</b><br/>`
+	                	if(this.series.name === 'Trading Volume') return `<span style="color:${this.color}">●</span> ${this.series.name} : <b>${this.y.toFixed(2)}</b><br/>`
 	                }
 	            },
 	            legend: {
@@ -196,7 +196,7 @@
 
 		        this.chart.addSeries({
 		        	type: 'column',
-		        	name: 'Volume',
+		        	name: 'Trading Volume',
 		        	data: volumeSeries,
 		        	color: '#0b0a57',
 		        	yAxis: 'volumeAxis',

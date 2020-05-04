@@ -67,6 +67,7 @@
                 	@click = 'deposit_stake'>
                 	Deposit and stake
                 </button>
+                <button id='stakeunstaked' v-show='totalShare > 0' @click='stakeTokens()'>Stake unstaked</button>
                 <div id='mintr' v-show="currentPool == 'susdv2'">
 	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
 	            </div>
@@ -146,6 +147,20 @@
             if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
+        	async stakeTokens(tokens) {
+        		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
+        		this.waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
+				await common.ensure_stake_allowance(tokens);
+				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
+					from: currentContract.default_account,
+					gas: 200000,
+				})
+				currentContract.totalShare = 0
+				this.waitingMessage = ''
+				this.show_loading = false;
+			},
+
             async mounted(oldContract) {
 
             	if(['susd', 'susdv2'].includes(currentContract.currentContract)) this.depositc = true;
@@ -335,15 +350,7 @@
 									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
 									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
 						})[0].raw.data)
-					this.waitingMessage = `Please approve staking ${minted.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
-					await common.ensure_stake_allowance(minted)
-					this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
-					await currentContract.curveRewards.methods.stake(minted.toFixed(0,1)).send({
-						from: currentContract.default_account,
-						gas: 200000,
-					})
-					this.waitingMessage = ''
-					this.show_loading = false;
+					await this.stakeTokens(minted)
 				}
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
@@ -408,4 +415,7 @@
 		margin-left: 1em;
 		text-align: center;
 	}
+ 	#stakeunstaked {
+ 		margin-left: 1em;
+    }
 </style>

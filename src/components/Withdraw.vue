@@ -48,7 +48,14 @@
             </ul>
         </fieldset>
         <fieldset v-show = "currentPool != 'susd'">
-        	<legend>Withdraw % in:</legend>
+        	<legend>
+                Withdraw % in:
+                <span class='tooltip'> [?]
+                    <span class='tooltiptext long'>
+                        You can also withdraw in one coin by typing in a currency field
+                    </span>
+                </span>
+            </legend>
         	<ul>
         		<li v-show = "currentPool != 'susdv2' ">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>

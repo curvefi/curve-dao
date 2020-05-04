@@ -309,7 +309,7 @@
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
-                this.showWithdrawSlippage = true
+                this.showWithdrawSlippage = false
                 this.show_nobalance = false
 				if(event) {
 					this.inputs[i] = event.target.value
@@ -366,6 +366,7 @@
 				//use update rates instead
 				await common.update_fee_info();
 				let min_amounts = []
+                console.log(this.getMaxSlippage)
 				for(let i = 0; i < currentContract.N_COINS; i++) {
 			    	min_amounts[i] = BN(this.getMaxSlippage).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {
@@ -549,7 +550,7 @@
                 this.showWithdrawSlippage = false
                 this.show_nobalance = false
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
-                if(this.to_currency != 10 && this.to_currency != null) this.showWithdrawSlippage = true
+                if(this.to_currency !== null || this.share != '---') this.showWithdrawSlippage = true
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

@@ -8,12 +8,19 @@
 						<input type='text' :style = "{backgroundColor: bgColor}" v-model='amount' id='payamount'>
 					</div>
 					<select class='tvision' v-model = 'token' >
-						<option v-for = 'v in tokenNames' :value='v'>{{v}}</option>
+						<option v-for = '(v, i) in tokenNames' :value='v'>{{v}} {{balances[i] && (balances[i] / 1e18).toFixed(2)}}</option>
 					</select>
-					<div id='balance'>Balance: {{(currentBalance / 1e36 ).toFixed(2)}}$</div>
+					<div id='balance' @click='setMaxBalance'>
+						Balance: {{(currentBalance / 1e36 ).toFixed(2)}}$
+					</div>
 
 				<div class='flex-break'></div>
-				<div>Amount in {{token}}: {{crvAmount}}</div>
+				<div>
+					Amount in {{token}}: 
+					<span :class="{'loading line': crvAmount == null}"> 
+						<span v-show='crvAmount != null'> {{crvAmount}} </span>
+					</span>
+				</div>
 				<div class='flex-break'></div>
 				<label for='address'>Address:</label>
 				<input type='text' v-model='to' id='address'>
@@ -40,6 +47,7 @@
 			balances: [],
 			virtual_prices: [],
 			amount: '0.00',
+			maxAmount: null,
 			to: null,
 			bgColor: 'blue'
 		}),
@@ -58,6 +66,7 @@
 			},
 			crvAmount() {
 				let index = this.tokenNames.indexOf(this.token)
+				if(!this.virtual_prices[index]) return null;
 				let maxAmount = BN(this.amount).div(BN(this.virtual_prices[index]).div(1e18)).toFixed(2);
 				return maxAmount;
 			}
@@ -70,6 +79,12 @@
 				if(!val) return;
 				this.mounted();
 			})
+			let poolParam = this.$route.params.pool;
+			if(poolParam == 'y') poolParam = 'iearn'
+			if(poolParam) {
+				let tokenIndex = Object.keys(allabis).filter(pool => pool != 'y' && pool != 'susd').indexOf(poolParam)
+				this.token = this.tokenNames[tokenIndex]
+			}
 		},
 		methods: {
 			async mounted() {
@@ -81,6 +96,9 @@
 			async pay() {
 				let index = this.tokenNames.indexOf(this.token)
 				let payAmount = BN(this.amount).times(1e18).div(BN(this.virtual_prices[index])).times(1e18).toFixed(0, 1);
+				if(this.maxAmount.minus(BN(this.amount).times(1e36)).div(1e36).lt(BN(0.01))) {
+					payAmount = this.maxAmount.div(BN(this.virtual_prices[index]))
+				}
 				let allowance = await this.contracts[index].methods.allowance(contract.default_account, this.to).call()
 				await this.contracts[index].methods.transfer(this.to, payAmount)
 						.send({
@@ -104,11 +122,13 @@
 			},
 			highlight_amount() {
 				let index = this.tokenNames.indexOf(this.token)
-				let maxAmount = BN(this.balances[index]).times(BN(this.virtual_prices[index]));
-				console.log(+maxAmount, 'max amount')
-				if(BN(this.amount).times(BN(1e36)).gt(maxAmount)) this.bgColor = 'red'
+				this.maxAmount = BN(this.balances[index]).times(BN(this.virtual_prices[index]));
+				if(BN(this.amount).times(BN(1e36)).gt(this.maxAmount)) this.bgColor = 'red'
 				else this.bgColor = 'blue'
-			}
+			},
+			setMaxBalance() {
+				this.amount = Math.floor((this.currentBalance / 1e36) * 100) / 100;
+			},
 		},
 	}
 </script>
@@ -146,6 +166,9 @@
 	#balance {
 		margin-left: 7px;
 		align-self: center;
+	}
+	#balance:hover {
+		text-decoration: underline;
 	}
 	select {
 		box-shadow: none;

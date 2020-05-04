@@ -41,7 +41,7 @@
       <router-link to="/susd/withdraw" v-show="currentPool == 'susdv2' && oldBalance > 0">Withdraw old</router-link>
       <router-link :to="'/' + currentPool + '/stats'" v-show="currentPool !='susd'">Stats</router-link>
       <router-link :to="'/' + currentPool + '/profit'" v-show="currentPool !='susd'">Profit</router-link>
-      <router-link to="/curvepay">Pay</router-link>
+      <router-link :to="'/curvepay/' + currentPool">Pay</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>

@@ -83,7 +83,7 @@ let routes = [
         component: Contracts,
       },
       {
-        path: 'curvepay',
+        path: 'curvepay/:pool?',
         name: 'CurvePay',
         component: CurvePay,
       },

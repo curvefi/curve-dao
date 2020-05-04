@@ -55,6 +55,9 @@ export default {
         this.cancel = true;
     },
     methods: {
+        stakeUnstaked() {
+
+        },
         nullifyAmounts() {
             this.deposits = -1
             this.withdrawals = -1

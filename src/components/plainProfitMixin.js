@@ -23,7 +23,22 @@ export default {
 		this.$watch(() => currentContract.default_account && currentContract.multicall, val => val && this.getSNXRewards())
 	},
 
+	computed: {
+		totalShare() {
+			return getters.totalShare();
+		}
+	},
+
 	methods: {
+		async stakeUnstaked() {
+			let balance = await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call();
+			await common.ensure_stake_allowance(balance);
+			await currentContract.curveRewards.methods.stake(balance).send({
+				from: currentContract.default_account,
+				gas: 200000,
+			})
+			currentContract.totalShare = 0
+		},
 
 		getStakedBalance() {
 			return currentContract.totalStake * 100

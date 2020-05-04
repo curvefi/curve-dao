@@ -16,3 +16,9 @@
         mixins: [ProfitBaseMixin, ProfitMixin],
 	}
 </script>
+
+<style>
+    #stakeunstaked {
+        margin-top: 3px;
+    }
+</style>

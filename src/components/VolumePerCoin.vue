@@ -4,6 +4,12 @@
 			<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		</div>
 		<div class='window white'>
+			<select class='tvision' v-model='period'>
+				<option value='day'>Day</option>
+				<option value='week'>Week</option>
+				<option value='month'>Month</option>
+				<option value='all'>All</option>
+			</select>
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
 		<div v-for='(currency, n) in currencies'>
@@ -163,6 +169,7 @@
 			},
 			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
 			volumes: [],
+			period: 'week',
 			chart: null,
 			piechart: null,
 		}),
@@ -180,6 +187,9 @@
 			volumes(val) {
 				if(val.length)
 					this.mounted()
+			},
+			period(val) {
+				this.loadPieChart()
 			}
 		},
 		async mounted() {
@@ -198,16 +208,32 @@
 					})
 				}
 				this.chart.hideLoading();
-
-				let day = 24 * 60 * 60 * 1000
-				let week = 7 * day
-				let month = 30.42 * day
-				let all = Date.now()
+				
+				this.loadPieChart();
+			},
+			loadPieChart() {
+				this.piechart.showLoading()
+				this.piechart.series[0] && this.piechart.series[0].remove();
+				this.piechart.update({
+					title: {
+						text: `Share of trading volume per coin for ${this.period != 'all' ? 'last ' + this.period : 'all time'}`
+					}
+				}, false)
+				let periods = {
+					day: 24 * 60 * 60 * 1000,
+					get week() {
+						return 7 * this.day
+					},
+					get month() {
+						return 30.42 * this.day
+					},
+					all: Date.now(),
+				}
 				let interval = 1000 * 60 * 60 * 24;
 				let startDayUTC = Math.floor(Date.now() / interval) * interval
 				let filtered = this.volumes.map(vol=> {
 					return vol.filter(data=>{
-						return data[0] > startDayUTC - week
+						return data[0] > startDayUTC - periods[this.period]
 					})
 					.map(data => data[1])
 					.reduce((a, b) => {
@@ -234,3 +260,10 @@
 		}
 	}
 </script>
+
+<style scoped>
+	select {
+		box-shadow: none;
+		margin-bottom: 10px;
+	}
+</style>

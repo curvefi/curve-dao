@@ -100,6 +100,9 @@
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
+            <div class='info-message gentle-message' v-show='warningNoPool !== null'>
+                Swap not available. Please select {{warningNoPool}} in pool select
+            </div>
         </div>
 	</div>
 </template>
@@ -216,6 +219,26 @@
                 /*if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                     return true
                 return false;*/
+            },
+            allPools() {
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2']
+            },
+            warningNoPool() {
+                this.message = 'Please select '
+                let poolMessage = null
+                if((this.from_currency == 5 || this.to_currency == 5) && !this.pools.includes('susdv2')) {
+                    poolMessage = 'susd'
+                }
+                if((this.from_currency == 4 || this.to_currency == 4) && !this.pools.includes('busd')) {
+                    poolMessage = 'busd'
+                }
+                if((this.from_currency == 3 || this.to_currency == 3) && !this.pools.includes('y')) {
+                    poolMessage = 'y'
+                }
+                if((this.from_currency == 2 || this.to_currency == 2) && this.pools.find(pool=>['usdt', 'y', 'busd', 'susdv2'].includes(pool)) == undefined) {
+                    poolMessage = 'usdt'
+                }
+                return poolMessage
             }
         },
         watch: {
@@ -235,6 +258,13 @@
                 if(val) this.pools = this.pools.filter(p=>['compound','usdt'].includes(p))
                 if(this.from_currency > 1) this.from_currency = 0
                 else this.from_cur_handler()
+            },
+            warningNoPool(val, oldval) {
+                if(val !== null) {
+                    this.bgColor = 'red'
+                    this.toInput = '0.00'
+                    this.exchangeRate = 'Not available'
+                }
             }
         },
         async created() {
@@ -458,7 +488,7 @@
                 if(!this.swapwrapped) {          
                     let dx = BN(this.fromInput).times(contractAbis.iearn.coin_precisions[this.from_currency])
                     //TUSD only in y pool
-                    if(this.from_currency == 3 || this.to_currency == 3) {
+                    if((this.from_currency == 3 || this.to_currency == 3) && this.pools.includes('tusd')) {
                         calls = [
                             [
                                 this.swap[2]._address,
@@ -467,7 +497,7 @@
                         ]
                     }
                     //BUSD only in b pool
-                    else if(this.from_currency == 4 || this.to_currency == 4) {
+                    else if((this.from_currency == 4 || this.to_currency == 4) && this.pools.includes('busd')) {
 
                         let from_currency = this.from_currency == 4 ? 3 : this.from_currency
                         let to_currency = this.to_currency == 4 ? 3 : this.to_currency
@@ -481,7 +511,8 @@
                             ]
                         ]
                     }
-                    else if(this.from_currency == 5 || this.to_currency == 5) {
+                    //sUSD exchanges only in s pool
+                    else if((this.from_currency == 5 || this.to_currency == 5) && this.pools.includes('susdv2')) {
                         let from_currency = this.from_currency == 5 ? 3 : this.from_currency;
                         let to_currency = this.to_currency == 5 ? 3 : this.to_currency;
 
@@ -498,8 +529,8 @@
                         //susd is already checked outside this function
                         //now coins are DAI, USDC, USDT, other cases are handled and they go through all pools
                         dx = BN(this.fromInput).times(contractAbis.usdt.coin_precisions[this.from_currency])
-                        let poolidx = [0,1,2,3,4]
-                        if(this.from_currency == 2 || this.to_currency == 2) poolidx =  [1,2,3,4]
+                        let poolidx = this.pools.map(pool => this.allPools.indexOf(pool))
+                        if(this.from_currency == 2 || this.to_currency == 2) poolidx =  poolidx.filter(id => id != 0)
                         calls = poolidx.map(i =>
                             [
                                 this.swap[i]._address, 

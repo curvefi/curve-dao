@@ -218,16 +218,12 @@
 			this.$watch(() => contract.web3 && contract.multicall, val => {
 				if(!val) return;
 				this.getCurveRewards()
-			})
-			this.$watch(() => contract.allInitContracts.size, val => {
-				if(val >= 5)
-					this.getBalances();
+				this.getBalances()
 			})
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
-			contract.web3 && contract.multicall && this.getCurveRewards();
-			this.getBalances()
+			contract.web3 && contract.multicall && this.getCurveRewards() && this.getBalances();
 	        this.getAPY()
 		},
 		beforeDestroy() {
@@ -255,14 +251,15 @@
 			},
 			async getBalances() {
 				if(!contract.default_account) return;
-				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				contract.contracts.compound = contract;
 				let calls = Object.entries(contract.contracts).flatMap(([k, v]) => 
 					[
-						[v.swap_token._address, v.swap_token.methods.balanceOf(contract.default_account).encodeABI()],
-						[v.swap._address, v.swap.methods.get_virtual_price().encodeABI()]
+						//balanceOf(address)
+						[allabis[k].token_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)],
+						//get_virtual_price
+						[allabis[k].swap_address, "0xbb7b8b80"]
 					])
-				calls.push([curveRewards._address, curveRewards.methods.balanceOf(contract.default_account).encodeABI()])
+				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				helpers.chunkArr(decoded, 2).slice(0,5).map(v => {

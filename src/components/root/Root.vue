@@ -28,7 +28,7 @@
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[0]'>
                	 				<img src='../../assets/dollar-sign-solid.png'>
-               	 				<span class='tooltiptext'>Balance: {{balances[0] && balances[0].toFixed(2)}}</span>
+               	 				<span class='tooltiptext'>Balance: ${{balances[0] && balances[0].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -56,7 +56,7 @@
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[1]'>
                	 				<img src='../../assets/dollar-sign-solid.png'>
-               	 				<span class='tooltiptext'>Balance: {{balances[1] && balances[1].toFixed(2)}}</span>
+               	 				<span class='tooltiptext'>Balance: ${{balances[1] && balances[1].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -84,7 +84,7 @@
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[2]'>
                	 				<img src='../../assets/dollar-sign-solid.png'>
-               	 				<span class='tooltiptext'>Balance: {{balances[2] && balances[2].toFixed(2)}}</span>
+               	 				<span class='tooltiptext'>Balance: ${{balances[2] && balances[2].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -112,7 +112,7 @@
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[3]'>
                	 				<img src='../../assets/dollar-sign-solid.png'>
-               	 				<span class='tooltiptext'>Balance: {{balances[3] && balances[3].toFixed(2)}}</span>
+               	 				<span class='tooltiptext'>Balance: ${{balances[3] && balances[3].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -161,7 +161,7 @@
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[4]'>
                	 				<img src='../../assets/dollar-sign-solid.png'>
-               	 				<span class='tooltiptext'>Balance: {{balances[4] && balances[4].toFixed(2)}}</span>
+               	 				<span class='tooltiptext'>Balance: ${{balances[4] && balances[4].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>

@@ -26,6 +26,7 @@
 	                    	<span v-show='volumes.compound >= 0'>${{(volumes.compound | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[0]'>Balance: ${{balances[0] && balances[0].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[0]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[0] && balances[0].toFixed(2)}}</span>
@@ -54,6 +55,7 @@
 	                    	<span v-show='volumes.usdt >= 0'>${{(volumes.usdt | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[1]'>Balance: ${{balances[1] && balances[1].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[1]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[1] && balances[1].toFixed(2)}}</span>
@@ -82,6 +84,7 @@
 	                    	<span v-show='volumes.y >= 0'>${{(volumes.y | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[2]'>Balance: ${{balances[2] && balances[2].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[2]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[2] && balances[2].toFixed(2)}}</span>
@@ -110,6 +113,7 @@
 	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[3]'>Balance: ${{balances[3] && balances[3].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[3]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[3] && balances[3].toFixed(2)}}</span>
@@ -159,6 +163,7 @@
 	                    	<span v-show='volumes.susd >= 0'>${{(volumes.susd | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[4]'>Balance: ${{balances[4] && balances[4].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[4]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[4] && balances[4].toFixed(2)}}</span>
@@ -314,6 +319,16 @@
 		.poolsdialog.poolsdialog > div a {
 			display: block;
 		  text-align: center;
+		}
+		.poolsdialog .balance {
+			width: 100%;
+		}
+		.poolsdialog .balance .showmobile {
+			display: block;
+			text-align: center;
+		}
+		.poolsdialog .balance .tooltip {
+			display: none;
 		}
 		.poolsdialog.poolsdialog > div a > span {
 			display: block;

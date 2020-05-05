@@ -238,7 +238,7 @@
         async created() {
             //EventBus.$on('selected', this.selectPool)
             this.$watch(()=>contract.allInitContracts.size, async (val) => {
-                if(val >= 4)
+                if(val >= 5)
                     await this.mounted()
             })
         },

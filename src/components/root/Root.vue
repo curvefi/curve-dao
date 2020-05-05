@@ -23,8 +23,14 @@
 		                    </span>
                     	<span :class="{'loading line': !daily_apy[0]}">{{daily_apy[0]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
-	                    	<span v-show='volumes.compound >= 0'>{{(volumes.compound | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumes.compound >= 0'>${{(volumes.compound | 0) | formatNumber}}</span>
                	 		</span></span>
+               	 		<span class='balance'>
+               	 			<span class='tooltip' v-show='balances[0]'>
+               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<span class='tooltiptext'>Balance: {{balances[0] && balances[0].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 1}">
@@ -45,8 +51,14 @@
 	                    	<span :class="{'loading line': !daily_apy[1]}">{{daily_apy[1]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
-	                    	<span v-show='volumes.usdt >= 0'>{{(volumes.usdt | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumes.usdt >= 0'>${{(volumes.usdt | 0) | formatNumber}}</span>
                	 		</span></span>
+               	 		<span class='balance'>
+               	 			<span class='tooltip' v-show='balances[1]'>
+               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<span class='tooltiptext'>Balance: {{balances[1] && balances[1].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 2}">
@@ -67,8 +79,14 @@
 	                    	<span :class="{'loading line': !daily_apy[2]}">{{daily_apy[2]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
-	                    	<span v-show='volumes.y >= 0'>{{(volumes.y | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumes.y >= 0'>${{(volumes.y | 0) | formatNumber}}</span>
                	 		</span></span>
+               	 		<span class='balance'>
+               	 			<span class='tooltip' v-show='balances[2]'>
+               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<span class='tooltiptext'>Balance: {{balances[2] && balances[2].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 3}">
@@ -89,8 +107,14 @@
 	                    	<span :class="{'loading line': !daily_apy[3]}">{{daily_apy[3]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
-	                    	<span v-show='volumes.busd >= 0'>{{(volumes.busd | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber}}</span>
                	 		</span></span>
+               	 		<span class='balance'>
+               	 			<span class='tooltip' v-show='balances[3]'>
+               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<span class='tooltiptext'>Balance: {{balances[3] && balances[3].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
 	                </router-link>
 	            </div>
 	            <!-- <div :class="{selected: activePoolLink == 4}">
@@ -101,7 +125,7 @@
 	                    <span class='apr'>APY: <span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>%</span>
 	                    <span class='volume'>
 	                    	Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>{{(volumesData.busd | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumesData.busd >= 0'>${{(volumesData.busd | 0) | formatNumber}}</span>
                	 		</span></span>
 	                </router-link>
 	            </div> -->
@@ -132,8 +156,14 @@
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
-	                    	<span v-show='volumes.susd >= 0'>{{(volumes.susd | 0) | formatNumber}}$</span>
+	                    	<span v-show='volumes.susd >= 0'>${{(volumes.susd | 0) | formatNumber}}</span>
                	 		</span></span>
+               	 		<span class='balance'>
+               	 			<span class='tooltip' v-show='balances[4]'>
+               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<span class='tooltiptext'>Balance: {{balances[4] && balances[4].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
 	                </router-link>
 	            </div>
 	        </fieldset>
@@ -169,6 +199,7 @@
 			start: 0,
 			end: 0,
 			volumes: [],
+			balances: [],
 			snxRewards: null,
 		}),
 		created() {
@@ -183,10 +214,15 @@
 				if(!val) return;
 				this.getCurveRewards()
 			})
+			this.$watch(() => contract.allInitContracts.size, val => {
+				if(val >= 5)
+					this.getBalances();
+			})
 		},
 		mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
 			contract.web3 && contract.multicall && this.getCurveRewards();
+			this.getBalances()
 	        this.getAPY()
 		},
 		beforeDestroy() {
@@ -211,6 +247,20 @@
 				let snxPrice = await request.json();
 				snxPrice = snxPrice.quotes.USD.price;
 				this.snxRewards = 365 * 64000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+			},
+			async getBalances() {
+				if(!contract.default_account) return;
+				contract.contracts.compound = contract;
+				let calls = Object.entries(contract.contracts).flatMap(([k, v]) => 
+					[
+						[v.swap_token._address, v.swap_token.methods.balanceOf(contract.default_account).encodeABI()],
+						[v.swap._address, v.swap.methods.get_virtual_price().encodeABI()]
+					])
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				helpers.chunkArr(decoded, 2).map(v => {
+					this.balances.push(+v[0] * (+v[1]) / 1e36);
+				})
 			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement 
@@ -290,10 +340,13 @@
 		flex: 1.8;
 	}
 	.apr {
-		flex: 0.8;
+		flex: 0.62;
 	}
 	.volume {
 		flex: 0.7;
+	}
+	.balance {
+		width: 12px;
 	}
 	.tooltip {
 		position: relative;
@@ -310,5 +363,8 @@
 	}
 	.tooltiptext.long > div:hover {
 		background: none;
+	}
+	.balance img {
+		height: 12px;
 	}
 </style>

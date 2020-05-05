@@ -85,9 +85,9 @@
                     </label>
             </div>
             <ul>
-                <li>
+                <li v-show='bestPool !== null'>
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
-                    <label for="inf-approval">Infinite approval - trust 1split contract forever</label>
+                    <label for="inf-approval">Infinite approval - trust {{bestPoolText}} contract forever</label>
                 </li>
                 <li v-show="['compound', 'usdt'].some(p => pools.includes(p))">
                     <input id='swapc' type='checkbox' name='swapc' v-model = 'swapwrapped'>
@@ -99,9 +99,6 @@
             </ul>
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
-            </p>
-            <p class='info-message gentle-message' v-show='selldisabled'>
-                Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently.
             </p>
         </div>
 	</div>
@@ -159,18 +156,22 @@
 		}),
         computed: {
             CONTRACT_FLAG() {
-                //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, ..., ..., curve synthetix, weth
+                //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, weth, idle
                 //enable multipath DAI, multipath USDC
-                //enabled curve compound, curve usdt, curve y, curve binance
-                let flag = 0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000+0x80000;
+                //enabled curve compound, curve usdt, curve y, curve binance, curve susd
+                let disabled = 0x01 + 0x02 + 0x04 + 0x08 + 0x10 + 0x20 + 0x40 + 0x80 + 0x100 + 0x400 + 0x800 + 0x80000 + 0x800000;
+                let enabled = 0x1000 + 0x2000 + 0x4000 + 0x8000 + 0x40000 
+                let enabledMulti = 0x10000 + 0x20000
                 let curveFlags = {
                     compound: 0x1000,
                     usdt: 0x2000,
                     y: 0x4000,
-                    busd: 0x8000
+                    busd: 0x8000,
+                    susdv2: 0x40000
                 }
-                let addFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f]).reduce((a, b) => a + b, 0)
-                return flag + addFlag;
+                let removePoolFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f])
+                removePoolFlag = removePoolFlag.reduce((a, b) => a + b, 0)
+                return disabled + removePoolFlag + enabledMulti;
             },
             currencies() {
                 if(this.swapwrapped === false) {
@@ -211,9 +212,10 @@
                 return ['compound', 'usdt', 'y', 'busd', 'susd', '1split'][this.bestPool]
             },
             selldisabled() {
-                if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
+                return false
+                /*if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                     return true
-                return false;
+                return false;*/
             }
         },
         watch: {
@@ -398,12 +400,8 @@
                     this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000),
                 ]
                 let calls = defaultCalls.concat();
-                if(this.fromInput < 50000) {
-                    calls = [defaultCalls[0]]
-                }
-                if((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4)) {
+                if([3,4,5].includes(this.from_currency) && [3,4,5].includes(this.to_currency)) {
                     calls = defaultCalls.slice(1)
-                    if(this.fromInput < 50000) calls = []
                     calls.push(
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000),
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x20000),
@@ -480,6 +478,19 @@
                             [
                                 this.swap[3]._address,
                                 this.swap[3].methods.get_dy_underlying(from_currency, to_currency, dx.toFixed(0,1)).encodeABI()
+                            ]
+                        ]
+                    }
+                    else if(this.from_currency == 5 || this.to_currency == 5) {
+                        let from_currency = this.from_currency == 5 ? 3 : this.from_currency;
+                        let to_currency = this.to_currency == 5 ? 3 : this.to_currency;
+
+                        let dx = BN(this.fromInput).times(contractAbis.susdv2.coin_precisions[from_currency])
+
+                        calls = [
+                            [
+                                this.swap[4]._address,
+                                this.swap[4].methods.get_dy(from_currency, to_currency, dx.toFixed(0,1)).encodeABI()
                             ]
                         ]
                     }
@@ -583,7 +594,7 @@
                         this.toInput = '0.00';
                         return;
                     }
-                    if(this.from_currency == 5 || this.to_currency == 5) {
+                    /*if(this.from_currency == 5 || this.to_currency == 5) {
                         let dx = BN(this.fromInput * this.precisions(this.from_currency)).toFixed(0, 1)
                         let actualFromCurrency = this.normalizeCurrency(this.from_currency)
                         let actualToCurrency = this.normalizeCurrency(this.to_currency)
@@ -592,7 +603,7 @@
                         dy = +(BN(dy).div(this.precisions(this.to_currency)))
                         exchangeRate = dy / dx * this.precisions(this.from_currency)
                     }
-                    else if(!((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))) {
+                    else*/ if(!([3,4,5].includes(this.from_currency) && [3,4,5].includes(this.to_currency))) {
                         this.swapPromise.cancel()
                         this.swapPromise = helpers.makeCancelable(Promise.all([this.realComparePools(), this.set_to_amount_onesplit()]))
                         let result = await this.swapPromise

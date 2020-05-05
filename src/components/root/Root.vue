@@ -27,7 +27,7 @@
                	 		</span></span>
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[0]'>
-               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[0] && balances[0].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -55,7 +55,7 @@
                	 		</span></span>
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[1]'>
-               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[1] && balances[1].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -83,7 +83,7 @@
                	 		</span></span>
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[2]'>
-               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[2] && balances[2].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -111,7 +111,7 @@
                	 		</span></span>
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[3]'>
-               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[3] && balances[3].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -160,7 +160,7 @@
                	 		</span></span>
                	 		<span class='balance'>
                	 			<span class='tooltip' v-show='balances[4]'>
-               	 				<img src='../../assets/dollar-sign-solid.png'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[4] && balances[4].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -250,17 +250,20 @@
 			},
 			async getBalances() {
 				if(!contract.default_account) return;
+				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				contract.contracts.compound = contract;
 				let calls = Object.entries(contract.contracts).flatMap(([k, v]) => 
 					[
 						[v.swap_token._address, v.swap_token.methods.balanceOf(contract.default_account).encodeABI()],
 						[v.swap._address, v.swap.methods.get_virtual_price().encodeABI()]
 					])
+				calls.push([curveRewards._address, curveRewards.methods.balanceOf(contract.default_account).encodeABI()])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-				helpers.chunkArr(decoded, 2).map(v => {
+				helpers.chunkArr(decoded, 2).slice(0,5).map(v => {
 					this.balances.push(+v[0] * (+v[1]) / 1e36);
 				})
+				this.balances[4] += (+decoded[10] * decoded[9]) / 1e36
 			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement 
@@ -326,6 +329,9 @@
 	.poolsdialog > div a {
 		display: flex;
 		justify-content: space-between;
+	}
+	.poolsdialog > div > a:hover img {
+		filter: invert(1);
 	}
 	.poolsdialog > div a span {
 		text-align: left;

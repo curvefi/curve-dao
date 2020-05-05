@@ -470,8 +470,12 @@
                     }
                     //BUSD only in b pool
                     else if(this.from_currency == 4 || this.to_currency == 4) {
+
                         let from_currency = this.from_currency == 4 ? 3 : this.from_currency
                         let to_currency = this.to_currency == 4 ? 3 : this.to_currency
+
+                        let dx = BN(this.fromInput).times(contractAbis.busd.coin_precisions[from_currency])
+
                         calls = [
                             [
                                 this.swap[3]._address,

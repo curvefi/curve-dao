@@ -661,9 +661,15 @@
                         this.inf_approval = true;
                     else
                         this.inf_approval = false;
+
                     //show converted exchange rate when swapping wrapped coins?
-                    this.setExchangeRate(exchangeRate)
                     this.toInput = BN(this.fromInput).times(BN(exchangeRate)).toFixed(2);
+                    if(this.swapwrapped) {
+                        let cdy_ = bestdy_ * this.c_rates(this.to_currency)[this.to_currency] * contractAbis.compound.wrapped_precisions[this.to_currency]
+                        let cdx_ = this.fromInput * this.c_rates(this.from_currency)[this.from_currency] * contractAbis.compound.wrapped_precisions[this.from_currency]
+                        exchangeRate = (cdy_ / cdx_)
+                    }
+                    this.setExchangeRate(exchangeRate)
                 }
                 catch(err) {
                     console.error(err)

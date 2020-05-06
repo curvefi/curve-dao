@@ -42,7 +42,7 @@ export default {
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susdv2') subdomain = 'susd'
-	        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-1m.json`);
+	        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-30m.json`);
 	        	res = await res.json();
 	        	this.priceData = res
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
@@ -150,7 +150,7 @@ export default {
 		findClosest(timestamp) {
 		    let dates = this.priceData.find(d=>d.timestamp - timestamp > 0);
 		    //check if timestamp was before recording, this is only for when timestamp > lastest recorded, get lastest recorded
-		    if(!dates.length) return this.priceData[this.priceData.length-1]
+		    if(dates === undefined) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
 	    fromNative(curr, value) {
@@ -254,6 +254,7 @@ export default {
 		          	if(['iearn','busd'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
 		            let exchangeRate = await this.getExchangeRate(block, address, '', type)
 		        	if(exchangeRate == -1) continue;
+		        	console.log(exchangeRate, "exchange rate coin")
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
 		            	usd = BN(tokens).div(BN(1e4)).toNumber();
@@ -307,16 +308,23 @@ export default {
 		    for (const hash of txs) {
 		    	if(this.cancel) throw new Error('cancel');
 		        const receipt = await currentContract.web3.eth.getTransactionReceipt(hash);
+		        //old susd contract
 		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
 		        let addliquidity = receipt.logs.filter(log=>log.topics[0] == this.addliquidityTopic)
+		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
+		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
+		        console.log(addliquidity)
 		        if(addliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
+		            console.log(cTokens, "add liquidity cTokens")
 		            depositUsdSum += await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')
 		        }
-		        else {
-		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
+		        else if(removeliquidity.length == 0 && removeliquidityImbalance == 0) {
+		            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
+		            console.log(transfer)
 		            let tokens = +transfer[0].data
+		            console.log(tokens, "transfer tokens")
 		            if(transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
 		            let poolInfoPoint = this.findClosest(timestamp)
 		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
@@ -354,17 +362,23 @@ export default {
 		        ],
 		    });
 
+		    console.log(fromBlock, "block")
+
 		    var lastBlock = logs.length && logs[logs.length-1].blockNumber || fromBlock
 
 
 
 		    for(let log of logs) {
 		    	if(this.cancel) throw new Error('cancel');
+		    	console.log(log)
 		        const receipt = await currentContract.web3.eth.getTransactionReceipt(log.transactionHash);
 		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
+		        console.log(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        if(removeliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
+		        	console.log(removeliquidity)
+		            console.log(cTokens, "withdraw cTokens")
 		            withdrawals += await this.calculateAmount(cTokens, log.blockNumber)
 		            continue;
 		        }
@@ -375,13 +389,16 @@ export default {
 		        		decodeParameters = this.decodeParametersWithdrawal1
 		        	}
 		            let decoded = currentContract.web3.eth.abi.decodeParameters(decodeParameters, removeliquidity[0].data)
+		        	console.log(removeliquidity)
+		            console.log(decoded, 'remove imbalance tokens')
 		            withdrawals += await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
 		        }
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 		            if(transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
+		            console.log(transfer)
 		            let tokens = +transfer[0].data
-		            console.log(tokens, "TRANSFER")
+		            console.log(tokens, "transfer")
 		            let poolInfoPoint = this.findClosest(timestamp)
 		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
 		            withdrawals += usd * 100
@@ -403,7 +420,6 @@ export default {
 						return balance * poolInfoPoint.rates[i] / allabis[this.currentPool].coin_precisions[i] * amount / poolInfoPoint.supply / 1e18
 					})
 					.reduce((a, b) => a + b, 0)
-					* (poolInfoPoint.virtual_price / 1e18)
 		},
 
 		async getAvailable(curr, amount, balance, supply) {

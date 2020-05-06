@@ -488,7 +488,7 @@
                 if(!this.swapwrapped) {          
                     let dx = BN(this.fromInput).times(contractAbis.iearn.coin_precisions[this.from_currency])
                     //TUSD only in y pool
-                    if((this.from_currency == 3 || this.to_currency == 3) && this.pools.includes('tusd')) {
+                    if((this.from_currency == 3 || this.to_currency == 3) && this.pools.includes('y')) {
                         calls = [
                             [
                                 this.swap[2]._address,

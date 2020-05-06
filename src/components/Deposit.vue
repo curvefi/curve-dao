@@ -67,7 +67,7 @@
                 	@click = 'deposit_stake'>
                 	Deposit and stake
                 </button>
-                <button id='stakeunstaked' v-show='totalShare > 0' @click='stakeTokens()'>Stake unstaked</button>
+                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>Stake unstaked</button>
                 <div id='mintr' v-show="currentPool == 'susdv2'">
 	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
 	            </div>

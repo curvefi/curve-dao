@@ -130,7 +130,11 @@
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
+	            legend: {
+	            	enabled: true,
+	            },
 			},
+			virtual_price_0: 0,
 			chartdataDaily: null,
 			loading: true,
 			chart: null,
@@ -212,30 +216,27 @@
 			        this.data = await newdata.json()
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
 			        let start_index = this.data.findIndex(el => el.virtual_price > 0)
+			        this.virtual_price_0 = this.data[start_index].virtual_price;
 			        var start_profit = this.data[start_index].virtual_price / 1e18
-			        var start_sum = this.data[0].balances
-			        	.map((balance, i) => {
-		                	return balance * this.data[0].rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i] * this.data[0].virtual_price / this.data[0].supply / 1e18
-		                })
-		                .reduce((a, b) => a + b, 0)
+
+		            let real_profit_0 = this.calcRealProfit(this.data[start_index], subdomain)
+
 			        var chartData = [];
 			        var realValueData = [];
 			        for (let i = start_index; i < this.data.length; i++) {
-			                var el = this.data[i];
-			                let share = el.virtual_price / start_profit
-			                let value = el.balances.map((balance, i) => {
-			                	return balance * el.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i] * share / el.supply / 1e18
-			                })
-			                let sum = value.reduce((a, b) => a + b, 0)
-			                //console.log(value)
-			                realValueData.push([
-			                	el.timestamp * 1000,
-			                	((sum / start_sum) - 1) * 100
-		                	])
-			                chartData.push([
-			                    el.timestamp * 1000,
-			                    ((el.virtual_price / 1e18) / start_profit - 1) * 100
-			                ]);
+		                var el = this.data[i];
+
+	                	let real_profit = this.calcRealProfit(el, subdomain)
+
+	                	realValueData.push([
+	                		el.timestamp * 1000,
+	                		((real_profit / real_profit_0 - 1)) * 100,
+	                	])
+
+		                chartData.push([
+		                    el.timestamp * 1000,
+		                    ((el.virtual_price / 1e18) / start_profit - 1) * 100
+		                ]);
 			        }
 				}
 				
@@ -246,9 +247,32 @@
 		        	data: chartData,
 		        	color: '#0b0a57'
 		        })
-		        console.log(realValueData)
-		       
+		        this.chart.addSeries({
+		        	name: 'Real growth of liquidity share',
+		        	lineWidth: 2,
+		        	data: realValueData,
+		        })
 		        this.loading = false;
+			},
+			calcRealProfit(point, subdomain) {
+				let S = point.balances
+					.map((balance, i) => balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i])
+            		.reduce((a, b) => a + b, 0)
+
+            	let real_profit = point.balances
+            		.map((balance, i) => {
+            			//comparing prices against USDC
+	            		let key = "1-"+i;
+	                	if(i == 0) key = "0-1"
+	                	let price = point.prices[key] && point.prices[key][3]
+	                	if(i == 0) price = 1 / price
+	                	price = price || 1
+
+	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i];
+	            		return real_amount / S * (point.virtual_price / this.virtual_price_0) * price
+	            	})
+	        		.reduce((a, b) => a + b, 0)
+	        	return real_profit
 			},
 		}
 	}

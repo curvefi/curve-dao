@@ -1,9 +1,13 @@
 <template>
 	<div class = 'tradeview window white'>
+		<fieldset id='onesplit' v-if='exchange'>
+			<legend class='text-center'>Swap using all Curve pools</legend>
+			<one-split />
+		</fieldset>
  		<select-component id='select_pool'/>
  		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		<depth id='depth_chart' />
-		<fieldset id='onesplit'>
+		<fieldset id='onesplit' v-if='!exchange'>
 			<legend class='text-center'>Swap using all Curve pools</legend>
 			<one-split />
 		</fieldset>
@@ -332,9 +336,11 @@
 				  	toCurrency: null,
 				  	inverse: false,
 				  	ohlcData: [],
+				  	exchange: false,
 		  }
 		},
 		created() {
+			this.exchange = this.$route.params.exchange
 			//EventBus.$on('selected', this.selectPool);
 			EventBus.$on('updateCharts', this.loadData)
 		},
@@ -537,5 +543,6 @@
 	}
 	#onesplit {
 		margin-top: 30px;
+		margin-bottom: 1em;
 	}
 </style>

@@ -630,7 +630,7 @@ button.bn-onboard-custom {
   justify-content: center;
 }
 
-.blue.window.Trade {
+.blue.window.Trade, .blue.window.Exchange {
   width: 70%;
   max-width: 1280px;
 }

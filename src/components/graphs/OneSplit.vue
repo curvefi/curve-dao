@@ -363,9 +363,9 @@
                     bestContract.swap._address = address
                 }
                 if (this.inf_approval)
-                        await common.ensure_underlying_allowance(i, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
+                        await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                     else
-                        await common.ensure_underlying_allowance(i, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                        await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
                 if(this.distribution !== null) {
                     await this.onesplit.methods.swap(
                             this.getCoins(i)._address,

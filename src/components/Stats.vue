@@ -122,12 +122,7 @@
 		            	}
 	            	}
 	            },
-		        series: [{
-		        	name: 'Virtual growth of liquidity share',
-		        	lineWidth: 2,
-		        	data: [],
-		        	color: '#0b0a57'
-		        }],
+		        series: [],
 		        tooltip: {
 	                valueDecimals: 5,
 	                pointFormatter() {
@@ -218,14 +213,29 @@
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
 			        let start_index = this.data.findIndex(el => el.virtual_price > 0)
 			        var start_profit = this.data[start_index].virtual_price / 1e18
+			        var start_sum = this.data[0].balances
+			        	.map((balance, i) => {
+		                	return balance * this.data[0].rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i] * this.data[0].virtual_price / this.data[0].supply / 1e18
+		                })
+		                .reduce((a, b) => a + b, 0)
 			        var chartData = [];
-				        for (let i = start_index; i < this.data.length; i++) {
+			        var realValueData = [];
+			        for (let i = start_index; i < this.data.length; i++) {
 			                var el = this.data[i];
+			                let share = el.virtual_price / start_profit
+			                let value = el.balances.map((balance, i) => {
+			                	return balance * el.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i] * share / el.supply / 1e18
+			                })
+			                let sum = value.reduce((a, b) => a + b, 0)
+			                //console.log(value)
+			                realValueData.push([
+			                	el.timestamp * 1000,
+			                	((sum / start_sum) - 1) * 100
+		                	])
 			                chartData.push([
 			                    el.timestamp * 1000,
 			                    ((el.virtual_price / 1e18) / start_profit - 1) * 100
 			                ]);
-			            
 			        }
 				}
 				
@@ -235,6 +245,12 @@
 		        	lineWidth: 2,
 		        	data: chartData,
 		        	color: '#0b0a57'
+		        })
+		        console.log(realValueData)
+		        this.chart.addSeries({
+		        	name: 'Real growth of liquidity share',
+		        	lineWidth: 2,
+		        	data: realValueData,
 		        })
 		        this.loading = false;
 			},

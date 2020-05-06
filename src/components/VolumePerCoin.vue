@@ -1,6 +1,25 @@
 <template>
 	<div>
 		<div class='window white'>
+			<div class='poolselect'>
+				<input id='compoundpool' type='checkbox' value='compound' v-model='piepools'/>
+				<label for='compoundpool'>Compound</label>
+
+				<input id='usdtpool' type='checkbox' value='usdt' v-model='piepools'/>
+				<label for='usdtpool'>usdt</label>
+
+				<input id='ypool' type='checkbox' value='y' v-model='piepools'/>
+				<label for='ypool'>Y</label>
+
+				<input id='busdpool' type='checkbox' value='busd' v-model='piepools'/>
+				<label for='busdpool'>bUSD</label>
+
+				<input id='susdpool' type='checkbox' value='susd' v-model='piepools'/>
+				<label for='susdpool'>sUSD</label>
+
+				<button @click='selectPools'>Select</button>
+			</div>
+
 			<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 		</div>
 		<div class='window white'>
@@ -10,22 +29,6 @@
 				<option value='month'>Month</option>
 				<option value='all'>All</option>
 			</select>
-			<input id='compoundpool' type='checkbox' value='compound' v-model='piepools'/>
-			<label for='compoundpool'>Compound</label>
-
-			<input id='usdtpool' type='checkbox' value='usdt' v-model='piepools'/>
-			<label for='usdtpool'>usdt</label>
-
-			<input id='ypool' type='checkbox' value='y' v-model='piepools'/>
-			<label for='ypool'>Y</label>
-
-			<input id='busdpool' type='checkbox' value='busd' v-model='piepools'/>
-			<label for='busdpool'>bUSD</label>
-
-			<input id='susdpool' type='checkbox' value='susd' v-model='piepools'/>
-			<label for='susdpool'>sUSD</label>
-
-			<button @click='selectPools'>Select</button>
 
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
@@ -294,11 +297,11 @@
 		box-shadow: none;
 		margin-bottom: 10px;
 	}
-	label[for='compoundpool'] {
-		margin-left: 10px;
-	}
 	button {
 		box-shadow: none;
 		margin-left: 10px;
+	}
+	.poolselect {
+		margin-bottom: 10px;
 	}
 </style>

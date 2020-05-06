@@ -10,6 +10,23 @@
 				<option value='month'>Month</option>
 				<option value='all'>All</option>
 			</select>
+			<input id='compoundpool' type='checkbox' value='compound' v-model='piepools'/>
+			<label for='compoundpool'>Compound</label>
+
+			<input id='usdtpool' type='checkbox' value='usdt' v-model='piepools'/>
+			<label for='usdtpool'>usdt</label>
+
+			<input id='ypool' type='checkbox' value='y' v-model='piepools'/>
+			<label for='ypool'>Y</label>
+
+			<input id='busdpool' type='checkbox' value='busd' v-model='piepools'/>
+			<label for='busdpool'>bUSD</label>
+
+			<input id='susdpool' type='checkbox' value='susd' v-model='piepools'/>
+			<label for='susdpool'>sUSD</label>
+
+			<button @click='selectPools'>Select</button>
+
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
 		<div v-for='(currency, n) in currencies'>
@@ -167,6 +184,7 @@
 			    	enabled: true,
 			    }
 			},
+			piepools: ['compound', 'usdt', 'y', 'busd', 'susd'],
 			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
 			volumes: [],
 			period: 'week',
@@ -174,14 +192,7 @@
 			piechart: null,
 		}),
 		async created() {
-			let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
-			await volumeStore.fetchVolumeData(pools, false, 1440)
-			let data = volumeStore.state.volumeData[1440]
-			data.busd = (new Array(data.compound.length-data.busd.length).fill({})).concat(data.busd)
-			data.susd = (new Array(data.compound.length-data.susd.length).fill({})).concat(data.susd)
-			pools = Object.entries(data)
-
-			this.volumes = await volumeWorker.getVolumePerCoin(data, pools, allabis)
+			this.created()
 		},
 		watch: {
 			volumes(val) {
@@ -190,7 +201,7 @@
 			},
 			period(val) {
 				this.loadPieChart()
-			}
+			},
 		},
 		async mounted() {
 			this.chart = this.$refs.highcharts.chart;
@@ -200,7 +211,21 @@
 			this.piechart.showLoading()
 		},
 		methods: {
+			async created() {
+				let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
+				await volumeStore.fetchVolumeData(pools, false, 1440)
+				let data = volumeStore.state.volumeData[1440]
+				data.busd = (new Array(data.compound.length-data.busd.length).fill({})).concat(data.busd)
+				data.susd = (new Array(data.compound.length-data.susd.length).fill({})).concat(data.susd)
+
+				let filteredData = Object.keys(data).filter(pool => this.piepools.includes(pool)).reduce((obj, key) => ({ ...obj, [key]: data[key]}), {})
+				pools = Object.entries(filteredData)
+
+				this.volumes = await volumeWorker.getVolumePerCoin(filteredData, pools, allabis)
+			},
 			async mounted() {
+				while(this.chart && this.chart.series[0])
+					this.chart.series[0].remove()
 				for(let [i,volume] of this.volumes.entries()) {
 					this.chart.addSeries({
 						name: this.currencies[i],
@@ -256,6 +281,9 @@
 					data: piechartdata,
 				})
 				this.piechart.hideLoading()
+			},
+			selectPools() {
+				this.created();
 			}
 		}
 	}
@@ -265,5 +293,12 @@
 	select {
 		box-shadow: none;
 		margin-bottom: 10px;
+	}
+	label[for='compoundpool'] {
+		margin-left: 10px;
+	}
+	button {
+		box-shadow: none;
+		margin-left: 10px;
 	}
 </style>

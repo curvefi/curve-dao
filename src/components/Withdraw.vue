@@ -366,7 +366,6 @@
 				//use update rates instead
 				await common.update_fee_info();
 				let min_amounts = []
-                console.log(this.getMaxSlippage)
 				for(let i = 0; i < currentContract.N_COINS; i++) {
 			    	min_amounts[i] = BN(this.getMaxSlippage).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {

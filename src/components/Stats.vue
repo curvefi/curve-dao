@@ -247,11 +247,7 @@
 		        	color: '#0b0a57'
 		        })
 		        console.log(realValueData)
-		        this.chart.addSeries({
-		        	name: 'Real growth of liquidity share',
-		        	lineWidth: 2,
-		        	data: realValueData,
-		        })
+		       
 		        this.loading = false;
 			},
 		}

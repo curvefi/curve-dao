@@ -48,10 +48,9 @@ let routes = [
         component: BasicTrade,
       },
       {
-        path: '/exchange',
-        beforeEnter: (to, from, next) => {
-          return router.push({ name: 'Trade', params: { exchange: true }})
-        },
+        path: '/exchange/:params(.*)?',
+        name: 'Exchange',
+        component: ChartGraph,
       },
       {
         path: '/trade/:params(.*)?',

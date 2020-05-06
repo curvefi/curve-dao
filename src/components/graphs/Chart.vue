@@ -340,7 +340,7 @@
 		  }
 		},
 		created() {
-			this.exchange = this.$route.params.exchange
+			this.exchange = this.$route.name == 'Exchange'
 			//EventBus.$on('selected', this.selectPool);
 			EventBus.$on('updateCharts', this.loadData)
 		},

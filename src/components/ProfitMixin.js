@@ -399,7 +399,9 @@ export default {
 
 		getAvailableTransfer(amount, poolInfoPoint) {
 			return poolInfoPoint.balances
-					.map((balance, i) => balance / allabis[this.currentPool].coin_precisions[i] * amount / poolInfoPoint.supply)
+					.map((balance, i) => {
+						return balance * poolInfoPoint.rates[i] / allabis[this.currentPool].coin_precisions[i] * amount / poolInfoPoint.supply / 1e18
+					})
 					.reduce((a, b) => a + b, 0)
 					* (poolInfoPoint.virtual_price / 1e18)
 		},

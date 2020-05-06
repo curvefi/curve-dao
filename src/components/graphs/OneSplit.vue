@@ -381,7 +381,7 @@
                 }
                 else {
                     let exchangeMethod = bestContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped) exchangeMethod = bestContract.swap.methods.exchange
+                    if(this.swapwrapped || this.bestPoolText == 'susd') exchangeMethod = bestContract.swap.methods.exchange
                     await exchangeMethod(i, j, amount, min_dy).send({
                             from: contract.default_account,
                             gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),

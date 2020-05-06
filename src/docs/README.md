@@ -196,7 +196,7 @@ periods of time.
 
 
 
-# Calculating volume and prices
+# Calculating volume, balances and prices
 
 ## Getting from on-chain data
 
@@ -216,6 +216,11 @@ For y tokens you need to call getPricePerFullShare and then calculate the c-rate
 Then you can convert from wrapped coin amount to plain coins: 
 
 ```plainAmount = wrappedAmount * coins```
+
+In order to calculate balances, you can call the `balance` function on the swap contracts with the index of the coin in the pool. For example for susd `balance(0)` returns the balance of DAI.
+Then, multiply the balance by c-rates.
+
+Sum of balances is the liquidity of the pool.
 
 ## Getting data from json files
 
@@ -255,5 +260,23 @@ You can get historical data for a pool's state - virtual_price, rates, prices, v
     ```
     
     For DAI-sUSD pair in susd pool tokens sold = 1.22698147793369e+21 / 1e18 and for tokens bought = 1.232139909338216e+21 / 1e18
+
+You can also get the balances from the json files and divide by coin precisions.
+
+For example: 
+```
+"balances": [
+      2.0664613069111704e+24,
+      2793142029856,
+      2775461182730,
+      3.4125362659002725e+24
+    ]
+```
+
+Balance of DAI = 2.0664613069111704e+24/1e18 = 2066461.3069111704
+
+Sum of balances is the liquidity of the pool.
+
+
 
 You can get the average USD value of tokens by multiplying them with virtual_price

@@ -446,7 +446,7 @@
                 let aggcalls = await contract.multicall.methods.aggregate(calls).call()
                 this.swapPromise = helpers.makeCancelable(aggcalls)
                 let split_swap = await this.swapPromise
-                let decoded = split_swap[1].map(hex => contract.web3.eth.abi.decodeParameters(['uint256', 'uint256[10]'], hex))
+                let decoded = split_swap[1].map(hex => contract.web3.eth.abi.decodeParameters(['uint256', 'uint256[]'], hex))
                 let max = decoded.reduce((a, b) => a[0] > b[0] ? a : b)
                 this.usedFlags = contract.web3.eth.abi.decodeParameters(['address', 'address', 'uint256', 'uint256', 'uint256'], 
                                                                 calls[decoded.indexOf(max)][1].slice(10))[4]

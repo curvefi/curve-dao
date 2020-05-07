@@ -294,6 +294,7 @@ export default {
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let depositUsdSum = 0;
+		    this.depositsUSD = 0;
 
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version && localStorage.getItem(this.currentPool + 'lastDepositBlock') && localStorage.getItem(this.currentPool + 'dlastAddress') == default_account) {
@@ -331,27 +332,28 @@ export default {
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
 	            let poolInfoPoint = this.findClosest(timestamp)
+	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
+	            let transferTokens = +transfer[0].data
+	            if(addliquidity.length == 0 && transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
+	            this.depositsUSD += transferTokens * poolInfoPoint.virtual_price / 1e36
+	            console.log(transferTokens)
 		        if(addliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
 		            console.log(cTokens, "add liquidity cTokens")
 		            let usd = await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')
 		            this.depositArr.push([poolInfoPoint, usd / 100 ])
-		            this.depositsUSD += (usd / 100) * poolInfoPoint.virtual_price / 1e18
 		            depositUsdSum += usd
 		        }
-		        else if(removeliquidity.length == 0 && removeliquidityImbalance == 0) {
-		            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
+		        else {
 		            console.log(transfer)
-		            let tokens = +transfer[0].data
-		            console.log(tokens, "transfer tokens")
-		            if(transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
-		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
+		            console.log(transferTokens, "transfer tokens")
+		            let usd = this.getAvailableTransfer(transferTokens, poolInfoPoint)
 		            this.depositArr.push([poolInfoPoint, usd])
-		            this.depositsUSD += usd * poolInfoPoint.virtual_price / 1e18
 		            depositUsdSum += usd * 100
 		        }
 		    }
 		    console.timeEnd('timer')
+		    this.clearCache();
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dlastAddress', default_account)
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
@@ -364,6 +366,7 @@ export default {
 		    let default_account = currentContract.default_account
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
+		    this.withdrawalsUSD = 0;
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version 
 		    	&& localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
@@ -398,17 +401,24 @@ export default {
 		        console.log(timestamp)
 	            let poolInfoPoint = this.findClosest(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
+		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
+	            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
+	            let transferTokens = +transfer[0].data
+	            console.log(transfer)
+            	if(removeliquidity.length == 0 && 
+            		removeliquidityImbalance.length == 0 && 
+            		transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
+	            this.withdrawalsUSD += transferTokens * poolInfoPoint.virtual_price / 1e36
 		        if(removeliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
 		        	console.log(removeliquidity)
 		            console.log(cTokens, "withdraw cTokens")
 		            let usd = await this.calculateAmount(cTokens, log.blockNumber)
 		            this.withdrawArr.push([poolInfoPoint, usd / 100])
-		            this.withdrawalsUSD += usd / 100 * poolInfoPoint.virtual_price / 1e18
 		            withdrawals += usd
 		            continue;
 		        }
-		        removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
+		        removeliquidity = removeliquidityImbalance
 		        if(removeliquidity.length) {
 		        	let decodeParameters = this.decodeParametersWithdrawal
 		        	if(['compound','usdt'].includes(this.currentPool)) {
@@ -419,18 +429,12 @@ export default {
 		            console.log(decoded, 'remove imbalance tokens')
 		            let usd = await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
 		            this.withdrawArr.push([poolInfoPoint, usd / 100])
-		            this.withdrawalsUSD += usd / 100 * poolInfoPoint.virtual_price / 1e18
 		            withdrawals += usd
 		        }
 		        else {
-		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
-		            if(transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
-		            console.log(transfer)
-		            let tokens = +transfer[0].data
-		            console.log(tokens, "transfer")
-		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
+		            console.log(transferTokens, "transfer")
+		            let usd = this.getAvailableTransfer(transferTokens, poolInfoPoint)
 		            this.withdrawArr.push([poolInfoPoint, usd])
-		            this.withdrawalsUSD += usd * poolInfoPoint.virtual_price / 1e18
 		            withdrawals += usd * 100
 		        }
 

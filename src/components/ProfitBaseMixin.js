@@ -13,6 +13,7 @@ export default {
         })
         this.$watch(()=>currentContract.currentContract, val => {
             this.nullifyAmounts()
+            this.clearCache()
             this.mounted();
         })
     },
@@ -25,6 +26,7 @@ export default {
                     this.cancel = false;
                     this.nullifyAmounts();
                     this.clearCache();
+                    debugger;
                     this.mounted();
                 }, 300);
             }
@@ -81,9 +83,12 @@ export default {
     },
     methods: {
         nullifyAmounts() {
-            this.deposits = -1
-            this.withdrawals = -1
-            this.available = -1
+          this.deposits = -1
+          this.withdrawals = -1
+          this.available = -1
+          this.depositsUSD = -1
+          this.withdrawalsUSD = -1
+          this.availableUSD = -1
         },
         clearCache() {
             localStorage.removeItem(this.currentPool + 'dversion');

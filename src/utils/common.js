@@ -316,6 +316,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
         }
         else {
             contract.totalShare = 0;
+            contract.usdShare = 0
             contract.showShares = false;
             //no need to set other values as v-show check is done based on totalShare
         }

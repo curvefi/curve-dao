@@ -222,7 +222,7 @@
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
 			    let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
-				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account).encodeABI()])
+				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]

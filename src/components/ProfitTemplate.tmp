@@ -1,33 +1,39 @@
 <div class='blue window half-width info'>
     <fieldset id='profit-info'>
-        <legend>Profit</legend>
+        <legend>
+            Profit in {{showinUSD ? 'USD' : 'tokens'}}
+            <div v-show='!notinpricedata'>
+                <input id="showinUSD" type="checkbox" name="inf-approval" checked v-model='showinUSD'>
+                <label for="showinUSD">Show in {{showinUSD ? 'tokens' : 'USD'}}</label>
+            </div>
+        </legend>
         <ul id='profit'>
             <li>
             	<b>Deposits:</b> 
             	<span :class="{'loading line': deposits == -1}">
-                	<span v-show='deposits != -1'> {{(deposits/100).toFixed(2)}} </span>
+                	<span v-show='deposits != -1'> {{showDeposits}} </span>
             	</span>
         	</li>
             <li>
             	<b>Withdrawals:</b> 
             	<span :class="{'loading line': withdrawals == -1}">
-            		<span v-show='withdrawals != -1'> {{(withdrawals/100).toFixed(2)}} </span>
+            		<span v-show='withdrawals != -1'> {{showWithdrawals}} </span>
             	</span>
             </li>
             <li>
             	<b>Available:</b> 
             	<span :class="{'loading line': available == -1}">
-            		<span v-show='available != -1'> {{(available/100).toFixed(2)}} </span>
+            		<span v-show='available != -1'> {{showAvailable}} </span>
             	</span>
                 <span v-if = "currentPool == 'susdv2'">
                     (<span :class="{'loading line': profitTotalStake === null}"></span>
-                    <span v-show='profitTotalStake !== null'>{{profitTotalStake !==null && profitTotalStake.toFixed(2)}} </span> staked)
+                    <span v-show='+showStakedBalance >= 0'>{{+showStakedBalance >= 0 && showStakedBalance}} </span> staked)
                 </span>
             </li>
             <li>
             	<b>Profit:</b>
             	<span :class="{'loading line': available == -1}">
-            		<span v-show='available != -1 '> {{(profit/100).toFixed(2)}}</span>
+            		<span v-show='available != -1 '> {{showProfit}}</span>
             	</span>
             </li>
             <br>
@@ -36,10 +42,10 @@
                 <a href='https://blog.synthetix.io/new-curve-pool-launch/' class='tooltip'>[?]</a>
 
                 <li :class="{'loading line': earned === null}">
-                    <b>Pending SNX LP rewards:</b> <span v-show='earned !== null'> {{(+earned).toFixed(2)}} SNX</span>
+                    <b>Pending SNX LP rewards:</b> <span v-show='earned !== null'> {{showEarned}} {{showinUSD ? 'USD' : 'SNX'}}</span>
                 </li>
                 <li :class="{'loading line': earned === null}">
-                    <b>Paid SNX LP rewards:</b> <span v-show='paidRewards !== null'> {{(+paidRewards).toFixed(2)}} SNX</span>
+                    <b>Paid SNX LP rewards:</b> <span v-show='paidRewards !== null'> {{showRewards}} {{showinUSD ? 'USD' : 'SNX'}}</span>
                 </li>
             </ul>
         </ul>

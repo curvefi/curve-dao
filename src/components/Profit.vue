@@ -16,3 +16,10 @@
         mixins: [ProfitBaseMixin, ProfitMixin],
 	}
 </script>
+
+<style scoped>
+    #profit-info label[for='showinUSD']::before {
+        width: auto;
+        margin-right: 0.3em;
+    }
+</style>

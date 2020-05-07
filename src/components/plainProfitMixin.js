@@ -13,6 +13,7 @@ export default {
 		earned: null,
 		paidRewards: null,
 		profitTotalStake: null,
+		snxPrice: null,
 	}),
 
 	async mounted() {
@@ -26,16 +27,35 @@ export default {
 	computed: {
 		totalShare() {
 			return getters.totalShare();
-		}
-	},
-
-	methods: {
+		},
 
 		getStakedBalance() {
 			return currentContract.totalStake * 100
 		},
 
+		getStakedBalanceUSD() {
+			return this.getStakedBalance / 100 * currentContract.virtual_price
+		},
+
+		showEarned() {
+			if(this.showinUSD) return (+this.earned * this.snxPrice).toFixed(2)
+			return +this.earned.toFixed(2)
+		},
+
+		showRewards() {
+			if(this.showinUSD) return (+this.paidRewards * this.snxPrice).toFixed(2)
+			return +this.paidRewards.toFixed(2)
+		},
+	},
+
+	methods: {
+
+
 		async getSNXRewards() {
+			let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
+			let snxPrice = await request.json();
+			this.snxPrice = snxPrice.quotes.USD.price;
+
 			let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 			let calls = [
 				[curveRewards._address, curveRewards.methods.earned(currentContract.default_account).encodeABI()],

@@ -37,19 +37,44 @@ export default {
 		available: -1,
         profit: -1,
 		profit: '',
+        depositsUSD: -1,
+        withdrawalsUSD: -1,
+        availableUSD: -1,
+        profitUSD: -1,
+        showinUSD: true,
 		BN: '',
 		priceData: '',
 		ADDRESSES: {},
 		CURVE: '',
 		CURVE_TOKEN: '',
 		TRANSFER_TOPIC: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        notinpricedata: false,
         cancel: false,
 	}),
     computed: {
       ...getters,
       version() {
         return process.env.VUE_APP_VERSION
-      }
+      },
+      showDeposits() {
+      if(this.showinUSD) return this.depositsUSD.toFixed(2);
+        return (this.deposits / 100).toFixed(2)
+      },
+      showWithdrawals() {
+      if(this.showinUSD) return this.withdrawalsUSD.toFixed(2);
+        return (this.withdrawals / 100).toFixed(2)
+      },
+      showAvailable() {
+      if(this.showinUSD) return this.availableUSD.toFixed(2);
+        return (this.available / 100).toFixed(2)
+      },
+      showStakedBalance() {
+      if(this.showinUSD) return this.getStakedBalanceUSD.toFixed(2);
+        return (this.getStakedBalance / 100).toFixed(2); 
+      },
+      showProfit() {
+        return ((+this.showAvailable + +this.showStakedBalance) + +this.showWithdrawals - +this.showDeposits).toFixed(2)
+      },
     },
     beforeDestroy() {
         this.cancel = true;
@@ -66,9 +91,11 @@ export default {
             localStorage.removeItem(this.currentPool + 'dlastAddress');
             localStorage.removeItem(this.currentPool + 'wlastAddress');
             localStorage.removeItem(this.currentPool + 'lastDeposits');
+            localStorage.removeItem(this.currentPool + 'lastDepositsUSD');
             localStorage.removeItem(this.currentPool + 'wversion');
             localStorage.removeItem(this.currentPool + 'lastWithdrawalBlock');
             localStorage.removeItem(this.currentPool + 'lastWithdrawals');
+            localStorage.removeItem(this.currentPool + 'lastWithdrawalsUSD');
         },
     }
 }

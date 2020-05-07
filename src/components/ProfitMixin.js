@@ -12,6 +12,8 @@ export default {
 		addliquidityTopic: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 		removeliquidityTopic: '0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
 		removeliquidityImbalanceTopic: '0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+		depositArr: [],
+		withdrawArr: [],
 	}),
 	computed: {
 		fromBlock() {
@@ -29,6 +31,14 @@ export default {
 		decodeParametersWithdrawal1() {
 			return [`uint256[${this.N_COINS}]`,`uint256[${this.N_COINS}]`, 'uint256', 'uint256']
 		},
+
+	    getStakedBalance() {
+	    	return 0;
+	    },
+
+	    getStakedBalanceUSD() {
+	    	return 0;
+	    },
 	},
 	methods: {
 		async mounted() {
@@ -54,7 +64,9 @@ export default {
 			    this.withdrawals = await this.getWithdrawals();
 			    //this.available = await this.getAvailableBalance()
 			    this.available = currentContract.totalShare * 100
-			    this.profit = (this.available + this.getStakedBalance()) + this.withdrawals - this.deposits
+			    this.availableUSD = currentContract.usdShare || 0;
+			    this.profit = (this.available + this.getStakedBalance) + this.withdrawals - this.deposits
+			    this.profitUSD = this.availableUSD + this.withdrawalsUSD - this.depositsUSD;
 			}
 			catch(err) {
 				console.error(err);
@@ -62,9 +74,6 @@ export default {
 			}
 	    },
 
-	    getStakedBalance() {
-	    	return 0;
-	    }, 
 
 	    async getAvailableBalance() {
 	    	let available = 0;
@@ -149,7 +158,12 @@ export default {
 		},
 		findClosest(timestamp) {
 		    let dates = this.priceData.find(d=>d.timestamp - timestamp > 0);
-		    //check if timestamp was before recording, this is only for when timestamp > lastest recorded, get lastest recorded
+		    //check if timestamp was before recording, this is only for when timestamp > latest recorded, get latest recorded
+		    if(timestamp < this.priceData[0].timestamp) {
+		    	this.notinpricedata = true
+		    	this.showinUSD = false;
+		    	return this.priceData[0];
+		    }
 		    if(dates === undefined) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
@@ -286,6 +300,7 @@ export default {
 		        let block = +localStorage.getItem(this.currentPool + 'lastDepositBlock')
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
+		        this.depositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
 		    }
 
 		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({
@@ -315,10 +330,14 @@ export default {
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
+	            let poolInfoPoint = this.findClosest(timestamp)
 		        if(addliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
 		            console.log(cTokens, "add liquidity cTokens")
-		            depositUsdSum += await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')
+		            let usd = await this.calculateAmount(cTokens, receipt.blockNumber, 'deposit')
+		            this.depositArr.push([poolInfoPoint, usd / 100 ])
+		            this.depositsUSD += (usd / 100) * poolInfoPoint.virtual_price / 1e18
+		            depositUsdSum += usd
 		        }
 		        else if(removeliquidity.length == 0 && removeliquidityImbalance == 0) {
 		            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
@@ -326,8 +345,9 @@ export default {
 		            let tokens = +transfer[0].data
 		            console.log(tokens, "transfer tokens")
 		            if(transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
-		            let poolInfoPoint = this.findClosest(timestamp)
 		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
+		            this.depositArr.push([poolInfoPoint, usd])
+		            this.depositsUSD += usd * poolInfoPoint.virtual_price / 1e18
 		            depositUsdSum += usd * 100
 		        }
 		    }
@@ -335,6 +355,7 @@ export default {
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dlastAddress', default_account)
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositsUSD', this.depositsUSD);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dversion', this.version);
 		    return depositUsdSum;
 		},
@@ -351,6 +372,7 @@ export default {
 			        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
 			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
+			        this.withdrawalsUSD = +localStorage.getItem(this.currentPool + 'lastWithdrawalsUSD')
 		    }
 		    const logs = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
@@ -374,12 +396,16 @@ export default {
 		        const receipt = await currentContract.web3.eth.getTransactionReceipt(log.transactionHash);
 		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
+	            let poolInfoPoint = this.findClosest(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        if(removeliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
 		        	console.log(removeliquidity)
 		            console.log(cTokens, "withdraw cTokens")
-		            withdrawals += await this.calculateAmount(cTokens, log.blockNumber)
+		            let usd = await this.calculateAmount(cTokens, log.blockNumber)
+		            this.withdrawArr.push([poolInfoPoint, usd / 100])
+		            this.withdrawalsUSD += usd / 100 * poolInfoPoint.virtual_price / 1e18
+		            withdrawals += usd
 		            continue;
 		        }
 		        removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
@@ -391,7 +417,10 @@ export default {
 		            let decoded = currentContract.web3.eth.abi.decodeParameters(decodeParameters, removeliquidity[0].data)
 		        	console.log(removeliquidity)
 		            console.log(decoded, 'remove imbalance tokens')
-		            withdrawals += await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
+		            let usd = await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
+		            this.withdrawArr.push([poolInfoPoint, usd / 100])
+		            this.withdrawalsUSD += usd / 100 * poolInfoPoint.virtual_price / 1e18
+		            withdrawals += usd
 		        }
 		        else {
 		            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
@@ -399,8 +428,9 @@ export default {
 		            console.log(transfer)
 		            let tokens = +transfer[0].data
 		            console.log(tokens, "transfer")
-		            let poolInfoPoint = this.findClosest(timestamp)
 		            let usd = this.getAvailableTransfer(tokens, poolInfoPoint)
+		            this.withdrawArr.push([poolInfoPoint, usd])
+		            this.withdrawalsUSD += usd * poolInfoPoint.virtual_price / 1e18
 		            withdrawals += usd * 100
 		        }
 
@@ -408,6 +438,7 @@ export default {
 		    }
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalsUSD', this.withdrawalsUSD);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wlastAddress', default_account);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wversion', this.version);
 		    console.log("WITHDRAWALS", withdrawals)

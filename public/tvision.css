@@ -518,7 +518,7 @@ div.info table td {
   transform: translateY(-50%);
 }
 
-.maxbalance {
+.maxbalance, .maxbalance2 {
   padding: 0.3em;
   text-align: right;
   font-size: 0.95em;

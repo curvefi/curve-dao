@@ -71,7 +71,20 @@
                 </fieldset>
             </div>
                 <p v-show='fromInput > 0' class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
-                <p v-show='fromInput > 0' class='best-pool-text'>Trade routed through: <span id="best-pool">{{bestPoolText}}</span></p>
+                <p v-show='fromInput > 0' class='best-pool-text'>
+                    Trade routed through: 
+                    <span id="best-pool">
+                        <span v-show="bestPoolText != '1split'">
+                            {{bestPoolText}}
+                        </span>
+                        <span v-show="bestPoolText == '1split'">
+                            {{bestPoolText}}
+                            <span class='tooltip'> [?]
+                                <span class='tooltiptext' v-html = 'distributionText'></span>
+                            </span>
+                        </span>
+                    </span>
+                </p>
                 <div v-show='fromInput > 0' id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
                     <label for="slippage05">0.5%</label>
@@ -153,11 +166,14 @@
             //0x01+0x02+0x04+0x08+0x10+0x20+0x40+0x80+0x100+0x400+0x800+0x10000+0x20000+0x40000 -> 462335
             swapPromise: helpers.makeCancelable(Promise.resolve()),
             usedFlags: '',
+            usedParts: 0,
+            multipath: 0,
             swapwrapped: false,
             poolIndexes: [0, 1, 2, 3, 4],
             bestPool: null,
 		}),
         computed: {
+            //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
             CONTRACT_FLAG() {
                 //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, weth, idle
                 //enable multipath DAI, multipath USDC
@@ -239,7 +255,51 @@
                     poolMessage = 'usdt'
                 }
                 return poolMessage
-            }
+            },
+            decodeDistribution() {
+                if(this.distribution === null) return []
+                let distArr = []
+                this.multipath = 0;
+                //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
+                //multipath USDC
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x10000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                    this.multipath = 1
+                }
+                //multipath DAI
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                    this.multipath = 2
+                }
+                //no multipath
+                let curveDist = this.distribution.slice(4, 9);
+                if(this.multipath == 0) {
+                    distArr.push(curveDist)
+                }
+                else {
+                    distArr.push(curveDist.map(v => v / 256))
+                    distArr.push(curveDist.map(v => v % 256))
+                }
+
+                return distArr
+            },
+            distributionText() {
+                if(!this.decodeDistribution.length) return null;
+                let text = '';
+
+                for(let j = this.decodeDistribution.length-1; j >= 0; j--) {
+                    if(this.multipath > 0 && j == 1) 
+                        text += Object.values(this.currencies)[this.from_currency] + ' -> ' + (this.multipath == 1 ? 'DAI' : 'USDC') + '<br>'
+
+                    if(this.multipath > 0 && j == 0) 
+                        text += (this.multipath == 1 ? 'DAI' : 'USDC') + ' -> ' + Object.values(this.currencies)[this.to_currency] + '<br>'
+
+                    for(let [i, v] of this.decodeDistribution[j].entries()) {
+                        if(v < 1) continue;
+                        text += '' + (100 * v / this.usedParts).toFixed(2) + '% ' + this.pools[i] + '<br>';
+                    }
+                }
+
+                return text;
+            },
         },
         watch: {
             from_currency(val, oldval) {
@@ -448,8 +508,10 @@
                 let split_swap = await this.swapPromise
                 let decoded = split_swap[1].map(hex => contract.web3.eth.abi.decodeParameters(['uint256', 'uint256[]'], hex))
                 let max = decoded.reduce((a, b) => a[0] > b[0] ? a : b)
-                this.usedFlags = contract.web3.eth.abi.decodeParameters(['address', 'address', 'uint256', 'uint256', 'uint256'], 
-                                                                calls[decoded.indexOf(max)][1].slice(10))[4]
+                let decodedCall = contract.web3.eth.abi.decodeParameters(['address', 'address', 'uint256', 'uint256', 'uint256'], 
+                                                                calls[decoded.indexOf(max)][1].slice(10))
+                this.usedFlags = decodedCall[4]
+                this.usedParts = decodedCall[3]
                 console.log(max, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
 
                 let amount_dy = max[0];
@@ -736,6 +798,10 @@
     }
     .exchange {
         width: 60%;
+    }
+    #best-pool .tooltiptext {
+        text-align: left;
+        padding-left: 1em;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

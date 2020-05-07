@@ -118,7 +118,7 @@
             from_currency: 0,
             to_currency: 1,
             inf_approval: true,
-            fromInput: 0,
+            fromInput: '1.00',
             toInput: 0,
             maxBalance: 0,
             maxBalanceText: 0,

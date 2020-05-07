@@ -52,7 +52,7 @@ export default {
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susdv2') subdomain = 'susd'
-	        	let res = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-30m.json`);
+	        	let res = await fetch(`https://curve.fi/raw-stats/${subdomain}-30m.json`);
 	        	res = await res.json();
 	        	this.priceData = res
 		        for(let i = 0; i < currentContract.N_COINS; i++) {

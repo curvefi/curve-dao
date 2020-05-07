@@ -47,7 +47,7 @@
 	      title: 'Curve.fi :: Contracts',
 	      meta: [
 	        {'property': 'og:title', 'content': 'beta.curve.fi/contracts'},
-	        {'property': 'og:url', 'content': 'https://beta.curve.fi/contracts'},
+	        {'property': 'og:url', 'content': 'https://curve.fi/contracts'},
 	        {'property': 'og:type', 'content': 'website'},
 	        {'property': 'og:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
 	        {'property': 'og:image', 'content': '/curve.png'},
@@ -56,7 +56,7 @@
 	        {'name': 'twitter:site', 'content': '@CurveFinance'},
 	        {'name': 'twitter:creator', 'content': '@CurveFinance'},
 	        {'name': 'twitter:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
-	        {'name': 'twitter:url', 'content': 'https://beta.curve.fi/contracts'},
+	        {'name': 'twitter:url', 'content': 'https://curve.fi/contracts'},
 	        {'name': 'twitter:image', 'content': '/curve.png'},
 	      ]
 	    },

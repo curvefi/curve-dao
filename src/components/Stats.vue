@@ -204,7 +204,7 @@
 			        }
 				}
 				else {				
-					let apydata = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
+					let apydata = await fetch(`https://curve.fi/raw-stats/apys.json`)
 					apydata = await apydata.json();
 					this.apr = apydata.apy.total[subdomain];
 					this.daily_apr = apydata.apy.day[subdomain];
@@ -212,7 +212,7 @@
 					this.monthly_apr = apydata.apy.month[subdomain];
 					let period = 1440
 					//if(subdomain == 'susd') period = 30
-			        let newdata = await fetch(`https://beta.curve.fi/raw-stats/${subdomain}-${period}m.json`)
+			        let newdata = await fetch(`https://curve.fi/raw-stats/${subdomain}-${period}m.json`)
 			        this.data = await newdata.json()
 			        var step_size = Math.max(Math.round(this.data.length / 500), 1);
 			        let start_index = this.data.findIndex(el => el.virtual_price > 0)

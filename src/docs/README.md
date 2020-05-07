@@ -224,8 +224,8 @@ Sum of balances is the liquidity of the pool.
 
 ## Getting data from json files
 
-URL: https://beta.curve.fi/raw-stats/{ **compound, usdt, y, busd, susd** }-{ **1, 5, 10, 30, 1440** }m.json
-for example https://beta.curve.fi/raw-stats/compound-5m.json
+URL: https://curve.fi/raw-stats/{ **compound, usdt, y, busd, susd** }-{ **1, 5, 10, 30, 1440** }m.json
+for example https://curve.fi/raw-stats/compound-5m.json
 
 You can get historical data for a pool's state - virtual_price, rates, prices, volumes
 

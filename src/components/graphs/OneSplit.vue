@@ -335,7 +335,7 @@
             })
         },
         mounted() {
-            //this.mounted()
+            contract.allInitContracts.size >= 5 && this.mounted()
         },
 		methods: {
             async mounted() {

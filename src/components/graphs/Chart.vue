@@ -370,7 +370,7 @@
 				let intervalIndex = tradeStore.intervals.indexOf(jsonInterval)
 				if(intervalIndex >= tradeStore.intervals.indexOf('30m')) jsonInterval = '30m'
 				if(intervalIndex >= tradeStore.intervals.indexOf('1d')) jsonInterval = '1440m'
-				let urls = tradeStore.pools.map(pool=>fetch(`https://curve.fi/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
+				let urls = tradeStore.pools.map(pool=>fetch(`/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = []
 				for(let r of requests) {

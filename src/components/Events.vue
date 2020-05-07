@@ -167,7 +167,7 @@
 				for(let subscription of this.subscriptions) subscription.unsubscribe()
 				this.exchanges = []
 				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
-				let requests = await Promise.all(fetchpools.map(pool => fetch(`https://curve.fi/raw-stats/${pool}-1m.json`)))
+				let requests = await Promise.all(fetchpools.map(pool => fetch(`/raw-stats/${pool}-1m.json`)))
 				let jsons = await Promise.all(requests.map(request => request.json()))
 				for(let [i, data] of jsons.entries()) {
 					let pool = fetchpools[i]

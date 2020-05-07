@@ -292,7 +292,7 @@
 			},
 			async getAPY() {
 				let pools = ['compound', 'usdt', 'y', 'busd', 'susd']
-	            let stats = await fetch(`https://curve.fi/raw-stats/apys.json`)
+	            let stats = await fetch(`/raw-stats/apys.json`)
 	            stats = await stats.json()
                 this.volumes = stats.volume;
                 volumeStore.state.volumes = stats.volume

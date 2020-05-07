@@ -403,6 +403,7 @@ export async function init(contract, refresh = false) {
     window[contract.currentContract] = {};
     window[contract.currentContract].swap = contract.swap
     window[contract.currentContract].swap_token = contract.swap_token
+    window[contract.currentContract].deposit_zap = contract.deposit_zap
     contract.coins = []
     contract.underlying_coins = []
     if(window.location.href.includes('withdraw_old')) 

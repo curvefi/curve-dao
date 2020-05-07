@@ -433,9 +433,9 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
-					if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
-						await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
+                    if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
+                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0

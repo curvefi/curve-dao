@@ -60,6 +60,23 @@
           <div :class="{'loading line': admin_actions_deadline === null}"> {{ admin_actions_readable }} </div>
         </li>
       </ul>
+      <p>
+        <ul>
+          <li>
+            <b>Liquidity utilization: </b>
+            <span :class="{'loading line': totalBalances === null || poolVolume == -1}">
+              <span v-show='totalBalances !== null && poolVolume != -1'>
+                {{ (poolVolume * 100 / totalBalances).toFixed(2) }}%
+              </span>
+            </span>
+            <span class='tooltip'> [?]
+              <span class='tooltiptext'>
+                24h Volume/Liquidity ratio
+              </span>
+            </span>
+          </li>
+        </ul>
+      </p>
     </fieldset>
 
     <fieldset id="lp-info-container" v-show='totalShare > 0 && initializedContracts'>
@@ -103,6 +120,7 @@
 <script>
   import { getters, allCurrencies, contract as currentContract } from '../contract'
   import * as helpers from '../utils/helpers'
+  import * as volumeStore from './common/volumeStore'
 
   export default {
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake'],
@@ -112,6 +130,14 @@
           return Object.keys(currencies).join('+').toUpperCase();
         return Object.values(currencies).join('+');
       },
+    },
+    async created() {
+      if(volumeStore.state.volumes.compound == -1) {
+        let stats = await fetch(`https://beta.curve.fi/raw-stats/apys.json`)
+        stats = await stats.json()
+        this.volumes = stats.volume;
+        volumeStore.state.volumes = stats.volume
+      }
     },
     computed: {
       showShares: getters.showShares,
@@ -153,6 +179,9 @@
       },
       admin_actions_deadline() {
         return getters.admin_actions_deadline()
+      },
+      poolVolume() {
+        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool]
       },
     }
   }

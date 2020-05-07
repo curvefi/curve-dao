@@ -26,7 +26,6 @@ export default {
                     this.cancel = false;
                     this.nullifyAmounts();
                     this.clearCache();
-                    debugger;
                     this.mounted();
                 }, 300);
             }

@@ -144,7 +144,7 @@
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
-            fromInput: '0.00',
+            fromInput: '1.00',
             toInput: '0.00',
             disabled: true,
             bgColor: '#505070',

@@ -346,7 +346,8 @@
 		},
 		watch: {
 			selectChange() {
-				this.mounted()
+				this.watchLoadedContracts();
+				contract.allInitContracts.size >= tradeStore.pools.length && this.mounted()
 			}
 		},
 		mounted() {
@@ -354,7 +355,7 @@
 /*			this.$watch(()=>contract.initializedContracts, val => {
                 if(val) this.mounted();
             })*/
-            this.mounted()
+            this.watchLoadedContracts();
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)
@@ -365,6 +366,14 @@
 			}
 		},
 		methods: {
+			watchLoadedContracts() {
+				let unwatch = this.$watch(() => contract.allInitContracts.size, val => {
+					if(val >= tradeStore.pools.length) {
+						this.mounted()
+						unwatch()
+					}
+				})
+			},
 			async loadData() {
 				let jsonInterval = this.interval;
 				let intervalIndex = tradeStore.intervals.indexOf(jsonInterval)
@@ -396,75 +405,91 @@
 			},
 			async processData(data) {
 				this.ohlcData = []
+				let ohlc = []
+			    let volume = []
 				try {
-					for(let i = 0; i < data[0].length; i++) {
-						this.ohlcData[i] = {}
-						this.ohlcData[i].timestamp = data[0][i].timestamp
-						this.ohlcData[i].prices = {}
-						this.ohlcData[i].prices[this.pairIdx] = []
-						this.ohlcData[i].volume = {}
-						this.ohlcData[i].volume[this.pairIdx] = []
-						for(let j = 0; j < data.length; j++) {
-							if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
-							let v = data[j][i]
-							if(Object.keys(v).length === 0 && v.constructor === Object) continue;
-							if(v === undefined) continue;
-							//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
-							let get_dy_underlying = await calcWorker.calcPrice(
-								{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, abis[this.pools[j]].coin_precisions[this.fromCurrency])
-							let calcprice = +(BN(get_dy_underlying).div(abis[this.pools[j]].coin_precisions[this.toCurrency]))
-							if(calcprice == 0) continue;
-							if(this.inverse) calcprice = 1 / calcprice
-							if(v.prices[this.pairIdx]) {
-								if(this.inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
-								v.prices[this.pairIdx].push(calcprice)
+					let lastPriceCalls = this.pools.map(pool=> {
+						return [
+							abis[pool].swap_address, 
+							window[pool].swap.methods
+								.get_dy_underlying(this.fromCurrency, this.toCurrency, BN(abis[pool].coin_precisions[this.fromCurrency]).toFixed(0)).encodeABI()
+						]
+					})
+					let aggcalls = await contract.multicall.methods.aggregate(lastPriceCalls).call()
+					let lastPrices = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+					let length = data[0].length;
+					let chunkSize = 70
+					for(let l = length-1; l > 0; l-= chunkSize) {
+						for(let i = l; i > l-chunkSize && i > 0; i--) {
+							this.ohlcData[i] = {}
+							this.ohlcData[i].timestamp = data[0][i].timestamp
+							this.ohlcData[i].prices = {}
+							this.ohlcData[i].prices[this.pairIdx] = []
+							this.ohlcData[i].volume = {}
+							this.ohlcData[i].volume[this.pairIdx] = []
+							for(let j = 0; j < data.length; j++) {
+								if(this.poolConfigs[j].N_COINS-1 < this.toCurrency) continue;
+								let v = data[j][i]
+								if(Object.keys(v).length === 0 && v.constructor === Object) continue;
+								if(v === undefined) continue;
+								//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
+								let get_dy_underlying = await calcWorker.calcPrice(
+									{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, abis[this.pools[j]].coin_precisions[this.fromCurrency])
+								let calcprice = +(BN(get_dy_underlying).div(abis[this.pools[j]].coin_precisions[this.toCurrency]))
+								if(calcprice == 0) continue;
+								if(this.inverse) calcprice = 1 / calcprice
+								if(v.prices[this.pairIdx]) {
+									if(this.inverse) v.prices[this.pairIdx] = v.prices[this.pairIdx].map(price => 1/price)
+									v.prices[this.pairIdx].push(calcprice)
+								}
+								else {
+									v.prices[this.pairIdx] = [calcprice]
+									v.volume[this.pairIdx] = [0]
+								}
+								if(i == length-1) {
+									let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
+									let lastPrice = +(BN(lastPrices[j])).div(abis[this.pools[j]].coin_precisions[this.toCurrency])
+									this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
+								}
+								this.ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
+								this.ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>{
+									if(k == 0) return v / abis[this.pools[j]].coin_precisions[this.fromCurrency]
+									return v / abis[this.pools[j]].coin_precisions[this.toCurrency]
+								})
 							}
-							else {
-								v.prices[this.pairIdx] = [calcprice]
-								v.volume[this.pairIdx] = [0]
-							}
-							if(i == data[0].length-1) {
-								let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
-								let lastPrice = await contract.swap.methods
-														.get_dy_underlying(this.fromCurrency, this.toCurrency, dx).call()
-								lastPrice = +(BN(lastPrice)).div(abis[this.pools[j]].coin_precisions[this.toCurrency])
-								this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
-							}
-							this.ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])
-							this.ohlcData[i].volume[this.pairIdx][j] = v.volume[this.pairIdx].map((v,k)=>{
-								if(k == 0) return v / abis[this.pools[j]].coin_precisions[this.fromCurrency]
-								return v / abis[this.pools[j]].coin_precisions[this.toCurrency]
-							})
 						}
+
+					    let dataLength = this.ohlcData.length
+					        // set the allowed units for data grouping
+			    		for (let i = l; i > l-chunkSize && i > 0; i--) {
+					    	let len = this.ohlcData[i].prices[this.pairIdx].length-1
+
+					    	let ohlcPoint = [
+					            this.ohlcData[i].timestamp*1000, // the date
+					            this.ohlcData[i].prices[this.pairIdx][0], // open
+					            Math.max(...this.ohlcData[i].prices[this.pairIdx]), // high
+					            Math.min(...this.ohlcData[i].prices[this.pairIdx]), // low
+					            this.ohlcData[i].prices[this.pairIdx][len] // close
+					        ]
+					        ohlc.unshift(ohlcPoint);
+					        let volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
+					        if(this.inverse) volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
+					        let volumePoint = [
+					            this.ohlcData[i].timestamp*1000, // the date
+					            volumeData.reduce((a, b) => a + b, 0) // the volume
+					        ]
+					        volume.unshift(volumePoint);
+					    }
+
+					    this.chart.hideLoading();
+					    this.$refs.highcharts.chart.series[0].setData(ohlc)
+			    		this.$refs.highcharts.chart.series[1].setData(volume)
 					}
 				}
 				catch(err) {
 					console.error(err)
 				}
 
-			    let ohlc = []
-			    let volume = []
-			    let dataLength = this.ohlcData.length
-			        // set the allowed units for data grouping
-			    for (let i = 0; i < dataLength; i++) {
-			    	let len = this.ohlcData[i].prices[this.pairIdx].length-1
-
-			    	let ohlcPoint = [
-			            this.ohlcData[i].timestamp*1000, // the date
-			            this.ohlcData[i].prices[this.pairIdx][0], // open
-			            Math.max(...this.ohlcData[i].prices[this.pairIdx]), // high
-			            Math.min(...this.ohlcData[i].prices[this.pairIdx]), // low
-			            this.ohlcData[i].prices[this.pairIdx][len] // close
-			        ]
-			        ohlc.push(ohlcPoint);
-			        let volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[0])
-			        if(this.inverse) volumeData = this.ohlcData[i].volume[this.pairIdx].map(vs=>vs[1])
-			        let volumePoint = [
-			            this.ohlcData[i].timestamp*1000, // the date
-			            volumeData.reduce((a, b) => a + b, 0) // the volume
-			        ]
-			        volume.push(volumePoint);
-			    }
 
 			    return [ohlc, volume]
 			},
@@ -504,8 +529,7 @@
 
 			    // split the data set into ohlc and volume
 
-			    this.$refs.highcharts.chart.series[0].setData(ohlc)
-			    this.$refs.highcharts.chart.series[1].setData(volume)
+			    
 		        console.log(this.$refs.highcharts.chart)
 		        this.chart.setTitle({text: this.pairVal.toUpperCase()})
 /*		        this.chart.update({

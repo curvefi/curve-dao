@@ -10,7 +10,7 @@
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
 			<p class='text-center'>
 		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd'">
-		      		beta.curve.fi/{{currency == 'iearn' ? 'y' : currency == 'susd' ? 'susdv2' : currency}}
+		      		curve.fi/{{currency == 'iearn' ? 'y' : currency == 'susd' ? 'susdv2' : currency}}
 		      	</router-link>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>

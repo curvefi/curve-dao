@@ -1,6 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address } from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address, multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -356,6 +356,7 @@ export const getters = {
 
 
 export async function init(contract, refresh = false) {
+	state.multicall = state.multicall || new web3.eth.Contract(multicall_abi, multicall_address)
 	console.time('init')
 	//contract = contracts.compound for example
 	if(state.initializedContracts && contract.currentContract == state.currentContract && !refresh) return Promise.resolve();

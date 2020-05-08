@@ -39,9 +39,12 @@ export async function updatePoolInfo() {
 		let cont = contract.contracts[pool]
 		if(pool == contract.currentContract) cont = contract
 		calls.push(
-			[cont.swap._address, cont.swap.methods.A().encodeABI()],
-			[cont.swap_token._address, cont.swap_token.methods.totalSupply().encodeABI()],
-			[cont.swap._address, cont.swap.methods.get_virtual_price().encodeABI()]
+			//A()
+			[abis[pool].swap_address, '0xf446c1d0'],
+			//totalSupply()
+			[abis[pool].token_address, '0x18160ddd'],
+			//get_virtual_price()
+			[abis[pool].swap_address, '0xbb7b8b80']
 		)
 	}
 	let aggcalls = await contract.multicall.methods.aggregate(calls).call()

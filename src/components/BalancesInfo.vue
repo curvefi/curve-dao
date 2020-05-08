@@ -7,13 +7,13 @@
             <b>{{currency | capitalize}}:</b>
             <span :class="{'loading line': !bal_info || bal_info[i] === null}"> 
               <span v-show='bal_info && bal_info[i]'> 
-                {{bal_info && bal_info[i] | toFixed2}} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
+                {{bal_info && bal_info[i] | toFixed2 | formatNumber }} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
               </span>
             </span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
-            <span :class="{'loading line': totalBalances === null}"> {{totalBalances | toFixed2}}</span>
+            <span :class="{'loading line': totalBalances === null}"> {{totalBalances | toFixed2 | formatNumber}}</span>
           </li>
       </ul>
       <p>
@@ -84,14 +84,14 @@
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{l_info && l_info[i] | toFixed2}}</span></li>
+            <span> {{l_info && l_info[i] | toFixed2 | formatNumber}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{totalShare | toFixed2}}</span>
+            <span> {{totalShare | toFixed2 | formatNumber}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{(usdShare) | toFixed2}}
+            <b>Averaged USD balance:</b> {{(usdShare) | toFixed2 | formatNumber }}
           </li>
       </ul>
     </fieldset>
@@ -100,15 +100,15 @@
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{staked_info && staked_info[i] | toFixed2}}</span></li>
+            <span> {{staked_info && staked_info[i] | toFixed2 | formatNumber}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{totalStake | toFixed2}}</span>
+            <span> {{totalStake | toFixed2 | formatNumber}}</span>
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{(usdStake) | toFixed2}}
+            <b>Averaged USD balance:</b> {{(usdStake) | toFixed2 | formatNumber}}
           </li>
 
       </ul>

@@ -109,7 +109,7 @@
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
             </div>
             <div class='info-message gentle-message' v-show='show_loading'>
-                {{waitingMessage}} <span class='loading line'></span>
+                <span v-html='waitingMessage'></span> <span class='loading line'></span>
             </div>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
@@ -380,7 +380,15 @@
 				return min_amounts;
 			},
 			async unstake(amount, exit = false) {
-                this.waitingMessage = `Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal`;
+                this.waitingMessage = `
+                    Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal
+                    <span class='tooltip'> [?]
+                        <span class='tooltiptext long'>
+                            A bit more tokens are needed to unstake to ensure that withdrawal is successful.
+                            You'll see them in your unstaked balance afterwards.
+                        </span>
+                    </span>
+                `;
                 try {
     				await new Promise((resolve, reject) => {
     					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))

@@ -177,10 +177,17 @@
 				this.subscriptions = []
 				this.page = 0
 				this.gotopage = 0
+				let latestblock = await web3.eth.getBlockNumber();
 				let results = this.pools.map(pool => {
 					return [
-						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(this.tokenExchangeUnderlyingEvent, { fromBlock: this.fromBlock }),
-						this.swapContracts[this.allPools.indexOf(pool)].getPastEvents(this.tokenExchangeEvent, { fromBlock: this.fromBlock }),
+						this.swapContracts[this.allPools.indexOf(pool)]
+						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
+							{ fromBlock: latestblock - 1000 }
+						),
+						this.swapContracts[this.allPools.indexOf(pool)]
+						.getPastEvents(this.tokenExchangeEvent, 
+							{ fromBlock: latestblock - 1000 }
+						),
 					]
 				})
 				results = await Promise.all(results.flat())
@@ -242,7 +249,6 @@
 						}
 					}
 				}
-				console.log(calls, "CALLS")
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let block = aggcalls[0];
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))

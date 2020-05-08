@@ -262,6 +262,7 @@
 				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				this.balances = []
 				helpers.chunkArr(decoded, 2).slice(0,5).map(v => {
 					this.balances.push(+v[0] * (+v[1]) / 1e36);
 				})

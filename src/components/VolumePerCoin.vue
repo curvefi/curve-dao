@@ -219,6 +219,7 @@
 				await volumeStore.fetchVolumeData(pools, false, 1440)
 				let data = volumeStore.state.volumeData[1440]
 				data.compound = (new Array(data.usdt.length-data.compound.length).fill({})).concat(data.compound)
+				data.y = (new Array(data.usdt.length-data.y.length).fill({})).concat(data.y)
 				data.busd = (new Array(data.usdt.length-data.busd.length).fill({})).concat(data.busd)
 				data.susd = (new Array(data.usdt.length-data.susd.length).fill({})).concat(data.susd)
 

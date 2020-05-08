@@ -34,7 +34,7 @@ export default {
 		},
 
 		getStakedBalanceUSD() {
-			return this.getStakedBalance / 100 * currentContract.virtual_price
+			return currentContract.curveStakedBalance * currentContract.virtual_price / 1e18
 		},
 
 		showEarned() {

@@ -358,6 +358,7 @@ export default {
 	            let poolInfoPoint = this.interpolatePoint(timestamp)
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
+	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)
 	            if(addliquidity.length == 0 && transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
 	            this.depositsUSD += transferTokens * poolInfoPoint.virtual_price / 1e36
 	            console.log(transferTokens)
@@ -428,6 +429,7 @@ export default {
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 	            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
+	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)
 	            console.log(transfer)
             	if(removeliquidity.length == 0 && 
             		removeliquidityImbalance.length == 0 && 

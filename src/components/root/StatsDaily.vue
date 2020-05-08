@@ -172,7 +172,8 @@
 				let chartData = [];
 		        for(let i = 1; i < json.length; i++) {
 		        	var el = json[i];
-		        	let profit = ((el.virtual_price / 1e18) / (json[i-1].virtual_price / 1e18)) ** 365 - 1
+		        	let daylen = el.timestamp - json[i-1].timestamp
+		        	let profit = ((el.virtual_price / 1e18) / (json[i-1].virtual_price / 1e18)) ** (365 * 86400 / daylen) - 1
 		        	chartData.push([
 		        		el.timestamp * 1000,
 		        		profit * 100,

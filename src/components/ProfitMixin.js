@@ -168,8 +168,8 @@ export default {
 		    return dates;
 		},
 		interpolatePoint(timestamp) {
-			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0)
-			let next = this.priceData.find(p=>p.timestamp - timestamp > 0)
+			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
+			let next = this.priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
 			if(prev === undefined) prev = this.priceData[0]
 			if(next === undefined) next = this.priceData[this.priceData.length-1]
 			if(prev.timestamp == next.timestamp) return next;
@@ -277,7 +277,7 @@ export default {
 		        // exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
 		    }
 			if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
-		    return exchangeRate;
+		    return exchangeRate | 0;
 		},
 
 		async calculateAmount(cTokens, block, type) {

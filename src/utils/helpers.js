@@ -24,6 +24,11 @@ export function totalCurrencies(currencies) {
 	return Object.keys(currencies).join('+');
 }
 
+
+export function interpolate(x, x0, x1) {
+  return (y0, y1) => y0 + (x - x0)*(y1 - y0)/(x1 - x0)
+}
+
 export function debounced(delay, fn) {
   let timerId;
   return function (...args) {

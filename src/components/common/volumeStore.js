@@ -46,7 +46,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
 	pools = pools.filter(pool => !state.volumeData[period][pool].length)
-	let requests = pools.map(p => fetch(`/raw-stats/${p}-${period}m.json`))
+	let requests = pools.map(p => fetch(`${window.domain}/raw-stats/${p}-${period}m.json`))
 	requests = await Promise.all(requests)
 	let jsons = await Promise.all(requests.map(r => r.json()))
 	for(let [i, data] of jsons.entries()) {
@@ -58,7 +58,7 @@ export async function getVolumes(pools, refresh = false) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
 	if(Object.values(state.volumes).filter(v=>v!=-1).length == pools.length && !refresh) return;
-	let stats = await fetch(`/raw-stats/apys.json`)
+	let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
     stats = await stats.json()
     state.volumes = stats.volume;
 }

@@ -1,6 +1,6 @@
 import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
-import { makeCancelable } from '../utils/helpers'
+import { makeCancelable, interpolate } from '../utils/helpers'
 
 import allabis from '../allabis'
 
@@ -52,7 +52,7 @@ export default {
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susdv2') subdomain = 'susd'
-	        	let res = await fetch(`/raw-stats/${subdomain}-30m.json`);
+	        	let res = await fetch(`${window.domain}/raw-stats/${subdomain}-1440m.json`);
 	        	res = await res.json();
 	        	this.priceData = res
 		        for(let i = 0; i < currentContract.N_COINS; i++) {
@@ -167,6 +167,28 @@ export default {
 		    if(dates === undefined) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
+		interpolatePoint(timestamp) {
+			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0)
+			let next = this.priceData.find(p=>p.timestamp - timestamp > 0)
+			if(prev === undefined) prev = this.priceData[0]
+			if(next === undefined) next = this.priceData[this.priceData.length-1]
+			if(prev.timestamp == next.timestamp) return next;
+
+			let point = {
+				// virtual_price,
+				// balances: [],
+				// rates: [],
+				// supply: [],
+			}
+
+			let interpolator = interpolate(timestamp, prev.timestamp, next.timestamp)
+			point.virtual_price = interpolator(prev.virtual_price, next.virtual_price)
+			point.balances = prev.balances.map((b, i) => interpolator(b, next.balances[i]))
+			point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
+			point.supply = interpolator(prev.supply, next.supply);
+			return point
+
+		},
 	    fromNative(curr, value) {
 		    return value.divRound(this.BN(1e16)).toNumber()
 		},
@@ -248,9 +270,11 @@ export default {
 		        	exchangeRatePast.exchangeRate = exchangeRatePast.exchangeRate.toNumber()
 		        }
 	        	if(exchangeRatePast.exchangeRate === undefined || exchangeRateFuture.exchangeRate === undefined) return -1;
-		        exchangeRate = (exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber)*(exchangeRateFuture.exchangeRate-(exchangeRatePast.exchangeRate))
-		        exchangeRate = exchangeRate / ((exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber))
-		        exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
+	        	exchangeRate = interpolate(blockNumber, exchangeRatePast.blockNumber, exchangeRateFuture.blockNumber)( 
+	        		exchangeRatePast.exchangeRate, exchangeRateFuture.exchangeRate)
+		        // exchangeRate = (blockNumber - exchangeRatePast.blockNumber)*(exchangeRateFuture.exchangeRate-(exchangeRatePast.exchangeRate))
+		        // exchangeRate = exchangeRate / ((exchangeRateFuture.blockNumber - exchangeRatePast.blockNumber))
+		        // exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
 		    }
 			if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
 		    return exchangeRate;
@@ -331,7 +355,7 @@ export default {
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
-	            let poolInfoPoint = this.findClosest(timestamp)
+	            let poolInfoPoint = this.interpolatePoint(timestamp)
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            if(addliquidity.length == 0 && transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
@@ -399,7 +423,7 @@ export default {
 		        const receipt = await currentContract.web3.eth.getTransactionReceipt(log.transactionHash);
 		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
-	            let poolInfoPoint = this.findClosest(timestamp)
+	            let poolInfoPoint = this.interpolatePoint(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 	            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)

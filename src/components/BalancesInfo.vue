@@ -133,7 +133,7 @@
     },
     async created() {
       if(volumeStore.state.volumes.compound == -1) {
-        let stats = await fetch(`/raw-stats/apys.json`)
+        let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
         this.volumes = stats.volume;
         volumeStore.state.volumes = stats.volume

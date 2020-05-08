@@ -305,4 +305,10 @@
 	.poolselect {
 		margin-bottom: 10px;
 	}
+	.poolselect > label:nth-of-type(1) {
+		margin-left: 0;
+	}
+	.poolselect > label {
+		margin-left: 1em;
+	}
 </style>

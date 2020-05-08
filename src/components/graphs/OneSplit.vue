@@ -503,7 +503,7 @@
                 let amount = BN(this.fromInput).times(this.precisions(this.from_currency)).toFixed(0)
                 let calls = this.getCalls(amount)
                 this.swapPromise.cancel();
-                let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+                let aggcalls = contract.multicall.methods.aggregate(calls).call()
                 this.swapPromise = helpers.makeCancelable(aggcalls)
                 let split_swap = await this.swapPromise
                 let decoded = split_swap[1].map(hex => contract.web3.eth.abi.decodeParameters(['uint256', 'uint256[]'], hex))

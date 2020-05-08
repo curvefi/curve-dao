@@ -93,6 +93,7 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 		let json = state.volumeData[interval][pool]
 		let data = json[j]
 		let prevdata = json[j-1]
+		console.log(prevdata, data)
 		let balances = data.balances.map((b,bi)=>b /= abis[pool == 'susd' ? 'susdv2' : pool].coin_precisions[bi])
 		let apdrate = data.rates.map((rate, k) => {
 			return (rate / prevdata.rates[k]) - 1
@@ -101,7 +102,8 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 		let sump = balancesp.reduce((a,b) => a + b, 0)
 		let sumbalances = balances.reduce((a, b) => a + b, 0)
 		let apd = sump / sumbalances
-		let apdy = (1 + apd) ** 365
+		let daylen = data.timestamp - prevdata.timestamp
+		let apdy = (1 + apd) ** (365 * 86400 / daylen)
 		lendingrates.push([
 			data.timestamp * 1000,
 			(apdy - 1) * 100

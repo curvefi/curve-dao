@@ -356,6 +356,7 @@
                 if(val) this.mounted();
             })*/
             this.watchLoadedContracts();
+            if(contract.allInitContracts.size >= tradeStore.pools.length) this.mounted()
 		},
 		beforeDestroy() {
 			EventBus.$off('selected', this.selectPool)

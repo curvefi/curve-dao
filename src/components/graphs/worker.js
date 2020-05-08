@@ -22,8 +22,9 @@ let normalizeCoinIdx = (i, pool) => {
 let getVolumePerCoin = (data, pools, allabis) => {
 	let poolnames = pools.map(entry => entry[0])
 	let volumes = [[],[],[],[],[],[]]
-	for(let i = 0; i < data.usdt.length; i++) {
-		let timestamp = data.usdt[i].timestamp
+	let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
+	for(let i = 0; i < data[maxlenpool].length; i++) {
+		let timestamp = data[maxlenpool][i].timestamp
 		for(let pool of poolnames) {
 			let key = pool
 			let v = data[key][i]

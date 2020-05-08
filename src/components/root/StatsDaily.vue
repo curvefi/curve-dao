@@ -130,13 +130,17 @@
 					let volumeSeries = []
 					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
 					let data = volumeStore.state.allVolume
-					data.susdv2 = new Array(volumeStore.state.allVolume.usdt.length-data.susd.length).fill({}).concat(data.susd)
-					for(let i = 0; i < volumeStore.state.allVolume.usdt.length; i++) {
+					let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
+					data = Object.keys(data).reduce((obj, key) => {
+						return {...obj, [key]: (new Array(Math.max(...Object.values(data).map(arr=>arr.length))-data[key].length).fill({})).concat(data[key])}
+					}, {})
+					data.susdv2 = data.susd
+					for(let i = 0; i < data[maxlenpool].length; i++) {
 						volumeSeries.push([
-							volumeStore.state.allVolume.usdt[i][0],
+							data[maxlenpool][i][0],
 							allPools.map(p=>{
 								p = p == 'susd' ? 'susdv2' : p
-								return volumeStore.state.allVolume[p][i] && volumeStore.state.allVolume[p][i][1] || 0
+								return data[p] && data[p][i] && data[p][i][1] || 0
 							}).reduce((a ,b) => (+a) + (+b), 0)
 						])
 					}

@@ -18,7 +18,7 @@
 				<input id='susdpool' type='checkbox' value='susdv2' v-model='pools'/>
 				<label for='susdpool'>sUSD</label>
 
-				<button @click="selectPools">Select</button>
+				<button @click="selectPoolsHandler">Select</button>
 
 				<table class="tui-table">
 				    <thead>
@@ -32,6 +32,14 @@
 				        </tr>
 				    </thead>
 				    <tbody>
+				    	<tr v-show='!exchanges.length' class='loadingtr'>
+				    		<td><span class='loading line'></span></td>
+				    		<td><span class='loading line'></span></td>
+				    		<td><span class='loading line'></span></td>
+				    		<td><span class='loading line'></span></td>
+				    		<td><span class='loading line'></span></td>
+				    		<td><span class='loading line'></span></td>
+				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
@@ -66,6 +74,9 @@
 				        </tr>
 				    </tbody>
 				</table>
+				<div>
+					<button id='loadmore' @click='loadMore' v-show='page == pages && exchanges.length'>Load more</button>
+				</div>
 				<div id='pages'>
 					<button @click='page > 0 && page--'>Prev</button>
 					Page: {{page}} (of {{pages}})
@@ -126,7 +137,8 @@
 				iearn: [],
 				busd: [],
 				susdv2: [],
-			}
+			},
+			latestblock: null,
 		}),
 		computed: {
 			...getters,
@@ -163,7 +175,38 @@
 			contract.multicall && this.mounted();
 		},
 		methods: {
+			getEvents(block) {
+				return this.pools.map(pool => {
+					return [
+						this.swapContracts[this.allPools.indexOf(pool)]
+						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
+							{ fromBlock: block - 1000 }
+						),
+						this.swapContracts[this.allPools.indexOf(pool)]
+						.getPastEvents(this.tokenExchangeEvent, 
+							{ fromBlock: block - 1000 }
+						),
+					]
+				})
+			},
+			selectPoolsHandler() {
+				this.exchanges = []
+				this.selectPools()
+			},
+			async loadMore() {
+				let lastBlock = this.exchanges[this.exchanges.length-1].blockNumber
+				this.loadEvents(lastBlock)
+			},
+			async loadEvents(block) {
+				let length = 0
+				while(length < 500) {
+					let results = await Promise.all(this.getEvents(block).flat())
+					length += results.flat().length
+					this.exchanges.push(...results.flat().sort((a, b) => b.blockNumber - a.blockNumber))
+				}
+			},
 			async selectPools() {
+				this.latestblock = await web3.eth.getBlockNumber();
 				for(let subscription of this.subscriptions) subscription.unsubscribe()
 				this.exchanges = []
 				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
@@ -177,21 +220,7 @@
 				this.subscriptions = []
 				this.page = 0
 				this.gotopage = 0
-				let latestblock = await web3.eth.getBlockNumber();
-				let results = this.pools.map(pool => {
-					return [
-						this.swapContracts[this.allPools.indexOf(pool)]
-						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
-							{ fromBlock: latestblock - 1000 }
-						),
-						this.swapContracts[this.allPools.indexOf(pool)]
-						.getPastEvents(this.tokenExchangeEvent, 
-							{ fromBlock: latestblock - 1000 }
-						),
-					]
-				})
-				results = await Promise.all(results.flat())
-				this.exchanges = results.flat().sort((a, b) => b.blockNumber - a.blockNumber)
+				await this.loadEvents(this.latestblock)
 				//listen for new events
 				this.pools.forEach(pool => {
 					let subscription = this.swapContracts[this.allPools.indexOf(pool)]
@@ -381,6 +410,15 @@
 	select.tvision {
 		box-shadow: none;
 		margin-left: 10px;
+	}
+
+	.loadingtr td {
+		text-align: center;
+	}
+
+	#loadmore {
+		margin-left: 0;
+		margin-top: 10px;
 	}
 
 

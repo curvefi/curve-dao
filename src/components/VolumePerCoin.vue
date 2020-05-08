@@ -218,8 +218,9 @@
 				let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y')
 				await volumeStore.fetchVolumeData(pools, false, 1440)
 				let data = volumeStore.state.volumeData[1440]
-				data.busd = (new Array(data.compound.length-data.busd.length).fill({})).concat(data.busd)
-				data.susd = (new Array(data.compound.length-data.susd.length).fill({})).concat(data.susd)
+				data.compound = (new Array(data.usdt.length-data.compound.length).fill({})).concat(data.compound)
+				data.busd = (new Array(data.usdt.length-data.busd.length).fill({})).concat(data.busd)
+				data.susd = (new Array(data.usdt.length-data.susd.length).fill({})).concat(data.susd)
 
 				let filteredData = Object.keys(data).filter(pool => this.piepools.includes(pool)).reduce((obj, key) => ({ ...obj, [key]: data[key]}), {})
 				pools = Object.entries(filteredData)

@@ -22,12 +22,12 @@ let normalizeCoinIdx = (i, pool) => {
 let getVolumePerCoin = (data, pools, allabis) => {
 	let poolnames = pools.map(entry => entry[0])
 	let volumes = [[],[],[],[],[],[]]
-	for(let i = 0; i < data.compound.length; i++) {
-		let timestamp = data.compound[i].timestamp
+	for(let i = 0; i < data.usdt.length; i++) {
+		let timestamp = data.usdt[i].timestamp
 		for(let pool of poolnames) {
 			let key = pool
 			let v = data[key][i]
-			if(Object.keys(v).length === 0 && v.constructor === Object) continue;
+			if(!v || Object.keys(v).length === 0 && v.constructor === Object) continue;
 			let vol = Object.entries(v.volume)
 			for(let [pair, val] of vol) {
 				let [m, n] = pair.split('-')

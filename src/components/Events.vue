@@ -73,11 +73,11 @@
 		            	 			{{ event.virtual_price}}
 		            	 		</a>
 		            	 	</td> -->
-		            	 	<td>
+<!-- 		            	 	<td>
 		            	 		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 		            	 			{{ event.yield }}
 		            	 		</a>
-		            	 	</td>
+		            	 	</td> -->
 				        </tr>
 				    </tbody>
 				</table>

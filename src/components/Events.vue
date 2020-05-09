@@ -25,17 +25,17 @@
 				        <tr>
 				        	<th>Block #</th>
 				            <th>Swap</th>
-				            <th>tokens_sold</th>
-				            <th>tokens_bought</th>
+				            <th>tokens sold</th>
+				            <th>tokens bought</th>
 				            <th>Pool</th>
 				            <th>Event</th>
 				            <!-- <th>Virtual price</th> -->
-				            <!-- <th>Yield</th> -->
+				            <th>Yield</th>
 				        </tr>
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 6'><span class='loading line'></span></td>
+				    		<td v-for='n in 7'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
@@ -73,11 +73,11 @@
 		            	 			{{ event.virtual_price}}
 		            	 		</a>
 		            	 	</td> -->
-<!-- 		            	 	<td>
+ 		            	 	<td>
 		            	 		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-		            	 			{{ event.yield }}
+		            	 			{{ (event.yield * 10000).toFixed(4) }} bps
 		            	 		</a>
-		            	 	</td> -->
+		            	 	</td>
 				        </tr>
 				    </tbody>
 				</table>
@@ -246,31 +246,36 @@
 					if(!event.fromCurrency) event =  this.formatEvent(event)
 					return event;
 				}))
-				exchanges = exchanges.map(event => {
+				let events = []
+				for(let event of exchanges) {
 					let prevEvent = exchanges.find(e => {
 						return e.address == event.address && e.transactionHash != event.transactionHash && e.blockNumber <= event.blockNumber
 					})
-					let virtual_price;
-					// if(prevEvent === undefined) {
-					// 	let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
-					// 	let poolIdx = this.pools.indexOf(pool);
-					// 	try {
-					// 		virtual_price = await this.swapContracts[poolIdx].methods.get_virtual_price().call(null, event.blockNumber - 1)
-					// 	}
-					// 	catch(err) {
-					// 		console.error(err)
-					// 	}
-					// }
+					let virtual_price
+					if(prevEvent === undefined) {
+						let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
+						let poolIdx = this.pools.indexOf(pool);
+						try {
+							virtual_price = await this.swapContracts[poolIdx].methods.get_virtual_price().call(null, event.blockNumber - 1)
+							virtual_price /= 1e18
+						}
+						catch(err) {
+							console.error(err)
+							virtual_price = this.findClosest(event.timestamp, poolIdx).virtual_price / 1e18
+						}
+					}
+					else {
+						virtual_price = prevEvent.virtual_price
+					}
 					if(virtual_price === undefined) {
 						event.yield = ''
 					}
 					else {
 						event.yield = (event.virtual_price / virtual_price - 1)
 					}
-					prevEvent = prevEvent || { virtual_price: 1 }
-					return event
-				})
-				this.paginatedExchanges = exchanges
+					events.push(event)
+				}
+				this.paginatedExchanges = events
 			},
 			async selectPools() {
 				this.latestblock = await web3.eth.getBlockNumber();
@@ -483,13 +488,13 @@
 				let precisions = 1e18 * allabis[pool].coin_precisions[i]
 				let rate
 				if(event.blockNumber > this.latestblock - 120) {
-					rate = this.c_rates[pool][i] * precisions
+					rate = this.c_rates[pool][i]
 				}
 				else {
 					rate = poolInfo.rates[i] / precisions
 				}
 				if(event.event == 'TokenExchange') {
-					amount = amount * rate / precisions
+					amount = amount * rate
 				}
 				else amount = amount / allabis[pool].coin_precisions[i]
 				return amount
@@ -510,6 +515,9 @@
 </script>
 
 <style scoped>
+	.blue.window.Events, .white.window {
+		max-width: 730px;
+	}
 	legend {
 		text-align: center;
 	}

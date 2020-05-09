@@ -928,6 +928,10 @@ input[type=range]:focus::-ms-fill-upper {
   max-width: 700px;
 }
 
+.blue.window.Events {
+  max-width: 730px;
+}
+
 .snxrewards a {
   margin-left: 0;
   margin-bottom: 7px;

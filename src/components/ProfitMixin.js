@@ -168,6 +168,7 @@ export default {
 		    return dates;
 		},
 		interpolatePoint(timestamp) {
+			if(timestamp > this.priceData[this.priceData.length-1].timestamp) return this.priceData[this.priceData.length-1]
 			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
 			let next = this.priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
 			if(prev === undefined) prev = this.priceData[0]

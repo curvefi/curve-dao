@@ -20,10 +20,9 @@
 		}),
 		async created() {
 			this.unwatch = this.$watch(()=>contract.initializedContracts, async (val) => {
-				let inits = await Promise.all(['compound','usdt','iearn','busd','susdv2'].map(p=>{
+				Promise.all(['compound','usdt','iearn','busd','susdv2'].map(p=>{
 					return init(contract.contracts[p])
 				}))
-				await updatePoolInfo();
 				this.unwatch()
 			})
 		},

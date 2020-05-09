@@ -60,6 +60,23 @@ export function makeCancelable(promise) {
     return wrappedPromise;
 };
 
+export function setTimeoutPromise(delay) {
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+export async function retry(fn, retryDelay = 100, numRetries = 3) {
+  for (let i = 0; i < numRetries; i++) {
+    try {
+      return await fn
+    } 
+    catch (e) {
+      if (i === numRetries - 1) throw e
+      await setTimeoutPromise(retryDelay)
+      retryDelay = retryDelay * 2
+    }
+  }
+}
+
 export function formatDate(date) {
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
   return monthNames[date.getMonth()] + String(date.getDate()).padStart(2, '0');

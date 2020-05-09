@@ -329,13 +329,13 @@
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)
-            this.$watch(()=>contract.allInitContracts.size, async (val) => {
-                if(val >= 5)
-                    await this.mounted()
+            let unwatch = this.$watch(() => contract.web3 && contract.multicall, val => {
+                this.mounted();
+                unwatch()
             })
         },
         mounted() {
-            contract.allInitContracts.size >= 5 && this.mounted()
+            contract.web3 && contract.multicall && this.mounted()
         },
 		methods: {
             async mounted() {
@@ -617,64 +617,6 @@
                     else return +a[1] > +b[1] ? a : b
                 })
             },
-            async comparePools() {
-                let pools = this.pools;
-                let poolInfo = tradeStore.poolInfo
-                if(this.swapwrapped == 1) { 
-                    pools = ['compound', 'usdt']
-                    poolInfo = poolInfo.slice(0,2)
-                }
-                if(this.swapwrapped == 2) { 
-                    pools = ['iearn', 'busd']
-                    poolInfo = poolInfo.slice(2)
-                }
-                let poolConfigs = pools.map(pool => {
-                    return {
-                        N_COINS: contractAbis[pool].N_COINS,
-                        PRECISION_MUL: contractAbis[pool].coin_precisions.map(p=>1e18/p),
-                        USE_LENDING: contractAbis[pool].USE_LENDING,
-                        LENDING_PRECISION,
-                        PRECISION,
-                    }
-                })
-                //map pools to 0 - compound, 1 - usdt, 2 - y, 3 - busd
-                let bestPool = 0;
-                let bestExchangeRate = 0;
-                let bestDy = 0
-                let get_to_amount = calcWorker.calcPrice
-                let realExchangeRate;
-                if(this.swapwrapped) get_to_amount = calcWorker.calcPriceWrapped
-                //without susd
-                for(let i = 0; i < pools.length; i++) {
-                    if(poolConfigs[i].N_COINS-1 < this.to_currency || poolConfigs[i].N_COINS-1 < this.from_currency) continue;
-                    let dx = this.fromInput * this.precisions(this.from_currency, pools[i])
-                    let config = {...poolInfo[i], ...poolConfigs[i]}
-                    let dy = await get_to_amount(config, this.from_currency, this.to_currency, BN(dx).toFixed(0), true)
-                    dy = +(BN(dy).div(this.precisions(this.to_currency)))
-                    let exchangeRate = dy / dx * this.precisions(this.from_currency, pools[i])
-                    if(exchangeRate > bestExchangeRate) {
-                        bestPool = i
-                        bestExchangeRate = exchangeRate
-                        bestDy = dy;
-                    }
-                }
-                if(this.swapwrapped == 2) bestPool+=2
-                if(this.swapwrapped) {
-                    let bestContract = contract
-                    let pool = contract.currentContract
-                    if(bestPool > 0) {
-                        pool = Object.keys(contract.contracts)[bestPool]
-                        bestContract = contract.contracts[pool]
-                    }
-                    let cdy_ = bestDy * bestContract.c_rates[this.to_currency] 
-                                * contractAbis[bestContract.currentContract].wrapped_precisions[this.to_currency]
-                    let cdx_ = this.fromInput * bestContract.c_rates[this.from_currency] 
-                                * contractAbis[bestContract.currentContract].wrapped_precisions[this.from_currency]
-                    exchangeRateConverted = (cdy_ / cdx_)
-                    return [bestPool, exchangeRateConverted]
-                }
-                return [bestPool, bestExchangeRate]
-            },
             async set_to_amount() {
                 this.distribution = null
                 let minAmount = 10000
@@ -750,7 +692,7 @@
                 await this.set_to_amount();
 			},
             async setup() {
-                this.onesplit_address = await contract.web3.eth.ens.getAddress('1split.eth')
+                this.onesplit_address = await helpers.retry(contract.web3.eth.ens.getAddress('1split.eth'))
                 this.onesplit = new contract.web3.eth.Contract(onesplit_abi, this.onesplit_address)
                 this.swap = []
                 this.addresses = []

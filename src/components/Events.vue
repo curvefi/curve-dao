@@ -139,6 +139,7 @@
 				susdv2: [],
 			},
 			latestblock: null,
+			numBlocks: 1000,
 		}),
 		computed: {
 			...getters,
@@ -175,16 +176,16 @@
 			contract.multicall && this.mounted();
 		},
 		methods: {
-			getEvents(block) {
+			getEvents(block, numBlocks) {
 				return this.pools.map(pool => {
 					return [
 						this.swapContracts[this.allPools.indexOf(pool)]
 						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
-							{ fromBlock: block - 1000 }
+							{ fromBlock: block - numBlocks }
 						),
 						this.swapContracts[this.allPools.indexOf(pool)]
 						.getPastEvents(this.tokenExchangeEvent, 
-							{ fromBlock: block - 1000 }
+							{ fromBlock: block - numBlocks }
 						),
 					]
 				})
@@ -200,7 +201,20 @@
 			async loadEvents(block) {
 				let length = 0
 				while(length < 500) {
-					let results = await Promise.all(this.getEvents(block).flat())
+					let results
+					let numTries = 5
+					let numBlocks = this.numBlocks;
+					while(true) {
+						try {
+							results = await Promise.all(this.getEvents(block, numBlocks).flat())
+							break;
+						}
+						catch(err) {
+							numTries--;
+							numBlocks /= 2;
+							if(numTries == 0) throw err
+						}
+					}
 					length += results.flat().length
 					this.exchanges.push(...results.flat().sort((a, b) => b.blockNumber - a.blockNumber))
 				}

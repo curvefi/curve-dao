@@ -171,6 +171,35 @@
                	 		</span>
 	                </router-link>
 	            </div>
+	            <div :class="{selected: activePoolLink == 2}">
+	                <router-link to = '/pax'>
+	                	<span class='index'>5.</span>  
+	                    <span class='pooltext'>PAX</span>
+	                    <span class='pools'>[(yc)DAI, (yc)USDC, (yc)USDT, PAX]</span>  
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[5]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[5]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[5]}}%</div>
+		                    		<div>Total APY: {{apy[5]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[5]}">{{daily_apy[5]}}</span>%
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.pax < 0}">
+	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber}}</span>
+               	 		</span></span>
+               	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[5]'>Balance: ${{balances[5] && balances[5].toFixed(2)}} </span>
+               	 			<span class='tooltip' v-show='balances[5]'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<span class='tooltiptext'>Balance: ${{balances[5] && balances[5].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
+	                </router-link>
+	            </div>
 	        </fieldset>
 	    </div>
 
@@ -263,7 +292,7 @@
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				this.balances = []
-				helpers.chunkArr(decoded, 2).slice(0,5).map(v => {
+				helpers.chunkArr(decoded, 2).slice(0,6).map(v => {
 					this.balances.push(+v[0] * (+v[1]) / 1e36);
 				})
 				this.balances[4] += (+decoded[10] * decoded[9]) / 1e36
@@ -292,7 +321,7 @@
 	            }
 			},
 			async getAPY() {
-				let pools = ['compound', 'usdt', 'y', 'busd', 'susd']
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax']
 	            let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
 	            stats = await stats.json()
                 this.volumes = stats.volume;

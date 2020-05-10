@@ -122,7 +122,7 @@ export default {
 		    if(curr == 'cUSDC') {
 		        return value.div(this.BN(1e14)).toNumber();
 		    }
-			if(curr == 'DAI') {
+			if(curr == 'DAI' || curr == 'PAX') {
 				return value.divRound(this.BN(1e16)).toNumber()
 			}
 			if(curr == 'USDC' || curr == 'USDT') {
@@ -228,7 +228,7 @@ export default {
 		    return false;
 		},
 	    async getExchangeRate(blockNumber, address, value, type) {
-	    	if(address.t == currentContract.coins[3]._address) {
+	    	if(address == currentContract.coins[3]._address) {
 	    		return 1
 	    	}
 		    let exchangeRate = await this.checkExchangeRateBlocks(blockNumber, address, 0);
@@ -293,10 +293,9 @@ export default {
 		            const tokenIndex = Object.values(this.ADDRESSES)[i]
 		            let curr = Object.keys(this.ADDRESSES)[i]
 		            let address = currentContract.coins[i]._address
-		          	if(['iearn','busd'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
+		          	if(['iearn','busd','pax'].includes(currentContract.currentContract)) address = currentContract.underlying_coins[i]._address
 		            let exchangeRate = await this.getExchangeRate(block, address, '', type)
 		        	if(exchangeRate == -1) continue;
-		        	console.log(exchangeRate, "exchange rate coin")
 		            let usd;
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
 		            	usd = BN(tokens).div(BN(1e4)).toNumber();

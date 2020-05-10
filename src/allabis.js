@@ -6897,6 +6897,7 @@ var susdv2 = {
 
 var pax = {
 	swap_abi: [],
+	deposit_abi: [],
 	N_COINS: 4,
 	coin_precisions: [1e18, 1e6, 1e6, 1e18],
 	wrapped_precisions: [1e18, 1e6, 1e6, 1e18],

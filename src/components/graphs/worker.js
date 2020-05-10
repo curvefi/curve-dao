@@ -14,6 +14,7 @@ let calcPriceWrapped = (config, fromCurrency, toCurrency, precisions, usefee = f
 }
 
 let normalizeCoinIdx = (i, pool) => {
+	if(pool == 'pax' && i == 3) return 6;
 	if(pool == 'susd' && i == 3) return 5;
 	if(pool == 'busd' && i == 3) return 4;
 	return i;
@@ -21,7 +22,7 @@ let normalizeCoinIdx = (i, pool) => {
 
 let getVolumePerCoin = (data, pools, allabis) => {
 	let poolnames = pools.map(entry => entry[0])
-	let volumes = [[],[],[],[],[],[]]
+	let volumes = [[],[],[],[],[],[],[]]
 	let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
 	for(let i = 0; i < data[maxlenpool].length; i++) {
 		let timestamp = data[maxlenpool][i].timestamp

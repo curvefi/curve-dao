@@ -58,6 +58,7 @@
 				iearn: 'y',
 				busd: 'busd',
 				susdv2: 'susdv2',
+				pax: 'pax',
 			},
 			chartdata: {
 				title: {

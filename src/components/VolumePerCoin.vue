@@ -227,7 +227,6 @@
 
 				let filteredData = Object.keys(data).filter(pool => this.piepools.includes(pool)).reduce((obj, key) => ({ ...obj, [key]: data[key]}), {})
 				pools = Object.entries(filteredData)
-
 				this.volumes = await volumeWorker.getVolumePerCoin(filteredData, pools, allabis)
 			},
 			async mounted() {

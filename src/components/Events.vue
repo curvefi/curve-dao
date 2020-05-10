@@ -283,7 +283,7 @@
 				this.exchanges = []
 				//get historic rates
 				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
-				let requests = await Promise.all(fetchpools.map(pool => fetch(`${window.domain}/raw-stats/${pool}-30m.json`)))
+				let requests = await Promise.all(fetchpools.map(pool => fetch(`${window.domain}/raw-stats/${pool}-1m.json`)))
 				let jsons = await Promise.all(requests.map(request => request.json()))
 				this.jsons = jsons
 				for(let [i, data] of jsons.entries()) {
@@ -363,7 +363,6 @@
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call(null, blockNumber)
 				let block = aggcalls[0];
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-				console.log(decoded)
 				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					//usdt in usdt pool and susdv2 pool are already in the array, no need to calculate

@@ -84,6 +84,10 @@ export default {
 			this.paidRewards = rewards
 		},
 
+		async getExchangeRate() {
+			return 1;
+		},
+
 	    async checkExchangeRateBlocks(block, address, direction, type = 'deposit') {
 		    return 1;
 		},

@@ -13,6 +13,7 @@ N_COINS: 2,
 coin_precisions: [1e18, 1e6],
 wrapped_precisions: [1e8, 1e8],
 use_lending: [true, true],
+is_plain: [false, false],
 old_swap_address: '0x2e60CF74d81ac34eB21eEff58Db4D385920ef419',
 swap_address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
 token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
@@ -1842,6 +1843,7 @@ var usdt = {
   wrapped_precisions: [1e8, 1e8, 1e6],
   use_lending: [true, true, false],
   tethered: [false, false, true],
+  is_plain: [false, false, true],
   swap_address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C',
   token_address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -2900,6 +2902,7 @@ var iearn = {
   wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
+  is_plain: [false, false, false, false],
   swap_address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
   token_address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -3960,6 +3963,7 @@ var busd = {
   wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
+  is_plain: [false, false, false, false],
   swap_address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27',
   token_address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -5873,6 +5877,7 @@ var susd = {
   N_COINS: 2, 
   tethered: [false, false],
   use_lending: [true, true],
+  is_plain: [false, false],
   coin_precisions: [1e18, 1e18],
   underlying_coins: [
     '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
@@ -6873,6 +6878,7 @@ var susdv2 = {
 	wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
 	tethered: [false, false, true, false],
 	use_lending: [false, false, false, false],
+	is_plain: [true, true, true, true],
 	swap_address: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD',
 	token_address: '0xC25a3A3b969415c80451098fa907EC722572917F',
 	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -6889,6 +6895,30 @@ var susdv2 = {
         '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',],
 }
 
+var pax = {
+	swap_abi: [],
+	N_COINS: 4,
+	coin_precisions: [1e18, 1e6, 1e6, 1e18],
+	wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
+	tethered: [false, false, true, false],
+	use_lending: [true, true, true, false],
+	is_plain: [false, false, false, true],
+	swap_address: '',
+	token_address: '',
+	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
+	deposit_address: '',
+	underlying_coins: [
+        '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        '0x8E870D67F660D95d5be530380D0eC0bd388289E1',],
+	coins: [
+        '0x99d1Fa417f94dcD62BfE781a1213c092a47041Bc',
+        '0x9777d7E2b60bB01759D0E2f8be2095df444cb07E',
+        '0x1bE5d71F2dA660BFdee8012dDc58D024448A0A59',
+        '0x8E870D67F660D95d5be530380D0eC0bd388289E1',],
+}
+
 export let onesplit_address = '0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E'
 
 export let onesplit_abi = [{"inputs":[{"internalType":"contract IOneSplit","name":"impl","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"newImpl","type":"address"}],"name":"ImplementationUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_AAVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_BANCOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_BDAI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CHAI","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_COMPOUND","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_BINANCE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_COMPOUND","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_USDT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_CURVE_Y","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_FULCRUM","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_IEARN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_KYBER","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_OASIS","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_SMART_TOKEN","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_DISABLE_UNISWAP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_BANCOR_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_OASIS_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_KYBER_UNISWAP_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"FLAG_ENABLE_MULTI_PATH_ETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"parts","type":"uint256"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"getExpectedReturn","outputs":[{"internalType":"uint256","name":"returnAmount","type":"uint256"},{"internalType":"uint256[]","name":"distribution","type":"uint256[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"minReturn","type":"uint256"},{"internalType":"uint256","name":"parts","type":"uint256"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"goodSwap","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"isOwner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"oneSplitImpl","outputs":[{"internalType":"contract IOneSplit","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"renounceOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IOneSplit","name":"impl","type":"address"}],"name":"setNewImpl","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"internalType":"contract IERC20","name":"fromToken","type":"address"},{"internalType":"contract IERC20","name":"toToken","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"minReturn","type":"uint256"},{"internalType":"uint256[]","name":"distribution","type":"uint256[]"},{"internalType":"uint256","name":"disableFlags","type":"uint256"}],"name":"swap","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}]
@@ -6897,4 +6927,4 @@ export let sCurveRewards_abi = [{"anonymous":false,"inputs":[{"indexed":true,"in
 
 export let sCurveRewards_address = '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92'
 
-export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2}
+export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax}

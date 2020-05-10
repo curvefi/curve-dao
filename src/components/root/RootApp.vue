@@ -17,6 +17,7 @@
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') ">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  ">bUSD</router-link>
             <router-link :to="'/susdv2/' + ($route.path.split('/')[2] || '')">sUSD</router-link>
+            <router-link :to="'/pax/' + ($route.path.split('/')[2] || '')">PAX</router-link>
 <!--             <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>

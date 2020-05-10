@@ -50,6 +50,12 @@ const currencies = {
 		usdt: 'USDT',
 		susd: 'sUSD',
 	},
+	pax: {
+		dai: 'ycDAI',
+		usdc: 'ycUSDC',
+		usdt: 'ycUSDT',
+		pax: 'PAX',
+	},
 }
 
 export const allCurrencies = currencies
@@ -61,6 +67,7 @@ export const poolMenu = {
 	busd: 'bUSD',
 	susd: 'sUSD-yCurve old',
 	susdv2: 'sUSD',
+	pax: 'PAX',
 }
 
 export const gas = {
@@ -88,7 +95,11 @@ export const gas = {
 		susdv2: {
 			exchange: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
 			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
-		}
+		},
+		pax: {
+			exchange: (i, j) => 800000,
+			exchange_underlying: (i, j) => 1600000
+		},
 	},
 	deposit: {
 		compound: 1300000,
@@ -97,6 +108,7 @@ export const gas = {
 		busd: 1300000,
 		susd: 1300000,
 		susdv2: 1000000,
+		pax: 1300000,
 	},
 	withdraw: {
 		compound: {
@@ -116,7 +128,10 @@ export const gas = {
 		},
 		susdv2: {
 			imbalance: x => 600000,
-		}
+		},
+		pax: {
+			imbalance: x => (12642*x + 474068)*1.5 | 0,
+		},
 	},
 	depositzap: {
 		compound: {
@@ -149,7 +164,13 @@ export const gas = {
 			withdraw: 800000,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
-		}
+		},
+		pax: {
+			deposit: x => (225377*x + 522674)*1.5 | 0,
+			withdraw: 3500000,
+			withdrawShare: 3000000,
+			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
+		},
 	}
 }
 
@@ -252,7 +273,23 @@ const state = Vue.observable({
 			usdShare: null,
 			usdStake: null,
 			curveRewards: null,
-		}
+		},
+		pax: {
+			currentContract: 'pax',
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
+		},
 	},
 	currentContract: 'compound',
 	currencies: currencies.compound,

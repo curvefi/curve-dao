@@ -15,6 +15,9 @@
 
             <input id='susdpool1' type='checkbox' value='susdv2' v-model='pools'/>
             <label for='susdpool1'>sUSD</label>
+
+            <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
+            <label for='paxpool1'>PAX</label>
         </div>
 
 		<div class='swap exchange'>
@@ -140,7 +143,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2'],
+            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -169,7 +172,7 @@
             usedParts: 0,
             multipath: 0,
             swapwrapped: false,
-            poolIndexes: [0, 1, 2, 3, 4],
+            poolIndexes: [0, 1, 2, 3, 4, 5],
             bestPool: null,
 		}),
         computed: {
@@ -200,7 +203,8 @@
                         usdt: 'USDT',
                         tusd: 'TUSD',
                         busd: 'BUSD',
-                        susd: 'sUSD'
+                        susd: 'sUSD',
+                        pax: 'PAX',
                     }
                 }
                 if(this.swapwrapped == 1) {
@@ -225,23 +229,28 @@
                 return (this.toInput * this.c_rates(this.to_currency)[this.to_currency] * this.precisions(this.to_currency)).toFixed(2)
             },
             bestPoolText() {
+                //add pax below when available in 1split
                 if((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))
                     return '1split'
                 if(this.bestPool === null) return 'Not available'
-                return ['compound', 'usdt', 'y', 'busd', 'susd', '1split'][this.bestPool]
+                return ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', '1split'][this.bestPool]
             },
             selldisabled() {
-                return false
-                /*if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
-                    return true
-                return false;*/
+                // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
+                //     return true
+                if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))
+                    return true;
+                return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
             },
             warningNoPool() {
                 this.message = 'Please select '
                 let poolMessage = null
+                if((this.from_currency == 6 || this.to_currency == 6) && !this.pools.includes('pax')) {
+                    poolMessage = 'pax'
+                }
                 if((this.from_currency == 5 || this.to_currency == 5) && !this.pools.includes('susdv2')) {
                     poolMessage = 'susd'
                 }
@@ -251,7 +260,7 @@
                 if((this.from_currency == 3 || this.to_currency == 3) && !this.pools.includes('y')) {
                     poolMessage = 'y'
                 }
-                if((this.from_currency == 2 || this.to_currency == 2) && this.pools.find(pool=>['usdt', 'y', 'busd', 'susdv2'].includes(pool)) == undefined) {
+                if((this.from_currency == 2 || this.to_currency == 2) && this.pools.find(pool=>['usdt', 'y', 'busd', 'susdv2', 'pax'].includes(pool)) == undefined) {
                     poolMessage = 'usdt'
                 }
                 return poolMessage
@@ -412,7 +421,7 @@
                 let min_dy = BN(this.toInput).times(this.precisions(j)).times(BN(1 - maxSlippage)).toFixed(0)
                 let pool = contract.currentContract
                 let bestContract = contract;
-                if(this.bestPool > 0 && this.bestPool < 5) {
+                if(this.bestPool > 0 && this.bestPool < 6) {
                     let poolIdx = this.bestPool
                     pool = Object.keys(contract.contracts)[this.bestPool]
                     bestContract = contract.contracts[pool]
@@ -587,6 +596,20 @@
                             ]
                         ]
                     }
+                    //PAX exchanges only in PAX pool
+                    else if((this.from_currency == 6 || this.to_currency == 6) && this.pools.includes('pax')) {
+                        let from_currency = this.from_currency == 6 ? 3 : this.from_currency;
+                        let to_currency = this.to_currency == 6 ? 3 : this.to_currency;
+
+                        let dx = BN(this.fromInput).times(contractAbis.pax.coin_precisions[from_currency])
+
+                        calls = [
+                            [
+                                this.swap[5]._address,
+                                this.swap[5].methods.get_dy_underlying(from_currency, to_currency, dx.toFixed(0,1)).encodeABI()
+                            ]
+                        ]
+                    }
                     else {
                         //susd is already checked outside this function
                         //now coins are DAI, USDC, USDT, other cases are handled and they go through all pools
@@ -654,11 +677,11 @@
                             pool = '1split'
                         }
                         else this.distribution = null
-                        this.bestPool = ['compound', 'usdt', 'iearn', 'busd', 'susdv2', '1split'].indexOf(pool)
+                        this.bestPool = ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', '1split'].indexOf(pool)
                     }
                     else {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
-                        this.bestPool = 5
+                        this.bestPool = 6
                     }
                     let address = this.swap[this.bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))
@@ -711,6 +734,8 @@
                     this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.iearn.coins[i]))
                     this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.iearn.underlying_coins[i]))
                 }
+
+                //busd
                 this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.busd.coins[3]))
                 this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.busd.underlying_coins[3]))
 
@@ -718,6 +743,10 @@
                     //coins and undelying_coins are the same
                 this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.coins[3]))
                 this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.underlying_coins[3]))
+
+                //pax
+                this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.pax.coins[3]))
+                this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.pax.underlying_coins[3]))
             }
 		}
 	}

@@ -9,7 +9,7 @@ let state = Vue.observable({
   	pairIdx: '0-1',
   	pairVal: 'dai-usdc',
   	pool: 'compound',
-  	pools: ['compound', 'usdt', 'y', 'busd', 'susdv2'],
+  	pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
   	interval: '30m',
 	intervals: ['1m', '5m', '10m', '15m', '30m', '1h', '2h', '4h', '6h', '1d', '3d', '1w'],
   	data: [],

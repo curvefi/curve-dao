@@ -23,6 +23,8 @@ const CurvePay = () => import('../components/CurvePay.vue')
 const Events = () => import('../components/Events.vue')
 const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
 
+const ycTokens = () => import('../components/ycTokens/Index.vue')
+
 import Index from '../components/Index.vue'
 
 import init from '../init'
@@ -101,6 +103,11 @@ let routes = [
         path: 'volumepercoin',
         name: 'VolumePerCoin',
         component: VolumePerCoin,
+      },
+      {
+        path: 'yctokens',
+        name: 'ycTokens',
+        component: ycTokens,
       }
     ]
   },

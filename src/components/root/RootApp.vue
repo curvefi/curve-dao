@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class='root'>
+  <div id="app" :class="{'root': true, [$route.name]: true}">
      <div class="top-menu-bar">
       <label for="hamburger" class='border-menu'></label>
       <input type="checkbox" id="hamburger"/>

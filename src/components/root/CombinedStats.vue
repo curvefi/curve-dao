@@ -24,8 +24,14 @@
 			      :currencies = 'allCurrencies[currency]'
 			      :tokenSupply = 'totalTokenSupplies[i]'
 			      :tokenBalance = 'totalTokenBalances[i]'
+			      :usdShare = 'usdShares[i]'
 			      :staked_info = "currency == 'susdv2' && staked_infos"
 			      :totalStake = 'totalStake'
+			      :usdStake = 'usdStake'
+			      :virtual_price = 'virtual_prices[i]'
+			      :A = 'As[i]'
+			      :future_A = 'future_As[i]'
+			      :admin_actions_deadline = 'admin_actions_deadlines[i]'
 			      :combinedstats = 'true'
 			      />
 	  	</div>
@@ -68,9 +74,16 @@
 			bal_infos: {},
 			l_infos: {},
 			totalShares: [],
+			usdShares: [],
 
 			staked_infos: [],
 			totalStake: -1,
+			usdStake: -1,
+
+			virtual_prices: [],
+			As: [],
+			future_As: [],
+			admin_actions_deadlines: [],
 
 			fees: [],
 			admin_fees: [],
@@ -203,6 +216,22 @@
 				    calls.push(
 				    	[
 				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.get_virtual_price().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.A().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.future_A().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap._address,
+				    		this.web3contracts[key].swap.methods.admin_actions_deadline().encodeABI(),
+				    	],
+				    	[
+				    		this.web3contracts[key].swap._address,
 				    		this.web3contracts[key].swap.methods.fee().encodeABI(),
 				    	],
 				    	[
@@ -239,7 +268,7 @@
 					this.bal_infos[key] = []
 					this.l_infos[key] = []
 					var total = 0;
-					let ind = i*12;
+					let ind = i*16;
 					if(i > 1) ind-=5;
 					if(key == 'compound') {
 					    helpers.chunkArr(decoded.slice(ind, ind+8), 4).map((v, i) => {
@@ -288,7 +317,7 @@
 				    	if(key == 'susd') ind -= 4
 				    }
 					if(key == 'susdv2') {
-						let slice = decoded.slice(51, 60)
+						let slice = decoded.slice(71, 80)
 						for(let i = 0; i < 4; i++) {
 							let calcBalance = this.all_c_rates.susdv2.c_rates[i] * (slice[i])
 							this.bal_infos.susdv2.push(calcBalance)
@@ -297,7 +326,7 @@
 						ind-=8
 					}
 					if(key == 'pax') {
-						let slice = decoded.slice(-11)
+						let slice = decoded.slice(-15)
 						helpers.chunkArr(slice.slice(0,7), 2).map((v, i) => {
 				    		//v is [rate, balance] or just [balance] for PAX in pax pool
 				    		if(v[1] === undefined) {
@@ -315,29 +344,37 @@
 					    		total += calcBalance
 				    		}
 				    	})
-				    	ind = 58;
+				    	ind = 82;
 					}
 				    this.totals.push(total)
-				    this.fees.push(+decoded[ind+8] / 1e8)
-		    		this.admin_fees.push(+decoded[ind+9])
-		    		this.totalTokenBalances.push(+decoded[ind+10])
-		    		this.totalTokenSupplies.push(+decoded[ind+11])
+				    this.virtual_prices.push(+decoded[ind+8] / 1e18)
+				    this.As.push(+decoded[ind+9])
+				    this.future_As.push(+decoded[ind+10] / 1e18)
+				    this.admin_actions_deadlines.push(+decoded[ind+11] / 1e18)
+
+
+				    this.fees.push(+decoded[ind+12] / 1e8)
+		    		this.admin_fees.push(+decoded[ind+13])
+		    		this.totalTokenBalances.push(+decoded[ind+14])
+		    		this.totalTokenSupplies.push(+decoded[ind+15])
 		    		var totalShare = 0
 				    for (let i=0; i < contracts[key].N_COINS; i++) {
-		                var val = this.bal_infos[key][i] * (+decoded[ind+10]) / (+decoded[ind+11]);
+		                var val = this.bal_infos[key][i] * (+decoded[ind+14]) / (+decoded[ind+15]);
 		                this.l_infos[key].push(val)
 		                totalShare += val;
 		            }
+		            this.usdShares.push(decoded[ind+14] * decoded[ind+8] / 1e36)
 	            	this.totalShares.push(totalShare)
 	            	if(key == 'susdv2') {
 		            	this.totalStake = 0;
 				        if(curveStakedBalance > 0) {
 				            for (let i=0; i < contracts[key].N_COINS; i++) {
-				                var val = this.bal_infos[key][i] * curveStakedBalance / (+decoded[ind+11]);
+				                var val = this.bal_infos[key][i] * curveStakedBalance / (+decoded[ind+15]);
 				                Vue.set(this.staked_infos, i, val)
 				                this.totalStake += val;
 				            }
 				        }
+				        this.usdStake = curveStakedBalance * decoded[ind+8] / 1e36
 				    }
 
 	            	i++;

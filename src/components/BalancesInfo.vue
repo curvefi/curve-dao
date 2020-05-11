@@ -30,12 +30,12 @@
           </li>
         </ul>
       </p>
-      <ul v-show='!combinedstats'>
+      <ul>
         <li>
           <b>
             Virtual price: 
           </b>
-          <span :class="{'loading line': virtualPrice === null}"> {{ (virtualPrice).toFixed(4) }} </span>
+          <span :class="{'loading line': virtualPrice1 === null}"> {{ (virtualPrice1).toFixed(4) }} </span>
           <span class='tooltip'>[?]
             <span class='tooltiptext'>
               Average dollar value of pool token
@@ -49,15 +49,15 @@
               Amplification coefficient chosen from fluctation of prices around 1
             </span>
           </b>
-          <span :class="{'loading line': A === null}"> {{ A }} </span>
+          <span :class="{'loading line': A1 === null}"> {{ A1 }} </span>
         </li>
-        <li v-show = 'admin_actions_deadline !== null && admin_actions_deadline !== 0'>
+        <li v-show = 'admin_actions_deadline1 !== null && admin_actions_deadline1 !== 0'>
           <b>Future A: </b>
-          <span :class="{'loading line': future_A === null}"> {{ future_A }} </span>
+          <span :class="{'loading line': future_A1 === null}"> {{ future_A1 }} </span>
         </li>
-        <li v-show = 'admin_actions_deadline !== null && admin_actions_deadline !== 0'>
+        <li v-show = 'admin_actions_deadline1 !== null && admin_actions_deadline1 !== 0'>
           <b>Action deadline: </b>
-          <div :class="{'loading line': admin_actions_deadline === null}"> {{ admin_actions_readable }} </div>
+          <div :class="{'loading line': admin_actions_deadline1 === null}"> {{ admin_actions_readable }} </div>
         </li>
       </ul>
       <p>
@@ -91,7 +91,7 @@
             <span> {{totalShare | toFixed2 | formatNumber}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{(usdShare) | toFixed2 | formatNumber }}
+            <b>Averaged USD balance:</b> {{(usdShare1) | toFixed2 | formatNumber }}
           </li>
       </ul>
     </fieldset>
@@ -108,7 +108,7 @@
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{(usdStake) | toFixed2 | formatNumber}}
+            <b>Averaged USD balance:</b> {{(usdStake1) | toFixed2 | formatNumber}}
           </li>
 
       </ul>
@@ -123,7 +123,7 @@
   import * as volumeStore from './common/volumeStore'
 
   export default {
-    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake', 'combinedstats'],
+    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'usdShare', 'staked_info', 'totalStake', 'usdStake', 'combinedstats', 'virtual_price', 'A', 'future_A', 'admin_actions_deadline'],
     methods: {
       totalCurrencies(currencies) {
         if(this.currentPool != 'susdv2')
@@ -156,29 +156,29 @@
       currentPool() {
         return this.pool || currentContract.currentContract
       },
-      virtualPrice() {
-        return currentContract.virtual_price || 0
+      virtualPrice1() {
+        return this.virtual_price || (currentContract.virtual_price || 0)
       },
       totalBalances() {
         return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
       },
-      usdShare() {
-        return getters.usdShare()
+      usdShare1() {
+        return this.usdShare || getters.usdShare()
       },
-      usdStake() {
-        return getters.usdStake()
+      usdStake1() {
+        return this.usdStake || getters.usdStake()
       },
-      A() {
-        return (getters.A() * 1e18) | 0
+      A1() {
+        return this. A || ((getters.A() * 1e18) | 0)
       },
-      future_A() {
-        return (getters.future_A() * 1e18) | 0
+      future_A1() {
+        return this.future_A || ((getters.future_A() * 1e18) | 0)
       },
       admin_actions_readable() {
-        return helpers.formatDateToHuman(this.admin_actions_deadline)
+        return helpers.formatDateToHuman(this.admin_actions_deadline1)
       },
-      admin_actions_deadline() {
-        return getters.admin_actions_deadline()
+      admin_actions_deadline1() {
+        return this.admin_actions_deadline || getters.admin_actions_deadline()
       },
       poolVolume() {
         return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool]

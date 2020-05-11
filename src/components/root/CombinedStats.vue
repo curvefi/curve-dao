@@ -157,11 +157,13 @@
 				        old_block: uint256 = cERC20(self.coins[i]).accrualBlockNumber()
 				        rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
 				        */
-			         	if (contract.tethered && contract.tethered[i] && contract.use_lending && !contract.use_lending[i] || key == 'susdv2') {
+			         	if (contract.tethered && contract.tethered[i] 
+			         		&& contract.use_lending && !contract.use_lending[i] 
+			         		|| contract.is_plain[i] || key == 'susdv2') {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
-			         		if(key == 'iearn' || key == 'y' || key == 'busd' || (key == 'susd' && i == 0)) {
+			         		if(['iearn', 'busd', 'susd', 'pax'].includes(key) ||  (key == 'susd' && i == 0)) {
 			            		calls.push([
 			            			this.all_coins[key].coins[i]._address,
 			            			this.all_coins[key].coins[i].methods.getPricePerFullShare().encodeABI()
@@ -262,17 +264,25 @@
 				    	this.bal_infos[key].push(calcBalance)
 				    	total += this.bal_infos.usdt[0] + this.bal_infos.usdt[1] + calcBalance
 				    }
-				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew') {
+				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew' || key == 'pax') {
 				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)
 				    	helpers.chunkArr(slice, 2).map((v, i) => {
-				    		//v is [rate, balance]
-				    		let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
-				    		if(key == 'susd' && i == 1) rate = +v[0] / 1e36
-				    		this.all_c_rates[key].c_rates[i] = rate
-				    		let balance = +v[1]
-				    		let calcBalance = rate*balance
-				    		this.bal_infos[key].push(calcBalance)
-				    		total += calcBalance
+				    		//v is [rate, balance] or just [balance] for PAX in pax pool
+				    		if(v[1] === undefined) {
+				    			let balance = +v[0]
+				    			let calcBalance = this.all_c_rates[ey].c_rates[i] * balance
+				    			this.bal_infos[key].push(calcBalance)
+				    			total += calcBalance
+				    		}
+				    		else {
+					    		let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
+					    		if(key == 'susd' && i == 1) rate = +v[0] / 1e36
+					    		this.all_c_rates[key].c_rates[i] = rate
+					    		let balance = +v[1]
+					    		let calcBalance = rate*balance
+					    		this.bal_infos[key].push(calcBalance)
+					    		total += calcBalance
+				    		}
 				    	})
 				    	if(key == 'susd') ind -= 4
 				    }

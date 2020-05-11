@@ -21,13 +21,14 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2'],
+			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
 			tokenNames: [
 				{ name: 'cCurve', ticker: 'cCrv' },
 				{ name: 'tCurve', ticker: 'tCrv' },
 				{ name: 'yCurve', ticker: 'yCrv' },
 				{ name: 'bCurve', ticker: 'bCrv' },
 				{ name: 'sCurve', ticker: 'sCrv' },
+				{ name: 'pCurve', ticker: 'pCrv' },
 			]
 		}),
 		computed: {

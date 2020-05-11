@@ -119,5 +119,5 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 }
 
 export function totalVolume() {
-	return Object.values(state.volumes).filter(v=>v!=-1).length == 5 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
+	return Object.values(state.volumes).filter(v=>v!=-1).length == 6 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
 }

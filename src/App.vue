@@ -22,6 +22,7 @@
     	busd: 'bUSD',
     	susd: 'sUSD-yCurve old',
     	susdv2: 'sUSD',
+        pax: 'PAX',
     }
 
 	export default {

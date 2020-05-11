@@ -30,7 +30,7 @@
           </li>
         </ul>
       </p>
-      <ul>
+      <ul v-show='!combinedstats'>
         <li>
           <b>
             Virtual price: 
@@ -123,7 +123,7 @@
   import * as volumeStore from './common/volumeStore'
 
   export default {
-    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake'],
+    props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'staked_info', 'totalStake', 'combinedstats'],
     methods: {
       totalCurrencies(currencies) {
         if(this.currentPool != 'susdv2')

@@ -26,6 +26,7 @@
 			      :tokenBalance = 'totalTokenBalances[i]'
 			      :staked_info = "currency == 'susdv2' && staked_infos"
 			      :totalStake = 'totalStake'
+			      :combinedstats = 'true'
 			      />
 	  	</div>
 	</div>
@@ -132,7 +133,7 @@
 				    for (let i = 0; i < contract.N_COINS; i++) {
 				        var addr = contracts[key].coins[i];
 
-				        let cabi = ['iearn', 'y', 'busd', 'susd'].includes(key) ? yERC20_abi : cERC20_abi;
+				        let cabi = ['iearn', 'y', 'busd', 'susd', 'pax'].includes(key) ? yERC20_abi : cERC20_abi;
 				        if(key == 'susd' && i == 1) {
 				        	cabi = contracts.iearn.swap_abi;
 				        	addr = contracts.iearn.swap_address
@@ -159,11 +160,11 @@
 				        */
 			         	if (contract.tethered && contract.tethered[i] 
 			         		&& contract.use_lending && !contract.use_lending[i] 
-			         		|| contract.is_plain[i] || key == 'susdv2') {
+			         		|| key == 'susdv2' || (key == 'pax' && i == 3)) {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
-			         		if(['iearn', 'busd', 'susd', 'pax'].includes(key) ||  (key == 'susd' && i == 0)) {
+			         		if(key == 'iearn' || key == 'y' || key == 'busd' || (key == 'susd' && i == 0) || (key == 'pax' && i < 3)) {
 			            		calls.push([
 			            			this.all_coins[key].coins[i]._address,
 			            			this.all_coins[key].coins[i].methods.getPricePerFullShare().encodeABI()
@@ -264,13 +265,13 @@
 				    	this.bal_infos[key].push(calcBalance)
 				    	total += this.bal_infos.usdt[0] + this.bal_infos.usdt[1] + calcBalance
 				    }
-				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew' || key == 'pax') {
+				    if(key == 'iearn' || key == 'busd' || key == 'susd' || key == 'susdnew') {
 				    	let slice = decoded.slice(ind, ind+contracts[key].N_COINS*2)
 				    	helpers.chunkArr(slice, 2).map((v, i) => {
 				    		//v is [rate, balance] or just [balance] for PAX in pax pool
 				    		if(v[1] === undefined) {
 				    			let balance = +v[0]
-				    			let calcBalance = this.all_c_rates[ey].c_rates[i] * balance
+				    			let calcBalance = this.all_c_rates[key].c_rates[i] * balance
 				    			this.bal_infos[key].push(calcBalance)
 				    			total += calcBalance
 				    		}
@@ -287,13 +288,34 @@
 				    	if(key == 'susd') ind -= 4
 				    }
 					if(key == 'susdv2') {
-						let slice = decoded.slice(-8)
+						let slice = decoded.slice(51, 60)
 						for(let i = 0; i < 4; i++) {
 							let calcBalance = this.all_c_rates.susdv2.c_rates[i] * (slice[i])
 							this.bal_infos.susdv2.push(calcBalance)
 							total += calcBalance
 						}
 						ind-=8
+					}
+					if(key == 'pax') {
+						let slice = decoded.slice(-11)
+						helpers.chunkArr(slice.slice(0,7), 2).map((v, i) => {
+				    		//v is [rate, balance] or just [balance] for PAX in pax pool
+				    		if(v[1] === undefined) {
+				    			let balance = +v[0]
+				    			let calcBalance = this.all_c_rates[key].c_rates[i] * balance
+				    			this.bal_infos[key].push(calcBalance)
+				    			total += calcBalance
+				    		}
+				    		else {
+					    		let rate = +v[0] / 1e18 / contracts[key].coin_precisions[i]
+					    		this.all_c_rates[key].c_rates[i] = rate
+					    		let balance = +v[1]
+					    		let calcBalance = rate*balance
+					    		this.bal_infos[key].push(calcBalance)
+					    		total += calcBalance
+				    		}
+				    	})
+				    	ind = 58;
 					}
 				    this.totals.push(total)
 				    this.fees.push(+decoded[ind+8] / 1e8)

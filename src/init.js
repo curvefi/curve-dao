@@ -70,7 +70,7 @@ const wallets = [
   { 
     walletName: "walletLink",
     appName: 'Curve Finance',
-    appLogoUrl: 'https://www.curve.fi/logo.svg',
+    appLogoUrl: 'https://www.curve.fi/logo.png',
     rpcUrl:
       "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",
   },

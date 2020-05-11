@@ -116,6 +116,9 @@
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
+            <div class='info-message gentle-message' v-show='selldisabled'>
+                Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
+            </div>
             <div class='info-message gentle-message' v-show='warningNoPool !== null'>
                 Swap not available. Please select {{warningNoPool}} in pool select
             </div>
@@ -158,8 +161,8 @@
             customSlippageDisabled: true,
             inf_approval: false,
             distribution: null,
-            //DAI, USDC, USDT, TUSD, BUSD, sUSD
-            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18],
+            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX
+            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18],
             swap: [],
             addresses: [],
             coins: [],
@@ -229,6 +232,8 @@
                 return (this.toInput * this.c_rates(this.to_currency)[this.to_currency] * this.precisions(this.to_currency)).toFixed(2)
             },
             bestPoolText() {
+                if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
+                    || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
                 //add pax below when available in 1split
                 if((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))
                     return '1split'
@@ -602,7 +607,6 @@
                         let to_currency = this.to_currency == 6 ? 3 : this.to_currency;
 
                         let dx = BN(this.fromInput).times(contractAbis.pax.coin_precisions[from_currency])
-
                         calls = [
                             [
                                 this.swap[5]._address,
@@ -661,7 +665,7 @@
                         dy = +(BN(dy).div(this.precisions(this.to_currency)))
                         exchangeRate = dy / dx * this.precisions(this.from_currency)
                     }
-                    else*/ if(!([3,4,5].includes(this.from_currency) && [3,4,5].includes(this.to_currency))) {
+                    else*/ if(!([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency))) {
                         this.swapPromise.cancel()
                         this.swapPromise = helpers.makeCancelable(Promise.all([this.realComparePools(), this.set_to_amount_onesplit()]))
                         let result = await this.swapPromise

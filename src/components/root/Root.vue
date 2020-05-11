@@ -34,7 +34,7 @@
                	 		</span>
 	                </router-link>
 	            </div>
-	            <div :class="{selected: activePoolLink == 1}">
+	            <!-- <div :class="{selected: activePoolLink == 1}">
 	                <router-link to = '/usdt'>
 	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>USDT</span>
@@ -59,6 +59,35 @@
                	 			<span class='tooltip' v-show='balances[1]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[1] && balances[1].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
+	                </router-link>
+	            </div> -->
+	            <div :class="{selected: activePoolLink == 1}">
+	                <router-link to = '/pax'>
+	                	<span class='index'>1.</span>  
+	                    <span class='pooltext'>PAX</span>
+	                    <span class='pools'>[(yc)DAI, (yc)USDC, (yc)USDT, PAX]</span>  
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[5]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[5]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[5]}}%</div>
+		                    		<div>Total APY: {{apy[5]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[5]}">{{daily_apy[5]}}</span>%
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.pax < 0}">
+	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber}}</span>
+               	 		</span></span>
+               	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[5]'>Balance: ${{balances[5] && balances[5].toFixed(2)}} </span>
+               	 			<span class='tooltip' v-show='balances[5]'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<span class='tooltiptext'>Balance: ${{balances[5] && balances[5].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -167,35 +196,6 @@
                	 			<span class='tooltip' v-show='balances[4]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[4] && balances[4].toFixed(2)}}</span>
-               	 			</span>
-               	 		</span>
-	                </router-link>
-	            </div>
-	            <div :class="{selected: activePoolLink == 2}">
-	                <router-link to = '/pax'>
-	                	<span class='index'>5.</span>  
-	                    <span class='pooltext'>PAX</span>
-	                    <span class='pools'>[(yc)DAI, (yc)USDC, (yc)USDT, PAX]</span>  
-	                    <span class='apr'>
-	                    	<span class='tooltip'>APY:
-	                    		<span class='tooltiptext long'>
-		                    		<div>Pool APY + Lending APY (annualized)</div>
-		                    		<div>Daily APY: {{daily_apy[5]}}%</div>
-		                    		<div>Weekly APY: {{weekly_apy[5]}}%</div>
-		                    		<div>Monthly APY: {{monthly_apy[5]}}%</div>
-		                    		<div>Total APY: {{apy[5]}}%</div>
-		                    	</span>
-	                    	</span> 
-	                    	<span :class="{'loading line': !daily_apy[5]}">{{daily_apy[5]}}</span>%
-	                    </span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.pax < 0}">
-	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber}}</span>
-               	 		</span></span>
-               	 		<span class='balance'>
-           	 				<span class='showmobile' v-show='balances[5]'>Balance: ${{balances[5] && balances[5].toFixed(2)}} </span>
-               	 			<span class='tooltip' v-show='balances[5]'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
-               	 				<span class='tooltiptext'>Balance: ${{balances[5] && balances[5].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>

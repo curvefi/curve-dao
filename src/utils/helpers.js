@@ -42,10 +42,6 @@ export function debounced(delay, fn) {
   }
 }
 
-export function omit(keys, obj) {
-  return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key)))
-}
-
 export function makeCancelable(promise) {
     let rejectFn;
 

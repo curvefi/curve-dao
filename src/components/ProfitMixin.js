@@ -228,9 +228,6 @@ export default {
 		    return false;
 		},
 	    async getExchangeRate(blockNumber, address, value, type) {
-	    	if(address.t == currentContract.coins[3]._address) {
-	    		return 1
-	    	}
 		    let exchangeRate = await this.checkExchangeRateBlocks(blockNumber, address, 0);
 		    let exchangeRatePast, exchangeRateFuture;
 		    let currentBlock = await currentContract.web3.eth.getBlockNumber();
@@ -306,7 +303,7 @@ export default {
 		          		else tokens /= 1e4
 		          		usd = tokens * exchangeRate
 		          	}
-		          	else if(currentContract.currentContract == 'susdv2' || (currentContract.currentContract == 'pax' && i == 3)) {
+		          	else if(currentContract.currentContract == 'susdv2') {
 		            	usd = this.fromNativeCurrent(curr, this.BN(exchangeRate).mul(this.BN(tokens)))	
 		          	}
 		          	else {

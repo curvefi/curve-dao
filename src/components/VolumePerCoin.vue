@@ -17,9 +17,6 @@
 				<input id='susdpool' type='checkbox' value='susd' v-model='piepools'/>
 				<label for='susdpool'>sUSD</label>
 
-				<input id='paxpool' type='checkbox' value='pax' v-model='piepools'/>
-				<label for='paxpool'>PAX</label>
-
 				<button @click='selectPools'>Select</button>
 			</div>
 
@@ -190,8 +187,8 @@
 			    	enabled: true,
 			    }
 			},
-			piepools: ['compound', 'usdt', 'y', 'busd', 'susd', 'pax'],
-			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX'],
+			piepools: ['compound', 'usdt', 'y', 'busd', 'susd'],
+			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
 			volumes: [],
 			period: 'week',
 			chart: null,

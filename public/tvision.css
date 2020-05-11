@@ -924,7 +924,7 @@ input[type=range]:focus::-ms-fill-upper {
     }
 }
 
-.root:not(.ycTokens) .window {
+.root .window {
   max-width: 700px;
 }
 

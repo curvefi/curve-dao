@@ -23,8 +23,6 @@ const CurvePay = () => import('../components/CurvePay.vue')
 const Events = () => import('../components/Events.vue')
 const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
 
-const ycTokens = () => import('../components/ycTokens/Index.vue')
-
 import Index from '../components/Index.vue'
 
 import init from '../init'
@@ -103,11 +101,6 @@ let routes = [
         path: 'volumepercoin',
         name: 'VolumePerCoin',
         component: VolumePerCoin,
-      },
-      {
-        path: 'yctokens',
-        name: 'ycTokens',
-        component: ycTokens,
       }
     ]
   },
@@ -140,7 +133,7 @@ let routes = [
     ]
   },
   {
-    path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax)/',
+    path: '/:pool(compound|usdt|y|iearn|busd|susdv2)/',
     name: 'Index',
     component: PoolApp,
     children: [
@@ -207,7 +200,7 @@ const router = new VueRouter({
   routes
 })
 
-const pools = ['compound','usdt','y','iearn','busd','susd', 'susdv2','pax']
+const pools = ['compound','usdt','y','iearn','busd','susd', 'susdv2']
 
 router.beforeEach(async (to, from, next) => {
   if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()

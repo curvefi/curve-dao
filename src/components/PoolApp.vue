@@ -51,7 +51,7 @@
           <a :href="'https://etherscan.io/address/' + this.tokenAddress">Token contract</a>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
-          <a href="https://github.com/curvefi/curve-contract/tree/pool_compound">git@</a>
+          <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]">git@</a>
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
@@ -59,7 +59,7 @@
       <router-link to="/events" class='showmobile'>Events</router-link>
       <router-link :to="'/' + currentPool + '/faq'" class='showmobile'>FAQ</router-link>
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
-      <a href="https://github.com/curvefi/curve-contract/tree/pool_compound" class='showmobile'>git@</a>
+      <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
       <button class='simplebutton showmobile' @click = 'changeAccounts'>Change accounts</button>
     </div>
@@ -96,6 +96,18 @@
     components: {
       BalancesInfo,
     },
+    data: () => ({
+      gitBranches: {
+        compound: 'compound',
+        usdt: 'usdt',
+        iearn: 'y',
+        y: 'y',
+        busd: 'busd',
+        susd: 'susd_vulnerable',
+        susdv2: 'susd_plain',
+        pax: 'pax',
+      }
+    }),
     computed: {
       allGetters() {
         return getters;

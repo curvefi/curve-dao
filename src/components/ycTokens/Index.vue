@@ -1,12 +1,20 @@
 <template>
 	<div class='window white'>
-		<div class='tokens' v-for='(token, i) of ycTokens'>
-			<div>
+		<fieldset v-for='(token, i) of ycTokens'>
+			<legend> 
+				{{ token.name }} / {{ token.uname.toUpperCase() }} 
+				<span>APR: {{ (token.apr * 100).toFixed(2) }}%</span>
+			</legend>
+			<div class='tokens'>
+			<div class='inputs'>
 				<div class='maxBalanceContainer' @click='setBalance(i, 0)'>
 					<label :for="'token_'+i">
 						{{ token.name }}
 					</label>
-					<span class='maxBalance'> Balance: {{ (token.maxBalance / token.precisions).toFixed(2) }}</span>
+					<sub class='maxBalance'> Bal: 
+						{{ (token.maxBalance / token.precisions).toFixed(2) }}
+						({{ ((token.maxBalance / token.precisions) * token.rate ).toFixed(2) }} {{ token.uname.toUpperCase() }})
+					</sub>
 				</div>
 				<input 
 					:id ="'token_'+i" 
@@ -15,14 +23,17 @@
 					@focus='changeValue(i)' 
 					@input='changeValue(i)'
 					:style = "{ backgroundColor: bgColors[i] }">
+				<button class='simplebutton' @click='withdraw(i)'>Withdraw</button>
 			</div>
 
-			<div>
+			<div class='inputs'>
 				<div class='maxBalanceContainer' @click='setBalance(i, 1)'>
 					<label :for="'token_'+i">
 						{{ token.uname.toUpperCase() }}
 					</label>
-					<span class='maxBalance'> Balance: {{ (token.maxBalanceUnderlying / token.precisions).toFixed(2) }}</span>
+					<sub class='maxBalance'> Bal: 
+						{{ (token.maxBalanceUnderlying / token.precisions).toFixed(2) }}
+					</sub>
 				</div>
 				<input 
 					:id ="'token_'+i" 
@@ -31,16 +42,20 @@
 					@focus='changeUValue(i)' 
 					@input='changeUValue(i)'
 					:style = "{ backgroundColor: ubgColors[i] }">
+				<button class='simplebutton' @click='deposit(i)'>Deposit</button>
 			</div>
 		</div>
+		</fieldset>
 	</div>
 </template>
 
 <script>
 	import Vue from 'vue'
-	import allabis, { ERC20_abi, yERC20_abi } from '../../allabis'
+	import allabis, { ERC20_abi, iearnAPR_abi, iearnAPR_address, yERC20_abi, } from '../../allabis'
 	import { contract, allCurrencies } from '../../contract'
 	import { omit, chunkArr } from '../../utils/helpers'
+	import BN from 'bignumber.js'
+	import { approveAmount } from '../../utils/common'
 
 	export default {
 		data: () => ({
@@ -67,6 +82,15 @@
 		async created() {
 			this.$watch(() => contract.web3 && contract.multicall, async val => {
 				if(!val) return;
+				this.mounted()
+			})
+		},
+		mounted() {
+			contract.web3 && contract.multicall && this.mounted()
+		},
+		methods: {
+			async mounted() {
+				let iearnAPR = new contract.web3.eth.Contract(iearnAPR_abi, iearnAPR_address)
 				let i = 0;
 				for(let [utoken, token] of Object.entries(this.tokens)) {
 					let address = allabis.pax.coins[i];
@@ -83,6 +107,7 @@
 						uvalue: '0.00',
 						bgColor: 'blue',
 						ubgColor: 'blue',
+						apr: '',
 					})
 					i++;
 				}
@@ -90,18 +115,27 @@
 					[
 						[t.ucontract._address, t.ucontract.methods.balanceOf(contract.default_account).encodeABI()],
 						[t.contract._address, t.contract.methods.balanceOf(contract.default_account).encodeABI()],
+						[iearnAPR_address, iearnAPR.methods.getAPROptions(t.ucontract._address).encodeABI()],
+						[t.contract._address, t.contract.methods.getPricePerFullShare().encodeABI()]
 					]
 				)
+				
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-				let balances = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
-				console.log(balances)
-				chunkArr(balances, 2).map(([ubal, bal], i) => {
+				let balances = aggcalls[1].map((hex, i) => {
+					let paramArray = new Array(10).fill('uint256')
+					if(i % 4 == 2) {
+						return Object.values(contract.web3.eth.abi.decodeParameters(paramArray, hex))
+					}
+					return contract.web3.eth.abi.decodeParameter('uint256', hex)
+				})
+				chunkArr(balances, 4).map(([ubal, bal, [,capr,,,,,aapr,dapr], rate], i) => {
+					let apr = Math.max(capr, aapr, dapr) / 1e18;
 					this.ycTokens[i].maxBalance = bal;
+					this.ycTokens[i].apr = apr
+					this.ycTokens[i].rate = rate / 1e18;
 					Vue.set(this.ycTokens, i, Object.assign({}, this.ycTokens[i], { maxBalanceUnderlying: ubal }));
 				})
-			})
-		},
-		methods: {
+			},
 			setBalance(i, n) {
 				//n == 0 for token
 				//n == 1 for underlying token
@@ -125,22 +159,45 @@
 					Vue.set(this.ubgColors, i, 'red')
 				}
 				else Vue.set(this.ubgColors, i, 'blue')
-			}
+			},
+			async deposit(i) {
+				let amount = BN(this.ycTokens[i].uvalue).times(this.ycTokens[i].precisions)
+				await approveAmount(this.ycTokens[i].ucontract, amount, contract.default_account, this.ycTokens[i].contract._address)
+				await this.ycTokens[i].contract.methods.deposit(amount.toFixed(0,1)).send({
+					from: contract.default_account,
+					gas: 300000,
+				})
+			},
+			async withdraw(i) {
+				console.log('withdraw')
+				let amount = BN(this.ycTokens[i].value).times(this.ycTokens[i].precisions).toFixed(0,1)
+				console.log(this.ycTokens[i].contract.methods)
+				await this.ycTokens[i].contract.methods.withdraw(amount).send({
+					from: contract.default_account,
+					gas: 300000,
+				});
+			},
 		}
 	}
 </script>
 
 <style scoped>
+	legend {
+		text-align: center;
+	}
 	.tokens {
 		width: 80%;
 		margin: 0 auto;
 		display: flex;
 		flex-wrap: wrap;
-	}
-	.tokens > div {
-		margin-right: 3em;
 		margin-top: 1em;
+	}
+	.tokens > .inputs {
+		margin-right: 3em;
 		flex: 1;
+	}
+	.inputs button {
+		margin-top: 0.3em;
 	}
 	.maxBalanceContainer {
 		display: flex;
@@ -153,5 +210,13 @@
 	.maxBalance:hover {
 		text-decoration: underline;
 		cursor: pointer;
+	}
+	.tokens > div.break {
+		flex: 1 1 100%;
+		height: 0;
+	}
+	.apr {
+		/*text-align: center;*/
+		margin-bottom: 1em;
 	}
 </style>

@@ -91,6 +91,17 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
     return await approve(coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
 
+export async function approveAmount(contract, amount, account, toContract) {
+    let current_allowance = cBN(await contract.methods.allowance(account, toContract).call())
+    console.log(current_allowance.toString(), amount.toString(), current_allowance.lt(amount))
+    if(current_allowance.lt(amount) && amount.gt(0)) {
+        if(current_allowance > 0) {
+            await approve(contract, 0, account, toContract)
+        }
+        await approve(contract, amount, account, toContract)
+    }
+}
+
 // XXX not needed anymore
 // Keeping for old withdraw, to be removed whenever the chance is
 export async function ensure_token_allowance() {

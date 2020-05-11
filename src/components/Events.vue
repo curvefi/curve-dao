@@ -85,7 +85,7 @@
 				    </tbody>
 				</table>
 				<div>
-					<button id='loadmore' @click='loadMore' v-show='page == pages && exchanges.length'>Load more</button>
+					<button id='loadmore' @click='loadMore' v-show='page == pages && exchanges.length > perPage'>Load more</button>
 				</div>
 				<div id='pages'>
 					<button @click='page > 0 && page--'>Prev</button>
@@ -118,6 +118,7 @@
 		data: () => ({
 			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
 			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
+			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
 			//compound first block
 			fromBlock: '0x91c86f',
 			swapContracts: [],
@@ -200,11 +201,17 @@
 					return [
 						this.swapContracts[this.allPools.indexOf(pool)]
 						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
-							{ fromBlock: block - numBlocks }
+							{ 
+								fromBlock: (block - numBlocks) | 0,
+								toBlock: block,
+							}
 						),
 						this.swapContracts[this.allPools.indexOf(pool)]
 						.getPastEvents(this.tokenExchangeEvent, 
-							{ fromBlock: block - numBlocks }
+							{ 
+								fromBlock: (block - numBlocks) | 0,
+								toBlock: block,
+							}
 						),
 					]
 				})
@@ -218,18 +225,25 @@
 				this.loadEvents(lastBlock)
 			},
 			async loadEvents(block) {
+				this.paginatedExchanges = []
 				let length = 0
 				let i = 0;
+				let createdAtBlock;
+				if(this.pools.length == 1) {
+					let index = this.allPools.indexOf(this.pools[0])
+					createdAtBlock = this.createdAtBlocks[index]
+				}
 				while(length < 500) {
+					let numBlocks = this.numBlocks;
 					let results
 					let numTries = 5
-					let numBlocks = this.numBlocks;
 					while(true) {
 						try {
 							results = await Promise.all(this.getEvents(block, numBlocks).flat())
 							break;
 						}
 						catch(err) {
+							console.error(err)
 							numTries--;
 							numBlocks /= 2;
 							if(numTries == 0) throw err
@@ -239,8 +253,13 @@
 					results = results.flat()
 						.sort((a, b) => b.blockNumber - a.blockNumber)
 					this.exchanges.push(...results)
-					if(i == 0) this.paginate()
+					if(this.paginatedExchanges.length == 0 && this.perPage <= length) this.paginate()
 					i++
+					if(createdAtBlock && (block - numBlocks) < createdAtBlock) {
+						this.paginate();
+						break;
+					}
+					block -= numBlocks
 				}
 			},
 			//change pagination on first load, on change page, per page and on new events
@@ -368,7 +387,6 @@
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call(null, blockNumber)
 				let block = aggcalls[0];
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-				console.log(decoded)
 				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					//usdt in usdt pool and susdv2 pool are already in the array, no need to calculate

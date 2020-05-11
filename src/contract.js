@@ -166,7 +166,7 @@ export const gas = {
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		pax: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2.5 | 0,
 			withdraw: 3500000,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
@@ -194,6 +194,7 @@ const state = Vue.observable({
 	contracts: {
 		compound: {
 			currentContract: 'compound',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],
@@ -210,6 +211,7 @@ const state = Vue.observable({
 		},
 		usdt: {
 			currentContract: 'usdt',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],
@@ -226,6 +228,7 @@ const state = Vue.observable({
 		},
 		iearn: {
 			currentContract: 'iearn',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],
@@ -242,6 +245,7 @@ const state = Vue.observable({
 		},
 		busd: {
 			currentContract: 'busd',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],
@@ -258,6 +262,7 @@ const state = Vue.observable({
 		},
 		susdv2: {
 			currentContract: 'susdv2',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],
@@ -276,6 +281,7 @@ const state = Vue.observable({
 		},
 		pax: {
 			currentContract: 'pax',
+			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
 			underlying_coins: [],

@@ -104,6 +104,7 @@
         		Withdraw & exit
         	</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
+            <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <div id='mintr' v-show="currentPool == 'susdv2'">
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
@@ -119,7 +120,7 @@
 <script>
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
-    import { getters, contract as currentContract, gas as contractGas } from '../contract'
+    import { getters, contract as currentContract, gas as contractGas, init } from '../contract'
     import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
@@ -623,7 +624,31 @@
 	        		return common.handle_migrate_new('new')
 	        	this.share = 100
 	        	await this.handle_remove_liquidity();
-	        }
+	        },
+            async migrateUSDT() {
+                this.withdrawc = false;
+                let amounts = this.inputs;
+                amounts.push(0);
+                this.handle_remove_liquidity()
+                await init(currentContract.contracts.pax)
+
+                amounts = amounts.map((v, i)=>BN(v).times(allabis.pax.coin_precisions[i]).toFixed(0))
+                this.waitingMessage = 'Please approve spending your coins'
+                await common.ensure_allowance(amounts, true, 'pax', 3)
+                let pax_deposit_zap = new currentContract.web3.eth.Contract(allabis.pax.deposit_abi, allabis.pax.deposit_address)
+                let token_amount = await currentContract.contracts.pax.swap.methods.calc_token_amount(amounts, true).call();
+                token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
+                this.waitingMessage = 'Please confirm deposit to PAX pool transaction'
+                let nonZeroInputs = amounts.filter(Number).length
+                let gas = contractGas.depositzap.pax.deposit(nonZeroInputs) | 0
+                let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
+                    from: currentContract.default_account,
+                    gas: gas
+                })
+                .once('transactionHash', hash => {
+                    this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
+                })
+            }
         },
 
     }

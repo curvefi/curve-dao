@@ -383,9 +383,10 @@
 				let urls = tradeStore.pools.map(pool=>fetch(`${window.domain}/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
 				let requests = await Promise.all(urls)
 				let data = []
-				for(let r of requests) {
-					let json = await r.json()
+				for(let res of requests) {
+					let json = await res.json()
 					if(json.length != 1000 && requests.length > 1) {
+						if(res.url.includes('pax')) json = json.slice(10)
 						let fill = new Array(1000-json.length).fill({})
 						json = fill.concat(json)
 					}

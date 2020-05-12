@@ -109,18 +109,6 @@
     components: {
       BalancesInfo,
     },
-    data: () => ({
-      gitBranches: {
-        compound: 'compound',
-        usdt: 'usdt',
-        iearn: 'y',
-        y: 'y',
-        busd: 'busd',
-        susd: 'susd_vulnerable',
-        susdv2: 'susd_plain',
-        pax: 'pax',
-      }
-    }),
     computed: {
       allGetters() {
         return getters;

@@ -13,6 +13,7 @@ N_COINS: 2,
 coin_precisions: [1e18, 1e6],
 wrapped_precisions: [1e8, 1e8],
 use_lending: [true, true],
+is_plain: [false, false],
 old_swap_address: '0x2e60CF74d81ac34eB21eEff58Db4D385920ef419',
 swap_address: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
 token_address: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
@@ -1842,6 +1843,7 @@ var usdt = {
   wrapped_precisions: [1e8, 1e8, 1e6],
   use_lending: [true, true, false],
   tethered: [false, false, true],
+  is_plain: [false, false, true],
   swap_address: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C',
   token_address: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -2900,6 +2902,7 @@ var iearn = {
   wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
+  is_plain: [false, false, false, false],
   swap_address: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
   token_address: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -3960,6 +3963,7 @@ var busd = {
   wrapped_precisions: [1e18, 1e6, 1e6, 1e18],
   use_lending: [true, true, true, true],
   tethered: [false, false, true, false],
+  is_plain: [false, false, false, false],
   swap_address: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27',
   token_address: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B',
   infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
@@ -5873,6 +5877,7 @@ var susd = {
   N_COINS: 2, 
   tethered: [false, false],
   use_lending: [true, true],
+  is_plain: [false, false],
   coin_precisions: [1e18, 1e18],
   underlying_coins: [
     '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
@@ -8015,4 +8020,4 @@ export let sCurveRewards_abi = [{"anonymous":false,"inputs":[{"indexed":true,"in
 
 export let sCurveRewards_address = '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92'
 
-export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2}
+export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax}

@@ -40,7 +40,7 @@
 	export default {
 		data: () => ({
 			token: 'cCrv',
-			tokenNames: ['cCrv', 'tCrv', 'yCrv', 'bCrv', 'sCrv'],
+			tokenNames: ['cCrv', 'tCrv', 'yCrv', 'bCrv', 'sCrv', 'pCrv'],
 			tokens: [],
 			contracts: [],
 			swaps: [],

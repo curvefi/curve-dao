@@ -638,7 +638,7 @@ button.bn-onboard-custom {
 }
 
 #app .blue.window.Trade, #app .blue.window.Exchange {
-  width: 70%;
+  width: 80%;
   max-width: 1000px;
 }
 
@@ -738,7 +738,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 #app .tradeview {
-  width: 70%;
+  width: 80%;
   max-width: 1000px;
 }
 

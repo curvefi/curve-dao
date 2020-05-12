@@ -642,6 +642,10 @@ button.bn-onboard-custom {
   max-width: 1000px;
 }
 
+#app.RootIndex .tradeview {
+  max-width: 700px;
+}
+
 input[type=range] {
   background: inherit;
   -webkit-appearance: none;

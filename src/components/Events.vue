@@ -3,6 +3,9 @@
 		<fieldset>
 			<legend>Events</legend>
 			<div id='poolselect'>
+				<select class = 'tvision' v-model='event'>
+					<option v-for = '(option, i) in allEvents' :value = 'i'> {{ option }} </option>
+				</select>
 				<input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
 				<label for='compoundpool'>Compound</label>
 
@@ -119,6 +122,8 @@
 			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
 			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
 			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
+			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
+			event: 0,
 			//compound first block
 			fromBlock: '0x91c86f',
 			swapContracts: [],
@@ -169,6 +174,13 @@
 			},
 			tokenExchangeUnderlyingEvent() {
 				return web3.utils.sha3('TokenExchangeUnderlying(address,int128,uint256,int128,uint256)')
+			},
+			addLiquidityTopics() {
+				return [
+					'0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
+					'0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
+					'0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+				]
 			},
 			allCurrencies() {
 				return allCurrencies
@@ -549,9 +561,9 @@
 		box-shadow: none;
 		margin-left: 10px;
 	}
-	label:nth-of-type(1) {
+	/*label:nth-of-type(1) {
 		margin-left: 0;
-	}
+	}*/
 	label {
 		margin-left: 1em;
 	}

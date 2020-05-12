@@ -128,7 +128,7 @@
 					}
 					return contract.web3.eth.abi.decodeParameter('uint256', hex)
 				})
-				chunkArr(balances, 4).map(([ubal, bal, [,capr,,,,,aapr,dapr], rate], i) => {
+				chunkArr(balances, 4).map(([ubal, bal, [,capr,,,,aapr,,dapr], rate], i) => {
 					let apr = Math.max(capr, aapr, dapr) / 1e18;
 					this.ycTokens[i].maxBalance = bal;
 					this.ycTokens[i].apr = apr

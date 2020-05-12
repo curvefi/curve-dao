@@ -300,7 +300,7 @@ export default {
 		          	if(currentContract.currentContract == 'usdt' && i ==2) {
 		            	usd = BN(tokens).div(BN(1e4)).toNumber();
 		          	}
-		          	if(['iearn','busd'].includes(currentContract.currentContract)) {
+		          	if(['iearn','busd', 'pax'].includes(currentContract.currentContract)) {
 		          		if(i == 0 || i == 3) tokens /= 1e16;
 		          		else tokens /= 1e4
 		          		usd = tokens * exchangeRate

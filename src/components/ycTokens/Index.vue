@@ -1,5 +1,11 @@
 <template>
 	<div class='window white'>
+		<div class='info-message gentle-message'>
+			ycTokens(<a href='https://etherscan.io/token/0x99d1fa417f94dcd62bfe781a1213c092a47041bc'>yDAI</a>,
+			<a href='https://etherscan.io/token/0x9777d7e2b60bb01759d0e2f8be2095df444cb07e'>yUSDC</a>,
+			<a href='https://etherscan.io/token/0x1be5d71f2da660bfdee8012ddc58d024448a0a59'>yUSDT</a>)
+			are forked from iearn's yTokens, without owner and with Compound lending available for ycUSDT
+		</div>
 		<fieldset v-for='(token, i) of ycTokens'>
 			<legend> 
 				{{ token.name }} / {{ token.uname.toUpperCase() }} 
@@ -218,5 +224,11 @@
 	.apr {
 		/*text-align: center;*/
 		margin-bottom: 1em;
+	}
+	.info-message {
+		margin-bottom: 1em;
+	}
+	.info-message a {
+		color: white;
 	}
 </style>

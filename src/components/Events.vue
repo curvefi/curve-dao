@@ -18,9 +18,6 @@
 				<input id='susdpool' type='checkbox' value='susdv2' v-model='pools'/>
 				<label for='susdpool'>sUSD</label>
 
-				<input id='paxpool' type='checkbox' value='pax' v-model='pools'/>
-				<label for='paxpool'>PAX</label>
-
 				<button @click="selectPoolsHandler">Select</button>
 
 				<table class="tui-table">
@@ -141,7 +138,6 @@
 				iearn: [],
 				busd: [],
 				susdv2: [],
-				pax: [],
 			},
 			c_rates: {
 				compound: [],
@@ -149,7 +145,6 @@
 				iearn: [],
 				busd: [],
 				susdv2: [],
-				pax: [],
 			},
 			jsons: [],
 			latestblock: null,
@@ -356,7 +351,7 @@
 							rate = 1 / abi.coin_precisions[j]
 							this.c_rates[pool][j] = rate
 						}
-						else if(['iearn', 'busd', 'pax'].includes(pool)) {
+						else if(['iearn', 'busd'].includes(pool)) {
 							calls.push([
 								address,
 								//getPricePerFullShare()
@@ -424,9 +419,7 @@
 				this.selectPools()
 			},
 			isPlain(i, abi, pool) {
-				return abi.tethered && abi.tethered[i] 
-						&& abi.use_lending && !abi.use_lending[i] 
-						|| pool == 'susdv2' || abi.is_plain[i];
+				return abi.tethered && abi.tethered[i] && abi.use_lending && !abi.use_lending[i] || pool == 'susdv2';
 			},
 			getCurrency(event, type) {
 				//type == 0 for sold

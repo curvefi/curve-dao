@@ -30,7 +30,7 @@
 		},
 		props: ['data', 'currency'],
 		data: () => ({
-			titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX'],
+			titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD'],
 			chartdata: {
 				chart: {
 					panning: true,

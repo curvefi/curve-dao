@@ -159,10 +159,11 @@ export function update_rates(version = 'new', contract) {
         rate += rate * supply_rate * (block.number - old_block) / 10 ** 18
         */
         //for usdt pool
-        if(checkTethered(contract, i)) {
+        if(allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
+            allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdv2') {
             Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);
         }
-        else if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) {
+        else if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) {
             if(contract.currentContract == 'susd' && i == 1) {
                 calls.push(['0xeDf54bC005bc2Df0Cc6A675596e843D28b16A966', '0xbb7b8b80'])
             }
@@ -232,8 +233,7 @@ export async function update_fee_info(version = 'new', contract, update = true) 
 
 function checkTethered(contract, i) {
     return allabis[contract.currentContract].tethered && allabis[contract.currentContract].tethered[i] &&
-        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i]
-        || allabis[contract.currentContract].is_plain[i] || contract.currentContract == 'susdv2';
+        allabis[contract.currentContract].use_lending && !allabis[contract.currentContract].use_lending[i] || contract.currentContract == 'susdv2';
 }
 
 export async function multiInitState(calls, contract, initContracts = false) {
@@ -274,7 +274,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
         chunkArr(contractsDecoded, 2).map((v, i) => {
             var addr = v[0];
             let coin_abi = cERC20_abi
-            if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
+            if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) coin_abi = yERC20_abi
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             var underlying_addr = v[1];
             contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
@@ -285,7 +285,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
     }
 
 
-    if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) {
+    if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) {
         ratesDecoded.map((v, i) => {
             if(checkTethered(contract, i)) {
                 Vue.set(contract.c_rates, i, 1 / allabis[contract.currentContract].coin_precisions[i]);

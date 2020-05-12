@@ -50,12 +50,6 @@ const currencies = {
 		usdt: 'USDT',
 		susd: 'sUSD',
 	},
-	pax: {
-		dai: 'ycDAI',
-		usdc: 'ycUSDC',
-		usdt: 'ycUSDT',
-		pax: 'PAX',
-	},
 }
 
 export const allCurrencies = currencies
@@ -67,7 +61,6 @@ export const poolMenu = {
 	busd: 'bUSD',
 	susd: 'sUSD-yCurve old',
 	susdv2: 'sUSD',
-	pax: 'PAX',
 }
 
 export const gas = {
@@ -95,11 +88,7 @@ export const gas = {
 		susdv2: {
 			exchange: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
 			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 400000 : 200000,
-		},
-		pax: {
-			exchange: (i, j) => 800000,
-			exchange_underlying: (i, j) => 1600000
-		},
+		}
 	},
 	deposit: {
 		compound: 1300000,
@@ -108,7 +97,6 @@ export const gas = {
 		busd: 1300000,
 		susd: 1300000,
 		susdv2: 1000000,
-		pax: 1300000,
 	},
 	withdraw: {
 		compound: {
@@ -128,10 +116,7 @@ export const gas = {
 		},
 		susdv2: {
 			imbalance: x => 600000,
-		},
-		pax: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
-		},
+		}
 	},
 	depositzap: {
 		compound: {

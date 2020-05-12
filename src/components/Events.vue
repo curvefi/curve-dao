@@ -307,7 +307,7 @@
 				this.exchanges = []
 				//get historic rates
 				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool)
-				let requests = await Promise.all(fetchpools.map(pool => fetch(`${window.domain}/raw-stats/${pool}-30m.json`)))
+				let requests = await Promise.all(fetchpools.map(pool => fetch(`${window.domain}/raw-stats/${pool}-1m.json`)))
 				let jsons = await Promise.all(requests.map(request => request.json()))
 				this.jsons = jsons
 				for(let [i, data] of jsons.entries()) {
@@ -498,7 +498,6 @@
 				if(prev.timestamp == next.timestamp) return next;
 
 				let point = {}
-
 				let interpolator = helpers.interpolate(timestamp, prev.timestamp, next.timestamp)
 				point.virtual_price = interpolator(prev.virtual_price, next.virtual_price)
 				point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))

@@ -9,6 +9,7 @@ export const state = Vue.observable({
 		busd: -1,
 		susd: -1,
 		pax: -1,
+		tbtc: [],
 	},
 	volumeData: {
 		5: {
@@ -18,6 +19,7 @@ export const state = Vue.observable({
 			busd: [],
 			susd: [],
 			pax: [],
+			tbtc: [],
 		},
 		30: {
 			compound: [],
@@ -26,6 +28,7 @@ export const state = Vue.observable({
 			busd: [],
 			susd: [],
 			pax: [],
+			tbtc: [],
 		},
 		1440: {
 			compound: [],
@@ -34,6 +37,7 @@ export const state = Vue.observable({
 			busd: [],
 			susd: [],
 			pax: [],
+			tbtc: [],
 		}
 	},
 	allVolume: {
@@ -43,6 +47,7 @@ export const state = Vue.observable({
 		busd: [],
 		susd: [],
 		pax: [],
+		tbtc: [],
 	}
 })
 
@@ -119,5 +124,5 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 }
 
 export function totalVolume() {
-	return Object.values(state.volumes).filter(v=>v!=-1).length == 6 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
+	return Object.values(state.volumes).filter(v=>v!=-1).length == 7 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
 }

@@ -205,7 +205,7 @@
 
 		        let lendingrates;
 		        let lendingAxis = 'apyAxis'
-		        if(this.pool != 'susdv2')    	
+		        if(!['susdv2', 'tbtc'].includes(this.pool))    	
 	    			lendingrates = await volumeStore.getLendingAPY(this.pool, false, 1440)
 		        else {
 		        	lendingrates = volumeSeries.map(data => [data[0], 0])

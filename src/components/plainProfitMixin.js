@@ -17,11 +17,11 @@ export default {
 	}),
 
 	async mounted() {
-		if(this.account && currentContract.multicall) this.getSNXRewards()
+		if(this.account && currentContract.multicall && currentContract.currentContract == 'susdv2') this.getSNXRewards()
 	},
 
 	async created() {
-		this.$watch(() => this.account && currentContract.multicall, val => val && this.getSNXRewards())
+		this.$watch(() => this.account && currentContract.multicall && currentContract.currentContract == 'susdv2', val => val && this.getSNXRewards())
 	},
 
 	computed: {

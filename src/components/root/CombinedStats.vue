@@ -173,7 +173,7 @@
 				        */
 			         	if (contract.tethered && contract.tethered[i] 
 			         		&& contract.use_lending && !contract.use_lending[i] 
-			         		|| key == 'susdv2' || (key == 'pax' && i == 3)) {
+			         		|| key == 'susdv2' || (key == 'pax' && i == 3) || key == 'tbtc') {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {

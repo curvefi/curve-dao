@@ -18,6 +18,9 @@
 
             <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
             <label for='paxpool1'>PAX</label>
+
+            <input id='tbtc1' type='checkbox' value='tbtc' v-model='pools'/>
+            <label for='tbtc1'>tBTC</label>
         </div>
 
 		<div class='swap exchange'>
@@ -146,7 +149,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
+            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -161,8 +164,8 @@
             customSlippageDisabled: true,
             inf_approval: false,
             distribution: null,
-            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX
-            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18],
+            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX, tBTC, hBTC, wBTC
+            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18, 1e18, 1e18, 1e8, 1e18],
             swap: [],
             addresses: [],
             coins: [],
@@ -175,7 +178,6 @@
             usedParts: 0,
             multipath: 0,
             swapwrapped: false,
-            poolIndexes: [0, 1, 2, 3, 4, 5],
             bestPool: null,
 		}),
         computed: {
@@ -192,7 +194,8 @@
                     usdt: 0x2000,
                     y: 0x4000,
                     busd: 0x8000,
-                    susdv2: 0x40000
+                    susdv2: 0x40000,
+                    pax: 0x100000,
                 }
                 let removePoolFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f])
                 removePoolFlag = removePoolFlag.reduce((a, b) => a + b, 0)
@@ -208,19 +211,23 @@
                         busd: 'BUSD',
                         susd: 'sUSD',
                         pax: 'PAX',
+                        tbtc: 'tBTC',
+                        hbtc: 'hBTC',
+                        wbtc: 'wBTC',
                     }
                 }
                 if(this.swapwrapped == 1) {
                     return {
                         dai: 'cDAI',
                         usdc: 'cUSDC',
+                        pax: 'PAX',
                     }
                 }
                 return {
                     dai: 'yDAI',
                     usdc: 'yUSDC',
                     tusd: 'yTUSD',
-                    busd: 'yBUSD'
+                    busd: 'yBUSD',
                 }
             },
             actualFromValue() {
@@ -245,7 +252,7 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc']
             },
             warningNoPool() {
                 this.message = 'Please select '
@@ -350,6 +357,7 @@
         },
 		methods: {
             async mounted() {
+                //need to fix better coin choosing
                 await this.setup();
                 this.disabled = false;
                 this.from_cur_handler()

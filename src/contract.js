@@ -56,6 +56,11 @@ const currencies = {
 		usdt: 'ycUSDT',
 		pax: 'PAX',
 	},
+	tbtc: {
+		tbtc: 'tBTC',
+		hbtc: 'hBTC',
+		wbtc: 'wBTC',
+	},
 }
 
 export const allCurrencies = currencies
@@ -68,6 +73,7 @@ export const poolMenu = {
 	susd: 'sUSD-yCurve old',
 	susdv2: 'sUSD',
 	pax: 'PAX',
+	tbtc: 'tBTC',
 }
 
 export const gas = {
@@ -100,6 +106,10 @@ export const gas = {
 			exchange: (i, j) => 800000,
 			exchange_underlying: (i, j) => 1600000
 		},
+		tbtc: {
+			exchange: (i, j) => 600000,
+			exchange_underlying: (i, j) => 1200000,
+		},
 	},
 	deposit: {
 		compound: 1300000,
@@ -109,6 +119,7 @@ export const gas = {
 		susd: 1300000,
 		susdv2: 1000000,
 		pax: 1300000,
+		tbtc: 1000000,
 	},
 	withdraw: {
 		compound: {
@@ -131,6 +142,9 @@ export const gas = {
 		},
 		pax: {
 			imbalance: x => (12642*x + 474068)*1.5 | 0,
+		},
+		tbtc: {
+			imbalance: x => 600000,
 		},
 	},
 	depositzap: {
@@ -170,6 +184,13 @@ export const gas = {
 			withdraw: 3500000,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
+		},
+		//no deposit zap
+		tbtc: {
+			deposit: x => (172664*x + 471691)*1.5 | 0,
+			withdraw: 800000,
+			withdrawShare: 1000000,
+			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 	}
 }
@@ -281,6 +302,23 @@ const state = Vue.observable({
 		},
 		pax: {
 			currentContract: 'pax',
+			deposit_zap: null,
+			balances: [],
+			wallet_balances: [],
+			underlying_coins: [],
+			c_rates: [],
+			bal_info: [],
+			total: 0,
+			l_info: [],
+			totalShare: 0,
+			showShares: false,
+			totalSupply: 0,
+			totalBalance: 0,
+			usdShare: null,
+			usdStake: null,
+		},
+		tbtc: {
+			currentContract: 'tbtc',
 			deposit_zap: null,
 			balances: [],
 			wallet_balances: [],
@@ -440,7 +478,7 @@ export async function init(contract, refresh = false) {
 		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     }
-    if(!['susd'].includes(contract.currentContract))
+    if(!['susd', 'tbtc'].includes(contract.currentContract))
     	state.deposit_zap = new state.web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new state.web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new state.web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);

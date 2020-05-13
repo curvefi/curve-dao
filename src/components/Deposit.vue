@@ -8,7 +8,8 @@
                         <label :for="'currency_'+i">
                         	<span v-show='depositc'>
                         		{{currencies[currency]}} 
-	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') && currentPool != 'susdv2'"> 
+	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
+	                        					&& !['susdv2', 'tbtc'].includes(currentPool)"> 
 	                        		(in {{currency | capitalize}}) 
 	                        	</span>
 	                        </span>

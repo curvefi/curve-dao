@@ -126,10 +126,10 @@
 			}
 		},
 		async mounted() {
-			this.$watch(()=>volumeStore.state.allVolume.susd.length, val => {
+			this.$watch(()=>volumeStore.state.allVolume.tbtc.length, val => {
 				if(val) {
 					let volumeSeries = []
-					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd']
+					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc']
 					let data = volumeStore.state.allVolume
 					let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
 					data = Object.keys(data).reduce((obj, key) => {

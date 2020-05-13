@@ -20,6 +20,9 @@
 				<input id='paxpool' type='checkbox' value='pax' v-model='piepools'/>
 				<label for='paxpool'>PAX</label>
 
+				<input id='tbtcpool' type='checkbox' value='tbtc' v-model='piepools'/>
+				<label for='tbtcpool'>tBTC</label>
+
 				<button @click='selectPools'>Select</button>
 			</div>
 
@@ -190,8 +193,8 @@
 			    	enabled: true,
 			    }
 			},
-			piepools: ['compound', 'usdt', 'y', 'busd', 'susd', 'pax'],
-			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX'],
+			piepools: ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc'],
+			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC'],
 			volumes: [],
 			period: 'week',
 			chart: null,

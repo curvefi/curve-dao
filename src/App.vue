@@ -23,6 +23,7 @@
     	susd: 'sUSD-yCurve old',
     	susdv2: 'sUSD',
         pax: 'PAX',
+        tbtc: 'tBTC',
     }
 
 	export default {

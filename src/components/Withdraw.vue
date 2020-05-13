@@ -513,8 +513,10 @@
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         await common.ensure_allowance_zap_out(amount)
                         let min_amount;
+                        let inOneCoin = currentContract.deposit_zap
+                        if(currentContract.currentContract == 'tbtc') inOneCoin = currentContract.swap
                         try {
-                            min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
+                            min_amount = await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
                         }
                         catch(err) {
                             console.error(err)
@@ -522,7 +524,7 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
-			        	await currentContract.deposit_zap.methods
+			        	await inOneCoin.methods
 			        		.remove_liquidity_one_coin(amount, 
 			        			this.to_currency, 
     							BN(min_amount).times(BN(this.getMaxSlippage)).toFixed(0, 1), 

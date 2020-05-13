@@ -104,6 +104,7 @@
         susd: 'susd_vulnerable',
         susdv2: 'susd_plain',
         pax: 'pax',
+        tbtc: 'tbtc',
       }
     }),
     components: {

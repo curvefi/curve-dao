@@ -217,6 +217,35 @@
                	 		</span>
 	                </router-link>
 	            </div>
+	            <div :class="{selected: activePoolLink == 5}">
+	                <router-link to = '/busd'>
+	                	<span class='index'>5.</span>  
+	                    <span class='pooltext'>tBTC</span>
+	                    <span class='pools'>[tBTC, hBTC, wBTC]</span>  
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[6]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[6]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[6]}}%</div>
+		                    		<div>Total APY: {{apy[6]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[6]}">{{daily_apy[6]}}</span>%
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
+	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber}}</span>
+               	 		</span></span>
+               	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[6]'>Balance: ${{balances[6] && balances[6].toFixed(2)}} </span>
+               	 			<span class='tooltip' v-show='balances[6]'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<span class='tooltiptext'>Balance: ${{balances[6] && balances[6].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
+	                </router-link>
+	            </div>
 	        </fieldset>
 	    </div>
 
@@ -242,7 +271,7 @@
 		},
 		data: () => ({
 			activePoolLink: -1,
-			pools: ['compound','usdt','y','busd'],
+			pools: ['compound','usdt','y','busd','susdv2','pax','tbtc'],
 			daily_apy: [],
 			weekly_apy: [],
 			monthly_apy: [],
@@ -338,7 +367,7 @@
 	            }
 			},
 			async getAPY() {
-				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax']
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc']
 	            let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
 	            stats = await stats.json()
                 this.volumes = stats.volume;

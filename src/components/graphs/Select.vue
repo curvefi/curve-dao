@@ -18,6 +18,9 @@
 
 			<input id='paxpool' type='checkbox' value='pax' v-model='pools'/>
 			<label for='paxpool'>PAX</label>
+
+			<input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
+			<label for='tbtcpool'>tBTC</label>
 		</div>
 
 		<select class='tvision' v-model='pair'>

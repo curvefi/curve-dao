@@ -29,6 +29,7 @@
 				{ name: 'bCurve', ticker: 'bCrv' },
 				{ name: 'sCurve', ticker: 'sCrv' },
 				{ name: 'pCurve', ticker: 'pCrv' },
+				{ name: 'tbtcCurve', ticker: 'tbtcCrv' },
 			]
 		}),
 		computed: {

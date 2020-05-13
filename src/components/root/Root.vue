@@ -67,7 +67,24 @@
 	                <router-link to = '/pax'>
 	                	<span class='index'>1.</span>  
 	                    <span class='pooltext'>PAX</span>
-	                    <span class='pools'>[(yc)DAI, (yc)USDC, (yc)USDT, PAX]</span>  
+	                    <span class='pools'>
+	                    	[<span class='tooltip'>(yc)DAI
+								<span class='tooltiptext long'>
+								<router-link to='/yctokens'>ycTokens</router-link> are forked yTokens without owner and Compound lending available for ycUSDT
+							</span>
+							 </span>,
+                    		 <span class='tooltip'>(yc)USDC
+                    		 	<span class='tooltiptext long'>
+                    		 	<router-link to='/yctokens'>ycTokens</router-link> are forked yTokens without owner and Compound lending available for ycUSDT
+                    		 </span>
+                    		 </span>,
+                    		 <span class='tooltip'>(yc)USDT
+                    		 	<span class='tooltiptext long'>
+                    		 	<router-link to='/yctokens'>ycTokens</router-link> are forked yTokens without owner and Compound lending available for ycUSDT
+                    		 </span>
+                    		 </span>, 
+                    		 PAX]
+	                	</span>  
 	                    <span class='apr'>
 	                    	<span class='tooltip'>APY:
 	                    		<span class='tooltiptext long'>
@@ -372,6 +389,9 @@
 		display: flex;
 		justify-content: space-between;
 	}
+	.poolsdialog > div > a:hover .tooltip {
+ 		border-bottom: 1px dotted white;
+	}
 	.poolsdialog > div > a:hover img {
 		filter: invert(1);
 	}
@@ -398,12 +418,18 @@
 	}
 	.tooltip {
 		position: relative;
+		margin-left: 0;
 	}
 	.tooltiptext.long {
 		max-width: 250px;
 		position: absolute;
 		margin-left: 0;
 		transform: translateX(-50%) translateX(6px);
+	}
+	.tooltiptext.long a {
+		display: inline-block;
+		background: transparent;
+		text-decoration: underline;
 	}
 	.tooltiptext.long > div {
 		padding-left: 1em;

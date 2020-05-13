@@ -637,9 +637,13 @@ button.bn-onboard-custom {
   justify-content: center;
 }
 
-.blue.window.Trade, .blue.window.Exchange {
-  width: 70%;
-  max-width: 1280px;
+#app .blue.window.Trade, #app .blue.window.Exchange {
+  width: 80%;
+  max-width: 1000px;
+}
+
+#app.RootIndex .tradeview {
+  max-width: 700px;
 }
 
 input[type=range] {
@@ -731,6 +735,11 @@ input[type=range]:focus::-ms-fill-upper {
 
 .tradeview .highcharts-range-selector-buttons > text:first-child{
   display:none;
+}
+
+#app .tradeview {
+  width: 80%;
+  max-width: 1000px;
 }
 
 /*

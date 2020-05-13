@@ -259,7 +259,7 @@
 					tokens_bought: '',
 				}*/
 			],
-			page: -1,
+			page: 0,
 			perPage: 10,
 			gotopage: 0,
 			subscriptions: [],
@@ -362,18 +362,33 @@
 			contract.multicall && this.mounted();
 		},
 		methods: {
+			async mounted() {
+				let params = this.$route.params.params
+				if(params && params.length) {
+					params = params.split('/')
+					this.pools = params[0].split('_')
+					this.event = this.displayedEvent = this.allEvents.indexOf(params[1])
+				}
+				this.swapContracts = Object.keys(allabis)
+					.filter(pool => this.pools.includes(pool))
+					.map(pool => new web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
+
+				//get rates
+				await this.getRates();
+				this.selectPools()
+			},
 			getEvents(block, numBlocks) {
 				return this.pools.map(pool => {
 					let topics = [];
 					if(this.event == 0) {
 						topics = [
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.getPastEvents(this.tokenExchangeUnderlyingEvent, 
 									{ 
 										fromBlock: (block - numBlocks) | 0,
 										toBlock: block,
 									}),
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.getPastEvents(this.tokenExchangeEvent, 
 									{ 
 										fromBlock: (block - numBlocks) | 0,
@@ -383,7 +398,7 @@
 					}
 					if(this.event == 1) {
 						topics = [
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.getPastEvents(this.addLiquidityTopics[pool],
 								{ 
 									fromBlock: (block - numBlocks) | 0,
@@ -393,7 +408,7 @@
 					}
 					if(this.event == 2) {
 						topics = this.removeLiquidityTopics[pool].map(topic => {
-							return this.swapContracts[this.allPools.indexOf(pool)]
+							return this.swapContracts[this.pools.indexOf(pool)]
 								.getPastEvents(topic, {
 									fromBlock: (block - numBlocks) | 0,
 									toBlock: block,
@@ -403,6 +418,9 @@
 					}
 					return topics
 				})
+			},
+			pushState() {
+				history.pushState({}, null, '/events/' + this.pools.join('_') + '/' + this.allEvents[this.event])
 			},
 			selectPoolsHandler() {
 				this.exchanges = []
@@ -499,6 +517,7 @@
 				this.paginatedExchanges = events
 			},
 			async selectPools() {
+				this.pushState();
 				this.latestblock = await web3.eth.getBlockNumber();
 				for(let subscription of this.subscriptions) subscription.unsubscribe()
 				this.exchanges = []
@@ -592,15 +611,6 @@
 					}
 				}
 			},
-			async mounted() {
-				this.swapContracts = Object.keys(allabis)
-					.filter(pool => this.pools.includes(pool))
-					.map(pool => new web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
-
-				//get rates
-				await this.getRates();
-				this.selectPools()
-			},
 			isPlain(i, abi, pool) {
 				return abi.tethered && abi.tethered[i] 
 						&& abi.use_lending && !abi.use_lending[i] 
@@ -660,29 +670,29 @@
 				for(let pool of this.pools) {
 					if(this.event == 0) {
 						this.subscriptions.push(
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 							.events.TokenExchangeUnderlying()
 							.on('data', event => this.subscribeExchange(event)),
 
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 							.events.TokenExchange()
 							.on('data', event => this.subscribeExchange(event))
 						)
 					}
 					if(this.event == 1) {
 						this.subscriptions.push(
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.events.AddLiquidity()
 								.on('data', event => this.subscribeExchange(event))
 						)
 					}
 					if(this.event == 2) {
 						this.subscriptions.push(
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.events.RemoveLiquidity()
 								.on('data', event => this.subscribeExchange(event)),
 
-							this.swapContracts[this.allPools.indexOf(pool)]
+							this.swapContracts[this.pools.indexOf(pool)]
 								.events.RemoveLiquidityImbalance()
 								.on('data', event => this.subscribeExchange(event)),
 						)

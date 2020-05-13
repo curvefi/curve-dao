@@ -95,7 +95,7 @@ let routes = [
         component: CurvePay,
       },
       {
-        path: 'events',
+        path: 'events/:params(.*)?',
         name: 'Events',
         component: Events,
       },

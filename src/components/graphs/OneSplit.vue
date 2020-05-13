@@ -232,19 +232,16 @@
                 return (this.toInput * this.c_rates(this.to_currency)[this.to_currency] * this.precisions(this.to_currency)).toFixed(2)
             },
             bestPoolText() {
-                if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
-                    || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
-                //add pax below when available in 1split
-                if((this.from_currency == 3 && this.to_currency == 4) || (this.to_currency == 3 && this.from_currency == 4))
-                    return '1split'
+                // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
+                //     || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
                 if(this.bestPool === null) return 'Not available'
                 return ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', '1split'][this.bestPool]
             },
             selldisabled() {
                 // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                 //     return true
-                if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))
-                    return true;
+                // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))
+                //     return true;
                 return false;
             },
             allPools() {
@@ -504,7 +501,7 @@
                     this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000),
                 ]
                 let calls = defaultCalls.concat();
-                if([3,4,5].includes(this.from_currency) && [3,4,5].includes(this.to_currency)) {
+                if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
                     calls = defaultCalls.slice(1)
                     calls.push(
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000),

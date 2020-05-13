@@ -102,6 +102,12 @@ export function formatNumber(number) {
   return number.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 }
 
+export async function getETHPrice() {
+  let req = await fetch('https://api.coinpaprika.com/v1/tickers/eth-ethereum');
+  let res = await req.json()
+  return res.quotes.USD.price
+}
+
 export function findClosestIndex(timestamp, data) {
     let index = data.findIndex(d=>d.timestamp - timestamp > 0);
     return index;

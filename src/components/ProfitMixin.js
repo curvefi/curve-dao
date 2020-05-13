@@ -277,7 +277,6 @@ export default {
 		},
 	    async getExchangeRate(blockNumber, address, value, type) {
 	    	if(currentContract.currentContract == 'pax' && address.toLowerCase() == currentContract.coins[3]._address.toLowerCase()) {
-	    		console.log("HEREEEEEEEEEE")
 	    		return 1
 	    	}
 		    let exchangeRate = await this.checkExchangeRateBlocks(blockNumber, address, 0);

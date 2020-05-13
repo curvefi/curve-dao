@@ -416,6 +416,10 @@
 	.balance {
 		width: 12px;
 	}
+	.pools .tooltip {
+		vertical-align: bottom;
+		overflow: hidden;
+	}
 	.tooltip {
 		position: relative;
 		margin-left: 0;

@@ -86,16 +86,19 @@
                     </li>
                 </ul>
                 <p class='trade-buttons'>
-                    <button id="trade" @click='handle_trade' :disabled='+fromInput > +maxBalance*1.001'>Sell</button>
+                    <button id="trade" @click='handle_trade' :disabled='maxBalance != -1 && +fromInput > +maxBalance*1.001'>Sell</button>
                 </p>
                 <div class='info-message gentle-message' v-show='show_loading'>
                     {{waitingMessage}} <span class='loading line'></span>
                 </div>
-                <p class='simple-error' id='no-balance' v-show='+fromInput > +maxBalance*1.001'>
+                <p class='simple-error' id='no-balance' v-show='maxBalance != -1 && +fromInput > +maxBalance*1.001'>
                     Not enough balance for 
                     <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
                     <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
                 </p>
+                <div class='info-message gentle-message' v-show='estimateGas'>
+                    Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+                </div>
             </div>
         </div>
 </div>
@@ -120,7 +123,7 @@
             inf_approval: true,
             fromInput: '1.00',
             toInput: 0,
-            maxBalance: 0,
+            maxBalance: -1,
             maxBalanceText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
             exchangeRate: 'Not available',
@@ -134,6 +137,9 @@
             c_rates: [],
             show_loading: false,
             waitingMessage: '',
+            gasPrice: 0,
+            estimateGas: 0,
+            ethPrice: 0,
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -318,9 +324,14 @@
                 return helpers.makeCancelable(promise);
             },
             async handle_trade() {
+                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
                 this.show_loading = true;
                 var i = this.from_currency
                 var j = this.to_currency;
+                this.estimateGas = this.swapwrapped ? 
+                                        contractGas.swap[this.currentPool].exchange(i, j) / 2 : contractGas.swap[this.currentPool].exchange_underlying(i, j) / 2
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
                 let maxSlippage = this.maxSlippage / 100;
                 let currency = (Object.keys(this.currencies)[this.from_currency]).toUpperCase()
@@ -369,6 +380,8 @@
                     }
                     this.waitingMessage = ''
                     this.show_loading = false;
+                    this.gasPrice = 0;
+                    this.estimateGas = 0;
                     await common.update_fee_info();
                     this.from_cur_handler();
                     let balance = await this.coins[i].methods.balanceOf(this.default_account).call();

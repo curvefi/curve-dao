@@ -75,6 +75,9 @@
                 <div class='info-message gentle-message' v-show='show_loading'>
                 	{{waitingMessage}} <span class='loading line'></span>
                 </div>
+                <div class='info-message gentle-message' v-show='estimateGas'>
+	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+	            </div>
                 <Slippage/>
             </p>
         </div>
@@ -114,6 +117,9 @@
     		swap_address: currentContract.swap_address,
     		show_loading: false,
     		waitingMessage: '',
+    		estimateGas: 0,
+    		gasPrice: 0,
+    		ethPrice: 0,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -259,6 +265,9 @@
 				this.handle_add_liquidity(true)
 			},
 			async handle_add_liquidity(stake = false) {
+                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
 				this.show_loading = true
 				let calls = [...Array(currentContract.N_COINS).keys()].map(i=>
 						[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
@@ -281,6 +290,11 @@
 
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
+			    let nonZeroInputs = this.inputs.filter(Number).length
+				if(this.depositc)
+					this.estimateGas = contractGas.deposit[this.currentPool] / 2
+				else
+					this.estimateGas = (contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0) / 1.5
 			    if (this.inf_approval)
 			        await common.ensure_allowance(false, !this.depositc)
 			    else if(this.depositc) {
@@ -295,7 +309,6 @@
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
 			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
 			    }
-			    let nonZeroInputs = this.inputs.filter(Number).length
 			    let receipt;
 			    let minted = 0;
 			    if(this.depositc) {
@@ -352,6 +365,9 @@
 						})[0].raw.data)
 					await this.stakeTokens(minted)
 				}
+				this.estimateGas = 0 
+				this.gasPrice = 0
+
 			    await this.handle_sync_balances();
 			    common.update_fee_info();
 			},

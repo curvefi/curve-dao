@@ -112,6 +112,9 @@
             <div class='info-message gentle-message' v-show='show_loading'>
                 <span v-html='waitingMessage'></span> <span class='loading line'></span>
             </div>
+            <div class='info-message gentle-message' v-show='estimateGas'>
+                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+            </div>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
     </div>
@@ -162,6 +165,9 @@
             maxSlippage: 3,
             maxInputSlippage: '',
             customSlippageDisabled: true,
+            estimateGas: 0,
+            gasPrice: 0,
+            ethPrice: 0,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -419,7 +425,12 @@
                 }
 			},
 			async handle_remove_liquidity(unstake = false) {
+                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
+                this.estimateGas = 0;
                 this.show_loading = true;
+
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
                     let maxDiff = BN(this.calc_balances[i]).minus(BN(this.inputs[i]))
@@ -450,6 +461,11 @@
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                         try {
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            this.estimateGas = await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount)
+                                                .estimateGas({
+                                                    from: currentContract.default_account,
+                                                    gas: gas,
+                                                })
     			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
     				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
@@ -469,7 +485,8 @@
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
                         try {
-    			        	await common.ensure_allowance_zap_out(token_amount)
+                            this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)
+                            await common.ensure_allowance_zap_out(token_amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
     			        	await currentContract.deposit_zap.methods.remove_liquidity_imbalance(amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
@@ -493,7 +510,8 @@
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
-			        	await common.ensure_allowance_zap_out(amount)
+                        this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
+                        await common.ensure_allowance_zap_out(amount)
                         let min_amount;
                         try {
                             min_amount = await currentContract.deposit_zap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
@@ -517,9 +535,12 @@
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
                         try {
-    			        	await common.ensure_allowance_zap_out(amount)
+                            this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
+                            await common.ensure_allowance_zap_out(amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
-    			        	let min_amounts = await this.getMinAmounts();
+                            let min_amounts = await this.getMinAmounts();
+                            console.log(currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts).encodeABI(), 
+                                currentContract.deposit_zap._address, currentContract.default_account)
     			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
     			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
@@ -534,6 +555,11 @@
                         try {
     			        	let min_amounts = await this.getMinAmounts();
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            this.estimateGas = await currentContract.swap.methods.remove_liquidity(amount, min_amounts)
+                                                .estimateGas({
+                                                    from: currentContract.default_account,
+                                                    gas: 600000,
+                                                })
     			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }
@@ -551,6 +577,9 @@
 			    }
                 this.show_loading = false;
                 this.waitingMessage = ''
+                this.estimateGas = 0
+                this.gasPrice = 0
+
 			    await this.update_balances();
 			    await common.update_fee_info();
 			},

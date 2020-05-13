@@ -75,6 +75,12 @@
               </span>
             </span>
           </li>
+          <li>
+            <b>Daily volume: </b>
+            <span :class="{'loading line': volumes[volumePool] == -1}">
+              ${{ poolVolume && formatNumber(poolVolume.toFixed(2)) }}
+            </span>
+          </li>
         </ul>
       </p>
     </fieldset>
@@ -124,15 +130,21 @@
 
   export default {
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'usdShare', 'staked_info', 'totalStake', 'usdStake', 'combinedstats', 'virtual_price', 'A', 'future_A', 'admin_actions_deadline'],
+    data: () => ({
+      volumes: [],
+    }),
     methods: {
       totalCurrencies(currencies) {
         if(this.currentPool != 'susdv2')
           return Object.keys(currencies).join('+').toUpperCase();
         return Object.values(currencies).join('+');
       },
+      formatNumber(number) {
+        return helpers.formatNumber(number)
+      },
     },
     async created() {
-      if(volumeStore.state.volumes.compound == -1) {
+      if(this.poolVolume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
         this.volumes = stats.volume;
@@ -152,6 +164,9 @@
       },
       curveStakeBalance() {
         return currentContract.curveStakeBalance
+      },
+      volumePool() {
+        return this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool
       },
       currentPool() {
         return this.pool || currentContract.currentContract

@@ -71,6 +71,7 @@ export default {
         return (this.available / 100).toFixed(2)
       },
       showStakedBalance() {
+      if(this.currentPool != 'susdv2') return 0
       if(this.showinUSD) return this.getStakedBalanceUSD.toFixed(2);
         return (this.getStakedBalance / 100).toFixed(2); 
       },

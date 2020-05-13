@@ -17,24 +17,16 @@ export default {
 	}),
 
 	async mounted() {
-		if(currentContract.default_account && currentContract.multicall) this.getSNXRewards()
+		if(this.account && currentContract.multicall) this.getSNXRewards()
 	},
 
 	async created() {
-		this.$watch(() => currentContract.default_account && currentContract.multicall, val => val && this.getSNXRewards())
+		this.$watch(() => this.account && currentContract.multicall, val => val && this.getSNXRewards())
 	},
 
 	computed: {
 		totalShare() {
 			return getters.totalShare();
-		},
-
-		getStakedBalance() {
-			return currentContract.totalStake * 100
-		},
-
-		getStakedBalanceUSD() {
-			return currentContract.curveStakedBalance * currentContract.virtual_price / 1e18
 		},
 
 		showEarned() {
@@ -58,9 +50,9 @@ export default {
 
 			let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 			let calls = [
-				[curveRewards._address, curveRewards.methods.earned(currentContract.default_account).encodeABI()],
-				[curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account).encodeABI()],
-				[curveRewards._address, curveRewards.methods.userRewardPerTokenPaid(currentContract.default_account).encodeABI()],
+				[curveRewards._address, curveRewards.methods.earned(this.account).encodeABI()],
+				[curveRewards._address, curveRewards.methods.balanceOf(this.account).encodeABI()],
+				[curveRewards._address, curveRewards.methods.userRewardPerTokenPaid(this.account).encodeABI()],
 			]
 			let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -76,7 +68,7 @@ export default {
 				topics: [
 					//sha3('RewardPaid(address,uint256)')
 					'0xe2403640ba68fed3a2f88b7557551d1993f84b99bb10ff833f0cf8db0c5e0486',
-					'0x000000000000000000000000' + currentContract.default_account.slice(2),
+					'0x000000000000000000000000' + this.account.slice(2),
 					//'0x000000000000000000000000f3ae3bbdeb2fb7f9c32fbb1f4fbdaf1150a1c5ce',
 				]
 			})

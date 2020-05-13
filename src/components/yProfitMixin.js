@@ -34,7 +34,7 @@ export default {
 	    },
 
 	    async checkExchangeRateBlocks(block, address, direction, type = 'deposit') {
-		    let default_account = currentContract.default_account
+		    let default_account = this.account
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let fromBlock = '0x'+parseInt(block-100).toString(16)

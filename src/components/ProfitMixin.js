@@ -2,7 +2,7 @@ import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
 import { makeCancelable, interpolate } from '../utils/helpers'
 
-import allabis from '../allabis'
+import allabis, { sCurveRewards_address } from '../allabis'
 
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
@@ -14,6 +14,9 @@ export default {
 		removeliquidityImbalanceTopic: '0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
 		depositArr: [],
 		withdrawArr: [],
+
+		getStakedBalance: -1,
+		getStakedBalanceUSD: -1,
 	}),
 	computed: {
 		fromBlock() {
@@ -31,18 +34,11 @@ export default {
 		decodeParametersWithdrawal1() {
 			return [`uint256[${this.N_COINS}]`,`uint256[${this.N_COINS}]`, 'uint256', 'uint256']
 		},
-
-	    getStakedBalance() {
-	    	return 0;
-	    },
-
-	    getStakedBalanceUSD() {
-	    	return 0;
-	    },
 	},
 	methods: {
 		async mounted() {
 			try {
+				this.account = this.$route.params.address || currentContract.default_account
 		        common.update_fee_info();
 		        this.BN = currentContract.web3.utils.toBN
 		        this.CURVE = currentContract.swap_address;
@@ -60,18 +56,70 @@ export default {
 			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
 			    }
 
+			    let [available, availableUSD, stakedBalanceUSD, stakedBalance] = await this.getAvailableAmount()
+			    if(this.currentPool == 'susdv2') {
+			    	this.getStakedBalance = stakedBalance
+			    	this.getStakedBalanceUSD = stakedBalanceUSD
+			    }
 			    this.deposits = await this.getDeposits();
 			    this.withdrawals = await this.getWithdrawals();
 			    //this.available = await this.getAvailableBalance()
-			    this.available = currentContract.totalShare * 100
-			    this.availableUSD = currentContract.usdShare || 0;
-			    this.profit = (this.available + this.getStakedBalance) + this.withdrawals - this.deposits
-			    this.profitUSD = this.availableUSD + this.withdrawalsUSD - this.depositsUSD;
+			    this.available = available
+			    this.availableUSD = availableUSD;
+			    this.profit = (available + this.getStakedBalance) + this.withdrawals - this.deposits
+			    this.profitUSD = availableUSD + this.withdrawalsUSD - this.depositsUSD;
 			}
 			catch(err) {
 				console.error(err);
 				this.clearCache();
 			}
+	    },
+
+	    async getAvailableAmount() {
+	    	if(!this.$route.params.address) {
+	    		return [currentContract.totalShare * 100, currentContract.usdShare || 0,
+    				currentContract.curveStakedBalance * currentContract.virtual_price / 1e18, currentContract.totalStake * 100]
+	    	}
+	    	return this.calcAvailable();
+	    },
+
+
+	    async calcAvailable() {
+	    	let calls = [
+	    		[this.CURVE_TOKEN, '0x70a08231000000000000000000000000' + this.account.slice(2)],
+	    		[sCurveRewards_address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
+	    	]
+	    	let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
+	    	let [tokenBalance, stakedBalance] = aggcalls[1].map(hex => +currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+	    	let totalStake = 0
+		    if(this.currentPool == 'susdv2') {
+		    	stakedBalance = await currentContract.web3.eth.call({
+			        to: sCurveRewards_address,
+			        data: '0x70a08231000000000000000000000000' + this.account.slice(2),
+			    });
+
+		    	totalStake = currentContract.bal_info.map((bal, i) => {
+		    		return bal * stakedBalance / currentContract.totalSupply
+		    	}).reduce((a, b) => a + b, 0)
+		    }
+
+		    tokenBalance = +tokenBalance
+		    stakedBalance = +stakedBalance
+
+		    let totalShare = currentContract.bal_info.map((bal, i) => {
+	    		return bal * tokenBalance / currentContract.totalSupply
+	    	}).reduce((a, b) => a + b, 0)
+
+
+	    	let usdShare = tokenBalance * currentContract.virtual_price / 1e18
+
+	    	let usdStake = stakedBalance * currentContract.virtual_price / 1e18
+
+	    	return [totalShare * 100, usdShare || 0, usdStake, totalStake * 100]
+	    },
+
+	    async calcUSDShare() {
+
 	    },
 
 
@@ -228,7 +276,7 @@ export default {
 		    return false;
 		},
 	    async getExchangeRate(blockNumber, address, value, type) {
-	    	if(address == currentContract.coins[3]._address) {
+	    	if(currentContract == 'pax' && address == currentContract.coins[3]._address) {
 	    		return 1
 	    	}
 		    let exchangeRate = await this.checkExchangeRateBlocks(blockNumber, address, 0);
@@ -317,14 +365,17 @@ export default {
 		},
 
 	    async getDeposits() {
-		    let default_account = currentContract.default_account
+		    let default_account = this.account
 		    default_account = default_account.substr(2).toLowerCase();
 
 		    let depositUsdSum = 0;
 		    this.depositsUSD = 0;
 
 		    let fromBlock = this.fromBlock;
-		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version && localStorage.getItem(this.currentPool + 'lastDepositBlock') && localStorage.getItem(this.currentPool + 'dlastAddress') == default_account) {
+		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version 
+	    		&& localStorage.getItem(this.currentPool + 'lastDepositBlock') 
+	    		&& localStorage.getItem(this.currentPool + 'dlastAddress') == default_account
+	    		&& currentContract.default_account) {
 		        let block = +localStorage.getItem(this.currentPool + 'lastDepositBlock')
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
@@ -391,14 +442,15 @@ export default {
 		},
 
 		async getWithdrawals(address) {
-		    let default_account = currentContract.default_account
+		    let default_account = this.account
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    this.withdrawalsUSD = 0;
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version 
 		    	&& localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
-			 	&& localStorage.getItem(this.currentPool + 'wlastAddress') == default_account) {
+			 	&& localStorage.getItem(this.currentPool + 'wlastAddress') == default_account
+			 	&& currentContract.default_account) {
 
 			        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
@@ -488,7 +540,7 @@ export default {
 
 		async getAvailable(curr, amount, balance, supply) {
 		    if(this.cancel) throw new Error('cancel');
-		    let default_account = currentContract.default_account
+		    let default_account = this.account
 		    default_account = default_account.substr(2).toLowerCase();
 		    const tokenAddress = this.ADDRESSES[curr];
 		    //balanceOf method

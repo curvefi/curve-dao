@@ -183,7 +183,7 @@ let routes = [
         component: Donate
       },
       {
-        path: 'profit',
+        path: 'profit/:address?',
         name: 'Profit',
         component: ProfitRouter
       },

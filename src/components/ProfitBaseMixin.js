@@ -8,49 +8,50 @@ import BigNumber from 'bignumber.js'
 
 export default {
     created() {
-        this.$watch(()=>currentContract.initializedContracts, val => {
-            if(val) this.mounted();
-        })
-        this.$watch(()=>currentContract.currentContract, val => {
-            this.nullifyAmounts()
-            this.clearCache()
-            this.mounted();
-        })
+      this.$watch(()=>currentContract.initializedContracts, val => {
+          if(val) this.mounted();
+      })
+      this.$watch(()=>currentContract.currentContract, val => {
+          this.nullifyAmounts()
+          this.clearCache()
+          this.mounted();
+      })
     },
     mounted() {
-        this.$watch(()=>currentContract.default_account, (val, oldval) => {
-            if(!oldval) return;
-            if(val.toLowerCase() != oldval.toLowerCase()) {
-                this.cancel = true;
-                setTimeout(()=>{
-                    this.cancel = false;
-                    this.nullifyAmounts();
-                    this.clearCache();
-                    this.mounted();
-                }, 300);
-            }
-        })
-        if(currentContract.initializedContracts) this.mounted();
+      this.$watch(()=>currentContract.default_account, (val, oldval) => {
+          if(!oldval) return;
+          if(val.toLowerCase() != oldval.toLowerCase()) {
+              this.cancel = true;
+              setTimeout(()=>{
+                  this.cancel = false;
+                  this.nullifyAmounts();
+                  this.clearCache();
+                  this.mounted();
+              }, 300);
+          }
+      })
+      if(currentContract.initializedContracts) this.mounted();
     },
 	data: () => ({
+    account: null,
 		deposits: -1,
 		withdrawals: -1,
 		available: -1,
-        profit: -1,
+    profit: -1,
 		profit: '',
-        depositsUSD: -1,
-        withdrawalsUSD: -1,
-        availableUSD: -1,
-        profitUSD: -1,
-        showinUSD: true,
+    depositsUSD: -1,
+    withdrawalsUSD: -1,
+    availableUSD: -1,
+    profitUSD: -1,
+    showinUSD: true,
 		BN: '',
 		priceData: '',
 		ADDRESSES: {},
 		CURVE: '',
 		CURVE_TOKEN: '',
 		TRANSFER_TOPIC: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-        notinpricedata: false,
-        cancel: false,
+    notinpricedata: false,
+    cancel: false,
 	}),
     computed: {
       ...getters,

@@ -26,7 +26,7 @@
 
 				<button @click="selectPoolsHandler">Select</button>
 
-				<table class="tui-table">
+				<table class="tui-table" v-if='displayedEvent == 0'>
 				    <thead>
 				        <tr>
 				        	<th>Block #</th>
@@ -87,6 +87,128 @@
 				        </tr>
 				    </tbody>
 				</table>
+
+				<table class="tui-table" v-if='displayedEvent == 1'>
+				    <thead>
+				        <tr>
+				        	<th>Block #</th>
+				        	<th>Provider</th>
+				        	<!-- <th>Invariant</th> -->
+				            <th>token amounts</th>
+				            <th>Pool</th>
+				            <th>token supply</th>
+				        </tr>
+				    </thead>
+				    <tbody>
+				    	<tr v-show='!exchanges.length' class='loadingtr'>
+				    		<td v-for='n in 5'><span class='loading line'></span></td>
+				    	</tr>
+				        <tr v-for='event in paginatedExchanges'>
+				        	<td>
+				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				        			{{ event.blockNumber }}
+				        		</a>
+				        	</td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ formatAddress(event.returnValues.provider) }}
+				            	</a>
+				            </td>
+				            <!-- <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ event.returnValues.invariant / 1e18 }}
+				            	</a>
+				            </td> -->
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		<div class='tooltip'>
+				            			{{ totalAmount(event).toFixed(2) }}
+				            			<div class='tooltiptext'>
+						            		<div v-for = 'currAmount in showAmounts(event)'>
+						            			{{ currAmount }}
+						            		</div>
+					            		</div>
+				            		</div>
+				            	</a>
+				            </td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ getPool(event) }}
+				            	</a>
+				            </td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ (event.returnValues.token_supply / 1e18).toFixed(2) }}
+				            	</a>
+				            </td>
+				        </tr>
+				    </tbody>
+				</table>
+
+				<table class="tui-table" v-if='displayedEvent == 2'>
+				    <thead>
+				        <tr>
+				        	<th>Block #</th>
+				        	<th>Provider</th>
+				        	<!-- <th>Invariant</th> -->
+				            <th>token amounts</th>
+				            <th>Pool</th>
+				            <th>Event</th>
+				            <th>token supply</th>
+				        </tr>
+				    </thead>
+				    <tbody>
+				    	<tr v-show='!exchanges.length' class='loadingtr'>
+				    		<td v-for='n in 5'><span class='loading line'></span></td>
+				    	</tr>
+				        <tr v-for='event in paginatedExchanges'>
+				        	<td>
+				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				        			{{ event.blockNumber }}
+				        		</a>
+				        	</td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ formatAddress(event.returnValues.provider) }}
+				            	</a>
+				            </td>
+				            <!-- <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ event.returnValues.invariant / 1e18 }}
+				            	</a>
+				            </td> -->
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		<div class='tooltip'>
+				            			{{ totalAmount(event).toFixed(2) }}
+				            			<div class='tooltiptext'>
+				            				<div v-for = 'currAmount in showAmounts(event)'>
+						            			{{ currAmount }}
+						            		</div>
+				            			</div>
+				            		</div>
+				            	</a>
+				            </td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ getPool(event) }}
+				            	</a>
+				            </td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ event.event }}
+				            	</a>
+				            </td>
+				            <td>
+				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ (event.returnValues.token_supply / 1e18).toFixed(2) }}
+				            	</a>
+				            </td>
+				        </tr>
+				    </tbody>
+				</table>
+
+
 				<div>
 					<button id='loadmore' @click='loadMore' v-show='page == pages && exchanges.length > perPage'>Load more</button>
 				</div>
@@ -124,6 +246,7 @@
 			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,
+			displayedEvent: 0,
 			//compound first block
 			fromBlock: '0x91c86f',
 			swapContracts: [],
@@ -176,11 +299,42 @@
 				return web3.utils.sha3('TokenExchangeUnderlying(address,int128,uint256,int128,uint256)')
 			},
 			addLiquidityTopics() {
-				return [
-					'0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
-					'0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
-					'0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
-				]
+				return {
+					compound: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
+					usdt: '0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
+					iearn: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+					busd: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+					susdv2: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+					pax: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+				}
+			},
+			removeLiquidityTopics() {
+				return {
+					compound: [
+						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
+						'0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+					],
+					usdt: [
+						'0xa49d4cf02656aebf8c771f5a8585638a2a15ee6c97cf7205d4208ed7c1df252d',
+						'0x173599dbf9c6ca6f7c3b590df07ae98a45d74ff54065505141e7de6c46a624c2',
+					],
+					iearn: [
+						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
+						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+					busd: [
+						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
+						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+					susdv2: [
+						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
+						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+					pax: [
+						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
+						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+				}
 			},
 			allCurrencies() {
 				return allCurrencies
@@ -210,26 +364,50 @@
 		methods: {
 			getEvents(block, numBlocks) {
 				return this.pools.map(pool => {
-					return [
-						this.swapContracts[this.allPools.indexOf(pool)]
-						.getPastEvents(this.tokenExchangeUnderlyingEvent, 
-							{ 
-								fromBlock: (block - numBlocks) | 0,
-								toBlock: block,
-							}
-						),
-						this.swapContracts[this.allPools.indexOf(pool)]
-						.getPastEvents(this.tokenExchangeEvent, 
-							{ 
-								fromBlock: (block - numBlocks) | 0,
-								toBlock: block,
-							}
-						),
-					]
+					let topics = [];
+					if(this.event == 0) {
+						topics = [
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.getPastEvents(this.tokenExchangeUnderlyingEvent, 
+									{ 
+										fromBlock: (block - numBlocks) | 0,
+										toBlock: block,
+									}),
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.getPastEvents(this.tokenExchangeEvent, 
+									{ 
+										fromBlock: (block - numBlocks) | 0,
+										toBlock: block,
+									}),
+						]
+					}
+					if(this.event == 1) {
+						topics = [
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.getPastEvents(this.addLiquidityTopics[pool],
+								{ 
+									fromBlock: (block - numBlocks) | 0,
+									toBlock: block,
+								}),
+						]
+					}
+					if(this.event == 2) {
+						topics = this.removeLiquidityTopics[pool].map(topic => {
+							return this.swapContracts[this.allPools.indexOf(pool)]
+								.getPastEvents(topic, {
+									fromBlock: (block - numBlocks) | 0,
+									toBlock: block,
+								})
+						})
+						
+					}
+					return topics
 				})
 			},
 			selectPoolsHandler() {
 				this.exchanges = []
+				this.paginatedExchanges = []
+				this.displayedEvent = this.event
 				this.selectPools()
 			},
 			async loadMore() {
@@ -278,6 +456,13 @@
 			async paginate() {
 				let start = this.page*this.perPage
 				let exchanges = this.exchanges.slice(start, start + this.perPage)
+				if(this.event == 1 || this.event == 2) {
+					this.paginatedExchanges = await Promise.all(exchanges.map(event => {
+						if(!event.formatted) this.formatAmounts(event)
+						return event
+					}));
+					return;
+				}
 				exchanges = await Promise.all(exchanges.map(event => {
 					if(!event.fromCurrency) event =  this.formatEvent(event)
 					return event;
@@ -332,28 +517,7 @@
 				this.gotopage = 0
 				await this.loadEvents(this.latestblock)
 				//listen for new events
-				this.pools.forEach(pool => {
-					let subscription = this.swapContracts[this.allPools.indexOf(pool)]
-						.events.TokenExchangeUnderlying()
-						.on('data', event => {
-							if(this.exchanges.findIndex(prevEvent => prevEvent.transactionHash == event.transactionHash) !== -1) return;
-							this.latestblock = event.blockNumber
-							this.getRates()
-							this.exchanges.unshift(event)
-							this.paginate()
-						})
-					this.subscriptions.push(subscription)
-					subscription = this.swapContracts[this.allPools.indexOf(pool)]
-						.events.TokenExchange()
-						.on('data', event => {
-							if(this.exchanges.findIndex(prevEvent => prevEvent.transactionHash == event.transactionHash) !== -1) return;
-							this.latestblock = event.blockNumber
-							this.getRates()
-							this.exchanges.unshift(event)
-							this.paginate()
-						})
-					this.subscriptions.push(subscription)
-				})
+				this.getSubscriptions()
 			},
 			//gets current rates
 			async getRates(blockNumber) {
@@ -403,9 +567,11 @@
 					let abi = allabis[pool]
 					//usdt in usdt pool and susdv2 pool are already in the array, no need to calculate
 					if(pool == 'susdv2') continue;
-					else if(['iearn', 'busd'].includes(pool)) {
-						let calls = decoded.slice(0,4)
-						for(let j = 0; j < 4; j++) {
+					else if(['iearn', 'busd', 'pax'].includes(pool)) {
+						let len = 4;
+						if(pool == 'pax') len = 3
+						let calls = decoded.slice(0,len)
+						for(let j = 0; j < len; j++) {
 							let rate = +calls[j]
 							this.c_rates[pool][j] = rate / 1e18 / abi.coin_precisions[j]
 						}
@@ -465,7 +631,6 @@
 				//call formatAmount once
 				let contractAddress = event.address
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
-				let getBlock = await web3.eth.getBlock(event.blockNumber)
 				let timestamp = await this.getTimestamp(event.blockNumber)
 				event.timestamp = timestamp
 				let poolIdx = this.pools.indexOf(pool);
@@ -483,6 +648,46 @@
 				event.toCurrency = this.getCurrency(event, 1)
 				event.virtual_price = virtual_price
 				return event
+			},
+			subscribeExchange(event) {
+				if(this.exchanges.findIndex(prevEvent => prevEvent.transactionHash == event.transactionHash) !== -1) return;
+				this.latestblock = event.blockNumber
+				this.getRates()
+				this.exchanges.unshift(event)
+				this.paginate()
+			},
+			getSubscriptions() {
+				for(let pool of this.pools) {
+					if(this.event == 0) {
+						this.subscriptions.push(
+							this.swapContracts[this.allPools.indexOf(pool)]
+							.events.TokenExchangeUnderlying()
+							.on('data', event => this.subscribeExchange(event)),
+
+							this.swapContracts[this.allPools.indexOf(pool)]
+							.events.TokenExchange()
+							.on('data', event => this.subscribeExchange(event))
+						)
+					}
+					if(this.event == 1) {
+						this.subscriptions.push(
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.events.AddLiquidity()
+								.on('data', event => this.subscribeExchange(event))
+						)
+					}
+					if(this.event == 2) {
+						this.subscriptions.push(
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.events.RemoveLiquidity()
+								.on('data', event => this.subscribeExchange(event)),
+
+							this.swapContracts[this.allPools.indexOf(pool)]
+								.events.RemoveLiquidityImbalance()
+								.on('data', event => this.subscribeExchange(event)),
+						)
+					}
+				}
 			},
 			async getTimestamp(blockNumber) {
 				return (await web3.eth.getBlock(blockNumber)).timestamp
@@ -515,9 +720,44 @@
 				point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
 				return point
 			},
+			formatAddress(address) {
+				if(address.toLowerCase() == '0xeB21209ae4C2c9FF2a86ACA31E123764A3B6Bc06'.toLowerCase()) return 'Compound zap'
+				if(address.toLowerCase() == '0xac795D2c97e60DF6a99ff1c814727302fD747a80'.toLowerCase()) return 'usdt zap'
+				if(address.toLowerCase() == '0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3'.toLowerCase()) return 'y zap'
+				if(address.toLowerCase() == '0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB'.toLowerCase()) return 'busd zap'
+				if(address.toLowerCase() == '0xFCBa3E75865d2d561BE8D220616520c171F12851'.toLowerCase()) return 'susd zap'
+				if(address.toLowerCase() == '0xA50cCc70b6a011CffDdf45057E39679379187287'.toLowerCase()) return 'pax zap'
+				return address.slice(0,6) + '...' + address.slice(-6)
+			},
+			totalAmount(event) {
+				return event.returnValues.token_amounts.reduce((a, b) => +a + +b, 0)
+			},
+			showAmounts(event) {
+				let amounts = event.returnValues.token_amounts
+				let pool = this.getPool(event);
+				let currencies = Object.entries(allCurrencies[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool])
+				return amounts.map((amount, i) => `${(+amount).toFixed(2)} ${currencies[i][0].toUpperCase()}`)
+			},
+			async formatAmounts(event) {
+				let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
+				let poolIdx = this.pools.indexOf(pool);
+				let rates;
+				if(event.blockNumber > this.latestblock - 120) {
+					await this.getRates(event.blockNumber)
+					rates = this.c_rates[pool]
+				}
+				else {
+					let timestamp = await this.getTimestamp(event.blockNumber)
+					let poolInfo = this.interpolatePoint(timestamp, poolIdx)
+					rates = poolInfo.rates.map((rate, i) => rate / 1e18 / allabis[pool].coin_precisions[i])
+				}
+				event.returnValues.token_amounts = event.returnValues.token_amounts.map((amount, i) => amount * rates[i])
+				event.formatted = true;
+				return event
+
+			},
 			formatAmount(event, type, poolInfo) {
-				let contractAddress = event.address
-				let pool = this.allAddresses.find(v => v.address.toLowerCase() == contractAddress.toLowerCase()).pool
+				let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
 
 				let i = type == 0 ? event.returnValues.sold_id : event.returnValues.bought_id
 				let amount = type == 0 ? event.returnValues.tokens_sold : event.returnValues.tokens_bought

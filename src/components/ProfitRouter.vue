@@ -19,7 +19,7 @@
 			...getters,
 			currentProfit() {
 				if(['compound', 'usdt'].includes(this.currentPool)) return 'Profit'
-				if(['susdv2', 'tbtc'].includes(this.currentPool)) return 'plainProfit'
+				if(['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) return 'plainProfit'
 				return 'yProfit';
 			}
 		}

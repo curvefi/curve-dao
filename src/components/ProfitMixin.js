@@ -110,18 +110,18 @@ export default {
 	    		return bal * tokenBalance / currentContract.totalSupply
 	    	}).reduce((a, b) => a + b, 0)
 
-
 	    	let usdShare = tokenBalance * currentContract.virtual_price / 1e18
-
 	    	let usdStake = stakedBalance * currentContract.virtual_price / 1e18
+
+	    	if(['tbtc', 'ren'].includes(this.currentPool)) {
+	    		totalShare *= this.btcPrice
+	    		usdShare *= this.btcPrice
+	    		totalStake *= this.btcPrice
+	    		usdStake *= this.btcPrice
+	    	}
 
 	    	return [totalShare * 100, usdShare || 0, usdStake, totalStake * 100]
 	    },
-
-	    async calcUSDShare() {
-
-	    },
-
 
 	    async getAvailableBalance() {
 	    	let available = 0;
@@ -215,7 +215,23 @@ export default {
 		    if(dates === undefined) return this.priceData[this.priceData.length-1]
 		    return dates;
 		},
-		interpolatePoint(timestamp) {
+		async getClosestBTCPrice(timestamp) {
+			while(true) {
+				try {
+					let req = await fetch(`https://api.coinpaprika.com/v1/coins/btc-bitcoin/ohlcv/historical?start=${timestamp}`)
+					let res = await req.json()
+					if(res.length) return res.close
+					await helpers.setTimeoutPromise(300)
+					timestamp -= 1000
+				}
+				catch(err) {
+					console.error(err)
+					throw err
+					break;
+				}
+			}
+		}
+		async interpolatePoint(timestamp) {
 			if(timestamp > this.priceData[this.priceData.length-1].timestamp) return this.priceData[this.priceData.length-1]
 			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
 			let next = this.priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
@@ -235,6 +251,16 @@ export default {
 			point.balances = prev.balances.map((b, i) => interpolator(b, next.balances[i]))
 			point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
 			point.supply = interpolator(prev.supply, next.supply);
+			if(['tbtc', 'ren'].includes(this.currentPool)) {
+				//instead of this better to make a request to coinpaprika but which API allows querying 
+				try {
+					point.btcPrice = this.getClosestBTCPrice(timestamp)
+				}
+				catch(err) {
+					console.error(err)
+					point.btcPrice = interpolator(prev.btcPrice, next.btcPrice)
+				}
+			}
 			return point
 
 		},
@@ -409,12 +435,14 @@ export default {
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
-	            let poolInfoPoint = this.interpolatePoint(timestamp)
+	            let poolInfoPoint = await this.interpolatePoint(timestamp)
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)
 	            if(addliquidity.length == 0 && transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
-	            this.depositsUSD += transferTokens * poolInfoPoint.virtual_price / 1e36
+	            let depositsUSD = transferTokens * poolInfoPoint.virtual_price / 1e36
+	            if(['tbtc', 'ren'].includes(this.currentPool)) depositsUSD *= poolInfoPoint.btcPrice
+	            this.depositsUSD += depositsUSD
 	            console.log(transferTokens)
 		        if(addliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
@@ -479,7 +507,7 @@ export default {
 		        const receipt = await currentContract.web3.eth.getTransactionReceipt(log.transactionHash);
 		        let timestamp = (await currentContract.web3.eth.getBlock(receipt.blockNumber)).timestamp;
 		        console.log(timestamp)
-	            let poolInfoPoint = this.interpolatePoint(timestamp)
+	            let poolInfoPoint = await this.interpolatePoint(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 	            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
@@ -489,7 +517,9 @@ export default {
             	if(removeliquidity.length == 0 && 
             		removeliquidityImbalance.length == 0 && 
             		transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
-	            this.withdrawalsUSD += transferTokens * poolInfoPoint.virtual_price / 1e36
+            	let withdrawalsUSD = transferTokens * poolInfoPoint.virtual_price / 1e36
+            	if(['tbtc', 'ren'].includes(this.currentPool)) withdrawalsUSD *= poolInfoPoint.btcPrice
+	            this.withdrawalsUSD += withdrawalsUSD
 		        if(removeliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
 		        	console.log(removeliquidity)

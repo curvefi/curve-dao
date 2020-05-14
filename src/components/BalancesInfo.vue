@@ -132,6 +132,7 @@
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'usdShare', 'staked_info', 'totalStake', 'usdStake', 'combinedstats', 'virtual_price', 'A', 'future_A', 'admin_actions_deadline'],
     data: () => ({
       volumes: [],
+      btcPrice: 0,
     }),
     methods: {
       totalCurrencies(currencies) {
@@ -150,6 +151,9 @@
         this.volumes = stats.volume;
         volumeStore.state.volumes = stats.volume
       }
+      let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
+      res = await req.json();
+      this.btcPrice = res.quotes.USD.price
     },
     computed: {
       showShares: getters.showShares,
@@ -178,10 +182,10 @@
         return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
       },
       usdShare1() {
-        return this.usdShare || getters.usdShare()
+        return (this.usdShare || getters.usdShare()) * this.btcPrice
       },
       usdStake1() {
-        return this.usdStake || getters.usdStake()
+        return (this.usdStake || getters.usdStake()) * this.btcPrice
       },
       A1() {
         return this. A || ((getters.A() * 1e18) | 0)

@@ -14,14 +14,15 @@ export default {
 		paidRewards: null,
 		profitTotalStake: null,
 		snxPrice: null,
+		btcPrices: [],
 	}),
 
 	async mounted() {
-		if(this.account && currentContract.multicall && currentContract.currentContract == 'susdv2') this.getSNXRewards()
+		if(this.account && currentContract.multicall) this.getPrices()
 	},
 
 	async created() {
-		this.$watch(() => this.account && currentContract.multicall && currentContract.currentContract == 'susdv2', val => val && this.getSNXRewards())
+		this.$watch(() => this.account && currentContract.multicall, val => val && this.getPrices())
 	},
 
 	computed: {
@@ -42,6 +43,16 @@ export default {
 
 	methods: {
 
+		async getPrices() {
+			if(currentContract.currentContract == 'susdv2') this.getSNXRewards()
+			if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.getBTCPrice()
+		},
+
+		async getBTCPrice() {
+			let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
+        	res = await req.json();
+        	this.btcPrice = res.quotes.USD.price
+		},
 
 		async getSNXRewards() {
 			let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')

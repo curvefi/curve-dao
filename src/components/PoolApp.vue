@@ -105,6 +105,7 @@
         susdv2: 'susd_plain',
         pax: 'pax',
         tbtc: 'tbtc',
+        ren: 'ren',
       }
     }),
     components: {

@@ -218,7 +218,7 @@
 	                </router-link>
 	            </div>
 	            <div :class="{selected: activePoolLink == 5}">
-	                <router-link to = '/busd'>
+	                <router-link to = '/tbtc'>
 	                	<span class='index'>5.</span>  
 	                    <span class='pooltext'>tBTC</span>
 	                    <span class='pools'>[tBTC, hBTC, wBTC]</span>  
@@ -234,14 +234,43 @@
 	                    	</span> 
 	                    	<span :class="{'loading line': !daily_apy[6]}">{{daily_apy[6]}}</span>%
 	                    </span>
-	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
-	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber}}</span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.tbtc < 0}">
+	                    	<span v-show='volumes.tbtc >= 0'>${{(volumes.tbtc | 0) | formatNumber}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[6]'>Balance: ${{balances[6] && balances[6].toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances[6]'>
                	 				<img src='../../assets/dollar-sign-solid.svg'>
                	 				<span class='tooltiptext'>Balance: ${{balances[6] && balances[6].toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
+	                </router-link>
+	            </div>
+	            <div :class="{selected: activePoolLink == 6}">
+	                <router-link to = '/ren'>
+	                	<span class='index'>5.</span>  
+	                    <span class='pooltext'>ren</span>
+	                    <span class='pools'>[renBTC, wBTC]</span>  
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[7]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[7]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[7]}}%</div>
+		                    		<div>Total APY: {{apy[7]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[7]}">{{daily_apy[7]}}</span>%
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.ren < 0}">
+	                    	<span v-show='volumes.ren >= 0'>${{(volumes.ren | 0) | formatNumber}}</span>
+               	 		</span></span>
+               	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances[7]'>Balance: ${{balances[7] && balances[7].toFixed(2)}} </span>
+               	 			<span class='tooltip' v-show='balances[7]'>
+               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<span class='tooltiptext'>Balance: ${{balances[7] && balances[7].toFixed(2)}}</span>
                	 			</span>
                	 		</span>
 	                </router-link>
@@ -271,7 +300,7 @@
 		},
 		data: () => ({
 			activePoolLink: -1,
-			pools: ['compound','usdt','y','busd','susdv2','pax','tbtc'],
+			pools: ['compound','usdt','y','busd','susdv2','pax','tbtc','ren'],
 			daily_apy: [],
 			weekly_apy: [],
 			monthly_apy: [],
@@ -367,7 +396,7 @@
 	            }
 			},
 			async getAPY() {
-				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc']
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc','ren']
 	            let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
 	            stats = await stats.json()
                 this.volumes = stats.volume;

@@ -5,7 +5,7 @@
                 <div class='exchangefields'>
                     <fieldset class='item'>
                         <legend>From:</legend>
-                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalanceText | toFixed2}}</span> </div>
+                        <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalanceText}}</span> </div>
                         <ul>
                             <li>
                                 <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
@@ -82,7 +82,7 @@
                     </li>
                     <li>
                         <input id='swapw' type='checkbox' name='swapw' v-model = 'swapwrapped'>
-                        <label for='swapw' v-show = "!['susdv2', 'tbtc'].includes(currentPool)">Swap wrapped</label>
+                        <label for='swapw' v-show = "!['susdv2', 'tbtc', 'ren'].includes(currentPool)">Swap wrapped</label>
                     </li>
                 </ul>
                 <p class='trade-buttons'>
@@ -170,7 +170,7 @@
                         100 * parseFloat(this.maxBalance) / this.precisions[this.from_currency]
                     ) / 100
 
-                this.maxBalanceText = currentContract.default_account ? amount.toFixed(2) : 0;
+                this.maxBalanceText = currentContract.default_account ? this.toFixed(amount) : 0;
             }
         },
         computed: {
@@ -180,11 +180,11 @@
             },
             actualFromValue() {
                 if(!this.swapwrapped) return;
-                return (this.fromInput * this.c_rates[this.from_currency] * this.precisions[this.from_currency]).toFixed(2)
+                return (this.fromInput * this.c_rates[this.from_currency] * this.toFixed(this.precisions[this.from_currency]))
             },
             actualToValue() {
                 if(!this.swapwrapped) return;
-                return (this.toInput * this.c_rates[this.to_currency] * this.precisions[this.to_currency]).toFixed(2)
+                return (this.toInput * this.c_rates[this.to_currency] * this.toFixed(this.precisions[this.to_currency]))
             },
           ...getters,
         },
@@ -200,6 +200,10 @@
                 }
                 this.disabled = false;
                 this.from_cur_handler()
+            },
+            toFixed(num) {
+                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return num.toFixed(8)
+                return num.toFixed(2)
             },
             getCurrency(i) {
                 if(!this.swapwrapped) return (Object.keys(this.currencies)[i]).toUpperCase()
@@ -268,7 +272,7 @@
                 let amount = Math.floor(
                         100 * parseFloat(balance) / this.precisions[this.from_currency]
                     ) / 100
-                this.fromInput = currentContract.default_account ? amount.toFixed(2) : 0
+                this.fromInput = currentContract.default_account ? this.toFixed(amount.toFixed(2)) : 0
                 await this.set_to_amount();
             },
             async highlight_input() {
@@ -285,7 +289,7 @@
                         100 * parseFloat(balance) / this.precisions[i]
                     ) / 100
                 if (this.fromInput == '' || this.val == 0) {
-                    this.fromInput = currentContract.default_account ? amount.toFixed(2) : 0
+                    this.fromInput = currentContract.default_account ? this.toFixed(amount.toFixed(2)) : 0
                 }
                 this.maxBalance = currentContract.default_account ? balance : 0;
             },
@@ -313,7 +317,7 @@
                     if (b >= 0.001) {
                         // In c-units
                         var dy_ = +get_dy_underlying / this.precisions[j];
-                        var dy = dy_.toFixed(2);
+                        var dy = this.toFixed(dy_.toFixed(2));
                         resolve([dy, dy_, dx_, balance])
                     }
                     else { 

@@ -48,7 +48,7 @@
                     	</span>
                     </label>
                 </li>
-                <li v-show = "!['susd','susdv2'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2','tbtc','ren'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
@@ -148,6 +148,10 @@
         },
         computed: {
           ...getters,
+          minAmount() {
+          	if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+          	return 0.01
+          },
         },
         mounted() {
 	        this.setInputStyles(true)
@@ -184,9 +188,13 @@
                 	this.inf_approval = false
                 this.disabledButtons = false;
             },
+            toFixed(num) {
+                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return num.toFixed(8)
+                return num.toFixed(2)
+            },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
-        			return (+this.inputs[i]).toFixed(2)
+        			return this.toFixed(+this.inputs[i])
         		}
         		return '0.00'
         	},
@@ -279,7 +287,7 @@
 				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
 			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
 			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
-			        if(Math.abs(balance/amount-1) < 0.01) {
+			        if(Math.abs(balance/amount-1) < this.minAmount) {
 			        	if(!this.depositc) balance = BN(balance).div(currentContract.coin_precisions[i])
 			        	else balance = BN(balance)
 			            Vue.set(this.amounts, i, balance.toFixed(0,1));

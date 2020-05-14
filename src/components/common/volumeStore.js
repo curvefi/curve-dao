@@ -9,6 +9,7 @@ let initState = () => ({
 	susd: [],
 	pax: [],
 	tbtc: [],
+	ren: [],
 })
 
 export const state = Vue.observable({

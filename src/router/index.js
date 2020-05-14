@@ -140,7 +140,7 @@ let routes = [
     ]
   },
   {
-    path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc)/',
+    path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren)/',
     name: 'Index',
     component: PoolApp,
     children: [

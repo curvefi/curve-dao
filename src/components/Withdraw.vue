@@ -41,7 +41,7 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "!['susd','susdv2'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2','tbtc','ren'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw wrapped</label>
                 </li>
@@ -57,7 +57,7 @@
                 </span>
             </legend>
         	<ul>
-        		<li v-show = "currentPool != 'susdv2' ">
+        		<li v-show = "['susdv2','tbtc','ren'].includes(currentPool)">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>Combination of all coins</label>
         		</li>
@@ -234,9 +234,13 @@
                 this.setCalcBalances()
             	this.handle_change_share();
             },
+            toFixed(num, precisions = 2, round = 4) {
+                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                return num.toFixed(precisions)
+            },
             inputsFormat(i) {
         		if(this.inputs[i]) {
-        			return (+this.inputs[i]).toFixed(2)
+        			return this.toFixed(+this.inputs[i])
         		}
         		return '0.00'
         	},
@@ -509,7 +513,7 @@
 						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {
-                        this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         await common.ensure_allowance_zap_out(amount)
                         let min_amount;
@@ -535,7 +539,7 @@
 			        		}).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
 			        }
 			        else if(this.to_currency == 10) {
-                        this.waitingMessage = `Please approve ${(amount / 1e18).toFixed(2)} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} tokens for withdrawal`
                         try {
                             this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
                             await common.ensure_allowance_zap_out(amount)
@@ -619,7 +623,7 @@
 			        let real_values = Array(currentContract.N_COINS).fill(0)
 			        real_values[this.to_currency] = zap_values[this.to_currency].div(precision)
 			        this.inputs = this.inputs.map(v=>0)
-			        this.inputs[this.to_currency] = BN(real_values[this.to_currency]).toFixed(2,1)
+			        this.inputs[this.to_currency] = this.toFixed(BN(real_values[this.to_currency]), 2,1)
 				    await this.calcSlippage([], false, zap_values, this.to_currency)
         		}
 
@@ -634,7 +638,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			        if ((this.share >=0) & (this.share <= 100)) {
 			        	let value = BN(this.share / 100 * this.balances[i] * currentContract.c_rates[i] * token_balance / this.token_supply)
-			            Vue.set(this.inputs, i, value.toFixed(2, 1))
+			            Vue.set(this.inputs, i, this.toFixed(value, 2, 1))
 			        }
 			        else {
 			            Vue.set(this.inputs, i, 0)

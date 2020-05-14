@@ -261,7 +261,6 @@
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 			    let curveStakedBalance = decoded[decoded.length-1]
 			    decoded = decoded.slice(0, decoded.length-1)
-			    console.log(decoded, "DECODED")
 			    let i = 0;
 			    this.bal_infos['usdt'] = []
 			    this.l_infos['usdt'] = []

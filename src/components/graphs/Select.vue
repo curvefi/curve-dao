@@ -80,7 +80,7 @@
 					let pair = params[params.length - 2];
 					let interval = params[params.length - 1];
 					if(params.length == 3)
-						this.pools = tradeStore.pools.filter(pool => params[0].split('_').includes(pool))
+						this.pools = tradeStore.allPools.filter(pool => params[0].split('_').includes(pool))
 					this.pair = this.allPairs.find(p => p.val == pair.toLowerCase())
 					this.interval = interval
 					this.emitSelect()
@@ -97,7 +97,7 @@
 					let pool = Object.keys(allCurrencies)[pairPoolIndex]
 					this.pools = tradeStore.pools = [pool]
 				}
-				tradeStore.pools = tradeStore.pools.filter(pool => this.pools.includes(pool))
+				tradeStore.pools = tradeStore.allPools.filter(pool => this.pools.includes(pool))
 				tradeStore.pairIdx = this.pair.idx
 				tradeStore.pairVal = this.pair.val
 				tradeStore.interval = this.interval

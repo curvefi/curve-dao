@@ -244,8 +244,8 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', tbtc],
-			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', tbtc],
+			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc'],
+			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc'],
 			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,

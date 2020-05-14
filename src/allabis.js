@@ -8834,8 +8834,8 @@ var tbtc = {
 	 }
 	],
 	N_COINS: 3,
-	coin_precisions: [1e18, 1e8, 1e18],
-	wrapped_precisions: [1e18, 1e8, 1e18],
+	coin_precisions: [1e8, 1e8, 1e18],
+	wrapped_precisions: [1e8, 1e8, 1e18],
 	tethered: [false, false, false],
 	use_lending: [false, false, false],
 	is_plain: [true, true, true],

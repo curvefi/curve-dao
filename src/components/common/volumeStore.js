@@ -1,53 +1,33 @@
 import Vue from 'vue'
 import abis from '../../allabis'
 
+let initState = () => ({
+	compound: [],
+	usdt: [],
+	y: [],
+	busd: [],
+	susd: [],
+	pax: [],
+	tbtc: [],
+})
+
 export const state = Vue.observable({
 	volumes: {
-		compound: -1,
-		usdt: -1,
-		y: -1,
-		busd: -1,
-		susd: -1,
-		pax: -1,
-		tbtc: [],
+		...Object.values(initState()).map(el=>-1)
 	},
 	volumeData: {
 		5: {
-			compound: [],
-			usdt: [],
-			y: [],
-			busd: [],
-			susd: [],
-			pax: [],
-			tbtc: [],
+			...initState()
 		},
 		30: {
-			compound: [],
-			usdt: [],
-			y: [],
-			busd: [],
-			susd: [],
-			pax: [],
-			tbtc: [],
+			...initState()
 		},
 		1440: {
-			compound: [],
-			usdt: [],
-			y: [],
-			busd: [],
-			susd: [],
-			pax: [],
-			tbtc: [],
+			...initState()
 		}
 	},
 	allVolume: {
-		compound: [],
-		usdt: [],
-		y: [],
-		busd: [],
-		susd: [],
-		pax: [],
-		tbtc: [],
+		...initState()
 	}
 })
 

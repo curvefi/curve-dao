@@ -21,8 +21,9 @@ let normalizeCoinIdx = (i, pool) => {
 }
 
 let getVolumePerCoin = (data, pools, allabis) => {
+
 	let poolnames = pools.map(entry => entry[0])
-	let volumes = [[],[],[],[],[],[],[]]
+	let volumes = []
 	let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
 	for(let i = 0; i < data[maxlenpool].length; i++) {
 		let timestamp = data[maxlenpool][i].timestamp
@@ -37,6 +38,8 @@ let getVolumePerCoin = (data, pools, allabis) => {
 				let volBought = val[1]
 				let normM = normalizeCoinIdx(m, key)
 				let normN = normalizeCoinIdx(n, key)
+				if(volumes[normM] === undefined) volumes[normM] = []
+				if(volumes[normN] === undefined) volumes[normN] = []
 				volumes[normM].push([
 					v.timestamp * 1000,
 					volSold / allabis[key == 'y' ? 'iearn' : key == 'susd' ? 'susdv2' : key].coin_precisions[m]

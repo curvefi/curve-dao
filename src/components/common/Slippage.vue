@@ -26,7 +26,7 @@
 	    	Bonus(plus pricing): <span>{{(slippage*100).toFixed(3)}}</span>%
         <span class='tooltip'>[?]
           <span class='tooltiptext long'>
-            Bonus comes as an advantage from current coin prices which usually appears for coins which are low in balance
+            Bonus comes as an advantage from current coin prices which usually appears for coins which are {{ $route.name == 'Deposit' ? 'low' : 'high'}} in balance
           </span>
         </span>
 	    </p>

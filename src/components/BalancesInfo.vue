@@ -114,7 +114,7 @@
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{(usdStake1) | toFixed2 | formatNumber}}
+            <b>Averaged USD balance:</b> {{toFixed(usdStake1) | formatNumber}}
           </li>
 
       </ul>
@@ -157,9 +157,11 @@
         this.volumes = stats.volume;
         volumeStore.state.volumes = stats.volume
       }
-      let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
-      let res = await req.json();
-      this.btcPrice = res.quotes.USD.price
+      if(['tbtc', 'ren'].includes(currentContract.currentContract)) {
+        let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
+        let res = await req.json();
+        this.btcPrice = res.quotes.USD.price
+      }
     },
     computed: {
       showShares: getters.showShares,
@@ -188,10 +190,14 @@
         return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
       },
       usdShare1() {
-        return (this.usdShare || getters.usdShare()) * this.btcPrice
+        let share = (this.usdShare || getters.usdShare())
+        if(['tbtc', 'ren'].includes(currentContract.currentContract)) share *= this.btcPrice
+        return share
       },
       usdStake1() {
-        return (this.usdStake || getters.usdStake()) * this.btcPrice
+        let stake =  (this.usdStake || getters.usdStake())
+        if(['tbtc', 'ren'].includes(currentContract.currentContract)) stake *= this.btcPrice
+        return stake
       },
       A1() {
         return this. A || ((getters.A() * 1e18) | 0)

@@ -151,7 +151,6 @@
       },
     },
     async created() {
-        console.log(volumeStore.state.volumes, "VOLS")
 
       if(this.poolVolume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
@@ -159,7 +158,6 @@
         this.volumes = stats.volume;
         console.log
         volumeStore.state.volumes = stats.volume
-        console.log(volumeStore.state.volumes, "VOLS")
       }
       if(['tbtc', 'ren'].includes(currentContract.currentContract)) {
         let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);

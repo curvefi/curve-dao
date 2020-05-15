@@ -191,7 +191,7 @@
         },
         methods: {        
             async mounted() {
-                if(currentContract.currentContract == 'ren') this.fromInput = '0.0001'
+                if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
                 this.c_rates = currentContract.c_rates
                 this.coins = currentContract.underlying_coins
                 if(this.swapwrapped) {

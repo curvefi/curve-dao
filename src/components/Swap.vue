@@ -318,7 +318,7 @@
                     if (b >= 0.001) {
                         // In c-units
                         var dy_ = +get_dy_underlying / this.precisions[j];
-                        var dy = this.toFixed(dy_.toFixed(2));
+                        var dy = this.toFixed(dy_);
                         resolve([dy, dy_, dx_, balance])
                     }
                     else { 

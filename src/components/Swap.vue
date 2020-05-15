@@ -166,9 +166,7 @@
                 this.mounted()
             },
             maxBalance() {
-                let amount = Math.floor(
-                        100 * parseFloat(this.maxBalance) / this.precisions[this.from_currency]
-                    ) / 100
+                let amount = this.maxBalance / this.precisions[this.from_currency]
 
                 this.maxBalanceText = currentContract.default_account ? this.toFixed(amount) : 0;
             }
@@ -270,10 +268,8 @@
             },
             async set_max_balance() {
                 let balance = await this.coins[this.from_currency].methods.balanceOf(this.default_account).call();
-                let amount = Math.floor(
-                        100 * parseFloat(balance) / this.precisions[this.from_currency]
-                    ) / 100
-                this.fromInput = currentContract.default_account ? this.toFixed(amount.toFixed(2)) : 0
+                let amount = balance / this.precisions[this.from_currency]
+                this.fromInput = currentContract.default_account ? this.toFixed(amount) : 0
                 await this.set_to_amount();
             },
             async highlight_input() {
@@ -300,7 +296,6 @@
                     var j = this.to_currency;
                     var dx_ = this.fromInput;
                     var dx = cBN(Math.round(dx_ * this.precisions[i])).toFixed(0,1);
-
                     let calls = [
                         [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
                     ]
@@ -362,7 +357,7 @@
                     }
                     this.waitingMessage = `Please confirm swap 
                                             from ${this.fromInput} ${this.getCurrency(this.from_currency)}
-                                            for min ${min_dy / this.precisions[j]} ${this.getCurrency(this.to_currency)}`
+                                            for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
                     if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange

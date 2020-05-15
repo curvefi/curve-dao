@@ -19,8 +19,8 @@
             <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
             <label for='paxpool1'>PAX</label>
 
-            <input id='tbtc1' type='checkbox' value='tbtc' v-model='pools'/>
-            <label for='tbtc1'>tBTC</label>
+                <!-- <input id='tbtc1' type='checkbox' value='tbtc' v-model='pools'/>
+                <label for='tbtc1'>tBTC</label> -->
         </div>
 
 		<div class='swap exchange'>
@@ -149,7 +149,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc'],
+            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -211,9 +211,9 @@
                         busd: 'BUSD',
                         susd: 'sUSD',
                         pax: 'PAX',
-                        tbtc: 'tBTC',
-                        hbtc: 'hBTC',
-                        wbtc: 'wBTC',
+                        // tbtc: 'tBTC',
+                        // hbtc: 'hBTC',
+                        // wbtc: 'wBTC',
                     }
                 }
                 if(this.swapwrapped == 1) {
@@ -252,7 +252,7 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
             },
             warningNoPool() {
                 this.message = 'Please select '

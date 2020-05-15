@@ -29,13 +29,12 @@
 				{ name: 'bCurve', ticker: 'bCrv' },
 				{ name: 'sCurve', ticker: 'sCrv' },
 				{ name: 'pCurve', ticker: 'pCrv' },
-				{ name: 'tbtcCurve', ticker: 'tbtcCrv' },
+				//{ name: 'tbtcCurve', ticker: 'tbtcCrv' },
 			]
 		}),
 		computed: {
 			contractAddresses() {
-				console.log(Object.keys(allabis).filter(pool => pool != 'y' || pool != 'susd'))
-				return Object.keys(allabis).filter(pool => pool != 'y' && pool != 'susd').map(pool => 
+				return Object.keys(allabis).filter(pool => !['y', 'susd', 'tbtc', 'ren'].includes(pool)).map(pool => 
 					({swap: allabis[pool].swap_address, token: allabis[pool].token_address})
 				)
 			}

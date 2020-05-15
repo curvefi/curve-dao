@@ -217,7 +217,7 @@
                	 		</span>
 	                </router-link>
 	            </div>
-	            <div :class="{selected: activePoolLink == 5}">
+	            <!-- <div :class="{selected: activePoolLink == 5}">
 	                <router-link to = '/tbtc'>
 	                	<span class='index'>5.</span>  
 	                    <span class='pooltext'>tBTC</span>
@@ -274,7 +274,7 @@
                	 			</span>
                	 		</span>
 	                </router-link>
-	            </div>
+	            </div> -->
 	        </fieldset>
 	    </div>
 
@@ -356,13 +356,14 @@
 			async getBalances() {
 				if(!contract.default_account) return;
 				contract.contracts.compound = contract;
-				let calls = Object.entries(contract.contracts).flatMap(([k, v]) => 
-					[
+				let calls = Object.entries(contract.contracts).flatMap(([k, v]) => {
+					if(['tbtc', 'ren', 'renbtc'].includes(k)) return []
+					return [
 						//balanceOf(address)
 						[allabis[k].token_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)],
 						//get_virtual_price
 						[allabis[k].swap_address, "0xbb7b8b80"]
-					])
+					]})
 				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))

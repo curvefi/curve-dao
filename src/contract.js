@@ -267,7 +267,7 @@ const state = Vue.observable({
 			currentContract: 'tbtc',
 			...initState(),
 		},
-		renbtc: {
+		ren: {
 			currentContract: 'ren',
 			...initState(),
 		},

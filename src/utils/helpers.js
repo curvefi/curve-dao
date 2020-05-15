@@ -98,7 +98,7 @@ export function formatDateToHuman(timestamp) {
 }
 
 export function formatNumber(number) {
-  return (new Intl.NumberFormat().format(+number))
+  return (new Intl.NumberFormat().format(parseFloat(number)))
 }
 
 export async function getETHPrice() {

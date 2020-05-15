@@ -24,11 +24,11 @@
 				<input id='paxpool' type='checkbox' value='pax' v-model='pools'/>
 				<label for='paxpool'>PAX</label>
 
-				<input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
+				<!-- <input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
 				<label for='tbtcpool'>tBTC</label>
 
 				<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
-				<label for='renpool'>renBTC</label>
+				<label for='renpool'>renBTC</label> -->
 
 				<button @click="selectPoolsHandler">Select</button>
 
@@ -247,8 +247,8 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
-			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
+			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
+			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
 			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,

@@ -5,8 +5,8 @@
         </div>
 
 	    <total-balances/>
-
-		<div class="window white" v-for='(currency, i) in Object.keys(allCurrencies)'>
+	 	
+		<div class="window white" v-for='(currency, i) in Object.keys(filteredCurrencies)'>
 			  <p class='simple-error' v-show="currency == 'susd'"> Old susd pool. Please <router-link to="/susd/withdraw">withdraw and move</router-link> funds to <router-link to="/susdv2">susdv2</router-link> pool </p>
 		      <p class='text-center'>
 		      	<router-link :to="currency" v-show="currency != 'susd'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
@@ -110,11 +110,18 @@
           allContracts() {
           	let pools = {...contracts};
           	delete pools.y
+          	delete pools.tbtc
+          	delete pools.ren
           	return pools;
           },
           error() {
           	return currentContract.error
           },
+          filteredCurrencies() {
+          	return Object.fromEntries(Object.entries(this.allCurrencies).filter(
+			      ([key, val])=>!['tbtc', 'ren'].includes(key)
+			   ))
+          }
         },
         mounted() {
             if(currentContract.initializedContracts) this.mounted();

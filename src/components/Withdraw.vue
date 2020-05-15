@@ -92,7 +92,7 @@
 	        	</div> -->
 	      	</div>
             <button id="remove-liquidity"
-	            :disabled="currentPool == 'susdv2' && slippage < -0.03"
+	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow"
 	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
         		Withdraw
         	</button>
@@ -114,6 +114,9 @@
             </div>
             <div class='info-message gentle-message' v-show='estimateGas'>
                 Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+            </div>
+            <div class='simple-error' v-show='warninglow'>
+                You're withdrawing too little amount in one coin
             </div>
             <Slippage v-bind="{show_nobalance, show_nobalance_i}"/>
         </div>
@@ -168,6 +171,7 @@
             estimateGas: 0,
             gasPrice: 0,
             ethPrice: 0,
+            warninglow: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -518,7 +522,7 @@
 			        if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
-                        await common.ensure_allowance_zap_out(amount)
+                        if(!['tbtc','ren'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                         let min_amount;
                         try {
                             min_amount = await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
@@ -529,11 +533,10 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
+                        let args = [amount, this.to_currency, BN(min_amount).times(BN(this.getMaxSlippage)).toFixed(0, 1)]
+                        if(!['tbtc','ren'].includes(currentContract.currentContract)) args.push(this.donate_dust)
 			        	await inOneCoin.methods
-			        		.remove_liquidity_one_coin(amount, 
-			        			this.to_currency, 
-    							BN(min_amount).times(BN(this.getMaxSlippage)).toFixed(0, 1), 
-    							this.donate_dust)
+			        		.remove_liquidity_one_coin(...args)
 			        		.send({
 			        			from: currentContract.default_account,
 			        			gas: contractGas.depositzap[this.currentPool].withdraw,
@@ -591,6 +594,10 @@
 			    await common.update_fee_info();
 			},
 			async handle_change_share() {
+                let inOneCoin = currentContract.deposit_zap
+                if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
+
+                this.warninglow = false;
                 this.showWithdrawSlippage = false
                 this.show_nobalance = false
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
@@ -613,6 +620,7 @@
 					let zap_values = Array(currentContract.N_COINS).fill(0)
 					try {
 						zap_values[this.to_currency] = BN(await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
+                        if(zap_values[this.to_currency].eq(BN(0))) this.warninglow = true
 					}
 					catch(err) {
 						console.error(err)

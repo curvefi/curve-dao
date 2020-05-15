@@ -434,8 +434,8 @@ export async function init(contract, refresh = false) {
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
 	  	let coinsCall = contract.swap.methods.coins(i).encodeABI()
 	  	let underlyingCoinsCall = ['tbtc', 'ren'].includes(contract.currentContaract) ?
-	  								contract.swap.methods.underlying_coins(i).encodeABI()
-	  								: contract.swap.methods.coins(i).encodeABI();
+	  								contract.swap.methods.coins(i).encodeABI()
+	  								: contract.swap.methods.underlying_coins(i).encodeABI();
     	calls.push([contract.swap._address, coinsCall])
     	calls.push([contract.swap._address, underlyingCoinsCall])
     }

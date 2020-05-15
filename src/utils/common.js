@@ -249,7 +249,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
     catch(err) {
         console.log(err)
         aggcalls = await multicall.methods.aggregate(calls.slice(1)).call()
-        aggcalls[1] = [web3.eth.abi.encodeParameter('uint256', 0), ...aggcalls[1]] 
+        aggcalls[1] = [web3.eth.abi.encodeParameter('uint256', 1e18), ...aggcalls[1]] 
     }
     var block = +aggcalls[0]
     //initContracts && contract.currentContract == 'compound' && i == 0 || 

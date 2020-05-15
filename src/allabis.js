@@ -8862,8 +8862,8 @@ var ren = {
 	tethered: [false, false],
 	use_lending: [false, false],
 	is_plain: [true, true],
-	swap_address: '0x76827f977dC1f6A02C3296636eD6d13C7421f5C7',
-	token_address: '0xB527C418c3EFf31a88a6818c7953014fF9Ec5A0B',
+	swap_address: '0x8474c1236F0Bc23830A23a41aBB81B2764bA9f4F',
+	token_address: '0x7771F704490F9C0C3B06aFe8960dBB6c58CBC812',
 	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
 	underlying_coins: [
 		'0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D',

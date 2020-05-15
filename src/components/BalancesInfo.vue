@@ -7,13 +7,13 @@
             <b>{{currency | capitalize}}:</b>
             <span :class="{'loading line': !bal_info || bal_info[i] === null}"> 
               <span v-show='bal_info && bal_info[i]'> 
-                {{bal_info && bal_info[i] | toFixed2 | formatNumber }} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
+                {{bal_info && (toFixed(bal_info[i])) | formatNumber }} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
               </span>
             </span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
-            <span :class="{'loading line': totalBalances === null}"> {{totalBalances | toFixed2 | formatNumber}}</span>
+            <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances) | toFixed2 | formatNumber}}</span>
           </li>
       </ul>
       <p>
@@ -136,6 +136,7 @@
     }),
     methods: {
       toFixed(num, precisions = 2, round = 4) {
+          if(num == '' || num === null || num === undefined) return ''
           if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
           let rounded = num.toFixed(precisions)
           return isNaN(rounded) ? '0.00' : rounded

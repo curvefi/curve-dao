@@ -201,15 +201,15 @@ export const gas = {
 		//no deposit zap
 		tbtc: {
 			deposit: x => (172664*x + 471691)*1.5 | 0,
-			withdraw: 800000,
-			withdrawShare: 1000000,
+			withdraw: 250000,
+			withdrawShare: 250000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		//no deposit zap
 		ren: {
 			deposit: x => (172664*x + 471691)*1.5 | 0,
-			withdraw: 800000,
-			withdrawShare: 1000000,
+			withdraw: 250000,
+			withdrawShare: 250000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 	}

@@ -93,11 +93,11 @@
 				//this.$emit('selected', this.pool, this.pair, this.interval)
 			},
 			emitSelect() {
-				let currenciesPools = Object.values(allCurrencies).map(v=>Object.keys(v))
+				let currenciesPools = Object.values(this.filteredCurrencies).map(v=>Object.keys(v))
 				let pairPools = this.isUnique(this.pair.val)
 				if(pairPools.length == 1) {
 					let pairPoolIndex = currenciesPools.map(v=>v.join()).indexOf(pairPools[0].join())
-					let pool = Object.keys(allCurrencies)[pairPoolIndex]
+					let pool = Object.keys(this.filteredCurrencies)[pairPoolIndex]
 					this.pools = tradeStore.pools = [pool]
 				}
 				tradeStore.pools = tradeStore.allPools.filter(pool => this.pools.includes(pool))
@@ -114,14 +114,14 @@
 			},
 			isUnique(pair) {
 				let [i, j] = pair.split('-').map(p => p.toLowerCase())
-				return Object.values(allCurrencies)
+				return Object.values(this.filteredCurrencies)
 					.map(v=>Object.keys(v))
 					.filter(currs => currs.includes(i) && currs.includes(j))
 			},
 		},
 		computed: {
 			allPairs() {
-				let currencies = Object.assign({}, allCurrencies)
+				let currencies = Object.assign({}, this.filteredCurrencies)
 				delete currencies.susd
 				let pairs = Object.values(currencies).filter(p=>p != 'susd').map(v=>Object.keys(v))
 				let allPairs = []
@@ -140,18 +140,18 @@
 				return allPairs
 			},
 			pairs() {
-				//this.pools.map(p=>Object.entriesallCurrencies[this.pool])
+				//this.pools.map(p=>Object.entriesthis.filteredCurrencies[this.pool])
 				if(!this.pools.length) return []
 				let pools = this.pools.map(p=>p == 'y' ? 'iearn' : p)
 				let duplicates
 				if(pools.length > 1) {
-					let filteredCurrencies = Object.keys(allCurrencies).filter(p => pools.includes(p))
-					duplicates = filteredCurrencies
-										.flatMap(f=>Object.keys(allCurrencies[f]))
+					let filteredCurrencies = Object.keys(this.filteredCurrencies).filter(p => pools.includes(p))
+					duplicates = this.filteredCurrencies
+										.flatMap(f=>Object.keys(this.filteredCurrencies[f]))
 										.filter((k, i, all)=>all.indexOf(k) === i && all.lastIndexOf(k) !== i)
 				}
 				else {
-					duplicates = Object.keys(allCurrencies[this.pools[0] == 'y' ? 'iearn' : this.pools[0]])
+					duplicates = Object.keys(this.filteredCurrencies[this.pools[0] == 'y' ? 'iearn' : this.pools[0]])
 				}
 				var pairs = []
 				for(let [i, val] of duplicates.entries()) {
@@ -163,7 +163,12 @@
 					}
 				}
 				return pairs
-			}
+			},
+			filteredCurrencies() {
+          	return Object.fromEntries(Object.entries(allCurrencies).filter(
+			      ([key, val])=>!['tbtc', 'ren'].includes(key)
+			   ))
+          	}
 		}
 	}
 </script>

@@ -97,7 +97,7 @@ export function formatDateToHuman(timestamp) {
              `${d.getSeconds()}`.padStart(2, '0')].join(':');
 }
 
-export function formatNumber(number, dec = 8, dsep, tsep) {
+export function formatNumber(number, dec = 2, dsep, tsep) {
   if (isNaN(number) || number == null) return '';
   number = parseFloat(number)
   number = number.toFixed(~~dec);

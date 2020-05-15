@@ -23,7 +23,7 @@
 		                    </span>
                     	<span :class="{'loading line': !daily_apy[0]}">{{daily_apy[0]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
-	                    	<span v-show='volumes.compound >= 0'>${{(volumes.compound | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.compound >= 0'>${{(volumes.compound | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[0]'>Balance: ${{balances[0] && balances[0].toFixed(2)}} </span>
@@ -52,7 +52,7 @@
 	                    	<span :class="{'loading line': !daily_apy[1]}">{{daily_apy[1]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.usdt < 0}">
-	                    	<span v-show='volumes.usdt >= 0'>${{(volumes.usdt | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.usdt >= 0'>${{(volumes.usdt | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[1]'>Balance: ${{balances[1] && balances[1].toFixed(2)}} </span>
@@ -98,7 +98,7 @@
 	                    	<span :class="{'loading line': !daily_apy[5]}">{{daily_apy[5]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.pax < 0}">
-	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[5]'>Balance: ${{balances[5] && balances[5].toFixed(2)}} </span>
@@ -127,7 +127,7 @@
 	                    	<span :class="{'loading line': !daily_apy[2]}">{{daily_apy[2]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
-	                    	<span v-show='volumes.y >= 0'>${{(volumes.y | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.y >= 0'>${{(volumes.y | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[2]'>Balance: ${{balances[2] && balances[2].toFixed(2)}} </span>
@@ -156,7 +156,7 @@
 	                    	<span :class="{'loading line': !daily_apy[3]}">{{daily_apy[3]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
-	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[3]'>Balance: ${{balances[3] && balances[3].toFixed(2)}} </span>
@@ -175,7 +175,7 @@
 	                    <span class='apr'>APY: <span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>%</span>
 	                    <span class='volume'>
 	                    	Vol: <span :class="{'loading line': volumesData.busd < 0}">
-	                    	<span v-show='volumesData.busd >= 0'>${{(volumesData.busd | 0) | formatNumber}}</span>
+	                    	<span v-show='volumesData.busd >= 0'>${{(volumesData.busd | 0) | formatNumber(0)}}</span>
                	 		</span></span>
 	                </router-link>
 	            </div> -->
@@ -206,7 +206,7 @@
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
-	                    	<span v-show='volumes.susd >= 0'>${{(volumes.susd | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.susd >= 0'>${{(volumes.susd | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[4]'>Balance: ${{balances[4] && balances[4].toFixed(2)}} </span>
@@ -235,7 +235,7 @@
 	                    	<span :class="{'loading line': !daily_apy[6]}">{{daily_apy[6]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.tbtc < 0}">
-	                    	<span v-show='volumes.tbtc >= 0'>${{(volumes.tbtc | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.tbtc >= 0'>${{(volumes.tbtc | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[6]'>Balance: ${{balances[6] && balances[6].toFixed(2)}} </span>
@@ -264,7 +264,7 @@
 	                    	<span :class="{'loading line': !daily_apy[7]}">{{daily_apy[7]}}</span>%
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.ren < 0}">
-	                    	<span v-show='volumes.ren >= 0'>${{(volumes.ren | 0) | formatNumber}}</span>
+	                    	<span v-show='volumes.ren >= 0'>${{(volumes.ren | 0) | formatNumber(0)}}</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[7]'>Balance: ${{balances[7] && balances[7].toFixed(2)}} </span>

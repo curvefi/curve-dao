@@ -78,7 +78,7 @@
           <li>
             <b>Daily volume: </b>
             <span :class="{'loading line': volumes[volumePool] == -1}">
-              ${{ poolVolume && poolVolume.toFixed(2) }}
+              ${{ poolVolume && formatNumber(poolVolume) }}
             </span>
           </li>
         </ul>
@@ -216,7 +216,7 @@
         return this.admin_actions_deadline || getters.admin_actions_deadline()
       },
       poolVolume() {
-        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool]
+        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool] || 0
       },
     }
   }

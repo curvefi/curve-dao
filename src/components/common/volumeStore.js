@@ -37,6 +37,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
 	pools = pools.filter(pool => !state.volumeData[period][pool].length)
+	pools = pools.filter(pool => pool != 'ren')
 	let requests = pools.map(p => fetch(`${window.domain}/raw-stats/${p}-${period}m.json`))
 	requests = await Promise.all(requests)
 	let jsons = await Promise.all(requests.map(r => r.json()))

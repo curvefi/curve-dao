@@ -112,12 +112,12 @@ export const gas = {
 			exchange_underlying: (i, j) => 1600000
 		},
 		tbtc: {
-			exchange: (i, j) => 600000,
-			exchange_underlying: (i, j) => 1200000,
+			exchange: (i, j) => 300000,
+			exchange_underlying: (i, j) => 300000,
 		},
 		ren: {
-			exchange: (i, j) => 600000,
-			exchange_underlying: (i, j) => 1200000,
+			exchange: (i, j) => 300000,
+			exchange_underlying: (i, j) => 300000,
 		},
 	},
 	deposit: {
@@ -126,10 +126,10 @@ export const gas = {
 		iearn: 1300000,
 		busd: 1300000,
 		susd: 1300000,
-		susdv2: 1000000,
+		susdv2: 500000,
 		pax: 1300000,
-		tbtc: 1000000,
-		ren: 1000000,
+		tbtc: 300000,
+		ren: 300000,
 	},
 	withdraw: {
 		compound: {
@@ -200,14 +200,14 @@ export const gas = {
 		},
 		//no deposit zap
 		tbtc: {
-			deposit: x => (172664*x + 471691)*1.5 | 0,
+			deposit: x => 300000,
 			withdraw: 250000,
 			withdrawShare: 250000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		//no deposit zap
 		ren: {
-			deposit: x => (172664*x + 471691)*1.5 | 0,
+			deposit: x => 300000,
 			withdraw: 250000,
 			withdrawShare: 250000,
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,

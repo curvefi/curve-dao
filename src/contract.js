@@ -58,8 +58,8 @@ const currencies = {
 	},
 	tbtc: {
 		tbtc: 'tBTC',
-		hbtc: 'hBTC',
 		wbtc: 'wBTC',
+		hbtc: 'hBTC',
 	},
 	ren: {
 		renbtc: 'renBTC',

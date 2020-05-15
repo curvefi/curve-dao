@@ -8834,8 +8834,8 @@ var tbtc = {
 	 }
 	],
 	N_COINS: 3,
-	coin_precisions: [1e8, 1e8, 1e18],
-	wrapped_precisions: [1e8, 1e8, 1e18],
+	coin_precisions: [1e18, 1e8, 1e18],
+	wrapped_precisions: [1e18, 1e8, 1e18],
 	tethered: [false, false, false],
 	use_lending: [false, false, false],
 	is_plain: [true, true, true],
@@ -8845,14 +8845,16 @@ var tbtc = {
 	//no deposit zap
 	underlying_coins: [
 		//tbtc
-        '',
+        '0x1bBE271d15Bb64dF0bc6CD28Df9Ff322F2eBD847',
+        '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         '0x0316EB71485b0Ab14103307bf65a021042c6d380',
-        '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',],
+        ],
 	coins: [
 		//tbtc
-        '',
+        '0x1bBE271d15Bb64dF0bc6CD28Df9Ff322F2eBD847',
+        '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
         '0x0316EB71485b0Ab14103307bf65a021042c6d380',
-        '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',],
+        ],
 }
 
 var ren = {

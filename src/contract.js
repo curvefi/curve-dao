@@ -433,7 +433,7 @@ export async function init(contract, refresh = false) {
       calls.push(...(await common.update_fee_info('new', contract, false)));
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
 	  	let coinsCall = contract.swap.methods.coins(i).encodeABI()
-	  	let underlyingCoinsCall = ['tbtc', 'ren'].includes(contract.currentContaract) ?
+	  	let underlyingCoinsCall = ['tbtc', 'ren'].includes(contract.currentContract) ?
 	  								contract.swap.methods.coins(i).encodeABI()
 	  								: contract.swap.methods.underlying_coins(i).encodeABI();
     	calls.push([contract.swap._address, coinsCall])

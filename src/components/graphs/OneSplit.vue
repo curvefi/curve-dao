@@ -4,9 +4,6 @@
             <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
             <label for='compoundpool1'>Compound</label>
 
-            <input id='usdtpool1' type='checkbox' value='usdt' v-model='pools'/>
-            <label for='usdtpool1'>usdt</label>
-
             <input id='ypool1' type='checkbox' value='y' v-model='pools'/>
             <label for='ypool1'>Y</label>
 
@@ -149,7 +146,7 @@
 
 	export default {
 		data: () => ({
-            pools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
+            pools: ['compound', 'y', 'busd', 'susdv2', 'pax'],
 			maxBalance: '0.00',
             from_currency: 0,
             to_currency: 1,
@@ -242,7 +239,7 @@
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
                 //     || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
                 if(this.bestPool === null) return 'Not available'
-                return ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', '1split'][this.bestPool]
+                return ['compound', 'y', 'busd', 'susd', 'pax', '1split'][this.bestPool]
             },
             selldisabled() {
                 // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
@@ -252,7 +249,7 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
+                return ['compound', 'y', 'busd', 'susdv2', 'pax']
             },
             warningNoPool() {
                 this.message = 'Please select '
@@ -433,7 +430,7 @@
                 let bestContract = contract;
                 if(this.bestPool > 0 && this.bestPool < 6) {
                     let poolIdx = this.bestPool
-                    pool = Object.keys(contract.contracts)[this.bestPool]
+                    pool = Object.keys(contract.contracts).filter(pool=>pool != 'usdt')[this.bestPool]
                     bestContract = contract.contracts[pool]
                 }
                 let address = bestContract.swap._address
@@ -690,7 +687,7 @@
                             pool = '1split'
                         }
                         else this.distribution = null
-                        this.bestPool = ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', '1split'].indexOf(pool)
+                        this.bestPool = ['compound', 'iearn', 'busd', 'susdv2', 'pax', '1split'].indexOf(pool)
                     }
                     else {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]

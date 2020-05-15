@@ -7,13 +7,13 @@
             <b>{{currency | capitalize}}:</b>
             <span :class="{'loading line': !bal_info || bal_info[i] === null}"> 
               <span v-show='bal_info && bal_info[i]'> 
-                {{bal_info && (toFixed(bal_info[i])) | formatNumber }} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
+                {{bal_info && toFixed(bal_info[i]) }} ({{((bal_info && bal_info[i] * 100) / totalBalances) | toFixed2}}%) 
               </span>
             </span>
           </li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
-            <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances) | toFixed2 | formatNumber}}</span>
+            <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances)}}</span>
           </li>
       </ul>
       <p>
@@ -78,7 +78,7 @@
           <li>
             <b>Daily volume: </b>
             <span :class="{'loading line': volumes[volumePool] == -1}">
-              ${{ poolVolume && formatNumber(poolVolume.toFixed(2)) }}
+              ${{ poolVolume && poolVolume.toFixed(2) }}
             </span>
           </li>
         </ul>
@@ -90,14 +90,14 @@
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{l_info && toFixed(l_info[i]) | formatNumber}}</span></li>
+            <span> {{l_info && toFixed(l_info[i])}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{toFixed(totalShare) | formatNumber}}</span>
+            <span> {{toFixed(totalShare)}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{toFixed(usdShare1) | formatNumber }}
+            <b>Averaged USD balance:</b> {{toFixed(usdShare1) }}
           </li>
       </ul>
     </fieldset>
@@ -106,15 +106,15 @@
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{staked_info && toFixed(staked_info[i]) | formatNumber}}</span></li>
+            <span> {{staked_info && toFixed(staked_info[i])}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{toFixed(totalStake) | formatNumber}}</span>
+            <span> {{toFixed(totalStake)}}</span>
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{toFixed(usdStake1) | formatNumber}}
+            <b>Averaged USD balance:</b> {{toFixed(usdStake1)}}
           </li>
 
       </ul>
@@ -138,24 +138,28 @@
       toFixed(num, precisions = 2, round = 4) {
           if(num == '' || num === null || num === undefined) return ''
           if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
-          let rounded = num.toFixed(precisions)
-          return isNaN(rounded) ? '0.00' : rounded
+          let rounded = this.formatNumber(num, precisions)
+          return rounded
       },
       totalCurrencies(currencies) {
         if(this.currentPool != 'susdv2')
           return Object.keys(currencies).join('+').toUpperCase();
         return Object.values(currencies).join('+');
       },
-      formatNumber(number) {
-        return helpers.formatNumber(number)
+      formatNumber(number, dec = 2) {
+        return helpers.formatNumber(number, dec)
       },
     },
     async created() {
+        console.log(volumeStore.state.volumes, "VOLS")
+
       if(this.poolVolume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
         this.volumes = stats.volume;
+        console.log
         volumeStore.state.volumes = stats.volume
+        console.log(volumeStore.state.volumes, "VOLS")
       }
       if(['tbtc', 'ren'].includes(currentContract.currentContract)) {
         let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);

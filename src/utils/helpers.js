@@ -97,8 +97,17 @@ export function formatDateToHuman(timestamp) {
              `${d.getSeconds()}`.padStart(2, '0')].join(':');
 }
 
-export function formatNumber(number) {
-  return (new Intl.NumberFormat().format(parseFloat(number)))
+export function formatNumber(number, dec = 8, dsep, tsep) {
+  if (isNaN(number) || number == null) return '';
+  number = parseFloat(number)
+  number = number.toFixed(~~dec);
+  tsep = typeof tsep == 'string' ? tsep : ',';
+
+  var parts = number.split('.'),
+    fnums = parts[0],
+    decimals = parts[1] ? (dsep || '.') + parts[1] : '';
+
+  return fnums.replace(/(\d)(?=(?:\d{3})+$)/g, '$1' + tsep) + decimals;
 }
 
 export async function getETHPrice() {

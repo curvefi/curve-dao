@@ -135,6 +135,11 @@
       btcPrice: 0,
     }),
     methods: {
+      toFixed(num, precisions = 2, round = 4) {
+          if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+          let rounded = num.toFixed(precisions)
+          return isNaN(rounded) ? '0.00' : rounded
+      },
       totalCurrencies(currencies) {
         if(this.currentPool != 'susdv2')
           return Object.keys(currencies).join('+').toUpperCase();

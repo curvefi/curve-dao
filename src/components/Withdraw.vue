@@ -519,7 +519,7 @@
                         await common.ensure_allowance_zap_out(amount)
                         let min_amount;
                         let inOneCoin = currentContract.deposit_zap
-                        if(currentContract.currentContract == 'tbtc') inOneCoin = currentContract.swap
+                        if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
                         try {
                             min_amount = await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
                         }
@@ -543,12 +543,14 @@
                         this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} tokens for withdrawal`
                         try {
                             this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
-                            await common.ensure_allowance_zap_out(amount)
+                            let inOneCoin = currentContract.deposit_zap
+                            if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
+                            if(!['tbtc','ren'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
                             let min_amounts = await this.getMinAmounts();
-                            console.log(currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts).encodeABI(), 
-                                currentContract.deposit_zap._address, currentContract.default_account)
-    			        	await currentContract.deposit_zap.methods.remove_liquidity(amount, min_amounts)
+                            console.log(inOneCoin.methods.remove_liquidity(amount, min_amounts).encodeABI(), 
+                                inOneCoin._address, currentContract.default_account)
+    			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
     			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }

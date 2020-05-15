@@ -188,9 +188,10 @@
                 	this.inf_approval = false
                 this.disabledButtons = false;
             },
-            toFixed(num) {
-                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return num.toFixed(8)
-                return num.toFixed(2)
+            toFixed(num, precisions = 2, round = 4) {
+                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                let rounded = num.toFixed(precisions)
+                return isNaN(rounded) ? '0.00' : rounded
             },
         	inputsFormat(i) {
         		if(this.inputs[i]) {

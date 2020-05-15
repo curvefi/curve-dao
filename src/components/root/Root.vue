@@ -24,6 +24,7 @@
                     	<span :class="{'loading line': !daily_apy[0]}">{{daily_apy[0]}}</span>%</span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.compound < 0}">
 	                    	<span v-show='volumes.compound >= 0'>${{(volumes.compound | 0) | formatNumber(0)}}</span>
+	                    	<span v-show='!volumes.compound'>$0</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[0]'>Balance: ${{balances[0] && balances[0].toFixed(2)}} </span>
@@ -99,6 +100,7 @@
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.pax < 0}">
 	                    	<span v-show='volumes.pax >= 0'>${{(volumes.pax | 0) | formatNumber(0)}}</span>
+	                    	<span v-show='!volumes.pax'>$0</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[5]'>Balance: ${{balances[5] && balances[5].toFixed(2)}} </span>
@@ -128,6 +130,7 @@
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.y < 0}">
 	                    	<span v-show='volumes.y >= 0'>${{(volumes.y | 0) | formatNumber(0)}}</span>
+	                    	<span v-show='!volumes.y'>$0</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[2]'>Balance: ${{balances[2] && balances[2].toFixed(2)}} </span>
@@ -157,6 +160,7 @@
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.busd < 0}">
 	                    	<span v-show='volumes.busd >= 0'>${{(volumes.busd | 0) | formatNumber(0)}}</span>
+	                    	<span v-show='!volumes.busd'>$0</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[3]'>Balance: ${{balances[3] && balances[3].toFixed(2)}} </span>
@@ -207,6 +211,7 @@
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd < 0}">
 	                    	<span v-show='volumes.susd >= 0'>${{(volumes.susd | 0) | formatNumber(0)}}</span>
+	                    	<span v-show='!volumes.susd'>$0</span>
                	 		</span></span>
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances[4]'>Balance: ${{balances[4] && balances[4].toFixed(2)}} </span>

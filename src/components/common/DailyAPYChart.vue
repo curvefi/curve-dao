@@ -4,7 +4,7 @@
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
     	<p v-show='volume != -1'>Daily trading volume: 
     		<span :class="{'loading line': !volume}">
-    			<span v-show='volume'> {{(volume | 0) | formatNumber}}$</span>	
+    			<span v-show='volume'> {{(volume | 0) | formatNumber(0)}}$</span>	
     		</span>
     	</p>
 	</fieldset>

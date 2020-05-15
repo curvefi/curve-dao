@@ -17,7 +17,7 @@
 	    	</p>
 	    	<p v-show = "pool != 'susd'">Daily trading volume: 
 	    		<span :class="{'loading line': volumeData < 0}">
-	    			<span v-show='volumeData >= 0'> {{(volumeData | 0) | formatNumber}}$</span>	
+	    			<span v-show='volumeData >= 0'> {{(volumeData | 0) | formatNumber(0)}}$</span>	
 	    		</span>
 	    	</p>
 	        <p>Recent weekly APY: 

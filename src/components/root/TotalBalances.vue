@@ -6,7 +6,7 @@
 					Deposits: <span v-show='total'>{{total | formatNumber}}$</span>
 				</div>
 				<div :class="{'loading line': volume < 0}" >
-					Daily volume: <span v-show='volume >= 0'>{{(volume | 0) | formatNumber}}$</span>
+					Daily volume: <span v-show='volume >= 0'>{{(volume | 0) | formatNumber(0)}}$</span>
 				</div>
         </fieldset>
     </div>

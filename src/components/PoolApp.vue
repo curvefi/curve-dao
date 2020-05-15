@@ -29,7 +29,10 @@
             <a href="https://t.me/curvefi">@Telegram</a>
             <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
             <p>____________</p>
-            <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
+            <button class='simplebutton' @click = 'changeWallets'>Change wallet</button>
+            <button id='changeAccounts' class='simplebutton' 
+              v-show="['ledger', 'trezor'].includes(walletName)" 
+              @click = 'changeAccounts'>Change accounts</button>
         </div>
       </div>
 
@@ -62,7 +65,10 @@
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
       <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
-      <button class='simplebutton showmobile' @click = 'changeAccounts'>Change accounts</button>
+      <button class='simplebutton showmobile' @click = 'changeWallets'>Change wallet</button>
+      <button id='changeAccounts' class='simplebutton showmobile' 
+        v-show="['ledger', 'trezor'].includes(walletName)" 
+        @click = 'changeAccounts'>Change accounts</button>
     </div>
     <div id="screen">
         <div class="blue window">
@@ -130,17 +136,22 @@
       changePools(pool) {
         changeContract(pool)
       },
-      async changeAccounts() {
-        if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
+      async changeWallets() {
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
+      },
+      async changeAccounts() {
+        return onboard.accountSelect();
       },
     },
   }
 </script>
 
 <style>
+  #changeAccounts {
+    margin-top: 0.3em;
+  }
   a.showmobile {
     display: none;
   }

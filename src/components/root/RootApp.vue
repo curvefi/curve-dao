@@ -21,7 +21,10 @@
             <!-- <router-link :to="'/ren/' + ($route.path.split('/')[2] || '')">renBTC</router-link> -->
 <!--             <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
-            <button class='simplebutton' @click = 'changeAccounts'>Change accounts</button>
+            <button class='simplebutton' @click = 'changeWallets'>Change wallet</button>
+            <button id='changeAccounts' class='simplebutton' 
+              v-show="['ledger', 'trezor'].includes(walletName)" 
+              @click = 'changeAccounts'>Change accounts</button>
         </div>
       </div>
 
@@ -55,7 +58,10 @@
       <router-link to="/donate" class='showmobile'>Donate</router-link>
       <a href="https://github.com/curvefi/curve-contract" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
-      <button class='simplebutton showmobile' @click = 'changeAccounts'>Change accounts</button>
+      <button class='simplebutton showmobile' @click = 'changeWallets'>Change wallet</button>
+      <button id='changeAccounts' class='simplebutton showmobile' 
+        v-show="['ledger', 'trezor'].includes(walletName)" 
+        @click = 'changeAccounts'>Change accounts</button>
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">
@@ -101,17 +107,22 @@
       changePools(pool) {
         changeContract(pool)
       },
-      async changeAccounts() {
-        if(['ledger', 'trezor'].includes(currentContract.walletName)) return onboard.accountSelect();
+      async changeWallets() {
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)
+      },
+      async changeAccounts() {
+        return onboard.accountSelect();
       },
     },
   }
 </script>
 
 <style scoped>
+  #changeAccounts {
+    margin-top: 0.3em;
+  }
   @media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
     .top-menu-bar > .poolsdropdown {
       display: none;

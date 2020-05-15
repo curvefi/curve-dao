@@ -343,6 +343,7 @@ export let contract = state
 
 export const getters = {
 	default_account: () => state.default_account || '0x0000000000000000000000000000000000000000',
+	walletName: () => state.walletName,
 	currentPool: () => state.currentContract,
 	oldBalance: () => state.oldBalance,
 	bal_info: () => state.bal_info,

@@ -24,7 +24,9 @@
             <div class='exchangefields'>
                 <fieldset class='item'>
                     <legend>From:</legend>
-                    <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalance}}</span> </div>
+                    <div class='maxbalance' :class="{'loading line': maxBalance == -1}" @click='set_max_balance'>
+                        Max: <span v-show = 'maxBalance != -1'>{{maxBalance}}</span> 
+                    </div>
                     <ul>
                         <li>
                             <input type="text" id="from_currency" :disabled='disabled || selldisabled' name="from_currency" value='0.00'
@@ -114,7 +116,12 @@
                 </li>
             </ul>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
+                <button id="trade" @click='handle_trade' :disabled='selldisabled || (maxBalance != -1 && +fromInput > +maxBalance*1.001)'>Sell</button>
+            </p>
+            <p class='simple-error' id='no-balance' v-show='maxBalance != -1 && +fromInput > +maxBalance*1.001'>
+                Not enough balance for 
+                <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
+                <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
             </p>
             <div class='info-message gentle-message' v-show='selldisabled'>
                 Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
@@ -147,7 +154,7 @@
 	export default {
 		data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax'],
-			maxBalance: '0.00',
+			maxBalance: -1,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
@@ -783,6 +790,9 @@
     #best-pool .tooltiptext {
         text-align: left;
         padding-left: 1em;
+    }
+    .maxbalance.loading.line {
+        display: block;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

@@ -257,7 +257,7 @@
 			        	let amount = this.wallet_balances[i] * currentContract.c_rates[i]
 			        	if(!this.depositc) amount = this.wallet_balances[i] / allabis[currentContract.currentContract].coin_precisions[i]
 			            var val = amount
-			            var val = Math.floor(amount * 100) / 100;
+			            var val = this.toFixed(amount);
 			            if(val == 0) val = '0.00'
 			            Vue.set(this.inputs, i, val)
 			        }

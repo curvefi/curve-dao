@@ -9,7 +9,7 @@
                         	<span v-show='depositc'>
                         		{{currencies[currency]}} 
 	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
-	                        					&& !['susdv2', 'tbtc'].includes(currentPool)"> 
+	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
 	                        		(in {{currency | capitalize}}) 
 	                        	</span>
 	                        </span>
@@ -174,7 +174,7 @@
 
             async mounted(oldContract) {
 
-            	if(['susd', 'susdv2'].includes(currentContract.currentContract)) this.depositc = true;
+            	if(['susd', 'susdv2', 'tbtc', 'ren'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

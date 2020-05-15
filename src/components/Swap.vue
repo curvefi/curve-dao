@@ -202,6 +202,7 @@
                 this.from_cur_handler()
             },
             toFixed(num) {
+                if(!BigNumber.isBigNumber(num)) num = +num
                 if(['tbtc', 'ren'].includes(currentContract.currentContract)) return num.toFixed(8)
                 return num.toFixed(2)
             },
@@ -303,7 +304,7 @@
                     let calls = [
                         [currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()],
                     ]
-                    if(!this.swapwrapped && this.currentPool != 'susdv2')
+                    if(!this.swapwrapped && !['susdv2', 'tbtc', 'ren'].includes(this.currentPool))
                         calls.push([currentContract.swap._address, currentContract.swap.methods.get_dy_underlying(i, j, dx).encodeABI()])
                     else {
                         //dx = cBN(dx).times(currentContract.c_rates[i])
@@ -364,7 +365,7 @@
                                             for min ${min_dy / this.precisions[j]} ${this.getCurrency(this.to_currency)}`
                     min_dy = cBN(min_dy.toString()).toFixed(0);
                     let exchangeMethod = currentContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped || this.currentPool == 'susdv2') exchangeMethod = currentContract.swap.methods.exchange
+                    if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
                     try {
                         await exchangeMethod(i, j, dx, min_dy)
                             .send({

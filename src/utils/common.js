@@ -1,5 +1,6 @@
 import Vue from "vue";
 import BigNumber from 'bignumber.js'
+window.BN = BigNumber
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
 import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_address } from '../allabis'
@@ -240,7 +241,16 @@ export async function multiInitState(calls, contract, initContracts = false) {
     let web3 = currentContract.web3 || new Web3(infura_url)
     let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
     var default_account = currentContract.default_account;
-    let aggcalls = await multicall.methods.aggregate(calls).call()
+    console.log(calls)
+    let aggcalls;
+    try {
+        aggcalls = await multicall.methods.aggregate(calls).call()
+    }
+    catch(err) {
+        console.log(err)
+        aggcalls = await multicall.methods.aggregate(calls.slice(1)).call()
+        aggcalls[1] = [web3.eth.abi.encodeParameter('uint256', 0), ...aggcalls[1]] 
+    }
     var block = +aggcalls[0]
     //initContracts && contract.currentContract == 'compound' && i == 0 || 
     let decoded = aggcalls[1].map((hex, i) =>

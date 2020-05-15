@@ -78,7 +78,7 @@ export const poolMenu = {
 	susdv2: 'sUSD',
 	pax: 'PAX',
 	tbtc: 'tBTC',
-	renbtc: 'renBTC',
+	ren: 'renBTC',
 }
 
 export const gas = {
@@ -401,6 +401,7 @@ export async function init(contract, refresh = false) {
         //admin_actions_deadline
         [allabis[contract.currentContract].swap_address, '0x405e28f8'],
     ];
+    
     if(contract.currentContract == 'compound') {
 	    state.old_swap = new state.web3.eth.Contract(allabis.compound.old_swap_abi, old_swap_address);
 	    state.old_swap_token = new state.web3.eth.Contract(ERC20_abi, old_token_address);
@@ -430,8 +431,12 @@ export async function init(contract, refresh = false) {
   	else 
       calls.push(...(await common.update_fee_info('new', contract, false)));
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
-    	calls.push([contract.swap._address, contract.swap.methods.coins(i).encodeABI()])
-    	calls.push([contract.swap._address, contract.swap.methods.underlying_coins(i).encodeABI()])
+	  	let coinsCall = contract.swap.methods.coins(i).encodeABI()
+	  	let underlyingCoinsCall = ['tbtc', 'ren'].includes(contract.currentContaract) ?
+	  								contract.swap.methods.underlying_coins(i).encodeABI()
+	  								: contract.swap.methods.coins(i).encodeABI();
+    	calls.push([contract.swap._address, coinsCall])
+    	calls.push([contract.swap._address, underlyingCoinsCall])
     }
     await common.multiInitState(calls, contract, true)
   	contract.initializedContracts = true;

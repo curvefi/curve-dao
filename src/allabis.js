@@ -8862,8 +8862,8 @@ var ren = {
 	tethered: [false, false],
 	use_lending: [false, false],
 	is_plain: [true, true],
-	swap_address: '0x62869F49ea8b6c3EEdEcA8b8b1c6731090aD7A3D',
-	token_address: '0x58Dc957F518afd66D3fC9c6bd5f662DB085bEF09',
+	swap_address: '0x76827f977dC1f6A02C3296636eD6d13C7421f5C7',
+	token_address: '0xB527C418c3EFf31a88a6818c7953014fF9Ec5A0B',
 	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
 	underlying_coins: [
 		'0x0A9ADD98C076448CBcFAcf5E457DA12ddbEF4A8f',
@@ -8888,4 +8888,4 @@ export let sCurveRewards_abi = [{"anonymous":false,"inputs":[{"indexed":true,"in
 
 export let sCurveRewards_address = '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92'
 
-export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax, tbtc, ren}
+export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax, ren}

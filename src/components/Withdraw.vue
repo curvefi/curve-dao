@@ -236,7 +236,8 @@
             },
             toFixed(num, precisions = 2, round = 4) {
                 if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
-                return num.toFixed(precisions)
+                let rounded = num.toFixed(precisions)
+                return isNaN(rounded) ? '0.00' : rounded
             },
             inputsFormat(i) {
         		if(this.inputs[i]) {

@@ -24,6 +24,7 @@
     	susdv2: 'sUSD',
         pax: 'PAX',
         tbtc: 'tBTC',
+        ren: 'renBTC',
     }
 
 	export default {

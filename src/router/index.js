@@ -207,7 +207,7 @@ const router = new VueRouter({
   routes
 })
 
-const pools = ['compound','usdt','y','iearn','busd','susd', 'susdv2','pax','tbtc']
+const pools = ['compound','usdt','y','iearn','busd','susd', 'susdv2','pax','tbtc','ren']
 
 router.beforeEach(async (to, from, next) => {
   if(from.path.includes('/compound/withdraw_old')) await common.update_fee_info()

@@ -451,6 +451,7 @@
 								if(i == length-1) {
 									let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
 									let lastPrice = +(BN(lastPrices[j])).div(abis[this.pools[j]].coin_precisions[this.toCurrency])
+									if(this.inverse) lastPrice = 1/lastPrice
 									this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
 								}
 								this.ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])

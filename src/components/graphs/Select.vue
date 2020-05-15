@@ -83,7 +83,7 @@
 					let pair = params[params.length - 2];
 					let interval = params[params.length - 1];
 					if(params.length == 3)
-						this.pools = tradeStore.allPools.filter(pool => params[0].split('_').includes(pool))
+					this.pools = tradeStore.allPools.filter(pool => params[0].split('_').includes(pool))
 					this.pair = this.allPairs.find(p => p.val == pair.toLowerCase())
 					this.interval = interval
 					this.emitSelect()
@@ -146,7 +146,7 @@
 				let duplicates
 				if(pools.length > 1) {
 					let filteredCurrencies = Object.keys(this.filteredCurrencies).filter(p => pools.includes(p))
-					duplicates = this.filteredCurrencies
+					duplicates = Object.keys(this.filteredCurrencies)
 										.flatMap(f=>Object.keys(this.filteredCurrencies[f]))
 										.filter((k, i, all)=>all.indexOf(k) === i && all.lastIndexOf(k) !== i)
 				}

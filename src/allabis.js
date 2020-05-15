@@ -8843,12 +8843,13 @@ var tbtc = {
 	token_address: '',
 	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
 	//no deposit zap
-	deposit_address: '',
 	underlying_coins: [
+		//tbtc
         '',
         '0x0316EB71485b0Ab14103307bf65a021042c6d380',
         '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',],
 	coins: [
+		//tbtc
         '',
         '0x0316EB71485b0Ab14103307bf65a021042c6d380',
         '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',],

@@ -115,7 +115,7 @@ export const gas = {
 			exchange: (i, j) => 600000,
 			exchange_underlying: (i, j) => 1200000,
 		},
-		renbtc: {
+		ren: {
 			exchange: (i, j) => 600000,
 			exchange_underlying: (i, j) => 1200000,
 		},
@@ -129,7 +129,7 @@ export const gas = {
 		susdv2: 1000000,
 		pax: 1300000,
 		tbtc: 1000000,
-		renbtc: 1000000,
+		ren: 1000000,
 	},
 	withdraw: {
 		compound: {
@@ -156,7 +156,7 @@ export const gas = {
 		tbtc: {
 			imbalance: x => 600000,
 		},
-		renbtc: {
+		ren: {
 			imbalance: x => 600000,
 		},
 	},
@@ -206,7 +206,7 @@ export const gas = {
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		//no deposit zap
-		renbtc: {
+		ren: {
 			deposit: x => (172664*x + 471691)*1.5 | 0,
 			withdraw: 800000,
 			withdrawShare: 1000000,

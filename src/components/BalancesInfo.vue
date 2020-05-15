@@ -90,11 +90,11 @@
       <ul id='lp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{l_info && l_info[i] | toFixed2 | formatNumber}}</span></li>
+            <span> {{l_info && toFixed(l_info[i]) | formatNumber}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{totalShare | toFixed2 | formatNumber}}</span>
+            <span> {{toFixed(totalShare) | formatNumber}}</span>
           </li>
           <li>
             <b>Averaged USD balance:</b> {{(usdShare1) | toFixed2 | formatNumber }}
@@ -106,11 +106,11 @@
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
-            <span> {{staked_info && staked_info[i] | toFixed2 | formatNumber}}</span></li>
+            <span> {{staked_info && toFixed(staked_info[i]) | formatNumber}}</span></li>
           <li>
             <b>{{totalCurrencies(currencies)}}:</b> 
 
-            <span> {{totalStake | toFixed2 | formatNumber}}</span>
+            <span> {{toFixed(totalStake) | formatNumber}}</span>
           </li>
 
           <li>

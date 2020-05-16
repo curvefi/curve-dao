@@ -219,7 +219,11 @@
                 let maxSlippage = this.maxSlippage;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
                 return (100 - maxSlippage)/100
-            }
+            },
+            minAmount() {
+            if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+                return 0.01
+            },
         },
         mounted() {
         	if(this.currentPool == 'susdv2') {
@@ -452,7 +456,7 @@
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
                     let maxDiff = BN(this.calc_balances[i]).minus(BN(this.inputs[i]))
-			    	let useMax = this.calc_balances[i] > 0 && maxDiff.lte(BN(0.01)) && maxDiff > 0
+			    	let useMax = this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0
                     if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}
@@ -498,7 +502,7 @@
 			        	let inputs = this.inputs;
 			        	let amounts = this.inputs.map((v, i) => {
                             let maxDiff = BN(this.calc_balances[i]).minus(BN(v))
-                            return this.calc_balances[i] > 0 && maxDiff.lte(BN(0.01)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
+                            return this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                         })
 			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`

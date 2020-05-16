@@ -97,7 +97,7 @@
             <span> {{toFixed(totalShare)}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{toFixed(usdShare1) }}
+            <b>Averaged USD balance:</b> {{ usdShare1 | toFixed2 }}
           </li>
       </ul>
     </fieldset>
@@ -114,7 +114,7 @@
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{toFixed(usdStake1)}}
+            <b>Averaged USD balance:</b> {{ usdStake1 | toFixed2}}
           </li>
 
       </ul>

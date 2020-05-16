@@ -203,14 +203,14 @@ export const gas = {
 			deposit: x => 300000 * 1.5,
 			withdraw: 250000 * 1.5,
 			withdrawShare: 250000 * 1.5,
-			withdrawImbalance: x => (181733*x + 506125)*3.5 | 0,
+			withdrawImbalance: x => 600000,
 		},
 		//no deposit zap
 		ren: {
 			deposit: x => 300000,
 			withdraw: 250000,
 			withdrawShare: 250000,
-			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
+			withdrawImbalance: x => 600000,
 		},
 	}
 }

@@ -37,7 +37,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
 	pools = pools.filter(pool => !state.volumeData[period][pool].length)
-	pools = pools.filter(pool => pool != 'ren')
+	pools = pools.filter(pool => !['ren','tbtc'].includes(pool))
 	let requests = pools.map(p => fetch(`${window.domain}/raw-stats/${p}-${period}m.json`))
 	requests = await Promise.all(requests)
 	let jsons = await Promise.all(requests.map(r => r.json()))
@@ -106,5 +106,5 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 }
 
 export function totalVolume() {
-	return Object.values(state.volumes).filter(v=>v!=-1).length == 5 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
+	return Object.values(state.volumes).filter(v=>v!=-1).length == 6 ? Object.values(state.volumes).reduce((a, b) => a + b, 0) : -1
 }

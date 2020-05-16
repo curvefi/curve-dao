@@ -8891,4 +8891,4 @@ export let sCurveRewards_abi = [{"anonymous":false,"inputs":[{"indexed":true,"in
 
 export let sCurveRewards_address = '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92'
 
-export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax, ren}
+export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax, tbtc, ren}

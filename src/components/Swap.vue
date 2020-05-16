@@ -19,8 +19,8 @@
                             <li v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                                 <label :for="'from_cur_'+i">
-                                    <span v-show='!swapwrapped'>{{currency | capitalize}}</span>
-                                    <span v-show='swapwrapped'>{{currencies[currency]}}</span>
+                                    <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
+                                    <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
                             </label>
                             </li>
@@ -48,8 +48,8 @@
                             <li v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                                 <label :for="'to_cur_'+i">
-                                    <span v-show='!swapwrapped'>{{currency | capitalize}}</span>
-                                    <span v-show='swapwrapped'>{{currencies[currency]}}</span>
+                                    <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
+                                    <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
                             </label>
                             </li>

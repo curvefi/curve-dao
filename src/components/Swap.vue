@@ -344,18 +344,18 @@
                 var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
-                // try {
-                //     if (this.inf_approval)
-                //         await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
-                //     else
-                //         await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
-                // }
-                // catch(err) {
-                //     console.error(err)
-                //     this.waitingMessage = '',
-                //     this.show_loading = false
-                //     throw err;
-                // }
+                try {
+                    if (this.inf_approval)
+                        await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
+                    else
+                        await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
+                }
+                catch(err) {
+                    console.error(err)
+                    this.waitingMessage = '',
+                    this.show_loading = false
+                    throw err;
+                }
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
                                         for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`

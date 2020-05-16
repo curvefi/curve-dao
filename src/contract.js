@@ -128,7 +128,7 @@ export const gas = {
 		susd: 1300000,
 		susdv2: 500000,
 		pax: 1300000,
-		tbtc: 300000,
+		tbtc: 300000 * 1.5,
 		ren: 300000,
 	},
 	withdraw: {
@@ -154,7 +154,7 @@ export const gas = {
 			imbalance: x => (12642*x + 474068)*1.5 | 0,
 		},
 		tbtc: {
-			imbalance: x => 600000,
+			imbalance: x => 600000 * 1.5,
 		},
 		ren: {
 			imbalance: x => 600000,
@@ -200,10 +200,10 @@ export const gas = {
 		},
 		//no deposit zap
 		tbtc: {
-			deposit: x => 300000,
-			withdraw: 250000,
-			withdrawShare: 250000,
-			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
+			deposit: x => 300000 * 1.5,
+			withdraw: 250000 * 1.5,
+			withdrawShare: 250000 * 1.5,
+			withdrawImbalance: x => (181733*x + 506125)*3.5 | 0,
 		},
 		//no deposit zap
 		ren: {

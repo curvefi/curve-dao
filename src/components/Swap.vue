@@ -85,6 +85,9 @@
                         <label for='swapw' v-show = "!['susdv2', 'tbtc', 'ren'].includes(currentPool)">Swap wrapped</label>
                     </li>
                 </ul>
+                <p class='simple-error' v-show='exchangeRate<=0.98'>
+                    Warning! Exchange rate is too low!
+                </p>
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade' :disabled='maxBalance != -1 && +fromInput > +maxBalance*1.001'>Sell</button>
                 </p>

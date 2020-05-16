@@ -310,17 +310,12 @@
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                     let [b, get_dy_underlying, balance] = decoded
+                    console.log(b, currentContract.c_rates[i])
                     b = +b * currentContract.c_rates[i];
-                    if (b >= 0.001) {
-                        // In c-units
-                        var dy_ = +get_dy_underlying / this.precisions[j];
-                        var dy = this.toFixed(dy_);
-                        resolve([dy, dy_, dx_, balance])
-                    }
-                    else { 
-                        this.toInput = 0
-                        reject()
-                    }
+                    // In c-units
+                    var dy_ = +get_dy_underlying / this.precisions[j];
+                    var dy = this.toFixed(dy_);
+                    resolve([dy, dy_, dx_, balance])
                 })
                 return helpers.makeCancelable(promise);
             },
@@ -341,7 +336,7 @@
                 if (b >= 0.001) {
                     var dx = Math.floor(this.fromInput * this.precisions[i]);
                     if(Math.abs(1 - (dx/this.maxBalance)) < 0.01) dx = this.maxBalance
-                    var min_dy = Math.floor(this.toInput * (1-maxSlippage) * this.precisions[j]);
+                    var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
                     dx = cBN(dx.toString()).toFixed(0,1);
                     this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
                     try {

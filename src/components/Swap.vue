@@ -187,7 +187,11 @@
                 if(!this.swapwrapped) return;
                 return (this.toInput * this.c_rates[this.to_currency] * this.toFixed(this.precisions[this.to_currency]))
             },
-          ...getters,
+            ...getters,
+            minAmount() {
+                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+                return 0.01
+            },
         },
         mounted() {
             if(currentContract.initializedContracts) this.mounted();
@@ -313,7 +317,6 @@
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                     let [b, get_dy_underlying, balance] = decoded
-                    console.log(b, currentContract.c_rates[i])
                     b = +b * currentContract.c_rates[i];
                     // In c-units
                     var dy_ = +get_dy_underlying / this.precisions[j];
@@ -336,56 +339,54 @@
                 let currency = (Object.keys(this.currencies)[this.from_currency]).toUpperCase()
                 if(this.swapwrapped) currency = Object.values(this.currencies)[this.from_currency]
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
-                if (b >= 0.001) {
-                    var dx = Math.floor(this.fromInput * this.precisions[i]);
-                    if(Math.abs(1 - (dx/this.maxBalance)) < 0.01) dx = this.maxBalance
-                    var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
-                    dx = cBN(dx.toString()).toFixed(0,1);
-                    this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
-                    try {
-                        if (this.inf_approval)
-                            await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
-                        else
-                            await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
-                    }
-                    catch(err) {
-                        console.error(err)
-                        this.waitingMessage = '',
-                        this.show_loading = false
-                        throw err;
-                    }
-                    this.waitingMessage = `Please confirm swap 
-                                            from ${this.fromInput} ${this.getCurrency(this.from_currency)}
-                                            for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`
-                    min_dy = cBN(min_dy.toString()).toFixed(0);
-                    let exchangeMethod = currentContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
-                    try {
-                        await exchangeMethod(i, j, dx, min_dy)
-                            .send({
-                                from: this.default_account,
-                                gas: this.swapwrapped ? 
-                                        contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
-                            })
-                            .once('transactionHash', () => {
-                                this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
-                            });
-                    }
-                    catch(err) {
-                        console.error(err)
-                        this.waitingMessage = '';
-                        this.show_loading = '';
-                        throw err;
-                    }
-                    this.waitingMessage = ''
-                    this.show_loading = false;
-                    this.gasPrice = 0;
-                    this.estimateGas = 0;
-                    await common.update_fee_info();
-                    this.from_cur_handler();
-                    let balance = await this.coins[i].methods.balanceOf(this.default_account).call();
-                    this.maxBalance = balance;
+                var dx = Math.floor(this.fromInput * this.precisions[i]);
+                if(Math.abs(1 - (dx/this.maxBalance)) < this.minAmount) dx = this.maxBalance
+                var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
+                dx = cBN(dx.toString()).toFixed(0,1);
+                this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
+                // try {
+                //     if (this.inf_approval)
+                //         await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
+                //     else
+                //         await common.ensure_underlying_allowance(i, dx, [], undefined, this.swapwrapped);
+                // }
+                // catch(err) {
+                //     console.error(err)
+                //     this.waitingMessage = '',
+                //     this.show_loading = false
+                //     throw err;
+                // }
+                this.waitingMessage = `Please confirm swap 
+                                        from ${this.fromInput} ${this.getCurrency(this.from_currency)}
+                                        for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`
+                min_dy = cBN(min_dy).toFixed(0);
+                let exchangeMethod = currentContract.swap.methods.exchange_underlying
+                if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
+                try {
+                    await exchangeMethod(i, j, dx, min_dy)
+                        .send({
+                            from: this.default_account,
+                            gas: this.swapwrapped ? 
+                                    contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
+                        })
+                        .once('transactionHash', () => {
+                            this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
+                        });
                 }
+                catch(err) {
+                    console.error(err)
+                    this.waitingMessage = '';
+                    this.show_loading = '';
+                    throw err;
+                }
+                this.waitingMessage = ''
+                this.show_loading = false;
+                this.gasPrice = 0;
+                this.estimateGas = 0;
+                await common.update_fee_info();
+                this.from_cur_handler();
+                let balance = await this.coins[i].methods.balanceOf(this.default_account).call();
+                this.maxBalance = balance;
             }
         }
     }

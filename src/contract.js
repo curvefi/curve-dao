@@ -57,7 +57,7 @@ const currencies = {
 		pax: 'PAX',
 	},
 	tbtc: {
-		tbtc: 'tBTC',
+		tbtc: 'TBTC',
 		wbtc: 'wBTC',
 		hbtc: 'hBTC',
 	},
@@ -77,7 +77,7 @@ export const poolMenu = {
 	susd: 'sUSD-yCurve old',
 	susdv2: 'sUSD',
 	pax: 'PAX',
-	tbtc: 'tBTC',
+	tbtc: 'TBTC',
 	ren: 'renBTC',
 }
 

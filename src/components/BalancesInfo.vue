@@ -77,8 +77,8 @@
           </li>
           <li>
             <b>Daily volume: </b>
-            <span :class="{'loading line': volumes[volumePool] == -1}">
-              ${{ poolVolume && formatNumber(poolVolume) }}
+            <span :class="{'loading line': poolVolume == -1}">
+              <span v-show='poolVolume > -1'> ${{ poolVolume && formatNumber(poolVolume) }} </span>
             </span>
           </li>
         </ul>

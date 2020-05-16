@@ -154,7 +154,7 @@ export const gas = {
 			imbalance: x => (12642*x + 474068)*1.5 | 0,
 		},
 		tbtc: {
-			imbalance: x => 600000 * 1.5,
+			imbalance: x => 600000,
 		},
 		ren: {
 			imbalance: x => 600000,

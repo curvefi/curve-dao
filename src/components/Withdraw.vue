@@ -504,7 +504,7 @@
                             let maxDiff = BN(this.calc_balances[i]).minus(BN(v))
                             return this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                         })
-			        	let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
+                        let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
                         try {
                             this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)

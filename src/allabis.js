@@ -8839,8 +8839,8 @@ var tbtc = {
 	tethered: [false, false, false],
 	use_lending: [false, false, false],
 	is_plain: [true, true, true],
-	swap_address: '',
-	token_address: '',
+	swap_address: '0x9726e9314eF1b96E45f40056bEd61A088897313E',
+	token_address: '0x1f2a662FB513441f06b8dB91ebD9a1466462b275',
 	infura_url: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b',
 	//no deposit zap
 	underlying_coins: [

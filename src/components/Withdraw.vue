@@ -483,11 +483,7 @@
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                         try {
                             this.waitingMessage = 'Please confirm withdrawal transaction'
-                            this.estimateGas = await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount)
-                                                .estimateGas({
-                                                    from: currentContract.default_account,
-                                                    gas: gas,
-                                                })
+                            this.estimateGas = gas / 2
     			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
     				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')

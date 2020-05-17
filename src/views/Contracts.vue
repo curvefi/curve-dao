@@ -21,7 +21,7 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax'],
+			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
 			tokenNames: [
 				{ name: 'cCurve', ticker: 'cCrv' },
 				{ name: 'tCurve', ticker: 'tCrv' },
@@ -35,7 +35,7 @@
 		}),
 		computed: {
 			contractAddresses() {
-				return Object.keys(allabis).filter(pool => !['y', 'susd', 'tbtc', 'ren'].includes(pool)).map(pool => 
+				return Object.keys(allabis).filter(pool => !['y', 'susd'].includes(pool)).map(pool => 
 					({swap: allabis[pool].swap_address, token: allabis[pool].token_address})
 				)
 			}

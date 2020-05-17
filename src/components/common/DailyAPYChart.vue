@@ -44,7 +44,8 @@
 		components: {
 			highcharts: Chart,
 		},
-		data: () => ({
+		data(){
+			return {
 			chartdata: {
 				chart: {
 					panning: true,
@@ -136,19 +137,26 @@
 		        tooltip: {
 		        	split: true,
 	                valueDecimals: 3,
-	                pointFormatter() {
-                		let value = Math.floor(this.y * 100) / 100 + '%';
-	                	if(this.series.name == 'Daily APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-	                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-	                	if(this.series.name === 'Trading Volume') return `<span style="color:${this.color}">●</span> ${this.series.name} : <b>${this.y.toFixed(2)}</b><br/>`
-	                }
+	                pointFormatter: (function(self) { 
+	                	return function() {
+	                		let value = Math.floor(this.y * 100) / 100 + '%';
+		                	if(this.series.name == 'Daily APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+		                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+		                	if(this.series.name === 'Trading Volume') {
+		                		let val = this.y.toFixed(2)
+		                		if(['tbtc', 'ren'].includes(self.pool)) val = this.y.toFixed(8)
+		                		return `<span style="color:${this.color}">●</span> ${this.series.name} : <b>${val}</b><br/>`
+		                	}
+		                }
+		        	})(this),
 	            },
 	            legend: {
 	            	enabled: true,
 	            },
 			},
 			chart: null,
-		}),
+		}
+		},
 		computed: {
 			volumeData() {
 				if(['tbtc', 'ren'].includes(this.pool)) return helpers.formatNumber(this.volume, 8)

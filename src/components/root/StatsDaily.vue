@@ -9,9 +9,10 @@
 
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
 			<p class='text-center'>
-		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd'">
+		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd' && currency !='ren'">
 		      		curve.fi/{{currency == 'iearn' ? 'y' : currency == 'susd' ? 'susdv2' : currency}}
 		      	</router-link>
+		      	<span v-show="currency == 'ren'">ren</span>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>
 			<daily-chart :data = 'poolData[i]' :pool="currency == 'iearn' ? 'y' : currency" :volume = 'volumesData[currency]' />

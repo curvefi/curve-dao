@@ -336,7 +336,7 @@
 				this.token_supply = +decoded[decoded.length-1]
 			},
 			async handle_change_amounts(i, event) {
-                this.showWithdrawSlippage = false
+                this.showWithdrawSlippage = true;
                 this.show_nobalance = false
 				if(event) {
 					this.inputs[i] = event.target.value
@@ -475,7 +475,7 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
-			        token_amount = BN(Math.floor(token_amount * 1.01).toString()).toFixed(0,1)
+			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
                     if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
                         await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
 			        let nonZeroInputs = this.inputs.filter(Number).length
@@ -565,8 +565,6 @@
                             if(!['tbtc','ren'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
                             let min_amounts = await this.getMinAmounts();
-                            console.log(inOneCoin.methods.remove_liquidity(amount, min_amounts).encodeABI(), 
-                                inOneCoin._address, currentContract.default_account)
     			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
     			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
@@ -581,11 +579,16 @@
                         try {
     			        	let min_amounts = await this.getMinAmounts();
                             this.waitingMessage = 'Please confirm withdrawal transaction'
-                            this.estimateGas = await currentContract.swap.methods.remove_liquidity(amount, min_amounts)
-                                                .estimateGas({
-                                                    from: currentContract.default_account,
-                                                    gas: 600000,
-                                                })
+                            try {
+                                this.estimateGas = await currentContract.swap.methods.remove_liquidity(amount, min_amounts)
+                                                    .estimateGas({
+                                                        from: currentContract.default_account,
+                                                        gas: 600000,
+                                                    })
+                            }
+                            catch(err) {
+                                this.estimateGas = 600000
+                            }
     			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }
@@ -617,7 +620,7 @@
                 this.showWithdrawSlippage = false
                 this.show_nobalance = false
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
-                if(this.to_currency !== null || this.share != '---') this.showWithdrawSlippage = true
+                if(this.share != '---' && this.to_currency != null && this.to_currency != 10) this.showWithdrawSlippage = true
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;

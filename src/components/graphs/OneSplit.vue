@@ -116,7 +116,7 @@
                 </li>
             </ul>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade' :disabled='selldisabled || (maxBalance != -1 && +fromInput > +maxBalance*1.001)'>Sell</button>
+                <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
             <p class='simple-error' id='no-balance' v-show='maxBalance != -1 && +fromInput > +maxBalance*1.001'>
                 Not enough balance for 
@@ -435,7 +435,7 @@
                 let min_dy = BN(this.toInput).times(this.precisions(j)).times(BN(1 - maxSlippage)).toFixed(0)
                 let pool = contract.currentContract
                 let bestContract = contract;
-                if(this.bestPool > 0 && this.bestPool < 6) {
+                if(this.bestPool > 0 && this.bestPool < 5) {
                     let poolIdx = this.bestPool
                     pool = Object.keys(contract.contracts).filter(pool=>pool != 'usdt')[this.bestPool]
                     bestContract = contract.contracts[pool]
@@ -698,7 +698,7 @@
                     }
                     else {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
-                        this.bestPool = 6
+                        this.bestPool = 5
                     }
                     let address = this.swap[this.bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))

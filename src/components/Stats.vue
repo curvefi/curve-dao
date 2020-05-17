@@ -30,7 +30,7 @@
 		        	<span v-show='!loading'> {{monthly_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
-	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool'/>
+	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool' :volume='volume'/>
 	    </div>
 	</div>
 </template>
@@ -143,6 +143,9 @@
 		}),
         computed: {
           ...getters,
+          volume() {
+          	return volumeStore.state.volumes[this.pool || this.currentPool]
+          },
           volumeData() {
           	let pool = this.pool || this.currentPool;
           	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool

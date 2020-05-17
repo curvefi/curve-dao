@@ -42,7 +42,7 @@
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
 		<div v-for='(currency, n) in currencies'>
-			<volume-per-coin-stats :data = 'volumes[n]' :currency = 'currency'></volume-per-coin-stats>
+			<volume-per-coin-stats :data = 'volumes[n]' :currency = 'currency' :loaded = 'loaded'></volume-per-coin-stats>
 		</div>
 	</div>
 </template>
@@ -203,6 +203,7 @@
 			period: 'week',
 			chart: null,
 			piechart: null,
+			loaded: false,
 		}),
 		async created() {
 			this.created()
@@ -244,8 +245,10 @@
 					this.chart.addSeries({
 						name: this.currencies[i],
 						data: volume,
-					})
+					}, false, false)
 				}
+				this.chart.redraw(false)
+				this.loaded = true;
 				this.chart.hideLoading();
 				
 				this.loadPieChart();
@@ -293,7 +296,7 @@
 				this.piechart.addSeries({
 					name: 'Trading Volume %',
 					data: piechartdata,
-				})
+				}, true, false)
 				this.piechart.hideLoading()
 			},
 			selectPools() {

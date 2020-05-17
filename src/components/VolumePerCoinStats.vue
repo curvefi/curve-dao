@@ -28,7 +28,7 @@
 		components: {
 			highcharts: Chart,
 		},
-		props: ['data', 'currency'],
+		props: ['data', 'currency', 'loaded'],
 		data() {
 			return {
 				titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC', 'renBTC'],
@@ -116,6 +116,9 @@
 				if(val.length) {
 					this.mounted()
 				}
+			},
+			loaded(val) {
+				this.chart.redraw(false)
 			}
 		},
 		mounted() {
@@ -128,7 +131,7 @@
 		
 		methods: {
 			async mounted() {
-				this.chart.series[0].setData(this.data)
+				this.chart.series[0].setData(this.data, false, false)
 				this.chart.hideLoading()
 			},
 		}

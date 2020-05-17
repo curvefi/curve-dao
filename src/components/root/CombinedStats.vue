@@ -9,8 +9,8 @@
 		<div class="window white" v-for='(currency, i) in Object.keys(filteredCurrencies)'>
 			  <p class='simple-error' v-show="currency == 'susd'"> Old susd pool. Please <router-link to="/susd/withdraw">withdraw and move</router-link> funds to <router-link to="/susdv2">susdv2</router-link> pool </p>
 		      <p class='text-center'>
-		      	<router-link :to="currency" v-show="currency != 'susd' && currency != 'ren'">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
-	      		<span v-show="currency == 'ren'">ren</span>
+		      	<router-link :to="currency" v-show="currency != 'susd' && !['tbtc', 'ren'].includes(currency)">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
+	      		<span v-show="['tbtc', 'ren'].includes(currency)">{{currency}}</span>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 		      </p>
 		      <stats :pool= 'currency'/>

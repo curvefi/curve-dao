@@ -86,7 +86,7 @@
           <li>
             <b>Daily USD volume: </b>
             <span :class="{'loading line': poolVolumeUSD == -1}">
-              <span v-show='poolVolumeUSD > -1'> ${{ poolVolumeUSD && poolVolumeUSD.toFixed(2) }} </span>
+              <span v-show='poolVolumeUSD > -1'> ${{ poolVolumeUSD && poolVolumeUSD | formatNumber(2) }} </span>
             </span>
           </li>
           <li v-show='isBTC'>
@@ -111,7 +111,7 @@
             <span> {{toFixed(totalShare)}}</span>
           </li>
           <li>
-            <b>Averaged USD balance:</b> {{ usdShare1 | toFixed2 }}
+            <b>Averaged USD balance:</b> {{ usdShare1 | formatNumber(2) }}
           </li>
       </ul>
     </fieldset>

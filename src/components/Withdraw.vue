@@ -408,13 +408,11 @@
 			},
 			async unstake(amount, exit = false) {
                 this.waitingMessage = `
-                    Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal
-                    <span class='tooltip'> [?]
-                        <span class='tooltiptext long'>
-                            A bit more tokens are needed to unstake to ensure that withdrawal is successful.
-                            You'll see them in your unstaked balance afterwards.
-                        </span>
-                    </span>
+                    Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal.
+                    <br>
+                    A bit more tokens are needed to unstake to ensure that withdrawal is successful.
+                    You'll see them in your unstaked balance afterwards.
+                        
                 `;
                 try {
     				await new Promise((resolve, reject) => {

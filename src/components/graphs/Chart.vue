@@ -411,10 +411,12 @@
 			    let volume = []
 				try {
 					let lastPriceCalls = this.pools.map(pool=> {
+						let get_method = 'get_dy_underlying'
+						if(['tbtc', 'ren'].includes(pool)) get_method = 'get_dy'
 						return [
 							abis[pool].swap_address, 
-							window[pool].swap.methods
-								.get_dy_underlying(this.fromCurrency, this.toCurrency, BN(abis[pool].coin_precisions[this.fromCurrency]).toFixed(0)).encodeABI()
+							window[pool].swap.methods[get_method](this.fromCurrency, 
+								this.toCurrency, BN(abis[pool].coin_precisions[this.fromCurrency]).toFixed(0)).encodeABI()
 						]
 					})
 					let aggcalls = await contract.multicall.methods.aggregate(lastPriceCalls).call()

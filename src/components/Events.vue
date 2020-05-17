@@ -6,29 +6,31 @@
 				<select class = 'tvision' v-model='event'>
 					<option v-for = '(option, i) in allEvents' :value = 'i'> {{ option }} </option>
 				</select>
-				<input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
-				<label for='compoundpool'>Compound</label>
+				<div id='poollist'>
+					<input id='compoundpool' type='checkbox' value='compound' v-model='pools'/>
+					<label for='compoundpool'>Compound</label>
 
-				<input id='usdtpool' type='checkbox' value='usdt' v-model='pools'/>
-				<label for='usdtpool'>usdt</label>
+					<input id='usdtpool' type='checkbox' value='usdt' v-model='pools'/>
+					<label for='usdtpool'>usdt</label>
 
-				<input id='ypool' type='checkbox' value='iearn' v-model='pools'/>
-				<label for='ypool'>Y</label>
+					<input id='ypool' type='checkbox' value='iearn' v-model='pools'/>
+					<label for='ypool'>Y</label>
 
-				<input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
-				<label for='busdpool'>bUSD</label>
+					<input id='busdpool' type='checkbox' value='busd' v-model='pools'/>
+					<label for='busdpool'>bUSD</label>
 
-				<input id='susdpool' type='checkbox' value='susdv2' v-model='pools'/>
-				<label for='susdpool'>sUSD</label>
+					<input id='susdpool' type='checkbox' value='susdv2' v-model='pools'/>
+					<label for='susdpool'>sUSD</label>
 
-				<input id='paxpool' type='checkbox' value='pax' v-model='pools'/>
-				<label for='paxpool'>PAX</label>
+					<input id='paxpool' type='checkbox' value='pax' v-model='pools'/>
+					<label for='paxpool'>PAX</label>
 
-				<!-- <input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
-				<label for='tbtcpool'>tBTC</label> -->
+					<input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
+					<label for='tbtcpool'>tBTC</label>
 
-				<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
-				<label for='renpool'>renBTC</label>
+					<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
+					<label for='renpool'>renBTC</label>
+				</div>
 
 				<button @click="selectPoolsHandler" id='select'>Select</button>
 
@@ -245,11 +247,22 @@
 
 	import * as helpers from '../utils/helpers'
 
+	let initRates = () => ({
+		compound: [],
+		usdt: [],
+		iearn: [],
+		busd: [],
+		susdv2: [],
+		pax: [],
+		tbtc: [],
+		ren: [],
+	})
+
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'ren'],
-			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'ren'],
-			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041, 10068305],
+			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
+			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
+			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041, 10074719, 10068305],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,
 			displayedEvent: 0,
@@ -270,22 +283,10 @@
 			gotopage: 0,
 			subscriptions: [],
 			rates: {
-				compound: [],
-				usdt: [],
-				iearn: [],
-				busd: [],
-				susdv2: [],
-				pax: [],
-				ren: [],
+				...initRates(),
 			},
 			c_rates: {
-				compound: [],
-				usdt: [],
-				iearn: [],
-				busd: [],
-				susdv2: [],
-				pax: [],
-				ren: [],
+				...initRates(),
 			},
 			jsons: [],
 			latestblock: null,
@@ -314,6 +315,7 @@
 					busd: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					susdv2: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					pax: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+					tbtc: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 					ren: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 				}
 			},
@@ -342,6 +344,11 @@
 					pax: [
 						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
 						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+					tbtc: [
+						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
+						'0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+						'0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
 					],
 					ren: [
 						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
@@ -395,7 +402,7 @@
 				return this.pools.map(pool => {
 					let topics = [];
 					if(this.event == 0) {
-						if(pool == 'ren') {
+						if(['tbtc', 'ren'].includes(pool)) {
 							topics = [
 								this.swapContracts[this.allPools.indexOf(pool)]
 									.getPastEvents(this.tokenExchangeEvent, 
@@ -695,7 +702,7 @@
 			getSubscriptions() {
 				for(let pool of this.pools) {
 					if(this.event == 0) {
-						if(pool != 'ren') {
+						if(!['tbtc', 'ren'].includes(pool)) {
 							this.subscriptions.push(
 								this.swapContracts[this.allPools.indexOf(pool)]
 								.events.TokenExchangeUnderlying()
@@ -840,9 +847,9 @@
 		box-shadow: none;
 		margin-left: 10px;
 	}
-	/*label:nth-of-type(1) {
+	label:nth-of-type(1) {
 		margin-left: 0;
-	}*/
+	}
 	label {
 		margin-left: 1em;
 	}
@@ -886,7 +893,6 @@
 
 	select.tvision {
 		box-shadow: none;
-		margin-left: 10px;
 	}
 
 	.loadingtr td {
@@ -898,8 +904,12 @@
 		margin-top: 10px;
 	}
 
-	#select {
+	#poollist, #select {
 		margin-top: 1em;
+	}
+
+	#select {
+		margin-left: 0;
 	}
 
 

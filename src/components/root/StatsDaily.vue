@@ -61,6 +61,7 @@
 				susdv2: 'susdv2',
 				pax: 'pax',
 				ren: 'ren',
+				tbtc: 'tbtc',
 			},
 			chartdata: {
 				title: {
@@ -131,7 +132,7 @@
 			this.$watch(()=>volumeStore.state.allVolume.ren.length, val => {
 				if(val) {
 					let volumeSeries = []
-					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'ren']
+					let allPools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc', 'ren']
 					let data = volumeStore.state.allVolume
 					let maxlenpool = Object.keys(data).reduce((a, b) => data[a].length > data[b].length ? a : b)
 					data = Object.keys(data).reduce((obj, key) => {

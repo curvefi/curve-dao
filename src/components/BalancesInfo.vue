@@ -57,16 +57,24 @@
         </li>
         <li v-show = 'admin_actions_deadline1 !== null && admin_actions_deadline1 !== 0'>
           <b>Action deadline: </b>
-          <div :class="{'loading line': admin_actions_deadline1 === null}"> {{ admin_actions_readable }} </div>
+          <div :class="{'loading line': admin_actions_deadline1 === null}"> 
+            {{ admin_actions_readable }} GMT
+            <span class='tooltip'> [?]
+              <span class='tooltiptext long'>
+                This is when the proposed future A can be enacted and changed.
+                It also may not be changed. 
+              </span>
+            </span>
+          </div>
         </li>
       </ul>
       <p>
         <ul>
           <li>
             <b>Liquidity utilization: </b>
-            <span :class="{'loading line': totalBalances === null || poolVolume == -1}">
-              <span v-show='totalBalances !== null && poolVolume != -1'>
-                {{ (poolVolume * 100 / totalBalances).toFixed(2) }}%
+            <span :class="{'loading line': totalBalances === null || nativeVolume == -1}">
+              <span v-show='totalBalances !== null && nativeVolume != -1'>
+                {{ (nativeVolume * 100 / totalBalances).toFixed(2) }}%
               </span>
             </span>
             <span class='tooltip'> [?]
@@ -76,9 +84,15 @@
             </span>
           </li>
           <li>
-            <b>Daily volume: </b>
-            <span :class="{'loading line': poolVolume == -1}">
-              <span v-show='poolVolume > -1'> {{['tbtc', 'ren'].includes(currentPool) ? 'BTC' : '$'}} {{ poolVolume && toFixed(poolVolume) }} </span>
+            <b>Daily USD volume: </b>
+            <span :class="{'loading line': poolVolumeUSD == -1}">
+              <span v-show='poolVolumeUSD > -1'> ${{ poolVolumeUSD && poolVolumeUSD.toFixed(2) }} </span>
+            </span>
+          </li>
+          <li v-show='isBTC'>
+            <b>Daily BTC volume: </b>
+            <span :class="{'loading line': poolVolumeUSD == -1}">
+              <span v-show='poolVolumeUSD > -1'> {{ poolVolume && toFixed(poolVolume) }} BTC </span>
             </span>
           </li>
         </ul>
@@ -124,14 +138,15 @@
 </template>
 
 <script>
+  import Vue from 'vue'
   import { getters, allCurrencies, contract as currentContract } from '../contract'
   import * as helpers from '../utils/helpers'
   import * as volumeStore from './common/volumeStore'
+  import * as priceStore from './common/priceStore'
 
   export default {
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'usdShare', 'staked_info', 'totalStake', 'usdStake', 'combinedstats', 'virtual_price', 'A', 'future_A', 'admin_actions_deadline'],
     data: () => ({
-      volumes: [],
       btcPrice: 0,
     }),
     methods: {
@@ -151,17 +166,23 @@
       },
     },
     async created() {
-
-      if(this.poolVolume == -1) {
+      let key = this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool
+      let volume = volumeStore.state.volumes[key][0] || 0
+      if(this.isBTC) {
+        this.btcPrice = await priceStore.getBTCPrice()
+      }
+      if(volume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
-        this.volumes = stats.volume;
-        volumeStore.state.volumes = stats.volume
-      }
-      if(['tbtc', 'ren'].includes(currentContract.currentContract)) {
-        let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
-        let res = await req.json();
-        this.btcPrice = res.quotes.USD.price
+        for(let [key, value] of Object.entries(stats.volume)) {
+          if(volumeStore.state.volumes[key][0] == -1) {
+            Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key])
+            if(['tbtc', 'ren'].includes(key)) {
+              Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key] * this.btcPrice || 0)
+              Vue.set(volumeStore.state.volumes[key], 1,  stats.volume[key])
+            }
+          }
+        }
       }
     },
     computed: {
@@ -192,19 +213,19 @@
       },
       usdShare1() {
         let share = (this.usdShare || getters.usdShare())
-        if(['tbtc', 'ren'].includes(currentContract.currentContract)) share *= this.btcPrice
+        if(this.isBTC) share *= this.btcPrice
         return share
       },
       usdStake1() {
         let stake =  (this.usdStake || getters.usdStake())
-        if(['tbtc', 'ren'].includes(currentContract.currentContract)) stake *= this.btcPrice
+        if(this.isBTC) stake *= this.btcPrice
         return stake
       },
       A1() {
         return this. A || ((getters.A() * 1e18) | 0)
       },
       future_A1() {
-        return this.future_A || ((getters.future_A() * 1e18) | 0)
+        return this.future_A || ((getters.future_A()) | 0)
       },
       admin_actions_readable() {
         return helpers.formatDateToHuman(this.admin_actions_deadline1)
@@ -212,8 +233,18 @@
       admin_actions_deadline1() {
         return this.admin_actions_deadline || getters.admin_actions_deadline()
       },
+      poolVolumeUSD() {
+        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool][0]
+      },
       poolVolume() {
-        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool] || 0
+        return volumeStore.state.volumes[this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool][1] || 0
+      },
+      nativeVolume() {
+        if(this.isBTC) return this.poolVolume
+        return this.poolVolumeUSD
+      },
+      isBTC() {
+        return ['tbtc', 'ren'].includes(this.currentPool)
       },
     }
   }

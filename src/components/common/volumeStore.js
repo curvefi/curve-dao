@@ -14,7 +14,7 @@ import abis from '../../allabis'
 
 export const state = Vue.observable({
 	volumes: {
-		...Object.fromEntries(Object.entries(initState()).map(([key, el])=>[key, -1]))
+		...Object.fromEntries(Object.entries(initState()).map(([key, el])=>[key, [-1, -1]]))
 	},
 	volumeData: {
 		5: {
@@ -32,6 +32,12 @@ export const state = Vue.observable({
 	}
 })
 
+function findClosest(timestamp, data) {
+	let result = data.find(d=>Date.parse(d.timestamp)/1000 - timestamp > 0);
+	if(result === undefined) return data[data.length - 1].price
+	return result.price
+}
+
 
 export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
@@ -39,20 +45,42 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	pools = pools.filter(pool => !state.volumeData[period][pool].length)
 	//pools = pools.filter(pool => !['tbtc'].includes(pool))
 	let requests = pools.map(p => fetch(`${window.domain}/raw-stats/${p}-${period}m.json`))
+	//will work for 17 days on 5 minutes chart
+	if(pools.includes('tbtc') || pools.includes('ren'))
+		requests.push(fetch(`
+			https://api.coinpaprika.com/v1/tickers/btc-bitcoin/historical?start=1589587198&interval=${period == '1440' ? '1d' : period + 'm'}&limit=5000`
+			))
 	requests = await Promise.all(requests)
 	let jsons = await Promise.all(requests.map(r => r.json()))
+	let btcPrices = jsons[jsons.length-1]
+	if(pools.includes('tbtc') || pools.includes('ren')) jsons = jsons.slice(0, -1)
 	for(let [i, data] of jsons.entries()) {
-		state.volumeData[period][pools[i]] = data
+		let pool = pools[i]
+		if(['tbtc', 'ren'].includes(pool)) {
+			data = data.map(d => {
+				d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => [k, v.map(vol => vol * findClosest(d.timestamp, btcPrices))]))
+				return d;
+			})
+		}
+		state.volumeData[period][pool] = data
 	}
 }
 
 export async function getVolumes(pools, refresh = false) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
-	if(Object.values(state.volumes).filter(v=>v!=-1).length == pools.length && !refresh) return;
-	let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
-    stats = await stats.json()
-    state.volumes = stats.volume;
+	if(Object.values(state.volumes).filter(v=>v[0]!=-1).length == pools.length && !refresh) return;
+	let req = await Promise.all([fetch(`${window.domain}/raw-stats/apys.json`), fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`)])
+	let [stats, btcPrice] = await Promise.all(req.map(r => r.json()))
+    btcPrice = btcPrice.quotes.USD.price
+    for(let [pool, volume] of Object.entries(state.volumes)) {
+    	if(volume[0] == -1) {
+    		let volume = stats.volume[pool]
+    		if(['tbtc', 'ren'].includes(pool)) volume *= btcPrice
+    		Vue.set(state.volumes[pool], 0, volume || 0)
+    		Vue.set(state.volumes[pool], 1, stats.volume[pool])
+    	}
+    }
 }
 
 export async function getDailyVolume(pool, refresh = false, interval = 30) {
@@ -106,5 +134,7 @@ export async function getLendingAPY(pool, refresh = false, interval = 30) {
 }
 
 export function totalVolume() {
-	return Object.values(state.volumes).reduce((a, b) => a + b, 0)
+	return Object.values(state.volumes).reduce((a, b) => {
+		return a + b[0]
+	}, 0)
 }

@@ -89,16 +89,19 @@ export function formatDate(date) {
 export function formatDateToHuman(timestamp) {
   //convert to UTC
   let d = new Date(timestamp*1000+(new Date).getTimezoneOffset() * 60 * 1000)
-  return [d.getMonth()+1,
-             d.getDate(),
-             d.getFullYear()].join('/')+' '+
+  return [
+            d.getDate(),
+            `${(d.getMonth()+1).toString().padStart(2, '0')}`,
+            d.getFullYear()].join('/')+' '+
             [`${d.getHours()}`.padStart(2, '0'),
-             `${d.getMinutes()}`.padStart(2, '0'),
-             `${d.getSeconds()}`.padStart(2, '0')].join(':');
+            `${d.getMinutes()}`.padStart(2, '0'),
+            `${d.getSeconds()}`.padStart(2, '0'),
+          ]
+          .join(':');
 }
 
 export function formatNumber(number, dec = 2, dsep, tsep) {
-  if (isNaN(number) || number == null) return '';
+  if (isNaN(+number) || number == null) return '';
   number = parseFloat(number)
   number = number.toFixed(~~dec);
   tsep = typeof tsep == 'string' ? tsep : ',';

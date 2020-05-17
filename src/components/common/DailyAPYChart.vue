@@ -2,10 +2,17 @@
 	<fieldset>
 		<legend>Daily APY % <span class='tooltip'>[?]<span class='tooltiptext long'>Pool APY % + Lending APY % (on annual basis)</span></span></legend>
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
-    	<p v-show='volume != -1'>Daily trading volume: 
+    	<p v-show='volume && volume[0] != -1'>
+    		<span>Daily USD trading volume:</span> 
     		<span :class="{'loading line': !volume}">
-    			<span v-show='volume'> {{ volumeData }}{{['tbtc', 'ren'].includes(pool) ? '$' : 'BTC'}}</span>	
+    			<span v-show='volume && volume[0]'> {{ (volume && volume[0]) | formatNumber(0) }}$</span>	
     		</span>
+    		<div v-show="['tbtc', 'ren'].includes(pool)">
+	    		<span>Daily BTC trading volume:</span>
+	    		<span>
+	    			<span v-show='volume && volume[1]'> {{ (volume && volume[1]) | formatNumber(8) }} BTC </span>
+	    		</span>
+    		</div>
     	</p>
 	</fieldset>
 </template>
@@ -36,8 +43,7 @@
 		props: {
 			data: Array,
 			volume: {
-				type: Number,
-				default: -1
+				type: Array,
 			},
 			pool: String,
 		},

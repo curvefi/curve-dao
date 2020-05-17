@@ -322,7 +322,7 @@
 				    	})
 				    	if(key == 'susd') ind -= 4
 				    }
-					if(['susdv2', 'tbtc'].includes(key)) {
+					if(key == 'susdv2') {
 						let N_COINS = contracts[key].N_COINS
 						let slice = decoded.slice(ind-N_COINS, ind)
 						for(let i = 0; i < 4; i++) {
@@ -369,8 +369,8 @@
 				    this.totals.push(total)
 				    this.virtual_prices.push(+decoded[ind+8] / 1e18)
 				    this.As.push(+decoded[ind+9])
-				    this.future_As.push(+decoded[ind+10] / 1e18)
-				    this.admin_actions_deadlines.push(+decoded[ind+11] / 1e18)
+				    this.future_As.push(+decoded[ind+10])
+				    this.admin_actions_deadlines.push(+decoded[ind+11])
 
 
 				    this.fees.push(+decoded[ind+12] / 1e8)

@@ -17,7 +17,7 @@
 	    	</p>
 	    	<p v-show = "pool != 'susd'">Daily trading volume: 
 	    		<span :class="{'loading line': volumeData < 0}">
-	    			<span v-show='volumeData >= 0'> {{ volumeData }}{{['tbtc', 'ren'].includes(pool) ? 'BTC' : '$'}}</span>	
+	    			<span v-show='volumeData != -1'> {{ volumeData }}$</span>	
 	    		</span>
 	    	</p>
 	        <p>Recent weekly APY: 
@@ -146,8 +146,8 @@
           volumeData() {
           	let pool = this.pool || this.currentPool;
           	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
-          	let num = volumeStore.state.volumes[pool]
-          	if(['tbtc', 'ren'].includes(pool)) return helpers.formatNumber(num, 8)
+          	let num = volumeStore.state.volumes[pool][0]
+          	//if(['tbtc', 'ren'].includes(pool)) return helpers.formatNumber(num, 8)
           	return helpers.formatNumber(num, 0)
           }
         },

@@ -62,7 +62,10 @@ const wallets = [
   { walletName: "status" },
   { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
   { walletName: "authereum" },
-  { walletName: "trust" },
+  { 
+    walletName: "trust",
+    rpcUrl: "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",
+  },
   {
     walletName: "walletConnect",
     infuraKey: "c334bb4b45a444979057f0fb8a0c9d1b"

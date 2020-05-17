@@ -90,7 +90,7 @@
     :fee = 'fee'
     :admin_fee = 'admin_fee'
     :currencies = 'currencies'
-    v-show="!['Stats', 'FAQ', 'Donate', 'Root', 'CombinedStats'].includes($route.name)"/>
+    v-if="!['Stats', 'FAQ', 'Donate', 'Root', 'CombinedStats'].includes($route.name)"/>
   </div>
 </template>
 

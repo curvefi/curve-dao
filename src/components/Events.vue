@@ -30,7 +30,7 @@
 				<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
 				<label for='renpool'>renBTC</label>
 
-				<button @click="selectPoolsHandler">Select</button>
+				<button @click="selectPoolsHandler" id='select'>Select</button>
 
 				<table class="tui-table" v-if='displayedEvent == 0'>
 				    <thead>
@@ -395,20 +395,32 @@
 				return this.pools.map(pool => {
 					let topics = [];
 					if(this.event == 0) {
-						topics = [
-							this.swapContracts[this.allPools.indexOf(pool)]
-								.getPastEvents(this.tokenExchangeUnderlyingEvent, 
-									{ 
-										fromBlock: (block - numBlocks) | 0,
-										toBlock: block,
-									}),
-							this.swapContracts[this.allPools.indexOf(pool)]
-								.getPastEvents(this.tokenExchangeEvent, 
-									{ 
-										fromBlock: (block - numBlocks) | 0,
-										toBlock: block,
-									}),
-						]
+						if(pool == 'ren') {
+							topics = [
+								this.swapContracts[this.allPools.indexOf(pool)]
+									.getPastEvents(this.tokenExchangeEvent, 
+										{ 
+											fromBlock: (block - numBlocks) | 0,
+											toBlock: block,
+										}),
+							]
+						}
+						else {
+							topics = [
+								this.swapContracts[this.allPools.indexOf(pool)]
+									.getPastEvents(this.tokenExchangeUnderlyingEvent, 
+										{ 
+											fromBlock: (block - numBlocks) | 0,
+											toBlock: block,
+										}),
+								this.swapContracts[this.allPools.indexOf(pool)]
+									.getPastEvents(this.tokenExchangeEvent, 
+										{ 
+											fromBlock: (block - numBlocks) | 0,
+											toBlock: block,
+										}),
+							]
+						}
 					}
 					if(this.event == 1) {
 						topics = [
@@ -683,11 +695,14 @@
 			getSubscriptions() {
 				for(let pool of this.pools) {
 					if(this.event == 0) {
+						if(pool != 'ren') {
+							this.subscriptions.push(
+								this.swapContracts[this.allPools.indexOf(pool)]
+								.events.TokenExchangeUnderlying()
+								.on('data', event => this.subscribeExchange(event)),
+							)
+						} 
 						this.subscriptions.push(
-							this.swapContracts[this.allPools.indexOf(pool)]
-							.events.TokenExchangeUnderlying()
-							.on('data', event => this.subscribeExchange(event)),
-
 							this.swapContracts[this.allPools.indexOf(pool)]
 							.events.TokenExchange()
 							.on('data', event => this.subscribeExchange(event))
@@ -881,6 +896,10 @@
 	#loadmore {
 		margin-left: 0;
 		margin-top: 10px;
+	}
+
+	#select {
+		margin-top: 1em;
 	}
 
 

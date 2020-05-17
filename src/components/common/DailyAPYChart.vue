@@ -4,7 +4,7 @@
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
     	<p v-show='volume != -1'>Daily trading volume: 
     		<span :class="{'loading line': !volume}">
-    			<span v-show='volume'> {{(volume | 0) | formatNumber(0)}}$</span>	
+    			<span v-show='volume'> {{ volumeData }}$</span>	
     		</span>
     	</p>
 	</fieldset>
@@ -149,6 +149,12 @@
 			},
 			chart: null,
 		}),
+		computed: {
+			volumeData() {
+				if(['tbtc', 'ren'].includes(this.pool)) return helpers.formatNumber(this.volume, 8)
+				return helpers.formatNumber(this.volume, 0)
+			}
+		},
 		watch: {
 			'data.length'(val) {
 				this.mounted()

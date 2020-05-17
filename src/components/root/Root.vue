@@ -250,7 +250,7 @@
                	 			</span>
                	 		</span>
 	                </router-link>
-	            </div>
+	            </div> -->
 	            <div :class="{selected: activePoolLink == 6}">
 	                <router-link to = '/ren'>
 	                	<span class='index'>5.</span>  
@@ -279,7 +279,7 @@
                	 			</span>
                	 		</span>
 	                </router-link>
-	            </div> -->
+	            </div>
 	        </fieldset>
 	    </div>
 

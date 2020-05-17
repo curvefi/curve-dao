@@ -72,7 +72,7 @@
 			    this.total = total.toFixed(0);
 			},
 			async dailyVolume() {
-				var pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc']
+				var pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'ren']
 	            await volumeStore.getVolumes(pools);
 			}
 		}

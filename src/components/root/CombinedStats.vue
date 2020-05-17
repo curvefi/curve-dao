@@ -111,7 +111,6 @@
           	let pools = {...contracts};
           	delete pools.y
           	delete pools.tbtc
-          	delete pools.ren
           	return pools;
           },
           error() {
@@ -119,7 +118,7 @@
           },
           filteredCurrencies() {
           	return Object.fromEntries(Object.entries(this.allCurrencies).filter(
-			      ([key, val])=>!['tbtc', 'ren'].includes(key)
+			      ([key, val])=>!['tbtc'].includes(key)
 			   ))
           }
         },
@@ -180,7 +179,7 @@
 				        */
 			         	if (contract.tethered && contract.tethered[i] 
 			         		&& contract.use_lending && !contract.use_lending[i] 
-			         		|| key == 'susdv2' || (key == 'pax' && i == 3) || key == 'tbtc') {
+			         		|| key == 'susdv2' || (key == 'pax' && i == 3) || key == 'tbtc' || key == 'ren') {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
@@ -262,7 +261,6 @@
 			    let calls = await this.update_rates();
 			    let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
-
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -323,7 +321,7 @@
 				    	})
 				    	if(key == 'susd') ind -= 4
 				    }
-					if(['susdv2', 'tbtc', 'ren'].includes(key)) {
+					if(['susdv2', 'tbtc'].includes(key)) {
 						let N_COINS = contracts[key].N_COINS
 						let slice = decoded.slice(ind-N_COINS, ind)
 						for(let i = 0; i < 4; i++) {
@@ -353,6 +351,15 @@
 				    		}
 				    	})
 				    	ind -= 9;
+					}
+					if(['ren'].includes(key)) {
+						let slice = decoded.slice(98, 100)
+						for(let i = 0; i < 2; i++) {
+							let calcBalance = this.all_c_rates.ren.c_rates[i] * (slice[i])
+							this.bal_infos.ren.push(calcBalance)
+							total += calcBalance
+						}
+						ind -= 15
 					}
 				    this.totals.push(total)
 				    this.virtual_prices.push(+decoded[ind+8] / 1e18)

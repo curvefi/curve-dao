@@ -20,10 +20,10 @@
 			<label for='paxpool'>PAX</label>
 
 			<!-- <input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
-			<label for='tbtcpool'>tBTC</label>
+			<label for='tbtcpool'>tBTC</label> -->
 
-			<input id='renpool' type='checkbox' value='renbtc' v-model='pools'/>
-			<label for='renpool'>renBTC</label> -->
+			<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
+			<label for='renpool'>renBTC</label>
 		</div>
 
 		<select class='tvision' v-model='pair'>
@@ -166,7 +166,7 @@
 			},
 			filteredCurrencies() {
           	return Object.fromEntries(Object.entries(allCurrencies).filter(
-			      ([key, val])=>!['tbtc', 'ren'].includes(key)
+			      ([key, val])=>!['tbtc'].includes(key)
 			   ))
           	}
 		}

@@ -25,10 +25,10 @@
 				<label for='paxpool'>PAX</label>
 
 				<!-- <input id='tbtcpool' type='checkbox' value='tbtc' v-model='pools'/>
-				<label for='tbtcpool'>tBTC</label>
+				<label for='tbtcpool'>tBTC</label> -->
 
 				<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
-				<label for='renpool'>renBTC</label> -->
+				<label for='renpool'>renBTC</label>
 
 				<button @click="selectPoolsHandler">Select</button>
 
@@ -247,9 +247,9 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
-			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax'],
-			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041],
+			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'ren'],
+			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'ren'],
+			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041, 10068305],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,
 			displayedEvent: 0,
@@ -276,6 +276,7 @@
 				busd: [],
 				susdv2: [],
 				pax: [],
+				ren: [],
 			},
 			c_rates: {
 				compound: [],
@@ -284,6 +285,7 @@
 				busd: [],
 				susdv2: [],
 				pax: [],
+				ren: [],
 			},
 			jsons: [],
 			latestblock: null,
@@ -312,6 +314,7 @@
 					busd: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					susdv2: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					pax: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
+					ren: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 				}
 			},
 			removeLiquidityTopics() {
@@ -339,6 +342,11 @@
 					pax: [
 						'0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
 						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
+					],
+					ren: [
+						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
+						'0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+						'0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
 					],
 				}
 			},

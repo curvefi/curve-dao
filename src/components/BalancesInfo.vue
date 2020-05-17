@@ -137,7 +137,7 @@
     methods: {
       toFixed(num, precisions = 2, round = 4) {
           if(num == '' || num === null || num === undefined) return ''
-          if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+          if(precisions == 2 && ['tbtc', 'ren'].includes(this.currentPool)) precisions = 8
           let rounded = this.formatNumber(num, precisions)
           return rounded
       },
@@ -156,7 +156,6 @@
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
         this.volumes = stats.volume;
-        console.log
         volumeStore.state.volumes = stats.volume
       }
       if(['tbtc', 'ren'].includes(currentContract.currentContract)) {

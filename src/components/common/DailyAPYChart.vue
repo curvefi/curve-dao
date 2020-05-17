@@ -197,7 +197,7 @@
 		        	lineWidth: 2,
 		        	data: chartData,
 		        	color: '#0b0a57'
-		        }, true)
+		        }, false, false)
 
 		        if(['susd'].includes(this.pool)) {
 		        	this.chart.yAxis[0].update({
@@ -215,11 +215,13 @@
 		        	data: volumeSeries,
 		        	color: '#0b0a57',
 		        	yAxis: 'volumeAxis',
-		        })
+		        }, false, false)
+
+		        this.chart.redraw(false)
 
 		        let lendingrates;
 		        let lendingAxis = 'apyAxis'
-		        if(!['susdv2', 'tbtc'].includes(this.pool))    	
+		        if(!['susdv2', 'tbtc', 'ren'].includes(this.pool))    	
 	    			lendingrates = await volumeStore.getLendingAPY(this.pool, false, 1440)
 		        else {
 		        	lendingrates = volumeSeries.map(data => [data[0], 0])

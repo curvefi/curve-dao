@@ -248,12 +248,13 @@
 		        	lineWidth: 2,
 		        	data: chartData,
 		        	color: '#0b0a57'
-		        })
+		        }, false, false)
 		        this.chart.addSeries({
 		        	name: 'Real growth of liquidity share',
 		        	lineWidth: 2,
 		        	data: realValueData,
-		        })
+		        }, false, false)
+		        this.chart.redraw(false)
 		        this.loading = false;
 			},
 			calcRealProfit(point, subdomain) {

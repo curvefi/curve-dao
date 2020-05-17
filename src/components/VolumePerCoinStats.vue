@@ -29,83 +29,88 @@
 			highcharts: Chart,
 		},
 		props: ['data', 'currency'],
-		data: () => ({
-			titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC', 'renBTC'],
-			chartdata: {
-				chart: {
-					panning: true,
-					zoomType: 'x',
-			        panKey: 'ctrl',
-			        type: 'column',
-				},
-                rangeSelector: {
-		            selected: 1
-		        },
-		        plotOptions: {
-				  series: {
-				    dataGrouping: {
-				      forced: true,
-				      units: [
-				        ['day', [1]]
-				      ]
-				    }
-				  }
-				},
-		        exporting: {
-					buttons: {
-						contextButton: {
-							menuItems: ["printChart",
-					                    "separator",
-					                    "downloadPNG",
-					                    "downloadJPEG",
-					                    "downloadPDF",
-					                    "downloadSVG",
-					                    "separator",
-					                    "downloadCSV",
-					                    "downloadXLS",
-					                    //"viewData",
-					                    "openInCloud"]
+		data() {
+			return {
+				titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC', 'renBTC'],
+				chartdata: {
+					chart: {
+						panning: true,
+						zoomType: 'x',
+				        panKey: 'ctrl',
+				        type: 'column',
+					},
+	                rangeSelector: {
+			            selected: 1
+			        },
+			        plotOptions: {
+					  series: {
+					    dataGrouping: {
+					      forced: true,
+					      units: [
+					        ['day', [1]]
+					      ]
+					    }
+					  }
+					},
+			        exporting: {
+						buttons: {
+							contextButton: {
+								menuItems: ["printChart",
+						                    "separator",
+						                    "downloadPNG",
+						                    "downloadJPEG",
+						                    "downloadPDF",
+						                    "downloadSVG",
+						                    "separator",
+						                    "downloadCSV",
+						                    "downloadXLS",
+						                    //"viewData",
+						                    "openInCloud"]
+							}
 						}
-					}
+					},
+		            yAxis: {
+		            	opposite: false,
+		            	title: {
+		            		text: 'Trading Volume',
+		            		style: {
+		            			color: 'black'
+		            		}
+		            	},
+		            	labels: {
+			            	style: {
+			            		color: 'black'
+			            	}
+		            	},
+		            	tickPixelInterval: 10,
+		            },
+		            xAxis: {
+		            	labels: {	
+			            	style: {
+			            		color: 'black'
+			            	}
+		            	},
+		            },
+			        series: [{
+			        	name: 'Trading Volume per coin',
+			        	lineWidth: 2,
+			        	data: [],
+			        	color: '#0b0a57'
+			        }],
+			        tooltip: {
+		                valueDecimals: 5,
+		                pointFormatter: (function(self) {
+		                	return function() {
+		                		let value = this.y.toFixed(2)
+		                		if(['TBTC', 'WBTC', 'HBTC', 'renBTC'].includes(self.currency)) value = this.y.toFixed(8)
+			                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+		                	}
+		                })(this)
+		            },
 				},
-	            yAxis: {
-	            	opposite: false,
-	            	title: {
-	            		text: 'Trading Volume',
-	            		style: {
-	            			color: 'black'
-	            		}
-	            	},
-	            	labels: {
-		            	style: {
-		            		color: 'black'
-		            	}
-	            	},
-	            	tickPixelInterval: 10,
-	            },
-	            xAxis: {
-	            	labels: {	
-		            	style: {
-		            		color: 'black'
-		            	}
-	            	},
-	            },
-		        series: [{
-		        	name: 'Trading Volume per coin',
-		        	lineWidth: 2,
-		        	data: [],
-		        	color: '#0b0a57'
-		        }],
-		        tooltip: {
-	                valueDecimals: 5,
-	                pointFormatter() {
-                		let value = this.y.toFixed(2)
-	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-	                }
-	            },
-			},
-			chart: null,
-		}),
+				chart: null,
+			}
+		},
 		watch: {
 			data(val) {
 				if(val.length) {

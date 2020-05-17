@@ -14,6 +14,11 @@ let calcPriceWrapped = (config, fromCurrency, toCurrency, precisions, usefee = f
 }
 
 let normalizeCoinIdx = (i, pool) => {
+	if(pool == 'ren' && i == 0) return 10;
+	if(pool == 'ren' && i == 1) return 8;
+	if(pool == 'tbtc' && i == 0) return 7;
+	if(pool == 'tbtc' && i == 1) return 8;
+	if(pool == 'tbtc' && i == 2) return 9;
 	if(pool == 'pax' && i == 3) return 6;
 	if(pool == 'susd' && i == 3) return 5;
 	if(pool == 'busd' && i == 3) return 4;

@@ -20,6 +20,12 @@
 				<input id='paxpool' type='checkbox' value='pax' v-model='piepools'/>
 				<label for='paxpool'>PAX</label>
 
+				<input id='tbtcpool' type='checkbox' value='tbtc' v-model='piepools'/>
+				<label for='tbtcpool'>tBTC</label>
+
+				<input id='renpool' type='checkbox' value='ren' v-model='piepools'/>
+				<label for='renpool'>renBTC</label>
+
 				<button @click='selectPools'>Select</button>
 			</div>
 
@@ -150,6 +156,7 @@
 	                valueDecimals: 5,
 	                pointFormatter() {
                 		let value = this.y.toFixed(2)
+                		if(['TBTC', 'WBTC', 'HBTC', 'renBTC'].includes(this.series.name)) value = this.y.toFixed(8)
 	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                }
 	            },
@@ -190,8 +197,8 @@
 			    	enabled: true,
 			    }
 			},
-			piepools: ['compound', 'usdt', 'y', 'busd', 'susd', 'pax'],
-			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX'],
+			piepools: ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc', 'ren'],
+			currencies: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'TBTC', 'WBTC', 'HBTC', 'renBTC'],
 			volumes: [],
 			period: 'week',
 			chart: null,
@@ -226,6 +233,7 @@
 				}, {})
 
 				let filteredData = Object.keys(data).filter(pool => this.piepools.includes(pool)).reduce((obj, key) => ({ ...obj, [key]: data[key]}), {})
+
 				pools = Object.entries(filteredData)
 				this.volumes = await volumeWorker.getVolumePerCoin(filteredData, pools, allabis)
 			},

@@ -34,6 +34,9 @@ export default {
 		decodeParametersWithdrawal1() {
 			return [`uint256[${this.N_COINS}]`,`uint256[${this.N_COINS}]`, 'uint256', 'uint256']
 		},
+		decodeParametersWithdrawalOne() {
+			return [`uint256`, `uint256`]
+		}
 	},
 	methods: {
 		async mounted() {
@@ -254,14 +257,15 @@ export default {
 				point.supply = interpolator(prev.supply, next.supply);
 			}
 			if(['tbtc', 'ren'].includes(this.currentPool)) {
-				//instead of this better to make a request to coinpaprika but which API allows querying 
-				try {
-					point.btcPrice = await this.getClosestBTCPrice(timestamp)
-				}
-				catch(err) {
-					console.error(err)
-					point.btcPrice = interpolator(prev.btcPrice, next.btcPrice)
-				}
+				point.btcPrice = this.btcPrice
+				// //instead of this better to make a request to coinpaprika but which API allows querying 
+				// try {
+				// 	point.btcPrice = await this.getClosestBTCPrice(timestamp)
+				// }
+				// catch(err) {
+				// 	console.error(err)
+				// 	point.btcPrice = interpolator(prev.btcPrice, next.btcPrice)
+				// }
 			}
 			return point
 
@@ -512,12 +516,15 @@ export default {
 	            let poolInfoPoint = await this.interpolatePoint(timestamp)
 		        let removeliquidity = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityTopic)
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
+		        let removeliquidityOne = []
+		        if(this.removeliquidityOneTopic) removeliquidityOne = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityOneTopic)
 	            let transfer = receipt.logs.filter(log=>log.topics[0] == this.TRANSFER_TOPIC && log.topics[1] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)
 	            console.log(transfer)
             	if(removeliquidity.length == 0 && 
             		removeliquidityImbalance.length == 0 && 
+            		removeliquidityOne.length == 0 && 
             		transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
             	let withdrawalsUSD = transferTokens * poolInfoPoint.virtual_price / 1e36
             	if(['tbtc', 'ren'].includes(this.currentPool)) withdrawalsUSD *= poolInfoPoint.btcPrice
@@ -531,20 +538,30 @@ export default {
 		            withdrawals += usd
 		            continue;
 		        }
-		        removeliquidity = removeliquidityImbalance
-		        if(removeliquidity.length) {
+
+		        if(removeliquidityImbalance.length) {
 		        	let decodeParameters = this.decodeParametersWithdrawal
 		        	if(['compound','usdt'].includes(this.currentPool)) {
 		        		decodeParameters = this.decodeParametersWithdrawal1
 		        	}
-		            let decoded = currentContract.web3.eth.abi.decodeParameters(decodeParameters, removeliquidity[0].data)
-		        	console.log(removeliquidity)
+		            let decoded = currentContract.web3.eth.abi.decodeParameters(decodeParameters, removeliquidityImbalance[0].data)
+		        	console.log(removeliquidityImbalance)
 		            console.log(decoded, 'remove imbalance tokens')
 		            let usd = await this.calculateAmount(decoded[0], log.blockNumber, 'withdrawal')
 		            this.withdrawArr.push([poolInfoPoint, usd / 100])
 		            withdrawals += usd
+		            continue;
 		        }
-		        else {
+
+		       	if(removeliquidityOne.length) {
+		       		let decoded = currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawalOne, removeliquidityOne[0].data)
+		       		console.log(decoded, 'remove liquidity one')
+		       		let usd = this.getAvailableTransfer(decoded[0], poolInfoPoint)
+		            this.withdrawArr.push([poolInfoPoint, usd])
+		            withdrawals += usd * 100
+		       	}
+
+		        if(removeliquidity.length == 0 && removeliquidityImbalance.length == 0 && removeliquidityOne.length == 0) {
 		            console.log(transferTokens, "transfer")
 		            let usd = this.getAvailableTransfer(transferTokens, poolInfoPoint)
 		            this.withdrawArr.push([poolInfoPoint, usd])

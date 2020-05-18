@@ -10,6 +10,7 @@ export default {
 		addliquidityTopic: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 		removeliquidityTopic: '0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
 		removeliquidityImbalanceTopic: '0x9878ca375e106f2a43c3b599fc624568131c4c9a4ba66a14563715763be9d59d',
+		removeliquidityOneTopic: '0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
 		earned: null,
 		paidRewards: null,
 		profitTotalStake: null,

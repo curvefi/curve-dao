@@ -77,8 +77,9 @@ export default {
 
 	    async getAvailableAmount() {
 	    	if(!this.$route.params.address) {
-	    		return [currentContract.totalShare * 100, currentContract.usdShare || 0,
-    				currentContract.curveStakedBalance * currentContract.virtual_price / 1e18, currentContract.totalStake * 100]
+	    		if(!['tbtc', 'ren'].includes(this.currentPool)) this.btcPrice = 1
+	    		return [currentContract.totalShare * 100, currentContract.usdShare * this.btcPrice || 0,
+    				currentContract.curveStakedBalance * currentContract.virtual_price * this.btcPrice / 1e18, currentContract.totalStake * 100]
 	    	}
 	    	return this.calcAvailable();
 	    },
@@ -114,9 +115,7 @@ export default {
 	    	let usdStake = stakedBalance * currentContract.virtual_price / 1e18
 
 	    	if(['tbtc', 'ren'].includes(this.currentPool)) {
-	    		totalShare *= this.btcPrice
 	    		usdShare *= this.btcPrice
-	    		totalStake *= this.btcPrice
 	    		usdStake *= this.btcPrice
 	    	}
 
@@ -220,7 +219,7 @@ export default {
 				try {
 					let req = await fetch(`https://api.coinpaprika.com/v1/coins/btc-bitcoin/ohlcv/historical?start=${timestamp}`)
 					let res = await req.json()
-					if(res.length) return res.close
+					if(res.length) return res[0].close
 					await helpers.setTimeoutPromise(300)
 					timestamp -= 1000
 				}
@@ -232,29 +231,32 @@ export default {
 			}
 		},
 		async interpolatePoint(timestamp) {
-			if(timestamp > this.priceData[this.priceData.length-1].timestamp) return this.priceData[this.priceData.length-1]
+			let point = {};
+			if(timestamp > this.priceData[this.priceData.length-1].timestamp) point = this.priceData[this.priceData.length-1]
 			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
 			let next = this.priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
 			if(prev === undefined) prev = this.priceData[0]
 			if(next === undefined) next = this.priceData[this.priceData.length-1]
-			if(prev.timestamp == next.timestamp) return next;
+			if(prev.timestamp == next.timestamp) point = next;
 
-			let point = {
-				// virtual_price,
-				// balances: [],
-				// rates: [],
-				// supply: [],
+			if(Object.keys(point).length === 0 && point.constructor === Object) {
+				// let point = {
+				// 	// virtual_price,
+				// 	// balances: [],
+				// 	// rates: [],
+				// 	// supply: [],
+				// }
+
+				let interpolator = interpolate(timestamp, prev.timestamp, next.timestamp)
+				point.virtual_price = interpolator(prev.virtual_price, next.virtual_price)
+				point.balances = prev.balances.map((b, i) => interpolator(b, next.balances[i]))
+				point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
+				point.supply = interpolator(prev.supply, next.supply);
 			}
-
-			let interpolator = interpolate(timestamp, prev.timestamp, next.timestamp)
-			point.virtual_price = interpolator(prev.virtual_price, next.virtual_price)
-			point.balances = prev.balances.map((b, i) => interpolator(b, next.balances[i]))
-			point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
-			point.supply = interpolator(prev.supply, next.supply);
 			if(['tbtc', 'ren'].includes(this.currentPool)) {
 				//instead of this better to make a request to coinpaprika but which API allows querying 
 				try {
-					point.btcPrice = this.getClosestBTCPrice(timestamp)
+					point.btcPrice = await this.getClosestBTCPrice(timestamp)
 				}
 				catch(err) {
 					console.error(err)

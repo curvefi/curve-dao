@@ -50,7 +50,7 @@ export default {
 
 		async getBTCPrice() {
 			let req = await fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`);
-        	res = await req.json();
+        	let res = await req.json();
         	this.btcPrice = res.quotes.USD.price
 		},
 

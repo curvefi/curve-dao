@@ -59,30 +59,37 @@ export default {
         return process.env.VUE_APP_VERSION
       },
       showDeposits() {
-      if(this.showinUSD) return this.depositsUSD.toFixed(2);
-        return (this.deposits / 100).toFixed(2)
+      if(this.showinUSD) return this.depositsUSD;
+        return (this.deposits / 100)
       },
       showWithdrawals() {
-      if(this.showinUSD) return this.withdrawalsUSD.toFixed(2);
-        return (this.withdrawals / 100).toFixed(2)
+      if(this.showinUSD) return this.withdrawalsUSD;
+        return (this.withdrawals / 100)
       },
       showAvailable() {
-      if(this.showinUSD) return this.availableUSD.toFixed(2);
-        return (this.available / 100).toFixed(2)
+      if(this.showinUSD) return this.availableUSD;
+        return (this.available / 100)
       },
       showStakedBalance() {
       if(this.currentPool != 'susdv2') return 0
-      if(this.showinUSD) return this.getStakedBalanceUSD.toFixed(2);
-        return (this.getStakedBalance / 100).toFixed(2); 
+      if(this.showinUSD) return this.getStakedBalanceUSD;
+        return (this.getStakedBalance / 100); 
       },
       showProfit() {
-        return ((+this.showAvailable + +this.showStakedBalance) + +this.showWithdrawals - +this.showDeposits).toFixed(2)
+        return ((+this.showAvailable + +this.showStakedBalance) + +this.showWithdrawals - +this.showDeposits) || 0
       },
     },
     beforeDestroy() {
         this.cancel = true;
     },
     methods: {
+        toFixed(num, precisions = 2, round = 4) {
+            if(num == '' || num === null || num === undefined) return ''
+            if(precisions == 2 && ['tbtc', 'ren'].includes(this.currentPool)) precisions = 8
+            if(this.showinUSD) precisions = 2
+            let rounded = helpers.formatNumber(num, precisions)
+            return rounded
+        },
         nullifyAmounts() {
           this.deposits = -1
           this.withdrawals = -1

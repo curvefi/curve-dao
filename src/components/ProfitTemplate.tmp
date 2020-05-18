@@ -11,29 +11,29 @@
             <li>
             	<b>Deposits:</b> 
             	<span :class="{'loading line': deposits == -1}">
-                	<span v-show='deposits != -1'> {{showDeposits}} </span>
+                	<span v-show='deposits != -1'> {{toFixed(showDeposits)}} </span>
             	</span>
         	</li>
             <li>
             	<b>Withdrawals:</b> 
             	<span :class="{'loading line': withdrawals == -1}">
-            		<span v-show='withdrawals != -1'> {{showWithdrawals}} </span>
+            		<span v-show='withdrawals != -1'> {{toFixed(showWithdrawals)}} </span>
             	</span>
             </li>
             <li>
             	<b>Available:</b> 
             	<span :class="{'loading line': available == -1}">
-            		<span v-show='available != -1'> {{showAvailable}} </span>
+            		<span v-show='available != -1'> {{toFixed(showAvailable)}} </span>
             	</span>
                 <span v-if = "currentPool == 'susdv2'">
                     (<span :class="{'loading line': profitTotalStake === null}"></span>
-                    <span v-show='+showStakedBalance >= 0'>{{+showStakedBalance >= 0 && showStakedBalance}} </span> staked)
+                    <span v-show='+showStakedBalance >= 0'>{{toFixed(+showStakedBalance >= 0 && showStakedBalance)}} </span> staked)
                 </span>
             </li>
             <li>
             	<b>Profit:</b>
             	<span :class="{'loading line': available == -1}">
-            		<span v-show='available != -1 '> {{showProfit}}</span>
+            		<span v-show='available != -1 '> {{toFixed(showProfit)}}</span>
             	</span>
             </li>
             <br>

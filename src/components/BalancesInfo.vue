@@ -128,7 +128,7 @@
           </li>
 
           <li>
-            <b>Averaged USD balance:</b> {{ usdStake1 | toFixed2}}
+            <b>Averaged USD balance:</b> {{ usdStake1 | formatNumber(2)}}
           </li>
 
       </ul>

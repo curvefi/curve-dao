@@ -625,10 +625,11 @@
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
         		if(this.to_currency !== null && this.to_currency < 10) {
-                    let balance = BN(token_balance)
-                    if(this.share == 100) balance = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call())
-                    if(this.showstaked) balance = balance.plus(BN(this.staked_balance))
-	        		let amount = BN(this.share).div(BN(100)).times(balance).toFixed(0,1);
+                    var amount = BN(this.share).div(BN(100)).times(token_balance).toFixed(0,1);
+                    if (this.share == 100) {
+                        amount = await currentContract.swap_token.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').call();
+                        if(this.showstaked) amount = BN(amount).plus(BN(this.staked_balance)).toFixed(0,1)
+                    }
 /*				        this.inputs = this.inputs.map(v=>0)
 				        Vue.set(this.inputs, this.to_currency, amount / 1e18)
 				        let ref = 'inputs'+this.to_currency

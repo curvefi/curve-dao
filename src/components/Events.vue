@@ -109,7 +109,7 @@
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 5'><span class='loading line'></span></td>
+				    		<td v-for='n in 6'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
@@ -130,7 +130,7 @@
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 				            		<div class='tooltip'>
-				            			{{ totalAmount(event).toFixed(2) }}
+				            			{{ isBTC(event) ? totalAmount(event).toFixed(8) : totalAmount(event).toFixed(2) }}
 				            			<div class='tooltiptext'>
 						            		<div v-for = 'currAmount in showAmounts(event)'>
 						            			{{ currAmount }}
@@ -146,7 +146,7 @@
 				            </td>
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				            		{{ (event.returnValues.token_supply / 1e18).toFixed(2) }}
+				            		{{ event.returnValues.token_supply ? (event.returnValues.token_supply / 1e18).toFixed(2) : 'N/A' }}
 				            	</a>
 				            </td>
 				        </tr>
@@ -167,7 +167,7 @@
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 5'><span class='loading line'></span></td>
+				    		<td v-for='n in 6'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
@@ -188,7 +188,7 @@
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 				            		<div class='tooltip'>
-				            			{{ totalAmount(event).toFixed(2) }}
+				            			{{ isBTC(event) ? totalAmount(event).toFixed(8) : totalAmount(event).toFixed(2) }}
 				            			<div class='tooltiptext'>
 				            				<div v-for = 'currAmount in showAmounts(event)'>
 						            			{{ currAmount }}
@@ -209,7 +209,7 @@
 				            </td>
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				            		{{ (event.returnValues.token_supply / 1e18).toFixed(2) }}
+				            		{{ event.returnValues.token_supply ? (event.returnValues.token_supply / 1e18).toFixed(2) : 'N/A' }}
 				            	</a>
 				            </td>
 				        </tr>
@@ -315,7 +315,7 @@
 					busd: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					susdv2: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					pax: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
-					tbtc: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
+					tbtc: '0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
 					ren: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
 				}
 			},
@@ -346,8 +346,8 @@
 						'0xb964b72f73f5ef5bf0fdc559b2fab9a7b12a39e47817a547f1f0aee47febd602',
 					],
 					tbtc: [
-						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
-						'0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+						'0xa49d4cf02656aebf8c771f5a8585638a2a15ee6c97cf7205d4208ed7c1df252d',
+						'0x173599dbf9c6ca6f7c3b590df07ae98a45d74ff54065505141e7de6c46a624c2',
 						'0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
 					],
 					ren: [
@@ -388,7 +388,9 @@
 				if(params && params.length) {
 					params = params.split('/')
 					this.pools = params[0].split('_')
-					this.event = this.displayedEvent = this.allEvents.indexOf(params[1])
+					let event = this.allEvents.indexOf(params[1])
+					if(event === undefined) event = 'Exchange'
+					this.event = this.displayedEvent = event
 				}
 				this.swapContracts = Object.keys(allabis)
 					.filter(pool => this.allPools.includes(pool))
@@ -649,6 +651,9 @@
 						&& abi.use_lending && !abi.use_lending[i] 
 						|| pool == 'susdv2' || abi.is_plain[i];
 			},
+			isBTC(event) {
+				return [allabis.tbtc.swap_address.toLowerCase(), allabis.ren.swap_address.toLowerCase()].includes(event.address.toLowerCase())
+			},
 			getCurrency(event, type) {
 				//type == 0 for sold
 				//type == 1 for bought
@@ -776,15 +781,22 @@
 				return address.slice(0,6) + '...' + address.slice(-6)
 			},
 			totalAmount(event) {
+				if(event.returnValues.token_amount) return +event.returnValues.token_amount / 1e18
 				return event.returnValues.token_amounts.reduce((a, b) => +a + +b, 0)
 			},
 			showAmounts(event) {
+				if(event.returnValues.token_amount) return ''
 				let amounts = event.returnValues.token_amounts
 				let pool = this.getPool(event);
 				let currencies = Object.entries(allCurrencies[pool == 'y' ? 'iearn' : pool == 'susd' ? 'susdv2' : pool])
 				return amounts.map((amount, i) => `${(+amount).toFixed(2)} ${currencies[i][0].toUpperCase()}`)
 			},
 			async formatAmounts(event) {
+				if(event.returnValues.token_amount) {
+					event.returnValues.token_amounts = event.returnValues.token_amount / 1e18
+					event.formatted = true
+					return event
+				}
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
 				let poolIdx = this.pools.indexOf(pool);
 				let rates;

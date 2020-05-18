@@ -30,7 +30,7 @@
                     	<span v-show="!withdrawc && !['susdv2', 'tbtc', 'ren'].includes(currentPool)">
                         	{{currency | capitalize}}
                         </span>
-                        <span v-show='!withdrawc'>
+                        <span v-show="!withdrawc && ['susdv2', 'tbtc', 'ren'].includes(currentPool)">
                             {{currencies[currency]}}
                         </span>
                     </label>

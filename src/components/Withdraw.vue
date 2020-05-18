@@ -172,7 +172,7 @@
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
-            maxSlippage: 3,
+            maxSlippage: 1,
             maxInputSlippage: '',
             customSlippageDisabled: true,
             estimateGas: 0,
@@ -218,7 +218,7 @@
             getMaxSlippage() {
                 let maxSlippage = this.maxSlippage;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
-                return (100 - maxSlippage)/100
+                return (100 + maxSlippage)/100
             },
             minAmount() {
             if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8

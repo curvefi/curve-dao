@@ -272,6 +272,12 @@ export async function multiInitState(calls, contract, initContracts = false) {
         contract.curveStakedBalance = decoded[1]
         decoded = decoded.slice(2);
     }
+    if(initContracts && ['tbtc', 'ren'].includes(contract.currentContract)) {
+        contract.initial_A = +decoded[0];
+        contract.initial_A_time = +decoded[1];
+        contract.future_A_time = +decoded[2];
+        decoded = decoded.slice(3)
+    }
     contract.fee = decoded[0] / 1e10;
     contract.admin_fee = decoded[1] / 1e10;
     var token_balance = decoded[2]

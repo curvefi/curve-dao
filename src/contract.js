@@ -256,6 +256,9 @@ const state = Vue.observable({
 		susdv2: {
 			currentContract: 'susdv2',
 			...initState(),
+			initial_A: null,
+			initial_A_time: null,
+			future_A_time: null,
 			usdStake: null,
 			curveRewards: null,
 		},
@@ -316,7 +319,10 @@ const state = Vue.observable({
 
 	virtual_price: null,
 	A: null,
+	initial_A: null,
+	initial_A_time: null,
 	future_A: null,
+	future_A_time: null,
 	admin_actions_deadline: null,
 
 	slippage: 0,
@@ -357,7 +363,10 @@ export const getters = {
 	fee: () => state.fee * 100,
 	admin_fee: () => state.admin_fee * 100,
 	A: () => state.A,
+	initial_A: () => state.initial_A,
+	initial_A_time: () => state.initial_A_time,
 	future_A: () => state.future_A,
+	future_A_time: () => state.future_A_time,
 	admin_actions_deadline: () => state.admin_actions_deadline, 
 	initializedContracts: () => state.initializedContracts,
 	showSlippage: () => state.showSlippage,
@@ -410,12 +419,19 @@ export async function init(contract, refresh = false) {
     }
     if(contract.currentContract == 'susdv2') {
     	//balanceOf(address)
-    	
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
 		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    }
+    if(['tbtc', 'ren'].includes(contract.currentContract)) {
+    	//initial_A
+    	calls.push([allabis[contract.currentContract].swap_address, '0x5409491a'])
+    	//initial_A_time
+    	calls.push([allabis[contract.currentContract].swap_address, '0x2081066c'])
+    	//future_A_time
+    	calls.push([allabis[contract.currentContract].swap_address, '0x14052288'])
     }
     if(!['susd', 'tbtc', 'ren'].includes(contract.currentContract))
     	state.deposit_zap = new state.web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)

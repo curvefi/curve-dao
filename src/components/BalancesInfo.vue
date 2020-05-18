@@ -51,6 +51,19 @@
           </b>
           <span :class="{'loading line': A1 === null}"> {{ A1 }} </span>
         </li>
+        <li v-show='isRampingUp'>
+          <b>
+           Ramping up A:
+            <span class='tooltip'>[?]
+              <span class='tooltiptext long'>Slowly changing up A so that it doesn't negatively change virtual price growth of shares</span>
+            </span> 
+          </b>
+          <span> {{ initial_A }} -> {{ future_A }} </span>
+        </li>
+        <li v-show='isRampingUp'>
+          <b>Ramp up A ends on:</b>
+          <span> {{ rampEnd }}</span>
+        </li>
         <li v-show = 'admin_actions_deadline1 !== null && admin_actions_deadline1 !== 0'>
           <b>Future A: </b>
           <span :class="{'loading line': future_A1 === null}"> {{ future_A1 }} </span>
@@ -174,15 +187,17 @@
       if(volume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
-        for(let [key, value] of Object.entries(stats.volume)) {
+        console.log(stats, "THE STATS")
+        for(let [key, value] of Object.entries(volumeStore.state.volumes)) {
           if(volumeStore.state.volumes[key][0] == -1) {
-            Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key])
+            Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key] || 0)
             if(['tbtc', 'ren'].includes(key)) {
               Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key] * this.btcPrice || 0)
-              Vue.set(volumeStore.state.volumes[key], 1,  stats.volume[key])
+              Vue.set(volumeStore.state.volumes[key], 1,  stats.volume[key] || 0)
             }
           }
         }
+        console.log(volumeStore, "VOLUME STORE")
       }
     },
     computed: {
@@ -222,10 +237,19 @@
         return stake
       },
       A1() {
-        return this. A || ((getters.A() * 1e18) | 0)
+        return this.A || ((getters.A() * 1e18) | 0)
       },
       future_A1() {
         return this.future_A || ((getters.future_A()) | 0)
+      },
+      initial_A() {
+        return getters.initial_A()
+      },
+      isRampingUp() {
+        return getters.initial_A_time() < Date.now()/1000 < getters.future_A_time() 
+      },
+      rampEnd() {
+        return helpers.formatDateToHuman(getters.future_A_time())
       },
       admin_actions_readable() {
         return helpers.formatDateToHuman(this.admin_actions_deadline1)

@@ -57,7 +57,7 @@
             <p style="text-align: center">
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03"
-                	@click='handle_add_liquidity()' 
+                	@click='justDeposit = true; handle_add_liquidity()' 
                 	>
                 		Deposit
                 </button>
@@ -65,7 +65,7 @@
                 	id='add-liquidity-stake' 
                 	v-show="currentPool == 'susdv2'" 
                 	:disabled = 'slippage < -0.03'
-                	@click = 'deposit_stake'>
+                	@click = 'justDeposit = false; deposit_stake()'>
                 	Deposit and stake
                 </button>
                 <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>Stake unstaked</button>
@@ -79,6 +79,13 @@
                 <div class='info-message gentle-message' v-show='estimateGas'>
 	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
 	            </div>
+                <div class='simple-error' v-show='justDeposit'>
+                    Your tokens are being deposited into the susd pool without staking.
+                    You can do that manually later on here or on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a> 
+                </div>
+                <div class='simple-error' v-show='errorStaking'>
+                    There was an error in staking your tokens. You can manually stake them on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a>
+                </div>
                 <Slippage/>
             </p>
         </div>
@@ -121,6 +128,8 @@
     		estimateGas: 0,
     		gasPrice: 0,
     		ethPrice: 0,
+            justDeposit: false,
+            errorStaking: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
         created() {
@@ -368,16 +377,24 @@
 				if(!stake ) this.show_loading = false
 				if(stake && this.currentPool == 'susdv2') {
                     console.warn(receipt.events)
-					minted = BN(
-						Object.values(receipt.events).filter(event => {
-							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
-									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
-									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
-						})[0].raw.data)
-					await this.stakeTokens(minted)
+                    try {
+    					minted = BN(
+    						Object.values(receipt.events).filter(event => {
+    							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+    									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
+    									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
+    						})[0].raw.data)
+    					await this.stakeTokens(minted)
+                    }
+                    catch(err) {
+                        console.error(err)
+                        this.errorStaking = true;
+                    }
 				}
 				this.estimateGas = 0 
 				this.gasPrice = 0
+                this
+                this.justDeposit = false
 
 			    await this.handle_sync_balances();
 			    common.update_fee_info();

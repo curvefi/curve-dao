@@ -60,7 +60,7 @@
                 </span>
             </legend>
         	<ul>
-        		<li v-show = "['susdv2','tbtc','ren'].includes(currentPool)">
+        		<li v-show = "!['susdv2','tbtc','ren'].includes(currentPool)">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>Combination of all coins</label>
         		</li>
@@ -80,8 +80,8 @@
         	</ul>
         </fieldset>
         <div id='max_slippage' v-show='showWithdrawSlippage'><span>Max slippage:</span> 
-            <input id="slippage05" type="radio" name="slippage" value='1' v-model='maxSlippage'>
-            <label for="slippage05">1%</label>
+            <input id="slippage02" type="radio" name="slippage" value='0.2' v-model='maxSlippage'>
+            <label for="slippage02">0.2%</label>
 
             <input id="slippage1" type="radio" name="slippage" checked value='3' v-model='maxSlippage'>
             <label for="slippage1">3%</label>
@@ -172,7 +172,8 @@
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
-            maxSlippage: 1,
+            maxSlippage: 0.2,
+            setSlippage: false,
             maxInputSlippage: '',
             customSlippageDisabled: true,
             estimateGas: 0,
@@ -205,7 +206,13 @@
         		if(this.share == '---' ) return;
         		if(!val && this.to_currency === null) this.to_currency = 10
         		if(val && this.to_currency !== null) this.to_currency = null
-        	}
+        	},
+            maxSlippage() {
+                this.setSlippage = true
+            },
+            maxInputSlippage(val) {
+                if(val) this.setSlippage = true
+            },
         },
         computed: {
 			...getters,
@@ -223,6 +230,10 @@
             minAmount() {
             if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
                 return 0.01
+            },
+            calcFee() {
+                let N_COINS = allabis[currentContract.currentContract].N_COINS
+                return this.fee * N_COINS / (4 * (N_COINS -1))
             },
         },
         mounted() {
@@ -473,6 +484,7 @@
 						this.show_nobalance = true;
 						this.show_nobalance_i = this.to_currency;
 			        }
+                    token_amount = BN(token_amount).times(BN(1).plus(this.calcFee))
 			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
                     if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
                         await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
@@ -530,18 +542,19 @@
                     let balance = BN(this.token_balance)
                     if(this.share == 100) balance = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
                     if(this.showstaked) balance = balance.plus(this.staked_balance)
-			        var amount = BN(this.share).div(BN(100)).times(balance)
+                    var amount = BN(this.share).div(BN(100)).times(balance)
 
                     if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
-						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
-					amount = amount.toFixed(0,1)
-			        if(this.to_currency !== null && this.to_currency < 10) {
+                        await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
+                    amount = amount.toFixed(0,1)
+                    if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         if(!['tbtc','ren'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                         let min_amount;
                         try {
                             min_amount = await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
+                            min_amount = BN(min_amount).times(BN(1).minus(this.calcFee))
                         }
                         catch(err) {
                             console.error(err)
@@ -638,6 +651,7 @@
 	                let precision = allabis[currentContract.currentContract].coin_precisions[this.to_currency]
 					let zap_values = Array(currentContract.N_COINS).fill(0)
 					try {
+                        this.warninglow = false
 						zap_values[this.to_currency] = BN(await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call())
                         if(zap_values[this.to_currency].eq(BN(0))) this.warninglow = true
 					}

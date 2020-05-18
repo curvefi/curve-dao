@@ -79,7 +79,7 @@
                 <div class='info-message gentle-message' v-show='estimateGas'>
 	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
 	            </div>
-                <div class='simple-error' v-show='justDeposit'>
+                <div class='simple-error' v-show="justDeposit && currentPool == 'susdv2'">
                     Your tokens are being deposited into the susd pool without staking.
                     You can do that manually later on here or on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a> 
                 </div>
@@ -160,6 +160,10 @@
           minAmount() {
           	if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
           	return 0.01
+          },
+          calcFee() {
+            let N_COINS = allabis[currentContract.currentContract].N_COINS
+            return this.fee * N_COINS / (4 * (N_COINS -1))
           },
         },
         mounted() {
@@ -257,7 +261,7 @@
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 			    helpers.chunkArr(decoded, 2).map((v, i) => {
-			    	Vue.set(this.wallet_balances, i, +v[0])
+			    	Vue.set(this.wallet_balances, i, v[0])
 			    	if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0)
 			    	Vue.set(this.balances, i, +v[1])
 			    })
@@ -295,11 +299,16 @@
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
 				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
-			        let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
-			        if(!this.depositc) amount = this.inputs[i]*allabis[currentContract.currentContract].coin_precisions[i]
-			        if(Math.abs(balance/amount-1) < this.minAmount) {
-			        	if(!this.depositc) balance = BN(balance).div(currentContract.coin_precisions[i])
-			        	else balance = BN(balance)
+                    let abi = allabis[currentContract.currentContract]
+                    let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
+                    balance = BN(balance)
+			        if(!this.depositc) {
+                        amount = this.inputs[i]*abi.coin_precisions[i]
+                        balance = BN(balance).div(abi.coin_precisions[i])
+                    }
+                    let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
+                    let maxDiff = BN(balance).minus(BN(amount)).div(precisions)
+                    if(balance.gt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
 			            Vue.set(this.amounts, i, balance.toFixed(0,1));
 			        }
 			        else {
@@ -326,7 +335,8 @@
 			    var token_amount = 0;
 			    if(total_supply > 0) {
 			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
-			        token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
+                    token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
+			        token_amount = BN(Math.floor(token_amount * 0.998).toString()).toFixed(0,1);
 			    }
 			    let receipt;
 			    let minted = 0;
@@ -347,7 +357,12 @@
 				    }
 				}
 				else {
-			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1))
+			    	let amounts = this.inputs.map((v, i)=>{
+                        let abi = allabis[currentContract.currentContract]
+                        let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
+                        if(BN(this.wallet_balances[i]).gt(0) && maxDiff.lt(BN(this.minAmount))) return BN(this.wallet_balances[i]).toFixed(0, 1)
+                        return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
+                    })
 			    	let gas = contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0
 			    	console.warn(this.inputs, 'inputs', amounts, 'uamounts', 
 			    		this.amounts, 'amounts', currentContract.swap._address, 'swap address', currentContract.coin_precisions, 'coin precisions', 

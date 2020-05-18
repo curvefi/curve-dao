@@ -144,15 +144,19 @@
         computed: {
           ...getters,
           volume() {
-          	return volumeStore.state.volumes[this.pool || this.currentPool]
+
+          	return volumeStore.state.volumes[this.getPool]
           },
           volumeData() {
-          	let pool = this.pool || this.currentPool;
-          	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
-          	let num = volumeStore.state.volumes[pool][0]
+          	let num = volumeStore.state.volumes[this.getPool][0]
           	//if(['tbtc', 'ren'].includes(pool)) return helpers.formatNumber(num, 8)
           	return helpers.formatNumber(num, 0)
-          }
+          },
+          getPool() {
+          	let pool = this.pool || this.currentPool;
+          	pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool
+          	return pool
+          },
         },
         created() {
         	var start = new Date();

@@ -15,7 +15,10 @@
 		      	<span v-show="['tbtc', 'ren'].includes(currency)">{{currency}}</span>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>
-			<daily-chart :data = 'poolData[i]' :pool="currency == 'iearn' ? 'y' : currency" :volume = 'volumesData[currency]' />
+			<daily-chart 
+				:data = 'poolData[i]' 
+				:pool="currency == 'iearn' ? 'y' : currency" 
+				:volume = "volumesData[currency == 'iearn' ? 'y' : currency == 'susdv2' ? 'susd' : currency]" />
 		</div>
 	</div>
 </template>

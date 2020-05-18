@@ -50,6 +50,7 @@
 			    let calls = []
 			    let pools = Object.assign({},allabis)
 			    delete pools.susd
+			    delete pools.tbtc
 			    delete pools.y
 			    for(let [key, contract] of Object.entries(pools)) {
 			        tokenContracts[key] = new web3.eth.Contract(ERC20_abi, contract.token_address);

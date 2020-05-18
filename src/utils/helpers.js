@@ -101,6 +101,7 @@ export function formatDateToHuman(timestamp) {
 }
 
 export function formatNumber(number, dec = 2, dsep, tsep) {
+  if(number == 0) return 0
   if (isNaN(+number) || number == null) return '';
   number = parseFloat(number)
   number = number.toFixed(~~dec);

@@ -111,13 +111,13 @@
           allContracts() {
           	let pools = {...contracts};
           	delete pools.y
+          	delete pools.tbtc
           	return pools;
           },
           error() {
           	return currentContract.error
           },
           filteredCurrencies() {
-          	return this.allCurrencies
           	return Object.fromEntries(Object.entries(this.allCurrencies).filter(
 			      ([key, val])=>!['tbtc'].includes(key)
 			   ))
@@ -356,15 +356,13 @@
 					if(['tbtc', 'ren'].includes(key)) {
 						let N_COINS = contracts[key].N_COINS
 						let start = 98
-						if(key == 'ren') start = 109
 						let slice = decoded.slice(start)
 						for(let i = 0; i < N_COINS; i++) {
 							let calcBalance = this.all_c_rates[key].c_rates[i] * (slice[i])
 							this.bal_infos[key].push(calcBalance)
 							total += calcBalance
 						}
-						if(key == 'tbtc') ind = 93
-						if(key == 'ren') ind = 103
+						ind = 92
 					}
 				    this.totals.push(total)
 				    this.virtual_prices.push(+decoded[ind+8] / 1e18)

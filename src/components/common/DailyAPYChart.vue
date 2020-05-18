@@ -5,12 +5,12 @@
     	<p v-show='volume && volume[0] != -1'>
     		<span>Daily USD trading volume:</span> 
     		<span :class="{'loading line': !volume}">
-    			<span v-show='volume && volume[0]'> {{ (volume && volume[0]) | formatNumber(0) }}$</span>	
+    			<span v-show='volume && volume[0] != -1'> {{ (volume && volume[0] || 0) | formatNumber(0) }}$</span>	
     		</span>
     		<div v-show="['tbtc', 'ren'].includes(pool)">
 	    		<span>Daily BTC trading volume:</span>
 	    		<span>
-	    			<span v-show='volume && volume[1]'> {{ (volume && volume[1]) | formatNumber(8) }} BTC </span>
+	    			<span v-show='volume && volume[1] != -1'> {{ (volume && volume[1] || 0) | formatNumber(8) }} BTC </span>
 	    		</span>
     		</div>
     	</p>

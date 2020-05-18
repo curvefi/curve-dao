@@ -528,9 +528,11 @@
 			    }
 			    else {
 			        var amount = BN(this.share).div(BN(100)).times(this.token_balance.plus(this.staked_balance))
-			        if (this.share == 100)
-			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call()).plus(BN(this.staked_balance));
-					if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
+			        if (this.share == 100) {
+			            amount = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
+                        if(this.showstaked) amount = BN(amount).plus(BN(this.staked_balance)).toFixed(0,1)
+                    }
+                    if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
 						await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
 					amount = amount.toFixed(0,1)
 			        if(this.to_currency !== null && this.to_currency < 10) {

@@ -23,7 +23,6 @@
             <p>____________</p>
             <button class='simplebutton' @click = 'changeWallets'>Change wallet</button>
             <button id='changeAccounts' class='simplebutton' 
-              v-show="['ledger', 'trezor'].includes(walletName)" 
               @click = 'changeAccounts'>Change accounts</button>
         </div>
       </div>

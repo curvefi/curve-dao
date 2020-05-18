@@ -40,6 +40,8 @@
 	const worker = new Worker();
 	const calcWorker = Comlink.wrap(worker);
 
+	import * as volumeStore from '../common/volumeStore'
+
 
 /*	Highcharts.seriesTypes.column.prototype.pointAttribs = (function(func) {
 	    return function(point, state) {
@@ -337,6 +339,7 @@
 				  	inverse: false,
 				  	ohlcData: [],
 				  	exchange: false,
+				  	btcPrices: [],
 		  }
 		},
 		created() {
@@ -381,10 +384,27 @@
 				if(intervalIndex >= tradeStore.intervals.indexOf('30m')) jsonInterval = '30m'
 				if(intervalIndex >= tradeStore.intervals.indexOf('1d')) jsonInterval = '1440m'
 				let urls = tradeStore.pools.map(pool=>fetch(`${window.domain}/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
+				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren'))
+					urls.push(
+						fetch(`
+						https://api.coinpaprika.com/v1/tickers/btc-bitcoin/historical?
+							start=1589587198&interval=${jsonInterval == '1440m' ? '1d' : jsonInterval}&limit=5000`
+					))
 				let requests = await Promise.all(urls)
+				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren')) {
+					this.btcPrices = await requests[requests.length - 1].json()
+					requests = requests.slice(0, -1)
+				}
 				let data = []
 				for(let res of requests) {
 					let json = await res.json()
+					if(res.url.includes('tbtc') || res.url.includes('ren')) {
+						json = json.map(d => {
+							d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => 
+								[k, v.map(vol => vol * volumeStore.findClosestPrice(d.timestamp, this.btcPrices))]))
+							return d;
+						})
+					}
 					if(json.length != 1000 && requests.length > 1) {
 						if(res.url.includes('pax')) json = json.slice(10)
 						let fill = new Array(1000-json.length).fill({})

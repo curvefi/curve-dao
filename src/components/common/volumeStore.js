@@ -32,7 +32,7 @@ export const state = Vue.observable({
 	}
 })
 
-function findClosest(timestamp, data) {
+export function findClosestPrice(timestamp, data) {
 	let result = data.find(d=>Date.parse(d.timestamp)/1000 - timestamp > 0);
 	if(result === undefined) return data[data.length - 1].price
 	return result.price
@@ -58,7 +58,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 		let pool = pools[i]
 		if(['tbtc', 'ren'].includes(pool)) {
 			data = data.map(d => {
-				d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => [k, v.map(vol => vol * findClosest(d.timestamp, btcPrices))]))
+				d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => [k, v.map(vol => vol * findClosestPrice(d.timestamp, btcPrices))]))
 				return d;
 			})
 		}

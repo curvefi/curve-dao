@@ -340,7 +340,10 @@
                 if(this.swapwrapped) currency = Object.values(this.currencies)[this.from_currency]
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 var dx = Math.floor(this.fromInput * this.precisions[i]);
-                if(Math.abs(1 - (dx/this.maxBalance)) < this.minAmount) dx = this.maxBalance
+                console.log(BN(this.maxBalance).minus(BN(this.fromInput).times(this.precisions[i])).toFixed(0))
+                if(BN(this.maxBalance).gt(0) && BN(this.maxBalance).div(this.precisions[i]).minus(BN(this.fromInput)).lt(BN(this.minAmount))) {
+                    dx = this.maxBalance
+                }
                 var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`

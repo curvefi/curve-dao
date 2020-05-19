@@ -126,7 +126,7 @@ export const gas = {
 		iearn: 1300000,
 		busd: 1300000,
 		susd: 1300000,
-		susdv2: 500000,
+		susdv2: 1000000,
 		pax: 1300000,
 		tbtc: 300000 * 1.5,
 		ren: 300000,

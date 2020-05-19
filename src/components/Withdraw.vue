@@ -99,7 +99,7 @@
 	        	</div> -->
 	      	</div>
             <button id="remove-liquidity"
-	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow"
+	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
 	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
         		Withdraw
         	</button>

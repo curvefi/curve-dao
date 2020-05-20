@@ -89,12 +89,12 @@
                     Warning! Exchange rate is too low!
                 </p>
                 <p class='trade-buttons'>
-                    <button id="trade" @click='handle_trade' :disabled='maxBalance != -1 && +fromInput > +maxBalance*1.001'>Sell</button>
+                    <button id="trade" @click='handle_trade'>Sell</button>
                 </p>
                 <div class='info-message gentle-message' v-show='show_loading'>
                     {{waitingMessage}} <span class='loading line'></span>
                 </div>
-                <p class='simple-error' id='no-balance' v-show='maxBalance != -1 && +fromInput > +maxBalance*1.001'>
+                <p class='simple-error' id='no-balance' v-show='selldisabled'>
                     Not enough balance for 
                     <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
                     <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
@@ -172,7 +172,7 @@
                 let amount = this.maxBalance / this.precisions[this.from_currency]
 
                 this.maxBalanceText = currentContract.default_account ? this.toFixed(amount) : 0;
-            }
+            },
         },
         computed: {
             precisions() {
@@ -191,6 +191,9 @@
             minAmount() {
                 if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
                 return 0.01
+            },
+            selldisabled() {
+                return this.maxBalance != -1 && +(this.fromInput * this.precisions[this.from_currency]) > +this.maxBalance*1.001
             },
         },
         mounted() {

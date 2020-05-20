@@ -6,16 +6,21 @@
                 <ul>
                     <li v-for='(currency, i) in Object.keys(currencies)'>
                         <label :for="'currency_'+i">
-                        	<span v-show='depositc'>
-                        		{{currencies[currency]}} 
-	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
-	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
-	                        		(in {{currency | capitalize}}) 
-	                        	</span>
-	                        </span>
-	                        <span v-show='!depositc'>
-	                        	{{currency | capitalize}}
-	                        </span>
+                        	<span class='currency_label'>
+                                <span v-show='depositc'>
+                            		{{currencies[currency]}} 
+    	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
+    	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
+    	                        		(in {{currency | capitalize}}) 
+    	                        	</span>
+    	                        </span>
+    	                        <span v-show='!depositc'>
+    	                        	{{currency | capitalize}}
+    	                        </span>
+                                <span>
+                                    <sub>Max: {{ maxBalanceCoin(i) }} </sub>
+                                </span>
+                            </span>
                         </label>
                         <input 
 	                        type="text" 
@@ -26,6 +31,7 @@
 	                        :style = "{backgroundColor: bgColors[i]}"
 	                        @input='change_currency(i, true)'
 	                    >
+
                     </li>
                 </ul>
             </fieldset>
@@ -85,6 +91,9 @@
                 </div>
                 <div class='simple-error' v-show='errorStaking'>
                     There was an error in staking your tokens. You can manually stake them on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a>
+                </div>
+                <div class='simple-error pulse' v-show='compareInputsWarning.length'>
+                    Not enough balance for currencies {{ compareInputsWarning.toString() }}
                 </div>
                 <Slippage/>
             </p>
@@ -165,6 +174,16 @@
             let N_COINS = allabis[currentContract.currentContract].N_COINS
             return this.fee * N_COINS / (4 * (N_COINS -1))
           },
+          compareInputsWarning() {
+            let currencies = []
+            for(let [i, currency] of Object.keys(this.currencies).entries()) {
+                console.log(i, currency, "I CURRENCY")
+                let diff3 = BN(BN(this.wallet_balances[i]).times(this.rates[i])).minus(this.inputs[i])
+                console.log(diff3.toFixed())
+                if(diff3.lt(BN(-0.01))) currencies.push(this.depositc ? this.currencies[currency] : currency.toUpperCase())
+            }
+            return currencies
+          },
         },
         mounted() {
 	        this.setInputStyles(true)
@@ -205,6 +224,9 @@
                 if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
+            },
+            maxBalanceCoin(i) {
+                return this.toFixed(this.wallet_balances[i] * this.rates[i])
             },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
@@ -476,5 +498,12 @@
 	}
  	#stakeunstaked {
  		margin-left: 1em;
+    }
+    .pulse {
+        background: red;
+        animation: pulse 1s 3;
+        padding: 0.3em;
+        margin: 0;
+        margin-bottom: 8px;
     }
 </style>

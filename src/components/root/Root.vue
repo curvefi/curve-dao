@@ -307,7 +307,7 @@
 		},
 		data: () => ({
 			activePoolLink: -1,
-			pools: ['compound','usdt','y','busd','susdv2','pax','tbtc','ren'],
+			pools: ['compound','usdt','y','busd','susdv2','pax','ren'],
 			daily_apy: [],
 			weekly_apy: [],
 			monthly_apy: [],
@@ -383,6 +383,7 @@
 			},
 			async getBalances() {
 				if(!contract.default_account) return;
+				console.log("HEREEEEEEEEEEEEEEEEE")
 				contract.contracts.compound = contract;
 				let calls = this.pools.flatMap(k => {
 					return [

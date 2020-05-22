@@ -94,6 +94,10 @@
                 </div>
                 <div class='simple-error pulse' v-show='compareInputsWarning.length'>
                     Not enough balance for currencies {{ compareInputsWarning.toString() }}
+                    <p v-show='compareInputsWarning.length == N_COINS - 1'> 
+                        Maybe you forgot to uncheck the first 
+                        "Add all coins in a balanced proportion" checkbox?
+                    </p>
                 </div>
                 <Slippage/>
             </p>
@@ -503,11 +507,13 @@
     .pulse {
         background: red;
         animation: pulse 1s 3;
-        padding: 0.3em;
         margin: 0;
         margin-bottom: 8px;
     }
     .maxBalanceCoin {
         cursor: pointer;
+    }
+    .pulse p {
+        margin-bottom: 0;
     }
 </style>

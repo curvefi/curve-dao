@@ -17,7 +17,7 @@
     	                        <span v-show='!depositc'>
     	                        	{{currency | capitalize}}
     	                        </span>
-                                <span>
+                                <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
                                     <sub>Max: {{ maxBalanceCoin(i) }} </sub>
                                 </span>
                             </span>
@@ -226,6 +226,9 @@
             maxBalanceCoin(i) {
                 return this.toFixed(this.wallet_balances[i] * this.rates[i])
             },
+            setMaxBalanceCoin(i) {
+                Vue.set(this.inputs, i, this.maxBalanceCoin(i))
+            },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
         			return this.toFixed(+this.inputs[i])
@@ -328,7 +331,7 @@
                     }
                     let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
                     let maxDiff = BN(balance).minus(BN(amount)).div(precisions)
-                    if(balance.gt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
+                    if(balance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
 			            Vue.set(this.amounts, i, balance.toFixed(0,1));
 			        }
 			        else {
@@ -342,9 +345,16 @@
                 let amounts = this.inputs.map((v, i)=>{
                     let abi = allabis[currentContract.currentContract]
                     let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
-                    if(BN(this.wallet_balances[i]).gt(0) && v > 0 && maxDiff.lt(BN(this.minAmount))) return BN(this.wallet_balances[i]).toFixed(0, 1)
+                    if(BN(this.wallet_balances[i]).gt(0) && maxDiff.lt(0) && maxDiff.lt(BN(this.minAmount))) return BN(this.wallet_balances[i]).toFixed(0, 1)
                     return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                 })
+                var token_amount = 0;
+                if(total_supply > 0) {
+                    let token_amounts = this.depositc ? this.amounts : amounts
+                    token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
+                    token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
+                    token_amount = BN(token_amount).times(0.998).toFixed(0,1);
+                }
 				if(this.depositc)
 					this.estimateGas = contractGas.deposit[this.currentPool] / 2
 				else
@@ -356,12 +366,6 @@
 			    }
 			    else {
 			    	await common.ensure_allowance(amounts, true)
-			    }
-			    var token_amount = 0;
-			    if(total_supply > 0) {
-			        token_amount = await currentContract.swap.methods.calc_token_amount(this.amounts, true).call();
-                    token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
-			        token_amount = BN(Math.floor(token_amount * 0.998).toString()).toFixed(0,1);
 			    }
 			    let receipt;
 			    let minted = 0;
@@ -502,5 +506,8 @@
         padding: 0.3em;
         margin: 0;
         margin-bottom: 8px;
+    }
+    .maxBalanceCoin {
+        cursor: pointer;
     }
 </style>

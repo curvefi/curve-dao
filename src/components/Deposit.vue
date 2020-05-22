@@ -331,7 +331,6 @@
                     balance = BN(balance)
 			        if(!this.depositc) {
                         amount = this.inputs[i]*abi.coin_precisions[i]
-                        balance = BN(balance).div(abi.coin_precisions[i])
                     }
                     let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
                     let maxDiff = BN(balance).minus(BN(amount)).div(precisions)
@@ -339,7 +338,7 @@
 			            Vue.set(this.amounts, i, balance.toFixed(0,1));
 			        }
 			        else {
-			            Vue.set(this.amounts, i, BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1)); // -> c-tokens
+			            Vue.set(this.amounts, i, BN(amount).toFixed(0,1)); // -> c-tokens
 			        }
 				})
 
@@ -397,7 +396,7 @@
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
                     this.waitingMessage = 'Please confirm deposit transaction'
-					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
+					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(this.amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})

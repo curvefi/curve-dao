@@ -383,7 +383,6 @@
 			},
 			async getBalances() {
 				if(!contract.default_account) return;
-				console.log("HEREEEEEEEEEEEEEEEEE")
 				contract.contracts.compound = contract;
 				let calls = this.pools.flatMap(k => {
 					return [

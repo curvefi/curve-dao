@@ -99,6 +99,7 @@ export const onboard = Onboard({
     wallet: wallet => {
       state.contract.web3 = window.web3 = new Web3(wallet.provider)
       state.contract.walletName = wallet.name;
+      console.warn(wallet.name)
       localStorage.setItem('selectedWallet', wallet.name)
     },
     network: network => {

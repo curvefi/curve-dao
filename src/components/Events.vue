@@ -64,12 +64,12 @@
 				            </td>
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				            		{{ event.soldAmount | toFixed2}}
+				            		{{ isBTC(event) ? event.soldAmount.toFixed(8) : event.soldAmount.toFixed(2) }}
 				            	</a>
 				            </td>
 				            <td>
 				            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				            		{{ event.boughtAmount | toFixed2}}
+				            		{{ isBTC(event) ? event.boughtAmount.toFixed(8) : event.boughtAmount.toFixed(2) }}
 				            	</a>
 				            </td>
 				            <td>
@@ -620,7 +620,7 @@
 				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					//usdt in usdt pool and susdv2 pool are already in the array, no need to calculate
-					if(pool == 'susdv2') continue;
+					if(['susdv2', 'tbtc', 'ren'].includes(pool)) continue;
 					else if(['iearn', 'busd', 'pax'].includes(pool)) {
 						let len = 4;
 						if(pool == 'pax') len = 3

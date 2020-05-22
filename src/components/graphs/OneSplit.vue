@@ -1,5 +1,5 @@
 <template>
-	<div>
+    <div>
         <div id='poolselect'>
             <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
             <label for='compoundpool1'>Compound</label>
@@ -15,12 +15,9 @@
 
             <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
             <label for='paxpool1'>PAX</label>
-
-                <!-- <input id='tbtc1' type='checkbox' value='tbtc' v-model='pools'/>
-                <label for='tbtc1'>tBTC</label> -->
         </div>
 
-		<div class='swap exchange'>
+        <div class='swap exchange'>
             <div class='exchangefields'>
                 <fieldset class='item'>
                     <legend>From:</legend>
@@ -115,6 +112,9 @@
                     <label for='swapy'>Swap y</label> -->
                 </li>
             </ul>
+            <p class='simple-error' v-show='exchangeRate<=0.98'>
+                Warning! Exchange rate is too low!
+            </p>
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
@@ -130,7 +130,7 @@
                 Swap not available. Please select {{warningNoPool}} in pool select
             </div>
         </div>
-	</div>
+    </div>
 </template>
 
 <script>
@@ -151,10 +151,10 @@
     const worker = new Worker();
     const calcWorker = Comlink.wrap(worker);
 
-	export default {
-		data: () => ({
+    export default {
+        data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax'],
-			maxBalance: -1,
+            maxBalance: -1,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
@@ -183,23 +183,25 @@
             multipath: 0,
             swapwrapped: false,
             bestPool: null,
-		}),
+        }),
         computed: {
             //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
             CONTRACT_FLAG() {
-                //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, weth, idle
+                //disable uniswap, kyber, bancor, oasis, compound, fulcrum, chai, aave, smart token, bdai, iearn, weth, idle, 
+                    //mooniswap, uniswap v2 all, dforce
                 //enable multipath DAI, multipath USDC
-                //enabled curve compound, curve usdt, curve y, curve binance, curve susd
-                let disabled = 0x01 + 0x02 + 0x04 + 0x08 + 0x10 + 0x20 + 0x40 + 0x80 + 0x100 + 0x400 + 0x800 + 0x80000 + 0x800000;
-                let enabled = 0x1000 + 0x2000 + 0x4000 + 0x8000 + 0x40000 
-                let enabledMulti = 0x10000 + 0x20000
+                //enabled curve compound, curve usdt, curve y, curve binance, curve susd, curve pax
+                let disabled = 0x01 + 0x02 + 0x04 + 0x08 + 0x10 + 0x20 + 0x40 + 0x80 + 0x100 + 0x400 + 0x800 + 0x80000 + 0x800000 
+                                + 0x1000000 + 0x1E000000 + 0x4000000000;
+                let enabled = 0x1000 + 0x2000 + 0x4000 + 0x8000 + 0x40000 + 0x80000000
+                let enabledMulti = 0x10000 + 0x20000 + 0x400000000
                 let curveFlags = {
                     compound: 0x1000,
                     usdt: 0x2000,
                     y: 0x4000,
                     busd: 0x8000,
                     susdv2: 0x40000,
-                    pax: 0x100000,
+                    pax: 0x80000000,
                 }
                 let removePoolFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f])
                 removePoolFlag = removePoolFlag.reduce((a, b) => a + b, 0)
@@ -224,7 +226,6 @@
                     return {
                         dai: 'cDAI',
                         usdc: 'cUSDC',
-                        pax: 'PAX',
                     }
                 }
                 return {
@@ -256,7 +257,7 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'y', 'busd', 'susdv2', 'pax']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
             },
             warningNoPool() {
                 this.message = 'Please select '
@@ -291,8 +292,13 @@
                 if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
                     this.multipath = 2
                 }
+                //multipath USDT
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                    this.multipath = 3
+                }
                 //no multipath
                 let curveDist = this.distribution.slice(4, 9);
+                curveDist.push(this.distribution[17])
                 if(this.multipath == 0) {
                     distArr.push(curveDist)
                 }
@@ -306,13 +312,14 @@
             distributionText() {
                 if(!this.decodeDistribution.length) return null;
                 let text = '';
+                let multipaths = ['DAI', 'USDC', 'USDT']
 
                 for(let j = this.decodeDistribution.length-1; j >= 0; j--) {
                     if(this.multipath > 0 && j == 1) 
-                        text += Object.values(this.currencies)[this.from_currency] + ' -> ' + (this.multipath == 1 ? 'DAI' : 'USDC') + '<br>'
+                        text += Object.values(this.currencies)[this.from_currency] + ' -> ' + (multipaths[this.multipath-1]) + '<br>'
 
                     if(this.multipath > 0 && j == 0) 
-                        text += (this.multipath == 1 ? 'DAI' : 'USDC') + ' -> ' + Object.values(this.currencies)[this.to_currency] + '<br>'
+                        text += (multipaths[this.multipath-1]) + ' -> ' + Object.values(this.currencies)[this.to_currency] + '<br>'
 
                     for(let [i, v] of this.decodeDistribution[j].entries()) {
                         if(v < 1) continue;
@@ -359,9 +366,8 @@
         mounted() {
             contract.web3 && contract.multicall && this.mounted()
         },
-		methods: {
+        methods: {
             async mounted() {
-                //need to fix better coin choosing
                 await this.setup();
                 this.disabled = false;
                 this.from_cur_handler()
@@ -508,16 +514,18 @@
             },
             getCalls(amount) {
                 let defaultCalls = [
-                    this.makeCall(amount, 10, this.CONTRACT_FLAG - 0x10000 - 0x20000),
-                    this.makeCall(amount, 20, this.CONTRACT_FLAG - 0x10000),
-                    this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000),
+                    this.makeCall(amount, 10, this.CONTRACT_FLAG - 0x10000 - 0x20000 - 0x400000000),
+                    this.makeCall(amount, 20, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
+                    this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
+                    this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x20000),
                 ]
                 let calls = defaultCalls.concat();
                 if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
                     calls = defaultCalls.slice(1)
                     calls.push(
-                        this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000),
-                        this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x20000),
+                        this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
+                        this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
+                        this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000 - 0x20000),
                     )
                 }
                 return calls
@@ -680,14 +688,21 @@
                     }
                     else*/ if(!([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency))) {
                         this.swapPromise.cancel()
-                        this.swapPromise = helpers.makeCancelable(Promise.all([this.realComparePools(), this.set_to_amount_onesplit()]))
+                        let promises = [this.realComparePools(), this.set_to_amount_onesplit()]
+                        if(this.fromInput < 100) promises = [this.realComparePools()]
+                        this.swapPromise = helpers.makeCancelable(Promise.all(promises))
                         let result = await this.swapPromise
                         let [poolAddress, dy] = result[0]
                         let pool = this.addresses.find(v => v.address == poolAddress).pool
                         let dy_ = BN(dy).div(this.precisions(this.to_currency, pool))
                         exchangeRate = BN(dy_).div(BN(this.fromInput)).toFixed(4)
                         bestdy_ = dy_
-                        let [pool1, exchangeRate1, dy_1split] = result[1]
+                        let pool1 = 0
+                        let exchangeRate1 = 0
+                        let dy_1split = 0
+                        if(result[1]) {
+                            [pool1, exchangeRate1, dy_1split] = result[1]
+                        }
                         let useOneSplit = ((this.fromInput * exchangeRate1) - (this.fromInput * exchangeRate)) > 2
                         if(exchangeRate < exchangeRate1 && useOneSplit) {
                             exchangeRate = exchangeRate1
@@ -722,7 +737,7 @@
                     this.highlight_input()
                 }
             },
-			async set_max_balance() {
+            async set_max_balance() {
                 let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 if(!contract.default_account) balance = 0
                 let amount = Math.floor(
@@ -730,7 +745,7 @@
                     ) / 100
                 this.fromInput = amount.toFixed(2)
                 await this.set_to_amount();
-			},
+            },
             async setup() {
                 this.onesplit_address = await helpers.retry(contract.web3.eth.ens.getAddress('1split.eth'))
                 this.onesplit = new contract.web3.eth.Contract(onesplit_abi, this.onesplit_address)
@@ -765,8 +780,8 @@
                 this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.pax.coins[3]))
                 this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.pax.underlying_coins[3]))
             }
-		}
-	}
+        }
+    }
 </script>
 
 <style scoped>

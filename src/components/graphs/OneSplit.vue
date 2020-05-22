@@ -202,9 +202,9 @@
                     susdv2: 0x40000,
                     pax: 0x80000000,
                 }
-                let removePoolFlag = Object.keys(curveFlags).filter(f=>!this.pools.includes(f)).map(f=>curveFlags[f])
-                removePoolFlag = removePoolFlag.reduce((a, b) => a + b, 0)
-                return disabled + removePoolFlag + enabledMulti;
+                let addPoolFlag = Object.keys(curveFlags).filter(pool=>this.pools.includes(pool)).map(pool=>curveFlags[pool])
+                addPoolFlag = addPoolFlag.reduce((a, b) => a + b, 0)
+                return disabled + addPoolFlag + enabledMulti;
             },
             currencies() {
                 if(this.swapwrapped === false) {
@@ -515,9 +515,6 @@
             getCalls(amount) {
                 let defaultCalls = [
                     this.makeCall(amount, 10, this.CONTRACT_FLAG - 0x10000 - 0x20000 - 0x400000000),
-                    this.makeCall(amount, 20, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
-                    this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
-                    this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x20000),
                 ]
                 let calls = defaultCalls.concat();
                 if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
@@ -526,6 +523,9 @@
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
                         this.makeCall(amount, 15, this.CONTRACT_FLAG - 0x10000 - 0x20000),
+                        this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
+                        this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
+                        this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x20000),
                     )
                 }
                 return calls

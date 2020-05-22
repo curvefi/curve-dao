@@ -191,8 +191,7 @@
                     //mooniswap, uniswap v2 all, dforce
                 //enable multipath DAI, multipath USDC
                 //enabled curve compound, curve usdt, curve y, curve binance, curve susd, curve pax
-                let disabled = 0x01 + 0x02 + 0x04 + 0x08 + 0x10 + 0x20 + 0x40 + 0x80 + 0x100 + 0x400 + 0x800 + 0x80000 + 0x800000 
-                                + 0x1000000 + 0x1E000000 + 0x4000000000;
+                let disabled = 0x20000000;
                 let enabled = 0x1000 + 0x2000 + 0x4000 + 0x8000 + 0x40000 + 0x80000000
                 let enabledMulti = 0x10000 + 0x20000 + 0x400000000
                 let curveFlags = {
@@ -285,15 +284,15 @@
                 this.multipath = 0;
                 //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
                 //multipath USDC
-                if(this.usedFlags == this.CONTRACT_FLAG - 0x10000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x10000 - 0x400000000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
                     this.multipath = 1
                 }
                 //multipath DAI
-                if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 - 0x400000000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
                     this.multipath = 2
                 }
                 //multipath USDT
-                if(this.usedFlags == this.CONTRACT_FLAG - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
+                if(this.usedFlags == this.CONTRACT_FLAG - 0x10000 - 0x20000 && this.distribution.find(v=>+v > this.usedParts) !== undefined) {
                     this.multipath = 3
                 }
                 //no multipath
@@ -311,6 +310,7 @@
             },
             distributionText() {
                 if(!this.decodeDistribution.length) return null;
+                let distPools = ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
                 let text = '';
                 let multipaths = ['DAI', 'USDC', 'USDT']
 
@@ -323,7 +323,7 @@
 
                     for(let [i, v] of this.decodeDistribution[j].entries()) {
                         if(v < 1) continue;
-                        text += '' + (100 * v / this.usedParts).toFixed(2) + '% ' + this.pools[i] + '<br>';
+                        text += '' + (100 * v / this.usedParts).toFixed(2) + '% ' + distPools[i] + '<br>';
                     }
                 }
 

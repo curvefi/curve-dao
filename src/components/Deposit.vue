@@ -177,9 +177,7 @@
           compareInputsWarning() {
             let currencies = []
             for(let [i, currency] of Object.keys(this.currencies).entries()) {
-                console.log(i, currency, "I CURRENCY")
                 let diff3 = BN(BN(this.wallet_balances[i]).times(this.rates[i])).minus(this.inputs[i])
-                console.log(diff3.toFixed())
                 if(diff3.lt(BN(-0.01))) currencies.push(this.depositc ? this.currencies[currency] : currency.toUpperCase())
             }
             return currencies
@@ -341,6 +339,12 @@
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
 			    let nonZeroInputs = this.inputs.filter(Number).length
+                let amounts = this.inputs.map((v, i)=>{
+                    let abi = allabis[currentContract.currentContract]
+                    let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
+                    if(BN(this.wallet_balances[i]).gt(0) && v > 0 && maxDiff.lt(BN(this.minAmount))) return BN(this.wallet_balances[i]).toFixed(0, 1)
+                    return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
+                })
 				if(this.depositc)
 					this.estimateGas = contractGas.deposit[this.currentPool] / 2
 				else
@@ -351,7 +355,6 @@
 			        await common.ensure_allowance(this.amounts, false);
 			    }
 			    else {
-			    	let amounts = this.inputs.map((v, i)=>BN(v).times(currentContract.coin_precisions[i]).toFixed(0))
 			    	await common.ensure_allowance(amounts, true)
 			    }
 			    var token_amount = 0;
@@ -379,12 +382,6 @@
 				    }
 				}
 				else {
-			    	let amounts = this.inputs.map((v, i)=>{
-                        let abi = allabis[currentContract.currentContract]
-                        let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
-                        if(BN(this.wallet_balances[i]).gt(0) && maxDiff.lt(BN(this.minAmount))) return BN(this.wallet_balances[i]).toFixed(0, 1)
-                        return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
-                    })
 			    	let gas = contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0
 			    	console.warn(this.inputs, 'inputs', amounts, 'uamounts', 
 			    		this.amounts, 'amounts', currentContract.swap._address, 'swap address', currentContract.coin_precisions, 'coin precisions', 

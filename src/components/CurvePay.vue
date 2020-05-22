@@ -40,7 +40,7 @@
 	export default {
 		data: () => ({
 			token: 'cCrv',
-			tokenNames: ['cCrv', 'tCrv', 'yCrv', 'bCrv', 'sCrv', 'pCrv', 'tbtcCrv', 'renCrv'],
+			tokenNames: ['cCrv', 'tCrv', 'yCrv', 'bCrv', 'sCrv', 'pCrv', 'renCrv'],
 			tokens: [],
 			contracts: [],
 			swaps: [],
@@ -49,7 +49,7 @@
 			amount: '0.00',
 			maxAmount: null,
 			to: null,
-			bgColor: 'blue'
+			bgColor: 'blue',
 		}),
 		watch: {
 			amount() {
@@ -69,7 +69,10 @@
 				if(!this.virtual_prices[index]) return null;
 				let maxAmount = BN(this.amount).div(BN(this.virtual_prices[index]).div(1e18)).toFixed(2);
 				return maxAmount;
-			}
+			},
+			abis() {
+				return Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y' && pool != 'tbtc');
+			},
 		},
 		mounted() {
 			contract.default_account && contract.multicall && this.mounted();
@@ -82,15 +85,14 @@
 			let poolParam = this.$route.params.pool;
 			if(poolParam == 'y') poolParam = 'iearn'
 			if(poolParam) {
-				let tokenIndex = Object.keys(allabis).filter(pool => pool != 'y' && pool != 'susd').indexOf(poolParam)
+				let tokenIndex = Object.keys(allabis).filter(pool => pool != 'y' && pool != 'susd' && pool != 'tbtc').indexOf(poolParam)
 				this.token = this.tokenNames[tokenIndex]
 			}
 		},
 		methods: {
 			async mounted() {
-				let abis = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y');
-				this.contracts = abis.map(pool => new contract.web3.eth.Contract(ERC20_abi, allabis[pool].token_address))
-				this.swaps = abis.map(pool => new contract.web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
+				this.contracts = this.abis.map(pool => new contract.web3.eth.Contract(ERC20_abi, allabis[pool].token_address))
+				this.swaps = this.abis.map(pool => new contract.web3.eth.Contract(allabis[pool].swap_abi, allabis[pool].swap_address))
 				this.updateBalances();
 			},
 			async pay() {
@@ -108,8 +110,7 @@
 				this.updateBalances()
 			},
 			async updateBalances() {
-				let abis = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y');
-				let calls = abis.flatMap((pool, i) => {
+				let calls = this.abis.flatMap((pool, i) => {
 					return [
 						[allabis[pool].token_address, this.contracts[i].methods.balanceOf(contract.default_account).encodeABI()],
 						[allabis[pool].swap_address, this.swaps[i].methods.get_virtual_price().encodeABI()]
@@ -166,6 +167,7 @@
 	#balance {
 		margin-left: 7px;
 		align-self: center;
+		cursor: pointer;
 	}
 	#balance:hover {
 		text-decoration: underline;

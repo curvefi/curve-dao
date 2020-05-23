@@ -74,7 +74,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
     else {
         // Infinite
         for (let i=0; i < N_COINS; i++) {
-            if (cBN(allowances[i]).isLessThan(cont.max_allowance.div(cBN(2)))) {
+            if (cBN(allowances[i]).isLessThan(cont.max_allowance.div(cBN(2))) && cBN(amounts[i]).gt(0)) {
                 if (allowances[i] > 0)
                     await approve(coins[i], 0, default_account, swap);
                 await approve(coins[i], cont.max_allowance, default_account, swap);

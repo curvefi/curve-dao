@@ -1012,3 +1012,7 @@ input[type=range]:focus::-ms-fill-upper {
 .token-icon.deposit {
   margin-bottom: 1em;
 }
+fieldset.currencies {
+  padding-inline-start: 0.6em;
+  padding-inline-end: 1em;
+}

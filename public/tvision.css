@@ -1018,6 +1018,9 @@ input[type=range]:focus::-ms-fill-upper {
   border: 1px solid #414141;
   border-radius: 50%;
 }
+.token-icon.tbtc-icon, .token-icon.hbtc-icon, .token-icon.renbtc-icon, .token-icon.wbtc-icon {
+  display: none;
+}
 fieldset.currencies, fieldset.percentage {
   padding-inline-start: 0.6em;
   padding-inline-end: 1em;

@@ -286,10 +286,10 @@
             	this.handle_change_share();
             },
             getTokenIcon(token) {
-                if(this.withdrawc && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
+                if(this.swapwrapped && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
                     token = 'c' + token
                 }
-                else if(this.withdrawc && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
+                else if(this.swapwrapped && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
                     token = '_y' + token
                 }
                 let asset
@@ -297,7 +297,12 @@
                     asset = require('../assets/tokens/' + token + '.png')
                 }
                 catch(err) {
-                    asset = require('../assets/tokens/' + token + '.svg')
+                    try {
+                        asset = require('../assets/tokens/' + token + '.svg')
+                    }
+                    catch(err) {
+                        asset = ''
+                    }
                 }
                 return asset;
             },

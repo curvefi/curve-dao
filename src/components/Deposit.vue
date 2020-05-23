@@ -70,7 +70,7 @@
                 <button 
                 	id='add-liquidity-stake' 
                 	v-show="currentPool == 'susdv2'" 
-                	:disabled = 'slippage < -0.03'
+                	:disabled = 'slippage < -0.03 || depositingZeroWarning'
                 	@click = 'justDeposit = false; deposit_stake()'>
                 	Deposit and stake
                 </button>
@@ -99,7 +99,7 @@
                         "Add all coins in a balanced proportion" checkbox?
                     </p>
                 </div>
-                <div class='simple-error pulse' v-show='depositingZeroWarning && !disabledButtons'>
+                <div class='simple-error pulse' v-show='depositingZeroWarning'>
                     You're depositing 0 coins.
                     <p>
                         Maybe you forgot to uncheck the first 
@@ -194,7 +194,7 @@
             return currencies
           },
           depositingZeroWarning() {
-            return this.inputs.filter(v=>+v==0).length == this.N_COINS
+            return this.inputs.filter(v=>+v==0).length == this.N_COINS && !this.disabledButtons
           },
         },
         mounted() {

@@ -34,9 +34,10 @@
                                 ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                             </p>
                         </li>
-                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                             <label :for="'from_cur_'+i">
+                                <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
                                 <span v-show='!swapwrapped'> {{currency == 'susd' ? 'sUSD' : (currency.toUpperCase())}} </span>
                                 <span v-show='swapwrapped'> {{currencies[currency]}} </span>
                             </label>
@@ -62,9 +63,10 @@
                                 ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                             </p>
                         </li>
-                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                             <label :for="'to_cur_'+i">
+                                <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
                                 <span v-show='!swapwrapped'> {{currency == 'susd' ? 'sUSD' : (currency.toUpperCase())}} </span>
                                 <span v-show='swapwrapped'> {{currencies[currency]}} </span>
                             </label>
@@ -377,6 +379,17 @@
                 [this.fromInput, this.toInput] = [this.toInput, this.fromInput]
                 this.from_currency = this.to_currency
                 this.from_cur_handler()
+            },
+            getTokenIcon(token) {
+                console.log(token, "THE TOKEN")
+                let asset
+                try {
+                    asset = require('../../assets/tokens/' + token + '.png')
+                }
+                catch(err) {
+                    asset = require('../../assets/tokens/' + token + '.svg')
+                }
+                return asset;
             },
             handleCheck(val) {
                 if(this.swapwrapped === val) this.swapwrapped = false;

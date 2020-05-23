@@ -19,7 +19,7 @@
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                                 <label :for="'from_cur_'+i">
-                                    <!-- <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'> -->
+                                    <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
                                     <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
                                     <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
@@ -49,7 +49,7 @@
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                                 <label :for="'to_cur_'+i">
-                                    <!-- <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'> -->
+                                    <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
                                     <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
                                     <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
@@ -213,11 +213,6 @@
                 this.from_cur_handler()
             },
             getTokenIcon(token) {
-                if(token == 'dai') return require('../assets/tokens/dai4.png')
-                if(token == 'usdt') return require('../assets/tokens/usdt.svg')
-                if(token == 'susd') return require('../assets/tokens/susd1.svg')
-                //if(token == 'busd') return require('../assets/tokens/busd.svg')
-                if(token == 'busd') return require('../assets/tokens/busd3.png')
                 let asset
                 try {
                     asset = require('../assets/tokens/' + token + '.png')
@@ -423,27 +418,5 @@
     }
     #no-balance {
         text-align: center;
-    }
-    .coins {
-        margin-top: 0.3em;
-    }
-    .token-icon {
-        width: 1.4em;
-        height: 1.4em;
-        vertical-align: middle;
-        margin-right: 0.3em;
-        margin-left: 0.3em;
-        border: 1px solid #414141;
-        border-radius: 50%;
-    }
-    .dai-icon {
-    }
-    .susd-icon {
-        border-color: transparent;
-        width: 1.5em;
-        height: 1.5em;
-    }
-    .busd-icon {
-        border-color: transparent;
     }
 </style>

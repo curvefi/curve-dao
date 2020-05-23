@@ -263,7 +263,7 @@ li {
 }
 
 div.add-liquidity input {
-    margin-bottom: 0.3em;
+    margin-bottom: 0.6em;
 }
 
 strong:before, strong:after { content: "*"; }

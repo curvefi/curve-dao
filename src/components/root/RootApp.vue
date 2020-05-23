@@ -64,7 +64,7 @@
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">
-            <h1><img src="../../assets/logo_optimized.svg" alt="🌀 Curve"></h1>
+            <h1><img src="../../assets/logo_optimized.svg" alt="🌀 Curve" height="50"></h1>
         </div>
         <router-view/>
     </div>
@@ -126,8 +126,5 @@
     .top-menu-bar > .poolsdropdown {
       display: none;
     }
-  }
-  h1 > img {
-    height: 52.125px;
   }
 </style>

@@ -73,7 +73,7 @@
     </div>
     <div id="screen">
         <div class="blue window">
-            <h1><img src="../assets/logo_optimized.svg" alt="🌀 Curve" height="50"></h1>
+            <h1><img src="../assets/logo_optimized.svg" alt="🌀 Curve"></h1>
         </div>
         <div class="error window half-width info" id="error-window" v-show='error'>
           {{error}}
@@ -160,5 +160,8 @@
     #hamburger:checked ~ a.showmobile {
       display: block;
     }
+  }
+  h1 > img {
+    height: 52.125px;
   }
 </style>

@@ -263,7 +263,7 @@ li {
 }
 
 div.add-liquidity input {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.3em;
 }
 
 strong:before, strong:after { content: "*"; }
@@ -986,26 +986,29 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .coins {
-        margin-top: 0.3em;
-    }
-    .token-icon {
-        width: 1.4em;
-        height: 1.4em;
-        vertical-align: middle;
-        margin-right: 0.3em;
-        margin-left: 0.3em;
-        border: 1px solid #414141;
-        border-radius: 50%;
-    }
-    .dai-icon {
-    }
-    .susd-icon {
-        border-color: transparent;
-        width: 1.5em;
-        height: 1.5em;
-    }
-    .pax-icon {
-        border-color: transparent;
-        width: 1.4em;
-        height: 1.4em;
-    }
+    margin-top: 0.3em;
+}
+.token-icon {
+    width: 1.4em;
+    height: 1.4em;
+    vertical-align: middle;
+    margin-right: 0.3em;
+    margin-left: 0.3em;
+    border: 1px solid #414141;
+    border-radius: 50%;
+}
+.dai-icon {
+}
+.susd-icon {
+    border-color: transparent;
+    width: 1.5em;
+    height: 1.5em;
+}
+.pax-icon {
+    border-color: transparent;
+    width: 1.4em;
+    height: 1.4em;
+}
+.token-icon.deposit {
+  margin-bottom: 1em;
+}

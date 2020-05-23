@@ -7,18 +7,17 @@
                     <li v-for='(currency, i) in Object.keys(currencies)'>
                         <label :for="'currency_'+i">
                         	<span class='currency_label'>
-                                <span v-show='depositc'>
-                            		{{currencies[currency]}} 
+                                <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                                <span v-show='depositc'>{{currencies[currency]}}
     	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
     	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
     	                        		(in {{currency | capitalize}}) 
     	                        	</span>
     	                        </span>
-    	                        <span v-show='!depositc'>
-    	                        	{{currency | capitalize}}
+    	                        <span v-show='!depositc'>{{currency | capitalize}}
     	                        </span>
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
-                                    <sub>Max: {{ maxBalanceCoin(i) }} </sub>
+                                    <span>Max: {{ maxBalanceCoin(i) }} </span>
                                 </span>
                             </span>
                         </label>
@@ -231,6 +230,16 @@
                 if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
                 	this.inf_approval = false
                 this.disabledButtons = false;
+            },
+            getTokenIcon(token) {
+                let asset
+                try {
+                    asset = require('../assets/tokens/' + token + '.png')
+                }
+                catch(err) {
+                    asset = require('../assets/tokens/' + token + '.svg')
+                }
+                return asset;
             },
             toFixed(num, precisions = 2, round = 4) {
                 if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
@@ -522,7 +531,20 @@
     .maxBalanceCoin {
         cursor: pointer;
     }
+    .maxBalanceCoin:hover {
+        text-decoration: underline;
+    }
+    .maxBalanceCoin > span {
+        font-size: 0.7em;
+    }
     .pulse p {
         margin-bottom: 0;
+    }
+    .currency_label {
+        display: block;
+        margin-bottom: 0.3em;
+    }
+    .currency_label .token-icon {
+        margin-right: 0.6em;
     }
 </style>

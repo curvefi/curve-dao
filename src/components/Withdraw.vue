@@ -22,17 +22,13 @@
             <legend>Currencies:</legend>
             <ul>
                 <li v-for='(currency, i) in Object.keys(currencies)'>
-                    <label :for="'currency_'+i">
-                    	<span v-show='withdrawc'>
-	                    	{{currencies[currency]}} 
+                    <label :for="'currency_'+i" class='currency_label'>
+                        <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                        <span v-show='withdrawc'>{{currencies[currency]}}
 	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'">(in {{currency | capitalize}})</span>
                     	</span>
-                    	<span v-show="!withdrawc && !['susdv2', 'tbtc', 'ren'].includes(currentPool)">
-                        	{{currency | capitalize}}
-                        </span>
-                        <span v-show="!withdrawc && ['susdv2', 'tbtc', 'ren'].includes(currentPool)">
-                            {{currencies[currency]}}
-                        </span>
+                    	<span v-show="!withdrawc && !['susdv2', 'tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
+                        <span v-show="!withdrawc && ['susdv2', 'tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                     </label>
                     <input type="text" 
                     :id="'currency_'+i" 
@@ -62,11 +58,18 @@
         	<ul>
         		<li v-show = "!['susdv2','tbtc','ren'].includes(currentPool)">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
-        			<label for='to_cur_comb'>Combination of all coins</label>
+        			<label for='to_cur_comb'>
+                        Combination of all coins
+                        <span v-for='(currency, i) in Object.keys(currencies)'>
+                            <span v-show='i > 0'>+</span><img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                        </span>
+                    </label>
         		</li>
-				<li v-for='(currency, i) in Object.keys(currencies)'>
+				<li v-for='(currency, i) in Object.keys(currencies)' class='withdrawin'>
 	                <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' :checked='to_currency === i' @click='handleCheck(i)'>
-	                <label :for="'to_cur_'+i">{{currency | capitalize}}</label>
+	                <label :for="'to_cur_'+i">
+                        <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>{{currency | capitalize}}
+                    </label>
 	            </li>
 	            <li>
 	            	<input type='checkbox' id='donate_dust' name='donate_dust' v-model='donate_dust'>
@@ -259,6 +262,16 @@
                 await this.update_balances();
                 this.setCalcBalances()
             	this.handle_change_share();
+            },
+            getTokenIcon(token) {
+                let asset
+                try {
+                    asset = require('../assets/tokens/' + token + '.png')
+                }
+                catch(err) {
+                    asset = require('../assets/tokens/' + token + '.svg')
+                }
+                return asset;
             },
             toFixed(num, precisions = 2, round = 4) {
                 if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
@@ -750,4 +763,14 @@
 		text-align: center;
 		margin-top: 3px;
 	}
+    .currency_label {
+        display: block;
+        margin-bottom: 0.3em;
+    }
+    .currency_label .token-icon {
+        margin-right: 0.6em;
+    }
+    .withdrawin {
+        margin-bottom: 0.3em;
+    }
 </style>

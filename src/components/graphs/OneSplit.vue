@@ -381,7 +381,6 @@
                 this.from_cur_handler()
             },
             getTokenIcon(token) {
-                console.log(token, "THE TOKEN")
                 let asset
                 try {
                     asset = require('../../assets/tokens/' + token + '.png')

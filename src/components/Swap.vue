@@ -13,13 +13,15 @@
                                 @input='set_to_amount'
                                 v-model='fromInput'>
                                 <p class='actualvalue' v-show='swapwrapped'>
-                                    ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
+                                    ≈ {{toFixed(actualFromValue)}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                                 </p>
                             </li>
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                                 <label :for="'from_cur_'+i">
-                                    <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                                    <img 
+                                        :class="{'token-icon': true, [currency+'-icon']: true, 'y': swapwrapped}" 
+                                        :src='getTokenIcon(currency)'>
                                     <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
                                     <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
@@ -43,13 +45,15 @@
                                 :style = "{backgroundColor: bgColor}"
                                 v-model='toInput'>
                                 <p class='actualvalue' v-show='swapwrapped'>
-                                    ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
+                                    ≈ {{toFixed(actualToValue)}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                                 </p>
                             </li>
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                                 <label :for="'to_cur_'+i">
-                                    <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                                    <img 
+                                        :class="{'token-icon': true, [currency+'-icon']: true, 'y': swapwrapped}" 
+                                        :src='getTokenIcon(currency)'>
                                     <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
                                     <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
@@ -145,6 +149,7 @@
             gasPrice: 0,
             estimateGas: 0,
             ethPrice: 0,
+            icontype: '',
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -213,12 +218,23 @@
                 this.from_cur_handler()
             },
             getTokenIcon(token) {
+                if(this.swapwrapped && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
+                    token = 'c' + token
+                }
+                else if(this.swapwrapped && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
+                    token = '_y' + token
+                }
                 let asset
                 try {
                     asset = require('../assets/tokens/' + token + '.png')
                 }
                 catch(err) {
-                    asset = require('../assets/tokens/' + token + '.svg')
+                    try {
+                        asset = require('../assets/tokens/' + token + '.svg')
+                    }
+                    catch(err) {
+                        asset = ''
+                    }
                 }
                 return asset;
             },

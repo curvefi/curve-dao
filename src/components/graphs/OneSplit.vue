@@ -106,13 +106,14 @@
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust {{bestPoolText}} contract forever</label>
                 </li>
-                <li v-show="['compound', 'usdt'].some(p => pools.includes(p))">
+                <!-- TODO add all wrapped tokens -->
+                <!-- <li v-show="['compound', 'usdt'].some(p => pools.includes(p))">
                     <input id='swapc' type='checkbox' name='swapc' v-model = 'swapwrapped'>
                     <label for='swapc'>Swap compounded</label>
 
-                    <!-- <input id='swapy' type='radio' name='swapy' :value='2' :checked='swapwrapped == 2' @click='handleCheck(2)' v-model = 'swapwrapped'>
-                    <label for='swapy'>Swap y</label> -->
-                </li>
+                    <input id='swapy' type='radio' name='swapy' :value='2' :checked='swapwrapped == 2' @click='handleCheck(2)' v-model = 'swapwrapped'>
+                    <label for='swapy'>Swap y</label>
+                </li> -->
             </ul>
             <p class='simple-error' v-show='exchangeRate<=0.98'>
                 Warning! Exchange rate is too low!

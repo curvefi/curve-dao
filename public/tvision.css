@@ -989,8 +989,7 @@ input[type=range]:focus::-ms-fill-upper {
     margin-top: 0.3em;
 }
 .token-icon {
-    width: 1.4em;
-    height: 1.4em;
+    height: 20px;
     vertical-align: middle;
     margin-right: 0.3em;
     margin-left: 0.3em;
@@ -1000,7 +999,6 @@ input[type=range]:focus::-ms-fill-upper {
 .dai-icon {
 }
 .susd-icon {
-    border-color: transparent;
     width: 1.5em;
     height: 1.5em;
 }
@@ -1011,6 +1009,14 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .token-icon.deposit {
   margin-bottom: 1em;
+}
+.token-icon.y {
+  border: 1px solid transparent;
+  border-radius: unset;
+}
+.token-icon.y.susdv2 {
+  border: 1px solid #414141;
+  border-radius: 50%;
 }
 fieldset.currencies, fieldset.percentage {
   padding-inline-start: 0.6em;

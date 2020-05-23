@@ -7,7 +7,14 @@
                     <li v-for='(currency, i) in Object.keys(currencies)'>
                         <label :for="'currency_'+i">
                         	<span class='currency_label'>
-                                <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
+                                <img 
+                                    v-show="!depositc || isPlain"
+                                    :class="{'icon token-icon': true, [currency+'-icon']: true, 'y': depositc && !isPlain}" 
+                                    :src='getTokenIcon(currency)'>
+                                <img 
+                                    v-show="depositc && !isPlain"
+                                    :class="{'token-icon': true, [currency+'-icon']: true, 'y': true}" 
+                                    :src='getTokenIcon(currency)'>
                                 <span v-show='depositc'>{{currencies[currency]}}
     	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
     	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
@@ -195,6 +202,9 @@
           depositingZeroWarning() {
             return this.inputs.filter(v=>+v==0).length == this.N_COINS && !this.disabledButtons
           },
+          isPlain() {
+            return ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)
+          }
         },
         mounted() {
 	        this.setInputStyles(true)
@@ -232,6 +242,12 @@
                 this.disabledButtons = false;
             },
             getTokenIcon(token) {
+                if(this.depositc && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
+                    token = 'c' + token
+                }
+                else if(this.depositc && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
+                    token = '_y' + token
+                }
                 let asset
                 try {
                     asset = require('../assets/tokens/' + token + '.png')

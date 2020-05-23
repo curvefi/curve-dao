@@ -131,7 +131,7 @@
     	data: () => ({
     		disabled: true,
     		disabledButtons: true,
-    		sync_balances: true,
+    		sync_balances: false,
     		max_balances: true,
     		inf_approval: true,
     		wallet_balances: [],

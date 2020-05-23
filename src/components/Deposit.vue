@@ -62,7 +62,7 @@
 
             <p style="text-align: center">
                 <button id="add-liquidity" 
-                    :disabled="currentPool == 'susdv2' && slippage < -0.03"
+                    :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"
                 	@click='justDeposit = true; handle_add_liquidity()' 
                 	>
                 		Deposit
@@ -95,6 +95,13 @@
                 <div class='simple-error pulse' v-show='compareInputsWarning.length'>
                     Not enough balance for currencies {{ compareInputsWarning.toString() }}
                     <p v-show='compareInputsWarning.length == N_COINS - 1'> 
+                        Maybe you forgot to uncheck the first 
+                        "Add all coins in a balanced proportion" checkbox?
+                    </p>
+                </div>
+                <div class='simple-error pulse' v-show='depositingZeroWarning && !disabledButtons'>
+                    You're depositing 0 coins.
+                    <p>
                         Maybe you forgot to uncheck the first 
                         "Add all coins in a balanced proportion" checkbox?
                     </p>
@@ -185,6 +192,9 @@
                 if(diff3.lt(BN(-0.01))) currencies.push(this.depositc ? this.currencies[currency] : currency.toUpperCase())
             }
             return currencies
+          },
+          depositingZeroWarning() {
+            return this.inputs.filter(v=>+v==0).length == this.N_COINS
           },
         },
         mounted() {
@@ -356,7 +366,7 @@
                     let token_amounts = this.depositc ? this.amounts : amounts
                     token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
-                    token_amount = BN(token_amount).times(0.998).toFixed(0,1);
+                    token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
 				if(this.depositc)
 					this.estimateGas = contractGas.deposit[this.currentPool] / 2

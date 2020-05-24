@@ -379,7 +379,7 @@
 				else
 					this.estimateGas = (contractGas.depositzap[this.currentPool].deposit(nonZeroInputs) | 0) / 1.5
 			    if (this.inf_approval)
-			        await common.ensure_allowance(false, !this.depositc)
+			        await common.ensure_allowance(this.amounts, !this.depositc, undefined, undefined, true)
 			    else if(this.depositc) {
 			        await common.ensure_allowance(this.amounts, false);
 			    }

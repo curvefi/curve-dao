@@ -38,7 +38,7 @@ export async function ensure_allowance_zap_out(amount) {
     }
 }
 
-export async function ensure_allowance(amounts, plain = false, contractName, N_COINS) {
+export async function ensure_allowance(amounts, plain = false, contractName, N_COINS, infinite = false) {
     var default_account = currentContract.default_account
     let cont = currentContract
     if(N_COINS === undefined) {
@@ -61,7 +61,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
     }
     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
     allowances = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex));
-    if (amounts) {
+    if (!infinite) {
         // Non-infinite
         for (let i=0; i < N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(cBN(amounts[i])) && cBN(amounts[i]).gt(0)) {

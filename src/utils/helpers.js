@@ -24,6 +24,28 @@ export function totalCurrencies(currencies) {
 	return Object.keys(currencies).join('+');
 }
 
+export function getTokenIcon(token, wrapped, pool) {
+    if(wrapped && ['compound', 'usdt'].includes(pool) && token != 'pax') {
+        token = 'c' + token
+    }
+    else if(wrapped && ['iearn', 'y', 'busd', 'pax'].includes(pool) && token != 'pax') {
+        token = '_y' + token
+    }
+    let asset
+    try {
+        asset = require('../assets/tokens/' + token + '.png')
+    }
+    catch(err) {
+        try {
+            asset = require('../assets/tokens/' + token + '.svg')
+        }
+        catch(err) {
+            console.error(err)
+            asset = ''
+        }
+    }
+    return asset;
+}
 
 export function interpolate(x, x0, x1) {
   return (y0, y1) => y0 + (x - x0)*(y1 - y0)/(x1 - x0)

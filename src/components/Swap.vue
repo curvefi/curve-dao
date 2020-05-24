@@ -218,26 +218,7 @@
                 this.from_cur_handler()
             },
             getTokenIcon(token) {
-                if(this.swapwrapped && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
-                    token = 'c' + token
-                }
-                else if(this.swapwrapped && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
-                    token = '_y' + token
-                }
-                let asset
-                try {
-                    asset = require('../assets/tokens/' + token + '.png')
-                }
-                catch(err) {
-                    try {
-                        asset = require('../assets/tokens/' + token + '.svg')
-                    }
-                    catch(err) {
-                        console.error(err)
-                        asset = ''
-                    }
-                }
-                return asset;
+                return helpers.getTokenIcon(token, this.swapwrapped, this.currentPool)
             },
             toFixed(num) {
                 if(!BigNumber.isBigNumber(num)) num = +num
@@ -372,7 +353,6 @@
                 if(this.swapwrapped) currency = Object.values(this.currencies)[this.from_currency]
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 var dx = Math.floor(this.fromInput * this.precisions[i]);
-                console.log(BN(this.maxBalance).minus(BN(this.fromInput).times(this.precisions[i])).toFixed(0))
                 if(BN(this.maxBalance).gt(0) && BN(this.maxBalance).div(this.precisions[i]).minus(BN(this.fromInput)).lt(BN(this.minAmount))) {
                     dx = this.maxBalance
                 }

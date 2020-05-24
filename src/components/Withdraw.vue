@@ -271,26 +271,7 @@
             	this.handle_change_share();
             },
             getTokenIcon(token) {
-                console.log(token, "THE TOKEN")
-                if(this.withdrawc && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
-                    token = 'c' + token
-                }
-                else if(this.withdrawc && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
-                    token = '_y' + token
-                }
-                let asset
-                try {
-                    asset = require('../assets/tokens/' + token + '.png')
-                }
-                catch(err) {
-                    try {
-                        asset = require('../assets/tokens/' + token + '.svg')
-                    }
-                    catch(err) {
-                        asset = ''
-                    }
-                }
-                return asset;
+                return helpers.getTokenIcon(token, this.withdrawc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
                 if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8

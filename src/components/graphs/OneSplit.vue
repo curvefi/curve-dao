@@ -382,14 +382,7 @@
                 this.from_cur_handler()
             },
             getTokenIcon(token) {
-                let asset
-                try {
-                    asset = require('../../assets/tokens/' + token + '.png')
-                }
-                catch(err) {
-                    asset = require('../../assets/tokens/' + token + '.svg')
-                }
-                return asset;
+                return helpers.getTokenIcon(token, this.swapwrapped, '')
             },
             handleCheck(val) {
                 if(this.swapwrapped === val) this.swapwrapped = false;

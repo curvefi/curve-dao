@@ -24,12 +24,7 @@
                 <li v-for='(currency, i) in Object.keys(currencies)'>
                     <label :for="'currency_'+i" class='currency_label'>
                         <img 
-                            v-show='!withdrawc'
-                            :class="{'icon token-icon': true, [currency+'-icon']: true}" 
-                            :src='getTokenIcon(currency)'>
-                        <img 
-                            v-show='withdrawc'
-                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': true, [currentPool]: true}" 
+                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
                             :src='getTokenIcon(currency)'>
                         <span v-show='withdrawc'>{{currencies[currency]}}
 	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'">(in {{currency | capitalize}})</span>
@@ -70,13 +65,8 @@
                         <span v-for='(currency, i) in Object.keys(currencies)'>
                             <span v-show='i > 0'>+</span>
                             <img 
-                                v-show='!withdrawc'
-                                :class="{'icon token-icon': true, [currency+'-icon']: true}" 
-                                :src='getTokenIcon(currency)'>
-                            <img 
-                                v-show='withdrawc'
-                                :class="{'token-icon': true, [currency+'-icon']: true, 'y': true, [currentPool]: true}" 
-                                :src='getTokenIcon(currency)'>
+                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
+                            :src='getTokenIcon(currency)'>
                         </span>
                     </label>
         		</li>
@@ -84,13 +74,8 @@
 	                <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' :checked='to_currency === i' @click='handleCheck(i)'>
 	                <label :for="'to_cur_'+i">
                         <img 
-                            v-show='!withdrawc'
-                            :class="{'icon token-icon': true, [currency+'-icon']: true}" 
+                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
                             :src='getTokenIcon(currency)'>
-                        <img 
-                            v-show='withdrawc'
-                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': true, [currentPool]: true}" 
-                            :src='getTokenIcon(currency)'>{{currency | capitalize}}
                     </label>
 	            </li>
 	            <li>
@@ -286,10 +271,11 @@
             	this.handle_change_share();
             },
             getTokenIcon(token) {
-                if(this.swapwrapped && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
+                console.log(token, "THE TOKEN")
+                if(this.withdrawc && ['compound', 'usdt'].includes(this.currentPool) && token != 'pax') {
                     token = 'c' + token
                 }
-                else if(this.swapwrapped && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
+                else if(this.withdrawc && ['iearn', 'y', 'busd', 'pax'].includes(this.currentPool) && token != 'pax') {
                     token = '_y' + token
                 }
                 let asset

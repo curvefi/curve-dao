@@ -233,6 +233,7 @@
                         asset = require('../assets/tokens/' + token + '.svg')
                     }
                     catch(err) {
+                        console.error(err)
                         asset = ''
                     }
                 }

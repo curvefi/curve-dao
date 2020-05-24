@@ -365,23 +365,22 @@
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
-				decoded.slice(0, decoded.length-1).forEach((balance, i) => {
-                    let abi = allabis[currentContract.currentContract]
-                    let amount = BN(this.inputs[i]).div(BN(currentContract.c_rates[i])).toFixed(0,1);
-                    balance = BN(balance)
-			        if(!this.depositc) {
-                        amount = this.inputs[i]*abi.coin_precisions[i]
-                    }
-                    let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
-                    let maxDiff = BN(balance).minus(BN(amount)).div(precisions)
-                    if(balance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
-			            Vue.set(this.amounts, i, balance.toFixed(0,1));
-			        }
-			        else {
-			            Vue.set(this.amounts, i, BN(amount).toFixed(0,1)); // -> c-tokens
-			        }
-				})
 
+                decoded.slice(0, decoded.length-1).forEach((balance, i) => {
+                    let abi = allabis[currentContract.currentContract]
+                    let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
+                    let bal = balance
+                    if(this.depositc) bal = BN(bal).times(currentContract.c_rates[i])
+                    else bal = BN(bal).div(precisions)
+                    let maxDiff = BN(bal).minus(BN(this.inputs[i]))
+                    if(bal.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
+                        if(!this.depositc) balance = BN(balance).div(precisions).div(currentContract.c_rates[i])
+                        Vue.set(this.amounts, i, BN(balance).toFixed(0,1))
+                    }
+                    else {
+                        Vue.set(this.amounts, i, BN(this.inputs[i]).div(currentContract.c_rates[i]).toFixed(0,1))
+                    }
+                })
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
 			    let nonZeroInputs = this.inputs.filter(Number).length
@@ -393,7 +392,7 @@
                 })
                 var token_amount = 0;
                 if(total_supply > 0) {
-                    let token_amounts = this.depositc ? this.amounts : amounts
+                    let token_amounts = this.amounts
                     token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
@@ -436,7 +435,7 @@
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
                     this.waitingMessage = 'Please confirm deposit transaction'
-					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(this.amounts, token_amount).send({
+					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})

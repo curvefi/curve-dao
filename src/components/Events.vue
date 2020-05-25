@@ -469,6 +469,7 @@
 			},
 			async loadEvents(block) {
 				this.paginatedExchanges = []
+				this.exchanges = []
 				let length = 0
 				let i = 0;
 				let createdAtBlock;

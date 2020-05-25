@@ -529,7 +529,7 @@
 					let virtual_price
 					if(prevEvent === undefined) {
 						let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
-						let poolIdx = this.pools.indexOf(pool);
+						let poolIdx = this.allPools.indexOf(pool);
 						try {
 							virtual_price = await this.swapContracts[poolIdx].methods.get_virtual_price().call(null, event.blockNumber - 1)
 							virtual_price /= 1e18

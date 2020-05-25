@@ -32,6 +32,7 @@
 		data() {
 			return {
 				titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC', 'renBTC'],
+				btcs: ['tbtc', 'hbtc', 'wbtc', 'renbtc'],
 				chartdata: {
 					chart: {
 						panning: true,
@@ -125,7 +126,7 @@
 			this.chart = this.$refs.highcharts.chart;
 			this.chart.showLoading()
 			this.chart.setTitle({
-				text: `Total trading volume per day for ${this.currency}`,
+				text: `Total trading volume per day for ${this.currency} ${this.btcs.includes(this.currency.toLowerCase()) ? 'in USD' : ''}`,
 			})
 		},
 		

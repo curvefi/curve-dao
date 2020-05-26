@@ -692,7 +692,12 @@
                         dy = +(BN(dy).div(this.precisions(this.to_currency)))
                         exchangeRate = dy / dx * this.precisions(this.from_currency)
                     }
-                    else*/ if(!([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency))) {
+                    else*/
+                    if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
+                        exchangeRate = (await this.set_to_amount_onesplit())[1]
+                        this.bestPool = 5
+                    }
+                    else {
                         this.swapPromise.cancel()
                         let promises = [this.realComparePools(), this.set_to_amount_onesplit()]
                         if(this.fromInput < 100) promises = [this.realComparePools()]
@@ -710,16 +715,13 @@
                             [pool1, exchangeRate1, dy_1split] = result[1]
                         }
                         let useOneSplit = ((this.fromInput * exchangeRate1) - (this.fromInput * exchangeRate)) > 2
+                        console.log(exchangeRate, exchangeRate1, useOneSplit)
                         if(exchangeRate < exchangeRate1 && useOneSplit) {
                             exchangeRate = exchangeRate1
                             pool = '1split'
                         }
                         else this.distribution = null
                         this.bestPool = ['compound', 'iearn', 'busd', 'susdv2', 'pax', '1split'].indexOf(pool)
-                    }
-                    else {
-                        exchangeRate = (await this.set_to_amount_onesplit())[1]
-                        this.bestPool = 5
                     }
                     let address = this.swap[this.bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))

@@ -463,8 +463,8 @@
                         await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
                 if(this.distribution !== null) {
                     await this.onesplit.methods.swap(
-                            this.getCoins(i)._address,
-                            this.getCoins(j)._address,
+                            this.getCoins(this.from_currency)._address,
+                            this.getCoins(this.to_currency)._address,
                             amount,
                             min_dy,
                             this.distribution,
@@ -483,7 +483,7 @@
                         });
                     
                     this.from_cur_handler();
-                    let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                    let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                     if(!contract.default_account) balance = 0
                     let maxAmount = Math.floor(
                             100 * parseFloat(balance) / this.precisions(i)

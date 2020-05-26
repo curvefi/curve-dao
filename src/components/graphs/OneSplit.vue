@@ -121,6 +121,9 @@
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
             </p>
+            <div class='info-message gentle-message' v-show='estimateGas'>
+                Estimated tx cost: {{ (+estimateGas).toFixed(2) }}$
+            </div>
             <p class='simple-error' id='no-balance' v-show='maxBalance != -1 && +fromInput > +maxBalance*1.001'>
                 Not enough balance for 
                 <span v-show='!swapwrapped'>{{Object.keys(currencies)[from_currency] | capitalize}}</span>
@@ -186,6 +189,9 @@
             multipath: 0,
             swapwrapped: false,
             bestPool: null,
+            ethPrice: 0,
+            gasPrice: 0,
+            estimateGas: 0,
         }),
         computed: {
             //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
@@ -374,6 +380,9 @@
                 await this.setup();
                 this.disabled = false;
                 this.from_cur_handler()
+                let promises = await Promise.all([helpers.getETHPrice(), contract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
             },
             swapInputs() {
                 //look no temp variable! :D
@@ -671,6 +680,15 @@
                     else return +a[1] > +b[1] ? a : b
                 })
             },
+            calculateGas(pool) {
+                let i = this.normalizeCurrency(this.from_currency)
+                let j = this.normalizeCurrency(this.to_currency)
+                let onesplitGas = 4000000
+                let poolgas = contractGas.swap[pool].exchange_underlying(i, j) / 2
+                let txPricePool = poolgas * this.gasPrice / 1e18 * this.ethPrice
+                let txPrice1split = onesplitGas * this.gasPrice / 1e18 * this.ethPrice
+                return [txPricePool, txPrice1split]
+            },
             async set_to_amount() {
                 this.distribution = null
                 let minAmount = 10000
@@ -696,8 +714,11 @@
                     if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
                         this.bestPool = 5
+                        let [_, txPrice1split] = this.calculateGas('1split')
+                        this.estimateGas = txPrice1split
                     }
                     else {
+                        let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', '1split']
                         this.swapPromise.cancel()
                         let promises = [this.realComparePools(), this.set_to_amount_onesplit()]
                         if(this.fromInput < 100) promises = [this.realComparePools()]
@@ -714,14 +735,16 @@
                         if(result[1]) {
                             [pool1, exchangeRate1, dy_1split] = result[1]
                         }
-                        let useOneSplit = ((this.fromInput * exchangeRate1) - (this.fromInput * exchangeRate)) > 2
-                        console.log(exchangeRate, exchangeRate1, useOneSplit)
+                        let [txPricePool, txPrice1split] = this.calculateGas(pool)
+                        let useOneSplit = ((this.fromInput * exchangeRate1) - (this.fromInput * exchangeRate)) > (txPrice1split - txPricePool)
+                        this.estimateGas = txPricePool
                         if(exchangeRate < exchangeRate1 && useOneSplit) {
                             exchangeRate = exchangeRate1
                             pool = '1split'
+                            this.estimateGas = txPrice1split
                         }
                         else this.distribution = null
-                        this.bestPool = ['compound', 'iearn', 'busd', 'susdv2', 'pax', '1split'].indexOf(pool)
+                        this.bestPool = pools.indexOf(pool)
                     }
                     let address = this.swap[this.bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))

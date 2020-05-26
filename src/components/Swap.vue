@@ -95,7 +95,9 @@
                     Warning! Exchange rate is too low!
                 </p>
                 <p class='trade-buttons'>
-                    <button id="trade" @click='handle_trade'>Sell</button>
+                    <button id="trade" @click='handle_trade'>
+                        Sell <span class='loading line' v-show='loadingAction'></span>
+                    </button>
                 </p>
                 <div class='info-message gentle-message' v-show='show_loading'>
                     {{waitingMessage}} <span class='loading line'></span>
@@ -150,6 +152,7 @@
             estimateGas: 0,
             ethPrice: 0,
             icontype: '',
+            loadingAction: false,
         }),
         created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
@@ -338,7 +341,14 @@
                 })
                 return helpers.makeCancelable(promise);
             },
+            setLoadingAction() {
+                this.loadingAction = true
+                setTimeout(() => this.loadingAction = false, 500)
+            },
             async handle_trade() {
+                if(this.loadingAction) return;
+                this.setLoadingAction();
+
                 let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]

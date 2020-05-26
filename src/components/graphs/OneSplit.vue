@@ -119,7 +119,9 @@
                 Warning! Exchange rate is too low!
             </p>
             <p class='trade-buttons'>
-                <button id="trade" @click='handle_trade' :disabled='selldisabled'>Sell</button>
+                <button id="trade" @click='handle_trade' :disabled='selldisabled'>
+                    Sell <span class='loading line' v-show='loadingAction'></span>
+                </button>
             </p>
             <div class='info-message gentle-message' v-show='estimateGas'>
                 Estimated tx cost: {{ (+estimateGas).toFixed(2) }}$
@@ -192,6 +194,7 @@
             ethPrice: 0,
             gasPrice: 0,
             estimateGas: 0,
+            loadingAction: false,
         }),
         computed: {
             //onesplit exchanges [uniswap, kyber, bancor, oasis, cCurve, tCurve, yCurve, bCurve, sCurve]
@@ -446,7 +449,13 @@
                 }
                 await this.set_to_amount();
             },
+            setLoadingAction() {
+                this.loadingAction = true
+                setTimeout(() => this.loadingAction = false, 500)
+            },
             async handle_trade() {
+                if(this.loadingAction) return;
+                this.setLoadingAction();
                 //handle allowances
                 var i = this.normalizeCurrency(this.from_currency)
                 var j = this.normalizeCurrency(this.to_currency);

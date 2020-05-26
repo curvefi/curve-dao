@@ -111,14 +111,14 @@
             <button id="remove-liquidity"
 	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
 	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
-        		Withdraw
+        		Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
         	</button>
         	<button 
         		id='remove-liquidity-unstake'
         		v-show = "currentPool == 'susdv2' && staked_balance > 0 "
         		:disabled = 'slippage < -0.03'
         		@click='handle_remove_liquidity(true)'>
-        		Withdraw & exit
+        		Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
         	</button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
@@ -189,6 +189,7 @@
             estimateGas: 0,
             gasPrice: 0,
             ethPrice: 0,
+            loadingAction: false,
             warninglow: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
@@ -466,7 +467,14 @@
                     throw err
                 }
 			},
+            setLoadingAction(val) {
+                this.loadingAction = val;
+                setTimeout(() => this.loadingAction = false, 500)
+            },
 			async handle_remove_liquidity(unstake = false) {
+                let actionType = unstake == false ? 1 : 2
+                if(this.loadingAction == actionType) return;
+                this.setLoadingAction(actionType)
                 let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]

@@ -62,20 +62,23 @@
             </ul>
 
             <p style="text-align: center">
+                {{ loadingAction }}
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"
                 	@click='justDeposit = true; handle_add_liquidity()' 
                 	>
-                		Deposit
+                		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
                 </button>
                 <button 
                 	id='add-liquidity-stake' 
                 	v-show="currentPool == 'susdv2'" 
                 	:disabled = 'slippage < -0.03 || depositingZeroWarning'
                 	@click = 'justDeposit = false; deposit_stake()'>
-                	Deposit and stake
+                	Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
                 </button>
-                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>Stake unstaked</button>
+                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>
+                    Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
+                </button>
                 <div id='mintr' v-show="currentPool == 'susdv2'">
 	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
 	            </div>
@@ -150,6 +153,7 @@
     		gasPrice: 0,
     		ethPrice: 0,
             justDeposit: false,
+            loadingAction: false,
             errorStaking: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
@@ -207,6 +211,8 @@
         },
         methods: {
         	async stakeTokens(tokens) {
+                if(this.loadingAction == 3) return;
+                this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
         		this.waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
 				await common.ensure_stake_allowance(tokens);
@@ -331,7 +337,14 @@
 				this.show_loading = true;
 				this.handle_add_liquidity(true)
 			},
+            setLoadingAction(val) {
+                this.loadingAction = val
+                setTimeout(() => this.loadingAction = false, 500)
+            },
 			async handle_add_liquidity(stake = false) {
+                let actionType = stake == false ? 1 : 2;
+                if(this.loadingAction == actionType) return;
+                this.setLoadingAction(actionType)
                 let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]

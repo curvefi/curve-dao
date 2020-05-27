@@ -21,9 +21,14 @@ const Audits = () => import('../views/Audits.vue')
 const Contracts = () => import('../views/Contracts.vue')
 const CurvePay = () => import('../components/CurvePay.vue')
 const Events = () => import('../components/Events.vue')
+const EstimateGas = () => import('../components/EstimateGas.vue')
 const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
 
 const ycTokens = () => import('../components/ycTokens/Index.vue')
+
+const Registry = () => import('../components/test/Registry.vue')
+
+const Gateway = () => import('../components/ren/Gateway.vue')
 
 import Index from '../components/Index.vue'
 
@@ -108,7 +113,17 @@ let routes = [
         path: 'yctokens',
         name: 'ycTokens',
         component: ycTokens,
-      }
+      },
+      {
+        path: 'estimategas',
+        name: 'EstimateGas',
+        component: EstimateGas,
+      },
+      {
+        path: 'registry',
+        name: 'Registry',
+        component: Registry,
+      },
     ]
   },
   {
@@ -138,6 +153,17 @@ let routes = [
         component: Withdraw
       }
     ]
+  },
+  {
+    path:'/ren/gateway',
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'Gateway',
+        component: Gateway,
+      }
+    ],
   },
   {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren)/',

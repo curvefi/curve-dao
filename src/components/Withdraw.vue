@@ -75,7 +75,9 @@
 	                <label :for="'to_cur_'+i">
                         <img 
                             :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
-                            :src='getTokenIcon(currency)'>
+                            :src='getTokenIcon(currency)'> 
+                            <span v-show='!withdrawc'> {{ currency | capitalize }} </span>
+                            <span v-show='withdrawc'> {{ currencies[currency] }} </span>
                     </label>
 	            </li>
 	            <li>
@@ -258,7 +260,7 @@
         },
         methods: {
             async mounted() {
-            	if(this.currentPool == 'susdv2') {
+            	if(['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) {
             		this.withdrawc = true;
             		this.to_currency = null
             	}

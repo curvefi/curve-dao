@@ -18,7 +18,7 @@
             <router-link :to="'/iearn/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'iearn'}">Y</router-link>
             <router-link :to="'/busd/' + ($route.path.split('/')[2] || '')  " :class="{selected: currentPool == 'busd'}">bUSD</router-link>
             <router-link :to="'/susdv2/' + ($route.path.split('/')[2] || '') " :class="{selected: currentPool == 'susdv2'}">sUSD</router-link>
-            <!-- <router-link :to="'/ren/' + ($route.path.split('/')[2] || '')">renBTC</router-link> -->
+            <router-link :to="'/ren/' + ($route.path.split('/')[2] || '')">renBTC</router-link>
             <!-- <a href="https://iearn.finance/pool">sUSD</a> -->
             <p>____________</p>
             <router-link to='/'>Home</router-link>
@@ -72,7 +72,7 @@
         @click = 'changeAccounts'>Change accounts</button>
     </div>
     <div id="screen">
-        <div class="blue window">
+        <div :class="{'blue window': true, [$route.name]: true}">
             <h1><img src="../assets/logo_optimized.svg" alt="🌀 Curve"></h1>
         </div>
         <div class="error window half-width info" id="error-window" v-show='error'>
@@ -81,6 +81,7 @@
         <router-view/>
     </div>
     <balances-info
+    :class = '{[$route.name]: true}'
     :bal_info = 'bal_info'
     :total = 'balTotal'
     :l_info = 'l_info'

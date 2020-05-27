@@ -90,6 +90,10 @@ export function setTimeoutPromise(delay) {
   return new Promise(resolve => setTimeout(resolve, delay))
 }
 
+export function generateID() {
+  return '_' + Math.random().toString(36).substr(2, 9);
+}
+
 export async function retry(fn, retryDelay = 100, numRetries = 3) {
   for (let i = 0; i < numRetries; i++) {
     try {

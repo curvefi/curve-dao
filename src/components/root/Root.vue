@@ -251,7 +251,7 @@
                	 		</span>
 	                </router-link>
 	            </div> -->
-	            <!-- <div :class="{selected: activePoolLink == 6}">
+	            <div :class="{selected: activePoolLink == 5}">
 	                <router-link to = '/ren'>
 	                	<span class='index'>5.</span>  
 	                    <span class='pooltext'>ren</span>
@@ -279,7 +279,7 @@
                	 			</span>
                	 		</span>
 	                </router-link>
-	            </div> -->
+	            </div>
 	        </fieldset>
 	    </div>
 
@@ -411,14 +411,14 @@
 	                e.preventDefault();
 	                this.activePoolLink--;
 	            }
-	            if(e.code == 'ArrowDown' && this.activePoolLink < 4) {
+	            if(e.code == 'ArrowDown' && this.activePoolLink < 5) {
 	                e.preventDefault();
 	                this.activePoolLink++;
 	            }
 	            if(e.code.includes('Digit')) {
 	                e.preventDefault();
 	                var digit = e.code.slice(-1);
-	                if(digit > 4) return;
+	                if(digit > 5) return;
 	                this.activePoolLink = digit
 	            }
 	            if(e.code == 'Enter') {

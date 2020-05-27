@@ -83,7 +83,7 @@
 		            {
 		            	id: 'apyAxis',
 		            	opposite: false,
-		            	type: 'logarithmic',
+		            	type: ((self) => self.pool == 'ren' ? 'linear' : 'logarithmic')(this),
 	        			title: {
 	        				text: 'Daily APY [%]',
 	        				style: {

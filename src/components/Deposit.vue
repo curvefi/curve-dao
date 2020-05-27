@@ -61,6 +61,9 @@
                 </li>
             </ul>
 
+            <p style="text-align: center" v-show="currentPool == 'ren'">
+                <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
+            </p>
             <p style="text-align: center">
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"

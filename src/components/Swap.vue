@@ -94,6 +94,9 @@
                 <p class='simple-error' v-show='exchangeRate<=0.98'>
                     Warning! Exchange rate is too low!
                 </p>
+                <p class='trade-buttons' v-show="currentPool == 'ren'">
+                    <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
+                </p>
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade'>
                         Sell <span class='loading line' v-show='loadingAction'></span>

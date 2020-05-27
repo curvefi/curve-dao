@@ -393,10 +393,8 @@
 				try {
 					let result = await promise
 					result = result[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
-					console.log(result, "THE RESULT")
 					if(this.from_currency == 0) {
 						let [dy_original, dy] = result.map(v=>v / 1e8)
-						console.log(dy_original)
 						this.toInput = dy
 						this.toInputOriginal = dy_original
 					}
@@ -428,7 +426,6 @@
 			async from_cur_handler() {
 				this.address = ''
 				if(this.from_currency == 0) this.address = this.default_account
-				console.log(contract, "CONTRACT")
                 let currentAllowance = BN(await contract.coins[1].methods.allowance(this.default_account, adapterAddress).call())
                 let maxAllowance = contract.max_allowance.div(BN(2))
                 if (currentAllowance.gt(maxAllowance))

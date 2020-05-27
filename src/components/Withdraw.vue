@@ -110,6 +110,9 @@
 	        		(You have {{(staked_balance / 1e18) | toFixed2}} staked)
 	        	</div> -->
 	      	</div>
+            <p v-show="currentPool == 'ren'">
+                <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
+            </p>
             <button id="remove-liquidity"
 	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
 	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">

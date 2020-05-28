@@ -434,12 +434,16 @@
 			    let volume = []
 				try {
 					let lastPriceCalls = this.pools.map(pool=> {
+						let amount = 1
 						let get_method = 'get_dy_underlying'
-						if(['tbtc', 'ren'].includes(pool)) get_method = 'get_dy'
+						if(['tbtc', 'ren'].includes(pool)) {
+							amount = 1/1e8
+							get_method = 'get_dy'
+						}
 						return [
 							abis[pool].swap_address, 
 							window[pool].swap.methods[get_method](this.fromCurrency, 
-								this.toCurrency, BN(abis[pool].coin_precisions[this.fromCurrency]).toFixed(0)).encodeABI()
+								this.toCurrency, BN(amount).times(abis[pool].coin_precisions[this.fromCurrency]).toFixed(0)).encodeABI()
 						]
 					})
 					let aggcalls = await contract.multicall.methods.aggregate(lastPriceCalls).call()
@@ -459,10 +463,12 @@
 								let v = data[j][i]
 								if(Object.keys(v).length === 0 && v.constructor === Object) continue;
 								if(v === undefined) continue;
+								let amount = 1
+								if(['tbtc', 'ren'].includes(this.pools[j])) amount = 1/1e8
 								//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
 								let get_dy_underlying = await calcWorker.calcPrice(
-									{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, abis[this.pools[j]].coin_precisions[this.fromCurrency])
-								let calcprice = +(BN(get_dy_underlying).div(abis[this.pools[j]].coin_precisions[this.toCurrency]))
+									{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, amount * abis[this.pools[j]].coin_precisions[this.fromCurrency])
+								let calcprice = +(BN(get_dy_underlying).div(amount * abis[this.pools[j]].coin_precisions[this.toCurrency]))
 								if(calcprice == 0) continue;
 								if(this.inverse) calcprice = 1 / calcprice
 								if(v.prices[this.pairIdx]) {
@@ -475,7 +481,7 @@
 								}
 								if(i == length-1) {
 									let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
-									let lastPrice = +(BN(lastPrices[j])).div(abis[this.pools[j]].coin_precisions[this.toCurrency])
+									let lastPrice = +(BN(lastPrices[j])).div(amount * abis[this.pools[j]].coin_precisions[this.toCurrency])
 									if(this.inverse) lastPrice = 1/lastPrice
 									this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
 								}

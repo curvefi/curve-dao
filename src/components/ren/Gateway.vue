@@ -634,15 +634,19 @@
 				
 				let get_dy = await contract.swap.methods.get_dy(0, 1, BN(amount).times(1e8).toFixed(0, 1)).call()
 
-				await this.adapterContract.methods.mintThenSwap(
-					params.contractCalls[0].contractParams[0].value,
-					params.contractCalls[0].contractParams[1].value,
-					utxoAmount,
-					renResponse.autogen.nhash,
-					signature,
-				).send({
-					from: this.default_account
-				})
+				await new Promise((resolve, reject) => {
+					return this.adapterContract.methods.mintThenSwap(
+						params.contractCalls[0].contractParams[0].value,
+						params.contractCalls[0].contractParams[1].value,
+						utxoAmount,
+						renResponse.autogen.nhash,
+						signature,
+					).send({
+						from: this.default_account
+					})
+					.once('transactionHash', resolve)
+					.catch(err => reject(err))
+				}
 
 				transaction.state = 5
 

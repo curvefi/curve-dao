@@ -41,7 +41,7 @@
 	import abis from '../../allabis'
 	import Decimal from 'break_infinity.js'
 	import * as helpers from '@/utils/helpers'
-
+	import * as priceStore from '../common/priceStore'
 
 	let BN = val => new Decimal(val)
 
@@ -60,6 +60,7 @@
 				loading: true,
 				zoom: 100,
 				volZoom: 100,
+				btcPrice: null,
 				chart: null,
 			    	depthchart: {
 			    		chart: {
@@ -243,6 +244,7 @@
 		async mounted() {
 			this.chart = this.$refs.highcharts.chart
 			this.chart.showLoading();
+			this.btcPrice = await priceStore.getBTCPrice()
 /*			await Promise.all(tradeStore.pools.map(p=>{
 				return init(contract.contracts[p == 'y' ? 'iearn' : p])
 			}))
@@ -352,7 +354,13 @@
 					if(pool == 'y') pool = 'iearn'
 					let cont = contract.contracts[pool]
 					if(pool == contract.currentContract) cont = contract
-					balanceSum += cont.bal_info[fromCurrency] + cont.bal_info[toCurrency]
+					let balanceFrom = cont.bal_info[fromCurrency]
+					let balanceTo = cont.bal_info[toCurrency]
+					if(['tbtc' ,'ren'].includes(pool)) {
+						balanceFrom *= this.btcPrice
+						balanceTo *= this.btcPrice
+					}
+					balanceSum += balanceFrom + balanceTo
 				}
 
 			 	let imax = Math.floor(100 * (1 + Math.log10(10) / Math.log10(balanceSum)))
@@ -371,14 +379,19 @@
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
+						if(['tbtc', 'ren'].includes(pools[j])) {
+							dx1 /= this.btcPrice
+							dy1 /= this.btcPrice
+						}
 						let dy = await calcWorker.calcPrice({...tradeStore.poolInfo[poolIdx[j]], ...poolConfigs[j]}, fromCurrency, toCurrency, BN(dx1).toFixed(0), true)
 						dy = +(BN(dy).div(abis[pools[j]].coin_precisions[toCurrency]))
 						let dx = await calcWorker.calcPrice({...tradeStore.poolInfo[poolIdx[j]], ...poolConfigs[j]}, toCurrency, fromCurrency, BN(dy1).toFixed(0), true)
 						dx = +(BN(dx).div(abis[pools[j]].coin_precisions[fromCurrency]))
+
 						/*let dy = +(calc.get_dy_underlying(fromCurrency, toCurrency, BN(dx1).toFixed(0), true)) / (contract.coin_precisions[toCurrency])
 						let dx = +(calc.get_dy_underlying(toCurrency, fromCurrency, BN(dy1).toFixed(0), true)) / (contract.coin_precisions[fromCurrency])*/
 						//console.log(+dy)
-						let bidrate = dy / (dx1) * abis[pools[j]].coin_precisions[fromCurrency]
+						let bidrate = dy * abis[pools[j]].coin_precisions[fromCurrency] / (dx1)
 						let askrate = (dy1) / abis[pools[j]].coin_precisions[toCurrency] / dx
 
 						//console.log(dy, dx)
@@ -425,9 +438,11 @@
 					})
 				}
 
+
 				bids = bids.filter(b => b[0] > Math.max(Math.max(...bxs.map(xs=>Math.min(...xs))), 0.1) )
 				asks = asks.filter(a => a[0] < Math.min(Math.min(...axs.map(xs=>Math.max(...xs))), 10) )
                 bids = bids.reverse()
+
 
 				this.chart.hideLoading()
 				while(this.chart.series.length) {

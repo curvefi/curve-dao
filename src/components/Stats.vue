@@ -30,6 +30,14 @@
 		        	<span v-show='!loading'> {{monthly_apr*100 | toFixed2}}% </span>
 		    	</span>
 	    	</p>
+	    	<p>Total APY: 
+	    		<span id="total-apr" :class="{'loading line': loading}">
+	    			<span v-show='!loading'> {{total_apr*100 | toFixed2}}% </span>
+	    		</span>
+	    		<span class='tooltip'>[?]
+	    			<span class='tooltiptext'>Total APY since the pool was launched</span>
+	    		</span>
+	    	</p>
 	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool' :volume='volume'/>
 	    </div>
 	</div>
@@ -71,6 +79,7 @@
 			daily_apr: '',
 			weekly_apr: '',
 			monthly_apr: '',
+			total_apr: '',
 			chartdata: {
 				chart: {
 					panning: true,
@@ -220,6 +229,7 @@
 					this.daily_apr = apydata.apy.day[subdomain];
 					this.weekly_apr = apydata.apy.week[subdomain];
 					this.monthly_apr = apydata.apy.month[subdomain];
+					this.total_apr = apydata.apy.total[subdomain];
 					let period = 1440
 					//if(subdomain == 'susd') period = 30
 			        let newdata = await fetch(`${window.domain}/raw-stats/${subdomain}-${period}m.json`)

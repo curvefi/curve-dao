@@ -351,11 +351,11 @@
 				this.getCurveRewards()
 				this.getBalances()
 			})
-			this.btcPrice = await priceStore.getBTCPrice()
 		},
-		mounted() {
+		async mounted() {
 			this.keydownListener = document.addEventListener('keydown', this.handle_pool_change)
 			contract.web3 && contract.multicall && this.getCurveRewards() && this.getBalances();
+			this.btcPrice = await priceStore.getBTCPrice()
 	        this.getAPY()
 		},
 		beforeDestroy() {

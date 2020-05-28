@@ -241,13 +241,12 @@ export async function multiInitState(calls, contract, initContracts = false) {
     let web3 = currentContract.web3 || new Web3(infura_url)
     let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
     var default_account = currentContract.default_account;
-    console.log(calls)
     let aggcalls;
     try {
         aggcalls = await multicall.methods.aggregate(calls).call()
     }
     catch(err) {
-        console.log(err)
+        console.error(err)
         aggcalls = await multicall.methods.aggregate(calls.slice(1)).call()
         aggcalls[1] = [web3.eth.abi.encodeParameter('uint256', cBN(1e18).toFixed(0)), ...aggcalls[1]] 
     }

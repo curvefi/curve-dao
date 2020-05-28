@@ -190,6 +190,7 @@
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susd') subdomain = 'synthetix'
 				if(subdomain == 'susdv2') subdomain = 'susd'
+				if(subdomain == 'ren') subdomain = 'ren2'
 
 				if(subdomain == 'synthetix') {
 					let res = await fetch(`https://${subdomain}.curve.fi/stats.json`);
@@ -266,7 +267,7 @@
 			},
 			calcRealProfit(point, subdomain) {
 				let S = point.balances
-					.map((balance, i) => balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i])
+					.map((balance, i) => balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain].coin_precisions[i])
             		.reduce((a, b) => a + b, 0)
 
             	let real_profit = point.balances
@@ -278,7 +279,7 @@
 	                	if(i == 0) price = 1 / price
 	                	price = price || 1
 
-	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain].coin_precisions[i];
+	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain].coin_precisions[i];
 	            		return real_amount / S * (point.virtual_price / this.virtual_price_0) * price
 	            	})
 	        		.reduce((a, b) => a + b, 0)

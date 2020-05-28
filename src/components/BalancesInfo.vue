@@ -187,17 +187,16 @@
       if(volume == -1) {
         let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
         stats = await stats.json()
-        console.log(stats, "THE STATS")
         for(let [key, value] of Object.entries(volumeStore.state.volumes)) {
           if(volumeStore.state.volumes[key][0] == -1) {
-            Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key] || 0)
+            let volume = key == 'ren' ? stats.volume.ren2 : stats.volume[key]
+            Vue.set(volumeStore.state.volumes[key], 0,  volume || 0)
             if(['tbtc', 'ren'].includes(key)) {
-              Vue.set(volumeStore.state.volumes[key], 0,  stats.volume[key] * this.btcPrice || 0)
-              Vue.set(volumeStore.state.volumes[key], 1,  stats.volume[key] || 0)
+              Vue.set(volumeStore.state.volumes[key], 0,  volume * this.btcPrice || 0)
+              Vue.set(volumeStore.state.volumes[key], 1,  volume || 0)
             }
           }
         }
-        console.log(volumeStore, "VOLUME STORE")
       }
     },
     computed: {

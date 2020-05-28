@@ -383,7 +383,10 @@
 				let intervalIndex = tradeStore.intervals.indexOf(jsonInterval)
 				if(intervalIndex >= tradeStore.intervals.indexOf('30m')) jsonInterval = '30m'
 				if(intervalIndex >= tradeStore.intervals.indexOf('1d')) jsonInterval = '1440m'
-				let urls = tradeStore.pools.map(pool=>fetch(`${window.domain}/raw-stats/${pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool}-${jsonInterval}.json`));
+				let urls = tradeStore.pools.map(pool=>{
+					let fetchpool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool
+					return fetch(`${window.domain}/raw-stats/${fetchpool}-${jsonInterval}.json`)
+				});
 				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren'))
 					urls.push(
 						fetch(`

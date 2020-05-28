@@ -51,6 +51,7 @@ export default {
 				let subdomain = this.currentPool
 				if(subdomain == 'iearn') subdomain = 'y'
 				if(subdomain == 'susdv2') subdomain = 'susd'
+				if(subdomain == 'ren') subdomain = 'ren2'
 	        	let res = await fetch(`${window.domain}/raw-stats/${subdomain}-1440m.json`);
 	        	res = await res.json();
 	        	this.priceData = res

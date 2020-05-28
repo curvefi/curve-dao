@@ -41,10 +41,13 @@ export function findClosestPrice(timestamp, data) {
 
 export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
-	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
+	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p == 'ren2' ? 'ren' : p)
 	pools = pools.filter(pool => !state.volumeData[period][pool].length)
 	//pools = pools.filter(pool => !['tbtc'].includes(pool))
-	let requests = pools.map(p => fetch(`${window.domain}/raw-stats/${p}-${period}m.json`))
+	let requests = pools.map(p => {
+		if(p == 'ren') p = 'ren2'
+		return fetch(`${window.domain}/raw-stats/${p}-${period}m.json`)
+	})
 	//will work for 17 days on 5 minutes chart
 	if(pools.includes('tbtc') || pools.includes('ren'))
 		requests.push(fetch(`
@@ -68,17 +71,17 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 
 export async function getVolumes(pools, refresh = false) {
 	if(!Array.isArray(pools)) pools = [pools]
-	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p)
+	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p == 'ren' ? 'ren2' : p)
 	if(Object.values(state.volumes).filter(v=>v[0]!=-1).length == pools.length && !refresh) return;
 	let req = await Promise.all([fetch(`${window.domain}/raw-stats/apys.json`), fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin`)])
 	let [stats, btcPrice] = await Promise.all(req.map(r => r.json()))
     btcPrice = btcPrice.quotes.USD.price
     for(let [pool, volume] of Object.entries(state.volumes)) {
     	if(volume[0] == -1) {
-    		let volume = stats.volume[pool]
+    		let volume = pool == 'ren' ? stats.volume.ren2 : stats.volume[pool]
     		if(['tbtc', 'ren'].includes(pool)) volume *= btcPrice
     		Vue.set(state.volumes[pool], 0, volume || 0)
-    		Vue.set(state.volumes[pool], 1, stats.volume[pool])
+    		Vue.set(state.volumes[pool], 1, volume)
     	}
     }
 }

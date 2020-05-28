@@ -175,7 +175,7 @@
 			this.end = end.getTime() / 1000
 
 			let requests = Object.values(this.pools)
-							.map(p => p == 'susdv2' ? 'susd' : p)
+							.map(p => p == 'susdv2' ? 'susd' : p == 'ren' ? 'ren2' : p)
 							.map(p => fetch(`${window.domain}/raw-stats/${p}-1440m.json`))
 			let data = await Promise.all(requests)
 			for(let [key, res] of data.entries()) {

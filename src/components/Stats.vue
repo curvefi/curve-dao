@@ -10,34 +10,36 @@
 	            <div class='loading matrix' v-show='loading'></div>
 				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 	        </fieldset>
-	        <p>Recent daily APY: 
-	        	<span id="daily-apr" :class="{'loading line': loading}">
-		        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
-		    	</span>
-	    	</p>
-	    	<p v-show = "pool != 'susd'">Daily trading volume: 
-	    		<span :class="{'loading line': volumeData < 0}">
-	    			<span v-show='volumeData != -1'> {{ volumeData }}$</span>	
-	    		</span>
-	    	</p>
-	        <p>Recent weekly APY: 
-	        	<span id="weekly-apr" :class="{'loading line': loading}">
-		        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
-		    	</span>
-	    	</p>
-	    	<p>Recent monthly APY: 
-	        	<span id="monthly-apr" :class="{'loading line': loading}">
-		        	<span v-show='!loading'> {{monthly_apr*100 | toFixed2}}% </span>
-		    	</span>
-	    	</p>
-	    	<p>Total APY: 
-	    		<span id="total-apr" :class="{'loading line': loading}">
-	    			<span v-show='!loading'> {{total_apr*100 | toFixed2}}% </span>
-	    		</span>
-	    		<span class='tooltip'>[?]
-	    			<span class='tooltiptext'>Total APY since the pool was launched</span>
-	    		</span>
-	    	</p>
+	        <div class='allapys'>
+		        <p>Recent daily APY: 
+		        	<span id="daily-apr" :class="{'loading line': loading}">
+			        	<span v-show='!loading'> {{daily_apr*100 | toFixed2}}% </span>
+			    	</span>
+		    	</p>
+		    	<p v-show = "pool != 'susd'">Daily trading volume: 
+		    		<span :class="{'loading line': volumeData < 0}">
+		    			<span v-show='volumeData != -1'> {{ volumeData }}$</span>	
+		    		</span>
+		    	</p>
+		        <p>Recent weekly APY: 
+		        	<span id="weekly-apr" :class="{'loading line': loading}">
+			        	<span v-show='!loading'> {{weekly_apr*100 | toFixed2}}% </span>
+			    	</span>
+		    	</p>
+		    	<p>Recent monthly APY: 
+		        	<span id="monthly-apr" :class="{'loading line': loading}">
+			        	<span v-show='!loading'> {{monthly_apr*100 | toFixed2}}% </span>
+			    	</span>
+		    	</p>
+		    	<p>Total APY: 
+		    		<span id="total-apr" :class="{'loading line': loading}">
+		    			<span v-show='!loading'> {{total_apr*100 | toFixed2}}% </span>
+		    		</span>
+		    		<span class='tooltip'>[?]
+		    			<span class='tooltiptext'>Total APY since the pool was launched</span>
+		    		</span>
+		    	</p>
+	    	</div>
 	    	<daily-chart :data='data' :pool='pool || currentPool' v-if='!pool' :volume='volume'/>
 	    </div>
 	</div>
@@ -298,3 +300,14 @@
 		}
 	}
 </script>
+
+<style scoped>
+	.allapys {
+		margin-top: 0.7em;
+		margin-bottom: 0.7em;
+	}
+	.allapys > p {
+		margin-top: 0.3em;
+		margin-bottom: 0.3em;
+	}
+</style>

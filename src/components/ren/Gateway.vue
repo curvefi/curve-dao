@@ -646,7 +646,7 @@
 					})
 					.once('transactionHash', resolve)
 					.catch(err => reject(err))
-				}
+				})
 
 				transaction.state = 5
 

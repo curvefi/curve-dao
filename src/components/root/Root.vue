@@ -379,7 +379,7 @@
 				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
 				let snxPrice = await request.json();
 				snxPrice = snxPrice.quotes.USD.price;
-				this.snxRewards = 365 * 64000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+				this.snxRewards = 365 * 48000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
 			},
 			async getBalances() {
 				if(!contract.default_account) return;

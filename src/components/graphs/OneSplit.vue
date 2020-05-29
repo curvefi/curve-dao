@@ -38,7 +38,7 @@
                                 ≈ {{actualFromValue}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                             </p>
                         </li>
-                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
+                        <li :class="{'coins': true, [currency]: true}" v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                             <label :for="'from_cur_'+i">
                                 <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
@@ -67,7 +67,7 @@
                                 ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                             </p>
                         </li>
-                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
+                        <li :class="{'coins': true, [currency]: true}" v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                             <label :for="'to_cur_'+i">
                                 <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
@@ -233,8 +233,8 @@
                         busd: 'BUSD',
                         susd: 'sUSD',
                         pax: 'PAX',
-                        wbtc: 'wBTC',
                         renbtc: 'renBTC',
+                        wbtc: 'wBTC',
                         // tbtc: 'tBTC',
                         // hbtc: 'hBTC',
                         // wbtc: 'wBTC',
@@ -265,9 +265,10 @@
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
                 //     || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
                 if(this.bestPool === null) return 'Not available'
-                return ['compound', 'y', 'busd', 'susd', 'pax', '1split'][this.bestPool]
+                return ['compound', 'y', 'busd', 'susd', 'pax', 'ren', '1split'][this.bestPool]
             },
             selldisabled() {
+                if([7,8].includes(this.from_currency) && ![7,8].includes(this.to_currency)) return true
                 // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                 //     return true
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))
@@ -406,6 +407,11 @@
             getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.swapwrapped, '')
             },
+            toFixed(num) {
+                if(!BN.isBigNumber(num)) num = +num
+                if([7, 8].includes(this.from_currency)) return num.toFixed(8)
+                return num.toFixed(2)
+            },
             handleCheck(val) {
                 if(this.swapwrapped === val) this.swapwrapped = false;
                 else this.swapwrapped = val
@@ -424,6 +430,7 @@
                     return this.underlying_coins[i]
             },
             normalizeCurrency(i) {
+                if([7, 8].includes(i)) return i - 7;
                 if(i > 3) return 3
                 return i;
             },
@@ -467,17 +474,17 @@
                 if(this.loadingAction) return;
                 this.setLoadingAction();
                 //handle allowances
-                var i = this.normalizeCurrency(this.from_currency)
-                var j = this.normalizeCurrency(this.to_currency);
+                var i = this.from_currency
+                var j = this.to_currency;
                 let amount = BN(this.fromInput).times(this.precisions(i)).toFixed(0)
                 let maxSlippage = this.maxSlippage / 100;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage / 100;
                 let min_dy = BN(this.toInput).times(this.precisions(j)).times(BN(1 - maxSlippage)).toFixed(0)
                 let pool = contract.currentContract
                 let bestContract = contract;
-                if(this.bestPool > 0 && this.bestPool < 5) {
+                if(this.bestPool > 0 && this.bestPool < 6) {
                     let poolIdx = this.bestPool
-                    pool = Object.keys(contract.contracts).filter(pool=>pool != 'usdt')[this.bestPool]
+                    pool = Object.keys(contract.contracts).filter(pool=>pool != 'usdt' && pool != 'tbtc')[this.bestPool]
                     bestContract = contract.contracts[pool]
                 }
                 let address = bestContract.swap._address
@@ -504,7 +511,9 @@
                 }
                 else {
                     let exchangeMethod = bestContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped || this.bestPoolText == 'susd') exchangeMethod = bestContract.swap.methods.exchange
+                    if(this.swapwrapped || this.bestPoolText == 'susd' || this.bestPoolText == 'ren') exchangeMethod = bestContract.swap.methods.exchange
+                    i = this.normalizeCurrency(i)
+                    j = this.normalizeCurrency(j)
                     await exchangeMethod(i, j, amount, min_dy).send({
                             from: contract.default_account,
                             gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),
@@ -513,24 +522,20 @@
                     this.from_cur_handler();
                     let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                     if(!contract.default_account) balance = 0
-                    let maxAmount = Math.floor(
-                            100 * parseFloat(balance) / this.precisions(i)
-                        ) / 100
-                    this.maxBalance = maxAmount;
+                    let maxAmount = balance / this.precisions(i)
+                    this.maxBalance = this.toFixed(maxAmount);
                 }
             },
             async set_from_amount(i) {
                 let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 if(!contract.default_account) balance = 0
-                let amount = Math.floor(
-                        100 * parseFloat(balance) / this.precisions(i)
-                    ) / 100
+                let amount = balance / this.precisions(i)
 
                 if (this.fromInput == '' || this.val == 0) {
                     if(!contract.default_account) balance = 0
-                    this.fromInput = amount.toFixed(2)
+                    this.fromInput = this.toFixed(amount)
                 }
-                this.maxBalance = amount.toFixed(2);
+                this.maxBalance = this.toFixed(amount);
             },
             makeCall(amount, parts, flags) {
                 if(this.swapwrapped == 1) flags -= 0x10
@@ -672,8 +677,8 @@
                         let dx = BN(this.fromInput).times(contractAbis.ren.coin_precisions[from_currency])
                         calls = [
                             [
-                                this.swap[6]._address,
-                                this.swap[6].methods.get_dy(from_currency, to_currency, dx.toFixed(0, 1)).encodeABI()
+                                this.swap[7]._address,
+                                this.swap[7].methods.get_dy(from_currency, to_currency, dx.toFixed(0, 1)).encodeABI()
                             ]
                         ]
                     }
@@ -681,7 +686,7 @@
                         //susd is already checked outside this function
                         //now coins are DAI, USDC, USDT, other cases are handled and they go through all pools
                         dx = BN(this.fromInput).times(contractAbis.usdt.coin_precisions[this.from_currency])
-                        let poolidx = this.pools.map(pool => this.allPools.indexOf(pool))
+                        let poolidx = this.pools.filter(pool => !['tbtc', 'ren'].includes(pool)).map(pool => this.allPools.indexOf(pool))
                         if(this.from_currency == 2 || this.to_currency == 2) poolidx =  poolidx.filter(id => id != 0)
                         calls = poolidx.map(i =>
                             [
@@ -700,17 +705,21 @@
                 let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
                 let poolRates = calls.map((call, i) => [call[0], decoded[i]])
                 return poolRates.reduce((a, b) => {
-                    let pool1 = this.addresses.find(v => v.address == b[0]).pool
-                    let pool2 = this.addresses.find(v => v.address == b[1]).pool
-                    if(b[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
-                        let precisions = this.precisions(this.to_currency)
-                        return (+a[1] / precisions > (+b[1] / precisions + 2)) ? a : b 
-                    }
-                    if(a[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
-                        let precisions = this.precisions(this.to_currency)
-                        return (+b[1] / precisions > (+a[1] / precisions + 2)) ? b : a 
-                    }
-                    else return +a[1] > +b[1] ? a : b
+                    let pool1 = this.addresses.find(v => v.address == a[0]).pool
+                    let pool2 = this.addresses.find(v => v.address == b[0]).pool
+                    let gas1 = this.calculateGas(pool1)[0]
+                    let gas2 = this.calculateGas(pool2)[0]
+                    let precisions = this.precisions(this.to_currency)
+                    return (a[1] / precisions) - gas1 > (b[1] / precisions) - gas2 ? a : b
+                    // if(b[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
+                    //     let precisions = this.precisions(this.to_currency)
+                    //     return (+a[1] / precisions > (+b[1] / precisions + 2)) ? a : b 
+                    // }
+                    // if(a[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
+                    //     let precisions = this.precisions(this.to_currency)
+                    //     return (+b[1] / precisions > (+a[1] / precisions + 2)) ? b : a 
+                    // }
+                    // else return +a[1] > +b[1] ? a : b
                 })
             },
             calculateGas(pool) {
@@ -751,10 +760,12 @@
                         this.estimateGas = txPrice1split
                     }
                     else {
-                        let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', '1split']
+                        let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', 'ren', '1split']
                         this.swapPromise.cancel()
-                        let promises = [this.realComparePools(), this.set_to_amount_onesplit()]
-                        if(this.fromInput < 100) promises = [this.realComparePools()]
+                        let promises = [this.realComparePools()]
+                        if(!([7, 8].includes(this.from_currency) && [7,8].includes(this.to_currency)) || this.fromInput > 100) {
+                            promises = [this.realComparePools(), this.set_to_amount_onesplit()]
+                        }
                         this.swapPromise = helpers.makeCancelable(Promise.all(promises))
                         let result = await this.swapPromise
                         let [poolAddress, dy] = result[0]
@@ -786,7 +797,7 @@
                         this.inf_approval = false;
 
                     //show converted exchange rate when swapping wrapped coins?
-                    this.toInput = BN(this.fromInput).times(BN(exchangeRate)).toFixed(2);
+                    this.toInput = this.toFixed(BN(this.fromInput).times(BN(exchangeRate)));
                     if(this.swapwrapped) {
                         let cdy_ = bestdy_ * this.c_rates(this.to_currency)[this.to_currency] * contractAbis.compound.wrapped_precisions[this.to_currency]
                         let cdx_ = this.fromInput * this.c_rates(this.from_currency)[this.from_currency] * contractAbis.compound.wrapped_precisions[this.from_currency]
@@ -804,10 +815,8 @@
             async set_max_balance() {
                 let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 if(!contract.default_account) balance = 0
-                let amount = Math.floor(
-                        100 * parseFloat(balance) / this.precisions(this.from_currency)
-                    ) / 100
-                this.fromInput = amount.toFixed(2)
+                let amount = balance / this.precisions(this.from_currency)
+                this.fromInput = this.toFixed(amount)
                 await this.set_to_amount();
             },
             async setup() {
@@ -843,6 +852,11 @@
                 //pax
                 this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.pax.coins[3]))
                 this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.pax.underlying_coins[3]))
+
+                for(let i = 0; i < contractAbis.ren.coins.length; i++) {
+                    this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
+                    this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
+                }
             }
         }
     }
@@ -872,6 +886,9 @@
     }
     .maxbalance.loading.line {
         display: block;
+    }
+    .coins.renbtc {
+        margin-top: 1em;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

@@ -1,6 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address, multicall_abi, multicall_address } from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, sCurveRewards_abi, sCurveRewards_address, multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -460,17 +460,6 @@ export async function init(contract, refresh = false) {
   	console.timeEnd('init')
   	state.allInitContracts = new Set(state.allInitContracts.add(contract.currentContract))
   	console.log([...state.allInitContracts])
-  	return;
-    let aggcalls = await state.multicall.methods.aggregate(calls).call()
-    let decoded = aggcalls[1].map(hex => state.web3.eth.abi.decodeParameter('address', hex))
-    chunkArr(decoded, 2).map((v, i) => {
-    	var addr = v[0];
-        let coin_abi = cERC20_abi
-        if(['iearn', 'busd', 'susd'].includes(contract.currentContract)) coin_abi = yERC20_abi
-        contract.coins.push(new state.web3.eth.Contract(coin_abi, addr));
-        var underlying_addr = v[1];
-        contract.underlying_coins.push(new state.web3.eth.Contract(ERC20_abi, underlying_addr));
-    })
 }
 
 export const allState = Vue.observable({

@@ -97,6 +97,9 @@
                 <p class='trade-buttons' v-show="currentPool == 'ren'">
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
                 </p>
+                <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
+                    Max balance you can use is {{ maxSynthBalance.toFixed(2) }}
+                </p>
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade'>
                         Sell <span class='loading line' v-show='loadingAction'></span>
@@ -138,6 +141,7 @@
             fromInput: '1.00',
             toInput: 0,
             maxBalance: -1,
+            maxSynthBalance: -1,
             maxBalanceText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
             exchangeRate: 'Not available',
@@ -207,6 +211,9 @@
             },
             selldisabled() {
                 return this.maxBalance != -1 && +(this.fromInput * this.precisions[this.from_currency]) > +this.maxBalance*1.001
+            },
+            notEnoughBalanceSynth() {
+                return this.currentPool == 'susdv2' && this.from_currency == 3 && this.fromInput > this.maxSynthBalance
             },
         },
         mounted() {
@@ -296,7 +303,7 @@
             async set_max_balance() {
                 let balance = await this.coins[this.from_currency].methods.balanceOf(this.default_account).call();
                 let amount = balance / this.precisions[this.from_currency]
-                this.fromInput = currentContract.default_account ? this.toFixed(amount) : 0
+                this.fromInput = currentContract.default_account ? amount : 0
                 await this.set_to_amount();
             },
             async highlight_input() {
@@ -308,14 +315,15 @@
                     this.fromBgColor = 'blue'
             },
             async set_from_amount(i) {
-                let balance = await this.coins[i].methods.balanceOf(this.default_account).call();
-                let amount = Math.floor(
-                        100 * parseFloat(balance) / this.precisions[i]
-                    ) / 100
-                if (this.fromInput == '' || this.val == 0) {
-                    this.fromInput = currentContract.default_account ? this.toFixed(amount.toFixed(2)) : 0
-                }
-                this.maxBalance = currentContract.default_account ? balance : 0;
+                let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(this.default_account).encodeABI()]]
+                if(this.currentPool == 'susdv2' && i == 3)
+                    balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(this.default_account).encodeABI()])
+                console.log(balanceCalls)
+                let aggcalls = await currentContract.multicall.methods.aggregate(balanceCalls).call()
+                let balances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+                let amounts = balances.map(balance => this.default_account ? this.toFixed(balance) : 0)
+                this.maxBalance = amounts[0]
+                this.maxSynthBalance = amounts[1] / 1e18
             },
             setAmountPromise() {
                 let promise = new Promise(async (resolve, reject) => {

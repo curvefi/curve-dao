@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 window.BN = BigNumber
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
-import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_address } from '../allabis'
+import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, sCurveRewards_address } from '../allabis'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -292,7 +292,9 @@ export async function multiInitState(calls, contract, initContracts = false) {
             if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             var underlying_addr = v[1];
-            contract.underlying_coins.push(new web3.eth.Contract(ERC20_abi, underlying_addr));
+            let underlying_abi = ERC20_abi
+            if(contract.currentContract == 'susdv2' && i == 3) underlying_abi = synthERC20_abi
+            contract.underlying_coins.push(new web3.eth.Contract(underlying_abi, underlying_addr));
         })
         window[contract.currentContract].coins = contract.coins
         window[contract.currentContract].underlying_coins = contract.underlying_coins

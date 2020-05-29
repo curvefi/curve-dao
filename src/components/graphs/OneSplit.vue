@@ -26,7 +26,14 @@
                 <fieldset class='item'>
                     <legend>From:</legend>
                     <div class='maxbalance' :class="{'loading line': maxBalance == -1}" @click='set_max_balance'>
-                        Max: <span v-show = 'maxBalance != -1'>{{maxBalance}}</span> 
+                        Max: 
+                        <span v-show='maxSynthBalance  != -1 && from_currency == 5'> {{ maxSynthBalanceText }} / </span>
+                        <span v-show = 'maxBalance != -1'>{{maxBalanceText}}</span>
+                        <span v-show="from_currency == 5" class='tooltip'> [?]
+                            <span class='tooltiptext'>
+                                Max transferrable amount is {{ maxSynthBalanceText }}. You can free the remaining balance by settling.
+                            </span>
+                        </span>
                     </div>
                     <ul>
                         <li>
@@ -122,6 +129,9 @@
             <p class='simple-error' v-show='exchangeRate<=0.98'>
                 Warning! Exchange rate is too low!
             </p>
+            <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
+                Max balance you can use is {{ maxSynthBalanceText }}
+            </p>
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>
                     Sell <span class='loading line' v-show='loadingAction'></span>
@@ -148,7 +158,7 @@
 <script>
     import EventBus from './EventBus'
 
-    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, onesplit_address, onesplit_abi } from '../../allabis'
+    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, onesplit_address, onesplit_abi } from '../../allabis'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -167,6 +177,7 @@
         data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
             maxBalance: -1,
+            maxSynthBalance: -1,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
@@ -252,6 +263,16 @@
                     tusd: 'yTUSD',
                     busd: 'yBUSD',
                 }
+            },
+            maxBalanceText() {
+                return this.toFixed(this.maxBalance / this.precisions(this.from_currency))
+            },
+            maxSynthBalanceText() {
+                if(isNaN(this.maxSynthBalance)) return '0.00'
+                return this.toFixed(this.maxSynthBalance / this.precisions(this.from_currency))
+            },
+            notEnoughBalanceSynth() {
+                return this.from_currency == 5 && BN(this.fromInput).gt(BN(this.maxSynthBalance).div(this.precisions(this.from_currency)))
             },
             actualFromValue() {
                 if(!this.swapwrapped) return;
@@ -408,6 +429,7 @@
                 return helpers.getTokenIcon(token, this.swapwrapped, '')
             },
             toFixed(num) {
+                if(num == '' || num == undefined || num == 0) return '0.00'
                 if(!BN.isBigNumber(num)) num = +num
                 if([7, 8].includes(this.from_currency)) return num.toFixed(8)
                 return num.toFixed(2)
@@ -527,15 +549,28 @@
                 }
             },
             async set_from_amount(i) {
-                let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
-                if(!contract.default_account) balance = 0
-                let amount = balance / this.precisions(i)
-
-                if (this.fromInput == '' || this.val == 0) {
-                    if(!contract.default_account) balance = 0
-                    this.fromInput = this.toFixed(amount)
+                let coinAddress = this.getCoins(i)._address
+                let balanceCalls = [
+                    [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]
+                ]
+                if(i == 5) {
+                    balanceCalls.push([coinAddress, 
+                        this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                 }
-                this.maxBalance = this.toFixed(amount);
+                let aggcalls = await contract.multicall.methods.aggregate(balanceCalls).call()
+                let balances = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
+                let amounts = balances.map(balance => contract.default_account ? balance : 0)
+                this.maxBalance = amounts[0]
+                this.maxSynthBalance = amounts[1]
+                // let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                // if(!contract.default_account) balance = 0
+                // let amount = balance / this.precisions(i)
+
+                // if (this.fromInput == '' || this.val == 0) {
+                //     if(!contract.default_account) balance = 0
+                //     this.fromInput = this.toFixed(amount)
+                // }
+                // this.maxBalance = this.toFixed(amount);
             },
             makeCall(amount, parts, flags) {
                 if(this.swapwrapped == 1) flags -= 0x10
@@ -711,15 +746,6 @@
                     let gas2 = this.calculateGas(pool2)[0]
                     let precisions = this.precisions(this.to_currency)
                     return (a[1] / precisions) - gas1 > (b[1] / precisions) - gas2 ? a : b
-                    // if(b[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
-                    //     let precisions = this.precisions(this.to_currency)
-                    //     return (+a[1] / precisions > (+b[1] / precisions + 2)) ? a : b 
-                    // }
-                    // if(a[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
-                    //     let precisions = this.precisions(this.to_currency)
-                    //     return (+b[1] / precisions > (+a[1] / precisions + 2)) ? b : a 
-                    // }
-                    // else return +a[1] > +b[1] ? a : b
                 })
             },
             calculateGas(pool) {
@@ -813,10 +839,13 @@
                 }
             },
             async set_max_balance() {
-                let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
-                if(!contract.default_account) balance = 0
-                let amount = balance / this.precisions(this.from_currency)
-                this.fromInput = amount
+                let balance
+                if(this.from_currency == 5)
+                    balance = await this.getCoins(this.from_currency).methods.trnasferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                else
+                    balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                let amount = BN(balance).div(this.precisions(this.from_currency)).toFixed()
+                this.fromInput = contract.default_account ? amount : 0
                 await this.set_to_amount();
             },
             async setup() {
@@ -847,7 +876,7 @@
                 //susd
                     //coins and undelying_coins are the same
                 this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.coins[3]))
-                this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.susdv2.underlying_coins[3]))
+                this.underlying_coins.push(new contract.web3.eth.Contract(synthERC20_abi, contractAbis.susdv2.underlying_coins[3]))
 
                 //pax
                 this.coins.push(new contract.web3.eth.Contract(yERC20_abi, contractAbis.pax.coins[3]))

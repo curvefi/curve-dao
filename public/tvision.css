@@ -1034,6 +1034,9 @@ fieldset.currencies, fieldset.percentage {
   padding-inline-start: 0.6em;
   padding-inline-end: 1em;
 }
+li.coins label:hover {
+  cursor: pointer;
+}
 
 .tui-table thead tr {
   border-bottom: 1px solid #a8a8a8;

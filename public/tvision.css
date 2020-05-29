@@ -1056,6 +1056,9 @@ li.coins label:hover {
 .swaprates-icon {
   height: 0.8em;
 }
+#exchange-rate:hover {
+  border-bottom: 1px solid #006000;
+}
 
 .tui-table thead tr {
   border-bottom: 1px solid #a8a8a8;

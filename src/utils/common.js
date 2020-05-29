@@ -8,6 +8,8 @@ import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
 
+let requiresResetAllowance = ['0xdAC17F958D2ee523a2206206994597C13D831ec7']
+
 export function approve(contract, amount, account, toContract) {
     if(!toContract) toContract = currentContract.swap_address
     return new Promise((resolve, reject) => {
@@ -65,7 +67,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
         // Non-infinite
         for (let i=0; i < N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(cBN(amounts[i])) && cBN(amounts[i]).gt(0)) {
-                if (allowances[i] > 0)
+                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address))
                     await approve(coins[i], 0, default_account, swap);
                 await approve(coins[i], amounts[i], default_account, swap);
             }
@@ -75,7 +77,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
         // Infinite
         for (let i=0; i < N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(cont.max_allowance.div(cBN(2))) && cBN(amounts[i]).gt(0)) {
-                if (allowances[i] > 0)
+                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address))
                     await approve(coins[i], 0, default_account, swap);
                 await approve(coins[i], cont.max_allowance, default_account, swap);
             }
@@ -91,11 +93,11 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
     var default_account = currentContract.default_account
     var amount = cBN(_amount);
     var current_allowance = cBN(await coins[i].methods.allowance(default_account, contract.swap._address).call());
-    if (current_allowance.isEqualTo(amount))
+    if (current_allowance.gte(amount))
         return false;
     if ((cBN(_amount).isEqualTo(currentContract.max_allowance)) & (current_allowance.isGreaterThan(currentContract.max_allowance.div(cBN(2)))))
         return false;  // It does get spent slowly, but that's ok
-    if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)))
+    if ((current_allowance.isGreaterThan(cBN(0))) & (current_allowance.isLessThan(amount)) && requiresResetAllowance.includes(coins[i]._address))
         await approve(coins[i], 0, default_account, toContract);
     return await approve(coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
@@ -104,7 +106,7 @@ export async function approveAmount(contract, amount, account, toContract) {
     let current_allowance = cBN(await contract.methods.allowance(account, toContract).call())
     console.log(current_allowance.toString(), amount.toString(), current_allowance.lt(amount))
     if(current_allowance.lt(amount) && amount.gt(0)) {
-        if(current_allowance > 0) {
+        if(current_allowance > 0 && requiresResetAllowance.includes(contract._address)) {
             await approve(contract, 0, account, toContract)
         }
         await approve(contract, amount, account, toContract)

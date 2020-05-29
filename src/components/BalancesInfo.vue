@@ -170,7 +170,7 @@
           return rounded
       },
       totalCurrencies(currencies) {
-        if(this.currentPool != 'susdv2')
+        if(!['susdv2', 'tbtc', 'ren'].includes(this.currentPool))
           return Object.keys(currencies).join('+').toUpperCase();
         return Object.values(currencies).join('+');
       },

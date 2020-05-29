@@ -232,7 +232,7 @@
                 return num.toFixed(2)
             },
             getCurrency(i) {
-                if(!this.swapwrapped) return (Object.keys(this.currencies)[i]).toUpperCase()
+                if(!this.swapwrapped && !['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) return (Object.keys(this.currencies)[i]).toUpperCase()
                 return Object.values(this.currencies)[i] 
             },
             swapInputs() {

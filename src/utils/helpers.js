@@ -11,8 +11,13 @@ Vue.filter('toFixed2', function (value) {
 Vue.filter('toUpper', val => val.toUpperCase())
 
 export function capitalize(value) {
-  if(value == 'susd') return 'sUSD';
-  if(value == 'ycurve') return 'yCurve';
+  let capitalizations = {
+    susd: 'sUSD',
+    ycurve: 'yCurve',
+    wbtc: 'wBTC',
+    renbtc: 'renBTC',
+  }
+  if(capitalizations[value]) return capitalizations[value]
   return value.toUpperCase();
 }
 

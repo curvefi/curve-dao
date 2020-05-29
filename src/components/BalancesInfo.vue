@@ -119,9 +119,15 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{l_info && toFixed(l_info[i])}}</span></li>
           <li>
-            <b>{{totalCurrencies(currencies)}}:</b> 
+            <b>USD balance:</b> 
 
-            <span> {{toFixed(totalShare)}}</span>
+            <span>
+               <span :class="{'loading line': realShare === null}"> 
+                <span v-show="realShare !== null">
+                  {{realShare | toFixed2 | formatNumber}}
+                </span>
+              </span>
+            </span>
           </li>
           <li>
             <b>Averaged USD balance:</b> {{ usdShare1 | formatNumber(2) }}
@@ -135,9 +141,15 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{staked_info && toFixed(staked_info[i])}}</span></li>
           <li>
-            <b>{{totalCurrencies(currencies)}}:</b> 
+            <b>USD balance:</b> 
 
-            <span> {{toFixed(totalStake)}}</span>
+            <span>
+              <span :class="{'loading line': realStake === null}">
+                <span v-show="realStake !== null">
+                  {{realStake | toFixed2 | formatNumber}}
+                </span>
+              </span>
+            </span>
           </li>
 
           <li>
@@ -153,13 +165,24 @@
 <script>
   import Vue from 'vue'
   import { getters, allCurrencies, contract as currentContract } from '../contract'
+  import allabis from '../allabis'
   import * as helpers from '../utils/helpers'
   import * as volumeStore from './common/volumeStore'
+  import stableswap_fns from '../utils/stableswap_fns'
+  import * as Comlink from 'comlink'
+  import Worker from 'worker-loader!./graphs/worker.js';
+  const worker = new Worker();
+  const calcWorker = Comlink.wrap(worker);
   import * as priceStore from './common/priceStore'
 
   export default {
     props: ['pool', 'bal_info', 'total', 'l_info', 'totalShare', 'fee', 'admin_fee', 'currencies', 'tokenSupply', 'tokenBalance', 'usdShare', 'staked_info', 'totalStake', 'usdStake', 'combinedstats', 'virtual_price', 'A', 'future_A', 'admin_actions_deadline'],
     data: () => ({
+      volumes: [],
+      realShare: null,
+      realStake: null,
+      lastPoint: null,
+      lastPool: null,
       btcPrice: 0,
     }),
     methods: {
@@ -176,6 +199,37 @@
       },
       formatNumber(number, dec = 2) {
         return helpers.formatNumber(number, dec)
+      },
+      async updateShares() {
+        if(!(this.usdShare1 > 0 || (this.currentPool == 'susdv2' && this.usdStake1) > 0)) return;
+        let pool = this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool
+        let req = await fetch(`${window.domain}/raw-stats/${pool}-1m.json`)
+        this.lastPoint = await req.json()
+        this.lastPoint = this.lastPoint[this.lastPoint.length - 1]
+        let N_COINS = allabis[this.currentPool].N_COINS;
+        this.realShare = 0;
+        this.realStake = 0;
+        for(let i = 0; i < N_COINS; i++) {
+          let price = 1
+          let amount = 1
+          let toPrecisions = 1e6
+          if(['tbtc', 'ren'].includes(this.currentPool)) {
+            amount = 0.0001
+            toPrecisions = 1e8
+          }
+          if(i != 1) {
+            let dy = await calcWorker.calcPrice({ 
+              ...this.lastPoint, 
+              N_COINS: allabis[this.currentPool].N_COINS,
+              PRECISION_MUL: allabis[this.currentPool].coin_precisions.map(p=>1e18/p),
+              PRECISION: 1e18,
+            }, i, 1, amount * allabis[this.currentPool].coin_precisions[i])
+            price = dy / toPrecisions / amount
+          }
+          this.realShare += +this.l_info[i] * price
+          this.realStake += +this.staked_info[i] * price
+        }
+        if(this.isBTC) this.realShare *= this.btcPrice
       },
     },
     async created() {
@@ -198,6 +252,9 @@
           }
         }
       }
+      let N_COINS = allabis[this.currentPool].N_COINS;
+      this.currentPool && this.l_info && this.l_info[N_COINS-1] !== undefined && this.updateShares()
+      this.$watch(() => this.currentPool && this.l_info && this.l_info[N_COINS-1] !== undefined, val => this.updateShares())
     },
     computed: {
       showShares: getters.showShares,

@@ -69,7 +69,16 @@
                         </ul>
                     </fieldset>
                 </div>
-                <p class='exchange-rate'>Exchange rate (including fees): <span id="exchange-rate">{{exchangeRate}}</span></p>
+                <p class='exchange-rate'>
+                    Exchange rate 
+                    <span @click='swapExchangeRate' class='clickable underline'>
+                        {{getPair(swaprate)}}
+                        <img src='@/assets/sync-solid.svg' class='swaprates-icon'>
+                    </span> (including fees): 
+                    <span id="exchange-rate" @click='swapExchangeRate' class='clickable'>
+                        {{exchangeRate}}
+                    </span>
+                </p>
                 <div id='max_slippage'><span>Max slippage:</span> 
                     <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
                     <label for="slippage05">0.5%</label>
@@ -153,6 +162,7 @@
             maxSynthText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
             exchangeRate: 'Not available',
+            swaprate: false,
             bgColor: '#505070',
             fromBgColor: 'blue',
             maxSlippage: 1,
@@ -245,6 +255,14 @@
             getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.swapwrapped, this.currentPool)
             },
+            getPair(inverse = false) {
+                let from = !this.swapwrapped ? Object.keys(this.currencies)[this.from_currency] : Object.values(this.currencies)[this.from_currency]
+                let to = !this.swapwrapped ? Object.keys(this.currencies)[this.to_currency] : Object.values(this.currencies)[this.to_currency]
+                from = helpers.capitalize(from)
+                to = helpers.capitalize(to)
+                if(!inverse) return from + '/' + to
+                if(inverse) return to + '/' + from
+            },
             toFixed(num) {
                 if(num == '' || num == undefined || num == 0) return '0.00'
                 if(!BigNumber.isBigNumber(num)) num = +num
@@ -260,6 +278,11 @@
                 [this.fromInput, this.toInput] = [this.toInput, this.fromInput]
                 this.from_currency = this.to_currency
                 this.from_cur_handler()
+            },
+            swapExchangeRate() {
+                if(isNaN(this.exchangeRate)) return;
+                this.swaprate = !this.swaprate
+                this.exchangeRate = (1 / this.exchangeRate).toFixed(4)
             },
             async set_to_amount() {
                 this.promise.cancel()

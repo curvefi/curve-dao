@@ -1046,6 +1046,17 @@ li.coins label:hover {
   cursor: pointer;
 }
 
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  border-bottom: 1px solid black;
+  /*text-decoration: underline;*/
+}
+.swaprates-icon {
+  height: 0.8em;
+}
+
 .tui-table thead tr {
   border-bottom: 1px solid #a8a8a8;
 }

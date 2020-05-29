@@ -84,6 +84,7 @@ export default {
     },
     methods: {
         toFixed(num, precisions = 2, round = 4) {
+            if(num == 0) return 0
             if(num == '' || num === null || num === undefined) return ''
             if(precisions == 2 && ['tbtc', 'ren'].includes(this.currentPool)) precisions = 8
             if(this.showinUSD) precisions = 2

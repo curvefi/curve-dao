@@ -2,9 +2,12 @@
     <fieldset id='profit-info'>
         <legend>
             Profit in {{showinUSD ? 'USD' : 'tokens'}}
-            <div v-show='!notinpricedata'>
-                <input id="showinUSD" type="checkbox" name="inf-approval" checked v-model='showinUSD'>
-                <label for="showinUSD">Show in {{showinUSD ? 'tokens' : 'USD'}}</label>
+            <div class='showinoptions' v-show='!notinpricedata'>
+                <input id="showinUSD" type="checkbox" name="showinUSD" :value='false' :checked='showinUSD == true' @click='showinUSD = !showinUSD'>
+                <label for="showinUSD">Show in USD</label>
+
+                <input id="showintokens" type="checkbox" name="showintokens" :value='true' :checked='showinUSD == false' @click='showinUSD = !showinUSD'>
+                <label for="showintokens">Show in tokens</label>
             </div>
         </legend>
         <ul id='profit'>

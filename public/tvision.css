@@ -970,6 +970,14 @@ input[type=range]:focus::-ms-fill-upper {
   margin-top: 3px;
 }
 
+#profit-info .showinoptions {
+  margin-top: 0.3em;
+}
+
+#profit-info label[for='showintokens'] {
+  margin-left: 0.5em;
+}
+
 /* originally authored by Nick Pettit - https://github.com/nickpettit/glide */
 
 @keyframes pulse {

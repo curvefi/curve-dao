@@ -16,6 +16,10 @@ body {
   src: local('JetBrains Mono Regular'), local('JetBrainsMono-Regular'), url(https://curve.fi/JetBrainsMono-Regular.woff2) format('woff2');
 }
 
+fieldset {
+  min-width: 0;
+}
+
 .window {
   position: relative;
   cursor: default;

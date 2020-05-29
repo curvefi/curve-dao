@@ -816,7 +816,7 @@
                 let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 if(!contract.default_account) balance = 0
                 let amount = balance / this.precisions(this.from_currency)
-                this.fromInput = this.toFixed(amount)
+                this.fromInput = amount
                 await this.set_to_amount();
             },
             async setup() {

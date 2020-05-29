@@ -498,6 +498,7 @@
 			    		for (let i = l; i > l-chunkSize && i > 0; i--) {
 					    	let len = this.ohlcData[i].prices[this.pairIdx].length-1
 
+					    	if(!this.ohlcData[i].timestamp) continue;
 					    	let ohlcPoint = [
 					            this.ohlcData[i].timestamp*1000, // the date
 					            this.ohlcData[i].prices[this.pairIdx][0], // open

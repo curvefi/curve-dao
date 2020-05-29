@@ -290,6 +290,7 @@
 	                	let price = point.prices[key] && point.prices[key][3]
 	                	if(i == 0) price = 1 / price
 	                	price = price || 1
+	                	if(subdomain == 'ren2') price = point.prices[0] && point.prices[key][3] || 0
 
 	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain].coin_precisions[i];
 	            		return real_amount / S * (point.virtual_price / this.virtual_price_0) * price

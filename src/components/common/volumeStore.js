@@ -81,7 +81,7 @@ export async function getVolumes(pools, refresh = false) {
     		let volume = pool == 'ren' ? stats.volume.ren2 : stats.volume[pool]
     		if(['tbtc', 'ren'].includes(pool)) volume *= btcPrice
     		Vue.set(state.volumes[pool], 0, volume || 0)
-    		Vue.set(state.volumes[pool], 1, volume)
+    		Vue.set(state.volumes[pool], 1, pool == 'ren' ? stats.volume.ren2 : stats.volume[pool])
     	}
     }
 }

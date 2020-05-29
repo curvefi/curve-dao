@@ -15,6 +15,10 @@
 
             <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
             <label for='paxpool1'>PAX</label>
+
+            <input id='renpool1' type='checkbox' value='ren' v-model='pools'/>
+            <label for='renpool1'>ren</label>
+
         </div>
 
         <div class='swap exchange'>
@@ -38,7 +42,7 @@
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                             <label :for="'from_cur_'+i">
                                 <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
-                                <span v-show='!swapwrapped'> {{currency == 'susd' ? 'sUSD' : (currency.toUpperCase())}} </span>
+                                <span v-show='!swapwrapped'> {{currency | capitalize}} </span>
                                 <span v-show='swapwrapped'> {{currencies[currency]}} </span>
                             </label>
                         </li>
@@ -161,7 +165,7 @@
 
     export default {
         data: () => ({
-            pools: ['compound', 'y', 'busd', 'susdv2', 'pax'],
+            pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
             maxBalance: -1,
             from_currency: 0,
             to_currency: 1,
@@ -176,8 +180,8 @@
             customSlippageDisabled: true,
             inf_approval: false,
             distribution: null,
-            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX, tBTC, hBTC, wBTC
-            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18, 1e18, 1e18, 1e8, 1e18],
+            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX, renBTC, wBTC
+            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18, 1e8, 1e8],
             swap: [],
             addresses: [],
             coins: [],
@@ -213,6 +217,7 @@
                     busd: 0x8000,
                     susdv2: 0x40000,
                     pax: 0x80000000,
+                    ren: 0x100000000,
                 }
                 let addPoolFlag = Object.keys(curveFlags).filter(pool=>this.pools.includes(pool)).map(pool=>curveFlags[pool])
                 addPoolFlag = addPoolFlag.reduce((a, b) => a + b, 0)
@@ -228,6 +233,8 @@
                         busd: 'BUSD',
                         susd: 'sUSD',
                         pax: 'PAX',
+                        wbtc: 'wBTC',
+                        renbtc: 'renBTC',
                         // tbtc: 'tBTC',
                         // hbtc: 'hBTC',
                         // wbtc: 'wBTC',
@@ -268,11 +275,14 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren']
             },
             warningNoPool() {
                 this.message = 'Please select '
                 let poolMessage = null
+                if(([7, 8].includes(this.from_currency) || [7, 8].includes(this.to_currency)) && !this.pools.includes('ren')) {
+                    poolMessage = 'ren'
+                }
                 if((this.from_currency == 6 || this.to_currency == 6) && !this.pools.includes('pax')) {
                     poolMessage = 'pax'
                 }
@@ -655,6 +665,18 @@
                             ]
                         ]
                     }
+                    else if(([7,8].includes(this.from_currency) || [7,8].includes(this.to_currency)) && this.pools.includes('ren')) {
+                        let from_currency = this.from_currency - 7
+                        let to_currency = this.to_currency - 7
+
+                        let dx = BN(this.fromInput).times(contractAbis.ren.coin_precisions[from_currency])
+                        calls = [
+                            [
+                                this.swap[6]._address,
+                                this.swap[6].methods.get_dy(from_currency, to_currency, dx.toFixed(0, 1)).encodeABI()
+                            ]
+                        ]
+                    }
                     else {
                         //susd is already checked outside this function
                         //now coins are DAI, USDC, USDT, other cases are handled and they go through all pools
@@ -678,6 +700,8 @@
                 let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
                 let poolRates = calls.map((call, i) => [call[0], decoded[i]])
                 return poolRates.reduce((a, b) => {
+                    let pool1 = this.addresses.find(v => v.address == b[0]).pool
+                    let pool2 = this.addresses.find(v => v.address == b[1]).pool
                     if(b[0].toLowerCase() == '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD'.toLowerCase()) {
                         let precisions = this.precisions(this.to_currency)
                         return (+a[1] / precisions > (+b[1] / precisions + 2)) ? a : b 

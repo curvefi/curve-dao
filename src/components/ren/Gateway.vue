@@ -1,6 +1,16 @@
 <template>
 	<div class='window white rengateway'>
-		<div>
+		<div id='modal' class='modal' v-show='showModal'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='showModal = false'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>QR CODE</legend>
+					<vue-qrcode :value="qrValue" :options="qrOptions"></vue-qrcode>
+					<button @click='showModal =false'> OK </button>
+				</fieldset>
+			</div>
 		</div>
 		<div class='exchange'>
 
@@ -107,6 +117,10 @@
 
 		<button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
+		<div class='info-message gentle-message' v-show='showCompleted'>
+			Swap completed
+		</div>
+
 		<table class='tui-table'>
 			<thead>
 				<tr>
@@ -124,13 +138,21 @@
 					</td>
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
-						{{ transaction.gatewayAddress }}
+						<span v-show='transaction.gatewayAddress'>
+							<span class='hoverpointer' @click='copy(transaction)'>{{transaction.gatewayAddress}}</span>
+							<span class='hoverpointer' v-show='transaction.type == 0' @click='copy(transaction)'>
+								<img class='icon small' src='@/assets/copy-solid.svg'>
+							</span>
+							<img class='icon small hoverpointer' v-show='transaction.type == 0'
+								@click='showQR(transaction)' src='@/assets/qrcode-solid.svg'>
+						</span>
 					</td>
 					<td>
 						<a :href="getTxHashLink(transaction)"> 
-							<span v-show='transaction.type == 0 && transaction.state != 6'>{{ transaction.confirmations }} / {{ confirmations }}</span>
-							<span v-show='transaction.type == 0 && transaction.state == 6'>Confirmed</span>
-							<span v-show='transaction.type == 1'> {{ transaction.confirmations }} </span>
+							<span v-show='transaction.type == 0 && transaction.state != 15'>{{ transaction.confirmations }} / {{ confirmations }}</span>
+							<span v-show='transaction.type == 0 && transaction.state == 15'>Confirmed</span>
+							<span v-show='transaction.type == 1 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
+							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
 						</a>
 					</td>
 					<td>
@@ -141,12 +163,12 @@
 					</td>
 					<td>
 						<span v-show='transaction.type == 0'>
-							{{ transaction.state == 6 ? 100 : (transaction.state / 5 * 100 | 0) }}%
+							{{ [14, 15].includes(transaction.state) ? 100 : (transaction.state / 14 * 100 | 0) }}%
 							<span :class="{'loading line': transaction.state != 6}"></span>
 						</span>
 						<span v-show='transaction.type == 1'>
-							{{ transaction.state == 14 ? 100 : (((transaction.state - 30) / 3) * 100 | 0) }}%
-							<span :class="{'loading line': transaction.state != 33}"></span>
+							{{ transaction.state == 63 ? 100 : (((transaction.state - 30) / 33) * 100 | 0) }}%
+							<span :class="{'loading line': transaction.state != 63}"></span>
 						</span>
 					</td>
 				</tr>
@@ -165,16 +187,23 @@
 	import * as common from '../../utils/common'
 	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
 	import Box from '3box'
+	import VueQrcode from '@chenfengyuan/vue-qrcode';
+
 
 	const txObject = () => ({
 		id: '',
 		timestamp: null,
 		type: '',
 		amount: '',
+		fromInput: 0,
+		toInput: 0,
 		toAmount: 0,
 		address: '',
 		params: '',
 		ethTxHash: '',
+		ethStartBlock: null,
+		ethCurrentBlock: null,
+		ethConfirmations: null,
 		renVMHash: '',
 		gatewayAddress: '',
 		confirmations: 0,
@@ -185,13 +214,12 @@
 		btcTxVOut: '',
 		renResponse: '',
 		signature: '',
-		box: null,
-		space: null,
 	})
 
 	export default {
 		components: {
 			TxState,
+			VueQrcode,
 		},
 		data: () => ({
 			toInput: '0.00',
@@ -213,6 +241,9 @@
 			// 1 - getting btc deposit address, 2 - waiting to confirm on btc network, 3 - 
 			box: null,
 			space: null,
+			showModal: false,
+			qrValue: null,
+
 
 			maxBalance: 0,
 			disabled: false,
@@ -270,6 +301,20 @@
         		}
         		else return {}
         	},
+        	showCompleted() {
+        		let tx = this.transactions[0]
+        		if(!tx) return;
+        		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 63
+        	},
+        	qrOptions() {
+        		return {
+        			width: 200,
+        			margin: 0,
+        			color: {
+        				light: '#0000'
+        			}
+        		}
+        	}
 		},
 		watch: {
 			from_currency(val, oldval) {
@@ -299,6 +344,12 @@
 			})
 		},
 		mounted() {
+			let modal = document.querySelector('#modal')
+			window.addEventListener('click', () => {
+				if (event.target == modal) {
+					this.showModal = false
+			  	}
+			})
 			contract.initializedContracts && this.mounted()
 		},
 		methods: {
@@ -355,11 +406,20 @@
 
 			},
 
+			showQR({ fromInput, gatewayAddress }) {
+				this.showModal = true
+				this.qrValue = `bitcoin:${gatewayAddress}?amount=${fromInput}`
+			},
+
 			getTxHashLink(transaction) {
 				let hash = transaction.type == 0 ? 
 					'https://blockchain.info/btc/tx/' + transaction.btcTxHash 
 					: 'https://etherscan.io/tx/' + transaction.ethTxHash;
 				return hash;
+			},
+
+			copy(transaction) {
+				helpers.copyToClipboard(transaction.gatewayAddress)
 			},
 
 			async set_to_amount() {
@@ -455,6 +515,18 @@
 				this.transactions = Object.values(await this.getAllItems()).sort((a, b) => b.timestamp - a.timestamp)
 				let mints = this.transactions.filter(t => t.btcTxHash && t.state != 6).map(t=>this.sendMint(t))
 				let burns = this.transactions.filter(t => t.ethTxHash && t.state != 33).map(t=>this.listenForBurn(t.ethTxHash))
+				if(burns.length) {
+					web3.eth.subscribe('newBlockHeaders')
+						.on('data', block => {
+							for(let transaction of burns) {
+								if(transaction.confirmations >= 30) continue;
+								transaction.confirmations = block.number - transaction.ethStartBlock
+								transaction.ethCurrentBlock = block.number
+								transaction.state += transaction.confirmations
+								this.upsertTx(transaction)
+							}
+						})
+				}
 				await Promise.all([...mints, ...burns])
 			},
 
@@ -552,6 +624,7 @@
 					transfer.type = 0
 					transfer.amount = this.from_currency == 0 ? this.amountAfterBTC : this.fromInput;
 					transfer.address = this.address;
+					transfer.fromInput = this.fromInput;
 					transfer.toInput = this.toInput;
 					let tx = {...txObject(), ...transfer}
 					this.upsertTx(tx)
@@ -567,7 +640,8 @@
 				console.log(transaction)
 				//transaction is ready to be sent to eth network
 				if(transaction.renResponse && transaction.signature) {
-					transaction.state = 6
+					if(transaction.state == 12 || transaction.state == 14)
+						transaction.state = 15
 					transaction.confirmations = 'Confirmed'
 					this.upsertTx(transaction)
 					//await this.mintThenSwap(transfer)
@@ -592,8 +666,13 @@
 						})
 						.on('deposit', deposit => {
 							if(deposit.utxo) {
-								transaction.state = 3;
-								transaction.confirmations = deposit.utxo.confirmations
+								let confirmations = deposit.utxo.confirmations
+								if(transaction.state == 2) {
+									transaction.state = 3;
+								}
+								else
+									transaction.state += confirmations
+								transaction.confirmations = confirmations
 								transaction.btcTxHash = deposit.utxo.txHash
 								transaction.btcTxVOut = deposit.utxo.vOut
 								this.upsertTx(transaction)
@@ -616,10 +695,10 @@
 										})
 					}
 
-					transaction.state = 3
+					transaction.state = 10
 
 					let signature = await deposit.submit()
-					transaction.state = 4
+					transaction.state = 11
 					transaction.renResponse = signature.renVMResponse;
 					transaction.signature = signature.signature
 					transaction.utxoAmount = transaction.renResponse.autogen.amount
@@ -645,14 +724,22 @@
 						from: this.default_account
 					})
 					.once('transactionHash', resolve)
+					.once('receipt', () => {
+						//this.transactions = this.transactions.filter(t => t.id != id)
+						transaction.state = 14
+						this.upsertTx(transaction)
+					})
+					.on('error', err => {
+						transaction.state = 16;
+						this.upsertTx(transaction)
+					})
 					.catch(err => reject(err))
 				})
 
-				transaction.state = 5
+				transaction.state = 12
 
-				if(get_dy < min_amount) transaction.state = 7
+				if(get_dy < min_amount) transaction.state = 13
 				this.upsertTx(transaction)
-				this.transactions = this.transactions.filter(t => t.id != id)
 				
 			},
 
@@ -663,6 +750,7 @@
 				console.log(RenJS.utils.BTC.addressToHex(this.address),
 					BN(this.fromInput).times(1e8),
 					BN(this.toInputOriginal))
+				let id = helpers.generateID();
 				let txhash = await new Promise((resolve, reject) => {
 					return this.adapterContract.methods.swapThenBurn(
 						RenJS.utils.BTC.addressToHex(this.address),
@@ -673,9 +761,23 @@
 						gas: 600000,
 					})
 					.once('transactionHash', resolve)
+					.once('receipt', receipt => {
+						let transaction = this.transactions.find(t => t.id == id)
+						let startBlockNumber = receipt.blockNumber
+						transaction.confirmations = 0
+						transcation.ethStartBlock = startBlockNumber
+						this.upsertTx(transaction)
+						let subscription = web3.eth.subscribe('newBlockHeaders')
+							.on('data', block => {
+								transaction.confirmations = block.number - transaction.ethStartBlock
+								transaction.ethCurrentBlock = block.number
+								transaction.state += transaction.confirmations
+								this.upsertTx(transaction)
+								if(transaction.confirmations == 30) subscription.unsubcribe()
+							})
+					})
 					.catch(err => reject(err))
 				})
-				let id = helpers.generateID();
 				this.transactions.unshift({
 					id: id,
 					timestamp: Date.now(),
@@ -708,17 +810,17 @@
 					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
 					console.log(hash)
 					tx.renVMHash = hash
-					tx.state = 31
+					tx.state = 61
 					this.upsertTx(tx)
 				})
 				.on('status', status => {
 					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
-					if(status == 'confirming') tx.state = 32
+					if(status == 'confirming') tx.state = 62
 					tx.confirmations = 'Confirming'
 					this.upsertTx(tx)
 					console.log(status)
 				})
-				tx.state = 33
+				tx.state = 63
 				tx.confirmations = "Done"
 				this.upsertTx(tx)
 
@@ -813,5 +915,41 @@
 	.window.white.rengateway {
 		width: 80%;
 		max-width: 700px;
+	}
+	tbody tr td {
+		padding-bottom: 0.6em;
+	}
+	.icon.small {
+		height: 1em;
+	}
+	.hoverpointer {
+		cursor: pointer;
+	}
+	.modal-content {
+		text-align: center;
+		padding: 0;
+		border: none;
+		width: 260px;
+	}
+	.modal-content fieldset {
+		color: white;
+		font-weight: bolder;
+		border: 6px double white;
+		padding-block-start: 1em;
+		padding-block-end: 1em;
+	}
+	.modal-content button {
+		margin-top: 0.6em;
+		padding: 0 2em;
+	}
+	.legend2 {
+	  position: absolute;
+	  top: 0;
+	  left: 2em;
+	  background: #c0c0c0;
+	  line-height:1.2em;
+	}
+	.greentext {
+		color: green;
 	}
 </style>

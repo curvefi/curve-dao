@@ -22,6 +22,9 @@
                                 <p class='actualvalue' v-show='swapwrapped'>
                                     ≈ {{toFixed(actualFromValue)}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                                 </p>
+                                <p class='actualvalue' v-show="currentPool == 'ren'">
+                                    ≈ {{ actualFromValue }}$
+                                </p>
                             </li>
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                                 <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
@@ -53,6 +56,9 @@
                                 v-model='toInput'>
                                 <p class='actualvalue' v-show='swapwrapped'>
                                     ≈ {{toFixed(actualToValue)}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
+                                </p>
+                                <p class='actualvalue' v-show="currentPool == 'ren'">
+                                    ≈ {{ actualToValue }}$
                                 </p>
                             </li>
                             <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
@@ -142,6 +148,7 @@
     import { getters, contract as currentContract, gas as contractGas} from '../contract'
     import * as helpers from '../utils/helpers'
     import allabis from '../allabis'
+    import * as priceStore from './common/priceStore'
 
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
@@ -156,6 +163,7 @@
             inf_approval: true,
             fromInput: '1.00',
             toInput: 0,
+            btcPrice: null,
             maxBalance: -1,
             maxSynthBalance: -1,
             maxBalanceText: 0,
@@ -219,11 +227,13 @@
                 return allabis[currentContract.currentContract].coin_precisions
             },
             actualFromValue() {
-                if(!this.swapwrapped) return;
+                if(!this.swapwrapped && this.currentPool != 'ren') return;
+                if(this.currentPool == 'ren') return (this.fromInput * this.btcPrice).toFixed(2)
                 return (this.fromInput * this.c_rates[this.from_currency] * this.toFixed(this.precisions[this.from_currency]))
             },
             actualToValue() {
-                if(!this.swapwrapped) return;
+                if(!this.swapwrapped && this.currentPool != 'ren') return;
+                if(this.currentPool == 'ren') return (this.toInput * this.btcPrice).toFixed(2)
                 return (this.toInput * this.c_rates[this.to_currency] * this.toFixed(this.precisions[this.to_currency]))
             },
             ...getters,
@@ -243,6 +253,7 @@
         },
         methods: {        
             async mounted() {
+                this.btcPrice = await priceStore.getBTCPrice()
                 if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
                 this.c_rates = currentContract.c_rates
                 this.coins = currentContract.underlying_coins

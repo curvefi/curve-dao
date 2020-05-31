@@ -533,7 +533,7 @@
                     bestContract = contract.contracts[pool]
                 }
                 let address = bestContract.swap._address
-                if(this.distribution !== null) {
+                if(this.bestPool == 6) {
                     address = this.onesplit_address
                     bestContract.swap._address = address
                 }
@@ -541,7 +541,7 @@
                         await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                     else
                         await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
-                if(this.distribution !== null) {
+                if(this.bestPool == 6) {
                     await this.onesplit.methods.swap(
                             this.getCoins(this.from_currency)._address,
                             this.getCoins(this.to_currency)._address,

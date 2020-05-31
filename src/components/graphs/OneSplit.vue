@@ -92,7 +92,7 @@
                         <img src='@/assets/sync-solid.svg' class='swaprates-icon'>
                     </span> (including fees):
                     <span id="exchange-rate" @click='swapExchangeRate' class='clickable'>
-                        {{exchangeRate}}
+                        {{exchangeRateSwapped}}
                     </span>
                 </p>
                 <p v-show='fromInput > 0' class='best-pool-text'>
@@ -146,6 +146,10 @@
                     Sell <span class='loading line' v-show='loadingAction'></span>
                 </button>
             </p>
+            <div class='info-message gentle-message waiting-message' v-show='show_loading'>
+                <span v-html='waitingMessage'></span>
+                <span class='loading line'></span>
+            </div>
             <div class='info-message gentle-message' v-show='estimateGas'>
                 Estimated tx cost: {{ (+estimateGas).toFixed(2) }}$
             </div>
@@ -216,6 +220,8 @@
             multipath: 0,
             swapwrapped: false,
             bestPool: null,
+            show_loading: false,
+            waitingMessage: '',
             ethPrice: 0,
             gasPrice: 0,
             estimateGas: 0,
@@ -383,15 +389,23 @@
 
                 return text;
             },
+            exchangeRateSwapped() {
+                if(this.swaprate)
+                    return (1 / this.exchangeRate).toFixed(4)
+                else
+                    return this.exchangeRate
+            },
         },
         watch: {
             from_currency(val, oldval) {
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
+                this.swapExchangeRate()
                 this.from_cur_handler()
             },
             to_currency(val, oldval) {
+                this.swapExchangeRate()
                 this.to_cur_handler()
             },
             pools() {
@@ -438,7 +452,6 @@
             swapExchangeRate() {
                 if(isNaN(this.exchangeRate)) return;
                 this.swaprate = !this.swaprate
-                this.exchangeRate = (1 / this.exchangeRate).toFixed(4)
             },
             getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.swapwrapped, '')
@@ -456,6 +469,12 @@
                 if(!BN.isBigNumber(num)) num = +num
                 if([7, 8].includes(this.from_currency)) return num.toFixed(8)
                 return num.toFixed(2)
+            },
+            handleError(err) {
+                console.error(err)
+                this.waitingMessage = '',
+                this.show_loading = false
+                throw err;
             },
             handleCheck(val) {
                 if(this.swapwrapped === val) this.swapwrapped = false;
@@ -515,9 +534,13 @@
                 this.loadingAction = true
                 setTimeout(() => this.loadingAction = false, 500)
             },
+            getCurrency(i) {
+                return Object.values(this.currencies)[i]
+            },
             async handle_trade() {
                 if(this.loadingAction) return;
                 this.setLoadingAction();
+                this.show_loading = true;
                 //handle allowances
                 var i = this.from_currency
                 var j = this.to_currency;
@@ -537,32 +560,64 @@
                     address = this.onesplit_address
                     bestContract.swap._address = address
                 }
-                if (this.inf_approval)
-                        await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
-                    else
-                        await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
+                try {
+                    if (this.inf_approval)
+                            await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
+                        else
+                            await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                }
+                catch(err) {
+                    this.handleError(err)
+                }
+                this.waitingMessage = `Please confirm swap 
+                                        from ${this.fromInput} ${this.getCurrency(this.from_currency)}
+                                        for min ${this.toFixed(min_dy / this.precisions(j))} ${this.getCurrency(this.to_currency)}`
                 if(this.bestPool == 6) {
-                    await this.onesplit.methods.swap(
-                            this.getCoins(this.from_currency)._address,
-                            this.getCoins(this.to_currency)._address,
-                            amount,
-                            min_dy,
-                            this.distribution,
-                            this.usedFlags,
-                        ).send({
-                            from: contract.default_account,
-                            gas: 6000000
-                        })
+                    try {
+                        await this.onesplit.methods.swap(
+                                this.getCoins(this.from_currency)._address,
+                                this.getCoins(this.to_currency)._address,
+                                amount,
+                                min_dy,
+                                this.distribution,
+                                this.usedFlags,
+                            ).send({
+                                from: contract.default_account,
+                                gas: 6000000
+                            })
+                            .once('transactionHash', hash => {
+                                this.waitingMessage = `Waiting for swap 
+                                                        <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                                        to confirm: no further action needed`
+                            })
+                    }
+                    catch(err) {
+                        this.handleError(err)
+                    }
                 }
                 else {
                     let exchangeMethod = bestContract.swap.methods.exchange_underlying
                     if(this.swapwrapped || this.bestPoolText == 'susd' || this.bestPoolText == 'ren') exchangeMethod = bestContract.swap.methods.exchange
                     i = this.normalizeCurrency(i)
                     j = this.normalizeCurrency(j)
-                    await exchangeMethod(i, j, amount, min_dy).send({
+                    try {
+                        await exchangeMethod(i, j, amount, min_dy).send({
                             from: contract.default_account,
                             gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),
-                        });
+                        })
+                        .once('transactionHash', hash => {
+                            this.waitingMessage = `Waiting for swap 
+                                                    <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                                    to confirm: no further action needed`
+                        })
+                    }
+                    catch(err) {
+                        this.handleError(err)
+                    }
+
+                    this.waitingMessage = ''
+                    this.show_loading = false;
                     
                     this.from_cur_handler();
                     let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();

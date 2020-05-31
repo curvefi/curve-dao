@@ -1095,6 +1095,10 @@ li.coins label:hover {
   cursor: pointer;
 }
 
+.waiting-message .loading.line {
+  margin-left: 0.3em;
+}
+
 
 .tui-table thead tr {
   border-bottom: 1px solid #a8a8a8;

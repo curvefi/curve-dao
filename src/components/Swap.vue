@@ -82,7 +82,7 @@
                         <img src='@/assets/sync-solid.svg' class='swaprates-icon'>
                     </span> (including fees): 
                     <span id="exchange-rate" @click='swapExchangeRate' class='clickable'>
-                        {{exchangeRate}}
+                        {{exchangeRateSwapped}}
                     </span>
                 </p>
                 <div id='max_slippage'><span>Max slippage:</span> 
@@ -127,8 +127,9 @@
                         Sell <span class='loading line' v-show='loadingAction'></span>
                     </button>
                 </p>
-                <div class='info-message gentle-message' v-show='show_loading'>
-                    {{waitingMessage}} <span class='loading line'></span>
+                <div class='info-message gentle-message waiting-message' v-show='show_loading'>
+                    <span v-html='waitingMessage'></span>
+                    <span class='loading line'></span>
                 </div>
                 <p class='simple-error' id='no-balance' v-show='selldisabled'>
                     Not enough balance for 
@@ -202,10 +203,11 @@
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
-                
+                this.swapExchangeRate()
                 this.from_cur_handler()
             },
             to_currency(val, oldval) {
+                this.swapExchangeRate()
                 this.to_cur_handler()
             },
             swapwrapped() {
@@ -246,6 +248,12 @@
             },
             notEnoughBalanceSynth() {
                 return this.currentPool == 'susdv2' && this.from_currency == 3 && cBN(this.fromInput).gt(cBN(this.maxSynthBalance))
+            },
+            exchangeRateSwapped() {
+                if(this.swaprate)
+                    return (1 / this.exchangeRate).toFixed(4)
+                else
+                    return this.exchangeRate
             },
         },
         mounted() {
@@ -293,7 +301,6 @@
             swapExchangeRate() {
                 if(isNaN(this.exchangeRate)) return;
                 this.swaprate = !this.swaprate
-                this.exchangeRate = (1 / this.exchangeRate).toFixed(4)
             },
             async set_to_amount() {
                 this.promise.cancel()
@@ -455,9 +462,11 @@
                             gas: this.swapwrapped ? 
                                     contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         })
-                        .once('transactionHash', () => {
-                            this.waitingMessage = 'Waiting for swap transaction to confirm: no further action needed'
-                        });
+                        .once('transactionHash', hash => {
+                            this.waitingMessage = `Waiting for swap 
+                                                    <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                                    to confirm: no further action needed`
+                        })
                 }
                 catch(err) {
                     console.error(err)

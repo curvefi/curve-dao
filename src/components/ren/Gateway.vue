@@ -134,7 +134,7 @@
 			<tbody>
 				<tr v-for='transaction in transactions'>
 					<td class='shifttype'>
-						{{ transaction.type == 0 ? 'BTC->WBTC' : 'WBTC->BTC' }}
+						{{ transaction.type == 0 ? 'BTC->wBTC' : 'wBTC->BTC' }}
 					</td>
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
@@ -173,11 +173,11 @@
 					</td>
 					<td>
 						<span v-show='transaction.type == 0'>
-							{{ [14, 15].includes(transaction.state) ? 100 : (transaction.state / 14 * 100 | 0) }}%
+							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': transaction.state != 14}"></span>
 						</span>
 						<span v-show='transaction.type == 1'>
-							{{ transaction.state == 65 ? 100 : (((transaction.state - 30) / 35) * 100 | 0) }}%
+							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': transaction.state != 65}"></span>
 						</span>
 					</td>
@@ -325,7 +325,7 @@
         				light: '#0000'
         			}
         		}
-        	}
+        	},
 		},
 		watch: {
 			from_currency(val, oldval) {
@@ -428,6 +428,19 @@
 					: 'https://etherscan.io/tx/' + transaction.ethTxHash;
 				return hash;
 			},
+
+			txProgress(transaction) {
+        		if(transaction.type == 0) {
+        			let progress = transaction.state / 14 * 100 | 0
+        			if(progress > 100) progress = 100
+        			return [14, 15].includes(transaction.state) ? 100 : progress
+        		}
+        		if(transaction.type == 1) {
+        			let progress = ((transaction.state - 30) / 35) * 100 | 0
+        			if(progress > 100) progress = 100
+        			return transaction.state == 65 ? 100 : progress
+        		}
+        	},
 
 			copy(transaction) {
 				this.copied = true;

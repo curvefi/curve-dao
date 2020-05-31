@@ -171,7 +171,7 @@
 							:transaction='transaction'
 							@mint='mintThenSwap'/>
 					</td>
-					<td>
+					<td class='nowrap'>
 						<span v-show='transaction.type == 0'>
 							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': transaction.state != 14}"></span>
@@ -179,6 +179,10 @@
 						<span v-show='transaction.type == 1'>
 							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': transaction.state != 65}"></span>
+						</span>
+						<span v-show='transaction.type == 0 && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
+							<!-- [<span class='redtext'>&times;</span>] -->
+							<img src='@/assets/trash-alt-solid.svg'>
 						</span>
 					</td>
 				</tr>
@@ -197,7 +201,8 @@
 	import * as common from '../../utils/common'
 	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
 	import Box from '3box'
-	import VueQrcode from '@chenfengyuan/vue-qrcode';
+	import VueQrcode from '@chenfengyuan/vue-qrcode'
+	import * as subscriptionStore from '../common/subscriptionStore'
 
 
 	const txObject = () => ({
@@ -574,6 +579,13 @@
 				return localStorage.setItem(key, JSON.stringify(item))
 			},
 
+			async removeItem(key) {
+				if(this.space !== null) {
+					return await this.space.private.remove(key)
+				}
+				return localStorage.removeItem(key)	
+			},
+
 			async getItem(key) {
 				if(this.space !== null) return await this.space.private.get(key)
 				return localStorage.getItem(key)
@@ -587,6 +599,11 @@
 				return Object.keys(storage).filter(key => key.startsWith('curvebtc_')).map(k => JSON.parse(storage[k]))
 			},
 
+			removeTx(transaction) {
+				this.transactions = this.transactions.filter(t => t.id != transaction.id)
+				this.removeItem('curvebtc_' + transaction.id)
+			},
+
 			upsertTx(transaction) {
 				let key = 'curvebtc_' + transaction.id
 				transaction.web3Provider = null;
@@ -594,7 +611,23 @@
 					transaction.params.web3Provider = null;
 				transaction.box = null;
 				transaction.space = null
+				if(transaction.type == 0) this.postTxNotification(transaction.btcTxHash)
+				if(transaction.type == 1) this.postTxNotification(transaction.ethTxHash)
 				this.setItem(key, transaction)
+			},
+
+			postTxNotification(txHash) {
+				let subscription = subscriptionStore.subscription
+				console.log(subscription)
+				fetch('https://f9dfeb7663cb.ngrok.io/addtx', 
+					{
+					    method: 'POST', 
+					    headers: {
+					      'Content-Type': 'application/json'
+					      // 'Content-Type': 'application/x-www-form-urlencoded',
+					    },
+					    body: JSON.stringify({ subscription, txHash: txHash})
+					})
 			},
 
 			async mint() {
@@ -1009,5 +1042,20 @@
 	}
 	.legend2 .greentext:hover {
 		transform: none;
+	}
+	.icon.cancel {
+		cursor: pointer;
+		font-size: 1em;
+	}
+	.icon.cancel img {
+		width: 1em;
+		margin-left: 0.8em;
+		filter: invert(13%) sepia(90%) saturate(4444%) hue-rotate(11deg) brightness(88%) contrast(97%);
+	}
+	.redtext {
+		color: red;
+	}
+	.nowrap {
+		white-space: nowrap;
 	}
 </style>

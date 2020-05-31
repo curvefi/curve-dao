@@ -5,7 +5,7 @@ const HtmlCriticalWebpackPlugin = require("html-critical-webpack-plugin");
 const path = require('path')
 
 module.exports = {
-	productionSourceMap: process.env.NODE_ENV == 'production' ? false : true,
+	// productionSourceMap: process.env.NODE_ENV == 'production' ? false : true,
 	chainWebpack: config => {
 		config.plugins.delete('prefetch')
 		config.module.rule('worker')
@@ -34,5 +34,20 @@ module.exports = {
     // options...
     devServer: {
         disableHostCheck: true
-    }
+    },
+
+    pwa: {
+    	name: 'Curve Finance',
+    	themeColor: '#3465a4',
+    	msTileColor: '#000000',
+    	appleMobileWebAppCapable: 'yes',
+    	appleMobileWebAppStatusBarStyle: 'default',
+	 	// configure the workbox plugin
+	    workboxPluginMode: 'InjectManifest',
+	    workboxOptions: {
+	      // swSrc is required in InjectManifest mode.
+	      swSrc: 'src/service-worker.js',
+	      // ...other Workbox options...
+	    },
+    },
 }

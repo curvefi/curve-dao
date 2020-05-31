@@ -139,9 +139,12 @@
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
 						<span v-show='transaction.gatewayAddress'>
-							<span class='hoverpointer' @click='copy(transaction)'>{{transaction.gatewayAddress}}</span>
+							<span class='hoverpointer'>{{transaction.gatewayAddress}}</span>
 							<span class='hoverpointer' v-show='transaction.type == 0' @click='copy(transaction)'>
-								<img class='icon small' src='@/assets/copy-solid.svg'>
+								<span class='tooltip'>
+									<img class='icon small' src='@/assets/copy-solid.svg'>
+									<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
+								</span>
 							</span>
 							<img class='icon small hoverpointer' v-show='transaction.type == 0'
 								@click='showQR(transaction)' src='@/assets/qrcode-solid.svg'>
@@ -149,11 +152,18 @@
 					</td>
 					<td>
 						<a :href="getTxHashLink(transaction)"> 
-							<span v-show='transaction.type == 0 && transaction.state != 15'>{{ transaction.confirmations }} / {{ confirmations }}</span>
-							<span v-show='transaction.type == 0 && transaction.state == 15'>Confirmed</span>
-							<span v-show='transaction.type == 1 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
+							<span v-show='transaction.type == 0 && transaction.state < 10'>{{ transaction.confirmations }} / {{ confirmations }}</span>
+							<span v-show='transaction.type == 0 && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
+							<span v-show='transaction.type == 0 && [14,15].includes(transaction.state)'>
+								Done
+							</span>
+							<span v-show='transaction.type == 1 && transaction.state >= 30 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
+							<span v-show='transaction.type == 1 && transaction.state == 30'>Started</span>
 							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
 						</a>
+						<div v-show='transaction.type == 0 && transaction.state == 14'>
+							<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash">Etherscan</a>
+						</div>
 					</td>
 					<td>
 						<tx-state 
@@ -164,11 +174,11 @@
 					<td>
 						<span v-show='transaction.type == 0'>
 							{{ [14, 15].includes(transaction.state) ? 100 : (transaction.state / 14 * 100 | 0) }}%
-							<span :class="{'loading line': transaction.state != 6}"></span>
+							<span :class="{'loading line': transaction.state != 14}"></span>
 						</span>
 						<span v-show='transaction.type == 1'>
-							{{ transaction.state == 63 ? 100 : (((transaction.state - 30) / 33) * 100 | 0) }}%
-							<span :class="{'loading line': transaction.state != 63}"></span>
+							{{ transaction.state == 65 ? 100 : (((transaction.state - 30) / 35) * 100 | 0) }}%
+							<span :class="{'loading line': transaction.state != 65}"></span>
 						</span>
 					</td>
 				</tr>
@@ -258,6 +268,7 @@
 				btc: 'BTC',
 				wbtc: 'WBTC',
 			},
+			copied: false,
 			inf_approval: false,
 			promise: helpers.makeCancelable(Promise.resolve()),
 		}),
@@ -304,7 +315,7 @@
         	showCompleted() {
         		let tx = this.transactions[0]
         		if(!tx) return;
-        		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 63
+        		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 65
         	},
         	qrOptions() {
         		return {
@@ -419,6 +430,8 @@
 			},
 
 			copy(transaction) {
+				this.copied = true;
+				setTimeout(() => this.copied = false, 600)
 				helpers.copyToClipboard(transaction.gatewayAddress)
 			},
 
@@ -513,20 +526,23 @@
 			async loadTransactions() {
 				let items = await this.getAllItems()
 				this.transactions = Object.values(await this.getAllItems()).sort((a, b) => b.timestamp - a.timestamp)
-				let mints = this.transactions.filter(t => t.btcTxHash && t.state != 6).map(t=>this.sendMint(t))
-				let burns = this.transactions.filter(t => t.ethTxHash && t.state != 33).map(t=>this.listenForBurn(t.ethTxHash))
+				let mints = this.transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>this.sendMint(t))
+				console.log(mints, "MINTS")
+				let burns = this.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state != 65)
 				if(burns.length) {
 					web3.eth.subscribe('newBlockHeaders')
 						.on('data', block => {
 							for(let transaction of burns) {
-								if(transaction.confirmations >= 30) continue;
-								transaction.confirmations = block.number - transaction.ethStartBlock
+								console.log(transaction, "TRANSACTION")
+								if(transaction.state > 63 || transaction.confirmations >= 30) continue;
+								transaction.confirmations = block.number - transaction.ethStartBlock + 1
 								transaction.ethCurrentBlock = block.number
-								transaction.state += transaction.confirmations
+								transaction.state = 30 + transaction.confirmations
 								this.upsertTx(transaction)
 							}
 						})
 				}
+				burns = burns.map(t=>this.listenForBurn(t.ethTxHash))
 				await Promise.all([...mints, ...burns])
 			},
 
@@ -647,6 +663,7 @@
 					//await this.mintThenSwap(transfer)
 				}
 				else {
+					console.log("SEND MINT")
 					mint = mint || await this.initMint(transfer);
 
 					//transaction initated, but didn't get an address, so updating
@@ -662,16 +679,18 @@
 					if(transaction.btcTxHash && String(transaction.btcTxVOut) !== 'undefined') {
 						deposit = await mint.wait(this.confirmations, {
 							txHash: transaction.btcTxHash,
-							vOut: transaction.btcTxVOut,
+							vOut: +transaction.btcTxVOut,
 						})
 						.on('deposit', deposit => {
+							console.log('DEPOSIT SUBMITTED', deposit)
 							if(deposit.utxo) {
 								let confirmations = deposit.utxo.confirmations
 								if(transaction.state == 2) {
 									transaction.state = 3;
 								}
 								else
-									transaction.state += confirmations
+									transaction.state = 3 + confirmations
+
 								transaction.confirmations = confirmations
 								transaction.btcTxHash = deposit.utxo.txHash
 								transaction.btcTxVOut = deposit.utxo.vOut
@@ -683,6 +702,7 @@
 					else {
 						deposit = await mint.wait(this.confirmations)
 										.on('deposit', deposit => {
+											console.log("DEPOSIT", deposit)
 											if(deposit.utxo) {
 												if(transaction.state == 1) {
 													transaction.state = 2
@@ -727,6 +747,7 @@
 					.once('receipt', () => {
 						//this.transactions = this.transactions.filter(t => t.id != id)
 						transaction.state = 14
+						transaction.ethTxHash = receipt.transactionHash
 						this.upsertTx(transaction)
 					})
 					.on('error', err => {
@@ -762,18 +783,19 @@
 					})
 					.once('transactionHash', resolve)
 					.once('receipt', receipt => {
+						this.listenForBurn(receipt.transactionHash)
 						let transaction = this.transactions.find(t => t.id == id)
 						let startBlockNumber = receipt.blockNumber
-						transaction.confirmations = 0
-						transcation.ethStartBlock = startBlockNumber
+						transaction.confirmations = 1
+						transaction.ethStartBlock = startBlockNumber
 						this.upsertTx(transaction)
 						let subscription = web3.eth.subscribe('newBlockHeaders')
 							.on('data', block => {
-								transaction.confirmations = block.number - transaction.ethStartBlock
-								transaction.ethCurrentBlock = block.number
-								transaction.state += transaction.confirmations
-								this.upsertTx(transaction)
 								if(transaction.confirmations == 30) subscription.unsubcribe()
+								transaction.confirmations = block.number - transaction.ethStartBlock + 1
+								transaction.ethCurrentBlock = block.number
+								transaction.state = 30 + transaction.confirmations
+								this.upsertTx(transaction)
 							})
 					})
 					.catch(err => reject(err))
@@ -790,10 +812,10 @@
 				let tx = this.transactions[0]
 				this.upsertTx(tx)
 				
-				this.listenForBurn(txhash)
 
 			},
 			async listenForBurn(ethTxHash) {
+				console.log(ethTxHash, "TX HASH")
 
 				let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
 				let burn = await this.sdk.burnAndRelease({
@@ -810,17 +832,29 @@
 					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
 					console.log(hash)
 					tx.renVMHash = hash
-					tx.state = 61
+					//tx.state = 31
 					this.upsertTx(tx)
 				})
 				.on('status', status => {
 					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
-					if(status == 'confirming') tx.state = 62
-					tx.confirmations = 'Confirming'
-					this.upsertTx(tx)
+					if(status == 'confirming' && tx.state >= 62) {
+						tx.confirmations = "Confirming"
+						tx.state = 62
+						this.upsertTx(tx)
+					}
+					if(status == 'pending') {
+						tx.confirmations = "Pending"
+						tx.state = 63
+						this.upsertTx(tx)
+					}
+					if(status == 'executing') {
+						tx.confirmations = "Executing"
+						tx.state = 64
+						this.upsertTx(tx)
+					}
 					console.log(status)
 				})
-				tx.state = 63
+				tx.state = 65
 				tx.confirmations = "Done"
 				this.upsertTx(tx)
 
@@ -951,5 +985,16 @@
 	}
 	.greentext {
 		color: green;
+	}
+	.tooltiptext.small {
+		width: 70px;
+		margin-left: -35px;
+	}
+	.legend2 .greentext {
+		display: inline-block;
+		transform: translate3d(0,-0.1em,10em);
+	}
+	.legend2 .greentext:hover {
+		transform: none;
 	}
 </style>

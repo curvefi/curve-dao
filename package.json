@@ -9,7 +9,7 @@
   "dependencies": {
     "3box": "^1.19.0",
     "@chenfengyuan/vue-qrcode": "^1.0.2",
-    "@renproject/ren": "^1.0.0",
+    "@renproject/ren": "^1.0.2",
     "@sentry/browser": "^5.15.0",
     "@sentry/integrations": "^5.15.0",
     "bignumber.js": "^9.0.0",

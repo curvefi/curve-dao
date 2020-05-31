@@ -34,27 +34,31 @@
 			<button @click="$emit('mint', transaction)">resubmit</button>
 		</span>
 
-		<span v-show='state == 8'>
-			Swap done
-		</span>
-
 		<span v-show='state == 30'>
 			Started swap WBTC->BTC
 		</span>
 
-		<span v-show='state >= 30 && state <= 60'>
-			Waiting for confirmations
-		</span>
-
-		<span v-show='state == 61'>
+		<span v-show='state == 31'>
 			Submitted to RenVM
 		</span>
 
-		<span v-show='state == 62'>
+		<span v-show='state == 32'>
 			Waiting for RenVM
 		</span>
 
+		<span v-show='state >= 33 && state < 63'>
+			Waiting for confirmations
+		</span>
+
 		<span v-show='state == 63'>
+			Waiting for RenVM swap renBTC->BTC
+		</span>
+
+		<span v-show='state == 64'>
+			Executing swap renBTC->BTC
+		</span>
+
+		<span v-show='state == 65'>
 			BTC sent
 		</span>
 	</div>

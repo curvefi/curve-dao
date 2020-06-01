@@ -21,7 +21,7 @@
 		    			<span v-show='volumeData[0] != -1'> {{ volumeData[0] | formatNumber(0) }}$</span>	
 		    		</span>
 		    	</p>
-		    	<p v-show = "['tbtc', 'ren']">Daily BTC trading volume:
+		    	<p v-show = "['tbtc', 'ren'].includes(getPool)">Daily BTC trading volume:
 		    		<span :class="{'loading line': volumeData[0] < 0}">
 		    			<span v-show='volumeData[1] != -1'> {{ volumeData[1] | formatNumber(8) }} BTC</span>
 		    		</span>

@@ -29,10 +29,10 @@ export function approve_to_migrate(amount, account) {
             });
 }
 
-export async function ensure_allowance_zap_out(amount) {
+export async function ensure_allowance_zap_out(amount, fromContract, toContract) {
     var default_account = currentContract.default_account
-    let fromContract = currentContract.swap_token;
-    let toContract = allabis[currentContract.currentContract].deposit_address
+    if(!fromContract) fromContract = currentContract.swap_token;
+    if(!toContract) toContract = allabis[currentContract.currentContract].deposit_address
     let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, toContract).call())
     if(allowance.lt(cBN(amount))) {    
         if(allowance > 0) await approve(fromContract, 0, default_account, toContract)
@@ -102,14 +102,24 @@ export async function ensure_underlying_allowance(i, _amount, underlying_coins =
     return await approve(coins[i], cBN(amount).toFixed(0,1), default_account, toContract);
 }
 
-export async function approveAmount(contract, amount, account, toContract) {
+export async function approveAmount(contract, amount, account, toContract, infinite = false) {
     let current_allowance = cBN(await contract.methods.allowance(account, toContract).call())
+    console.log(currentContract.max_allowance)
     console.log(current_allowance.toString(), amount.toString(), current_allowance.lt(amount))
-    if(current_allowance.lt(amount) && amount.gt(0)) {
-        if(current_allowance > 0 && requiresResetAllowance.includes(contract._address)) {
-            await approve(contract, 0, account, toContract)
+    if(!infinite) {
+        if(current_allowance.lt(amount) && amount.gt(0)) {
+            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address)) {
+                await approve(contract, 0, account, toContract)
+            }
+            await approve(contract, amount, account, toContract)
         }
-        await approve(contract, amount, account, toContract)
+    }
+    else {
+        if(currentAllowance.lt(currentContract.max_allowance.div(cBN(2))) && cBN(amount).gt(0)) {
+            if(currentAllowance > 0 && requiresResetAllowance.includes(contract._address))
+                await approve(contract, 0, account, toContract)
+            await approve(contract, currentContract.max_allowance, account, toContract)
+        }
     }
 }
 

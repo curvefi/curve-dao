@@ -3,6 +3,7 @@ import Vue from 'vue'
 export const state = Vue.observable({
 
 	address: null,
+	sdk: null,
 
 	transactions: [],
 

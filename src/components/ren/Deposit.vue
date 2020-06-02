@@ -1,0 +1,373 @@
+<template>
+	<div>
+		<div class="add-liquidity">
+            <fieldset class="currencies">
+                <legend>Currencies:</legend>
+                <ul>
+                    <li v-for='(currency, i) in Object.keys(currencies)'>
+                        <label :for="'currency_'+i">
+                        	<span class='currency_label'>
+                                <img 
+                                    :class="{'token-icon': true, [currency+'-icon']: true}" 
+                                    :src='getTokenIcon(currency)'>
+    	                        <span>{{currency | capitalize}}</span>
+                                <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show='i == 1'>
+                                    <span>Max: {{ maxBalanceCoin(i) }} </span>
+                                </span>
+                            </span>
+                        </label>
+                        <input 
+                            type="text" 
+                            :id="'currency_'+i" 
+                            :disabled='disabled' 
+                            name="from_cur" 
+                            v-model = 'inputs[i]'
+                            :style = "{backgroundColor: bgColors[i]}"
+                            @input='change_currency(i, true)'
+                        >
+                        <div v-show='i == 0'>
+                            Amount after renVM fees: {{ amountAfterBTC }}
+                        </div>
+
+                    </li>
+                </ul>
+            </fieldset>
+            <ul>
+                <!-- <li>
+                    <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances_proportion' :disabled='disabledButtons' checked v-model='sync_balances'>
+                    <label for="sync-balances">Add all coins in a balanced proportion</label>
+                </li> -->
+                <li>
+                    <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
+                    <label for="inf-approval">Infinite approval - trust this contract forever 
+                    	<span class='tooltip'>[?]
+                    		<span class='tooltiptext long'>
+                    			Preapprove the contract to to be able to spend any amount of your coins. You will not need to approve again.
+                    		</span>
+                    	</span>
+                    </label>
+                </li>
+            </ul>
+
+            <p style="text-align: center" v-show="currentPool == 'ren'">
+                <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
+            </p>
+            <p style="text-align: center">
+                <button id="add-liquidity" @click='handle_add_liquidity()'>
+                		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
+                </button>
+                <div class='info-message gentle-message' v-show='show_loading'>
+                	{{waitingMessage}} <span class='loading line'></span>
+                </div>
+                <div class='info-message gentle-message' v-show='estimateGas'>
+	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+	            </div>
+                <Slippage/>
+            </p>
+
+            <tx-table></tx-table>
+
+        </div>
+	</div>
+</template>
+
+<script>
+	import Vue from 'vue'
+    import * as common from '../../utils/common.js'
+    import { getters, contract as currentContract, gas as contractGas } from '../../contract'
+    import allabis, { adapterAddress } from '../../allabis'
+    const compound = allabis.compound
+    import * as helpers from '../../utils/helpers'
+
+    import BN from 'bignumber.js'
+
+    import Slippage from './../common/Slippage.vue'
+
+    import Table from './Table.vue'
+    import * as store from './shiftStore'
+    import { state } from './shiftState'
+
+
+    export default {
+    	components: {
+    		Slippage,
+            'tx-table': Table,
+    	},
+    	data: () => ({
+    		disabled: false,
+    		disabledButtons: true,
+    		sync_balances: false,
+    		max_balances: false,
+    		inf_approval: true,
+    		wallet_balances: [],
+    		balances: [],
+    		inputs: [],
+    		amounts: [],
+    		bgColors: [],
+    		depositc: false,
+    		coins: [],
+    		rates: [],
+    		swap_address: currentContract.swap_address,
+    		show_loading: false,
+    		waitingMessage: '',
+    		estimateGas: 0,
+    		gasPrice: 0,
+    		ethPrice: 0,
+            justDeposit: false,
+            loadingAction: false,
+            errorStaking: false,
+    		slippagePromise: helpers.makeCancelable(Promise.resolve()),
+    	}),
+        created() {
+            this.$watch(()=>currentContract.default_account, (val, oldval) => {
+            	if(!val || !oldval) return;
+            	if(val.toLowerCase() == oldval.toLowerCase()) return;
+                this.mounted();
+            })
+            this.$watch(()=>currentContract.initializedContracts, val => {
+                if(val) this.mounted();
+            })
+            this.$watch(()=>currentContract.currentContract, (val, oldval) => {
+            	this.setInputStyles(false, val, oldval)
+            	if(currentContract.initializedContracts) this.mounted();
+            })
+        },
+        watch: {
+            
+        },
+        computed: {
+          ...getters,
+          currencies() {
+            return {
+                btc: 'BTC',
+                wbtc: 'wBTC',
+            }
+          },
+          minAmount() {
+          	if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+          	return 0.01
+          },
+          calcFee() {
+            let N_COINS = allabis[currentContract.currentContract].N_COINS
+            return this.fee * N_COINS / (4 * (N_COINS -1))
+          },
+          amountAfterBTC() {
+            return (this.inputs[0] * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8
+          },
+          minOrderSize() {
+            return state.minersReleaseFee + state.burnFee / 10000
+          },
+          
+        },
+        mounted() {
+	        this.setInputStyles(true)
+            if(currentContract.initializedContracts) this.mounted();
+        },
+        methods: {
+
+            async mounted(oldContract) {
+            	this.coins = currentContract.coins
+                this.rates = currentContract.c_rates
+                this.swap_address = currentContract.swap_address
+            	currentContract.showSlippage = false;
+        		currentContract.slippage = 0;
+                await this.handle_sync_balances();
+                await this.calcSlippage()
+                let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
+                	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
+                let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+                if(decoded.some(v=>BN(v).lte(currentContract.max_allowance.div(BN(2))) > 0))
+                	this.inf_approval = false
+                this.disabledButtons = false;
+                this.highlightInputs(0)
+                console.log("HERE")
+            },
+            getTokenIcon(token) {
+                return helpers.getTokenIcon(token, this.depositc, this.currentPool)
+            },
+            toFixed(num, precisions = 2, round = 4) {
+                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                let rounded = num.toFixed(precisions)
+                return isNaN(rounded) ? '0.00' : rounded
+            },
+            maxBalanceCoin(i) {
+                return this.toFixed(this.wallet_balances[i] * this.rates[i])
+            },
+            setMaxBalanceCoin(i) {
+                Vue.set(this.inputs, i, this.maxBalanceCoin(i))
+            },
+        	inputsFormat(i) {
+        		if(this.inputs[i]) {
+        			return this.toFixed(+this.inputs[i])
+        		}
+        		return '0.00'
+        	},
+            setInputStyles(newInputs = false, newContract, oldContract) {
+				if(oldContract) {
+					for(let i = 0; i < allabis[newContract].N_COINS - allabis[oldContract].N_COINS; i++) {
+						this.inputs.push('0.00')
+					}
+					if(allabis[oldContract].N_COINS - allabis[newContract].N_COINS > 0) {
+						this.inputs = this.inputs.filter((_, i) => i < allabis[newContract].N_COINS)
+					}
+				}
+				else if(newInputs) {
+					this.inputs = new Array(Object.keys(this.currencies).length).fill('0.00')
+				}
+	        	this.bgColors = Array(currentContract.N_COINS).fill({
+	        		backgroundColor: '#707070',
+	        		color: '#d0d0d0',
+	        	})
+            },
+            async calcSlippage() {
+            	try {
+                    let inputs = [...this.inputs]
+                    inputs[0] = this.amountAfterBTC
+	            	this.slippagePromise.cancel();
+	        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(inputs, true))
+	        		await this.slippagePromise;
+            	}
+            	catch(err) {
+            		console.error(err)
+            	}
+            },
+            async handle_sync_balances() {
+			    await common.update_fee_info();
+			    let calls = []
+		    	calls.push([this.coins[1]._address, this.coins[1].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(1).encodeABI()])
+			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+		    	Vue.set(this.wallet_balances, 1, decoded[0])
+		    	if(!currentContract.default_account) Vue.set(this.wallet_balances, 1, 0)
+		    	Vue.set(this.balances, 1, +decoded[1])
+			},
+			async handle_sync_balances_proportion() {
+				await this.handle_sync_balances();
+				//for(let i = 0; i < currentContract.N_COINS; i++) this.change_currency(i)
+			},
+			deposit_stake() {
+				this.show_loading = true;
+				this.handle_add_liquidity(true)
+			},
+            setLoadingAction(val) {
+                this.loadingAction = val
+                setTimeout(() => this.loadingAction = false, 500)
+            },
+			async handle_add_liquidity(stake = false) {
+                let actionType = stake == false ? 1 : 2;
+                if(this.loadingAction == actionType) return;
+                this.setLoadingAction(actionType)
+                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
+				this.show_loading = true
+				let calls = [
+						  [this.coins[1]._address, this.coins[1].methods.balanceOf(currentContract.default_account).encodeABI()]
+                        ]
+				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
+				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
+                let wbtcBalance = decoded[0]
+                let maxDiff = (BN(wbtcBalance).div(1e8)).minus(this.inputs[i])
+                if(wbtcBalance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
+                    Vue.set(this.amounts, 1, BN(wbtcBalance).toFixed(0,1))
+                }
+                else Vue.set(this.amounts, 1, BN(this.inputs[1]).times(1e8).toFixed(0,1))
+				let total_supply = +decoded[decoded.length-1];
+				this.waitingMessage = 'Please approve spending your coins'
+                var token_amount = 0;
+                if(total_supply > 0) {
+                    let token_amounts = this.amounts
+                    token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
+                    token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
+                    token_amount = BN(token_amount).times(0.99).toFixed(0,1);
+                }
+				this.estimateGas = contractGas.deposit[this.currentPool] / 2
+		        await common.approveAmount(this.coins[1], this.amounts[1], currentContract.default_account, adapterAddress)
+	
+			    let receipt;
+			    let minted = 0;
+                this.waitingMessage = 'Please confirm deposit transaction'
+		    	let add_liquidity = store.deposit({ amounts: this.amounts, min_amount: token_amount })
+			    try {
+			    	receipt = await add_liquidity
+			    }
+			    catch(err) {
+			    	if(err.code == -32603) {
+			    		await common.setTimeout(300)
+			    		receipt = await add_liquidity
+			    	}
+			    }
+				this.waitingMessage = ''
+				this.estimateGas = 0 
+				this.gasPrice = 0
+                this.justDeposit = false
+
+			    await this.handle_sync_balances();
+			    common.update_fee_info();
+			},
+			highlightInputs(i) {
+                if(i == 0) {
+                    if(this.amountAfterBTC < 0) Vue.set(this.bgColors, i, 'red')
+                    else Vue.set(this.bgColors, i, 'blue')
+                    return;
+                }
+				let value = this.inputs[i]
+				if (value > this.wallet_balances[i] * this.rates[i])
+	                Vue.set(this.bgColors, i, 'red');
+	            else
+	                Vue.set(this.bgColors, i, 'blue');
+			},
+			async change_currency(i, setInputs = true, event) {
+				if(event) {
+					this.inputs[i] = event.target.value
+				}
+	            await this.calcSlippage()
+	            var value = this.inputs[i]
+	            this.highlightInputs(i)
+	        },
+        }
+    }
+
+</script>
+
+<style>
+	#add-liquidity {
+		margin-right: 1em;
+	}
+	#mintr {
+        margin-top: 1em;
+		margin-left: 1em;
+		text-align: center;
+	}
+ 	#stakeunstaked {
+ 		margin-left: 1em;
+    }
+    .pulse {
+        background: red;
+        animation: pulse 1s 3;
+        margin: 0;
+        margin-bottom: 8px;
+    }
+    .maxBalanceCoin {
+        cursor: pointer;
+    }
+    .maxBalanceCoin:hover {
+        text-decoration: underline;
+    }
+    .maxBalanceCoin > span {
+        font-size: 0.7em;
+    }
+    .pulse p {
+        margin-bottom: 0;
+    }
+    .currency_label {
+        display: block;
+        margin-bottom: 0.3em;
+    }
+    .currency_label .token-icon {
+        margin-right: 0.6em;
+    }
+</style>

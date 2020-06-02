@@ -13,6 +13,10 @@
 			</div>
 		</div>
 
+		<div class='info-message gentle-message' v-show='showCompleted'>
+			Swap completed
+		</div>
+
 		<table class='tui-table'>
 			<thead>
 				<tr>
@@ -44,7 +48,7 @@
 					</td>
 					<td>
 						<a :href="getTxHashLink(transaction)"> 
-							<span v-show='transaction.type == 0 && transaction.state < 10'>{{ transaction.confirmations }} / {{ confirmations }}</span>
+							<span v-show='transaction.type == 0 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
 							<span v-show='transaction.type == 0 && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
 							<span v-show='transaction.type == 0 && [14,15].includes(transaction.state)'>
 								Done
@@ -111,7 +115,12 @@
 		computed: {
 			transactions() {
 				return state.transactions
-			}
+			},
+			showCompleted() {
+        		let tx = state.transactions[0]
+        		if(!tx) return;
+        		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 65
+        	},
 		},
 
 		methods: {
@@ -159,5 +168,73 @@
 </script>
 
 <style scoped>
-	
+	.tui-table {
+		width: 100%;
+		margin-top: 1em;
+	}
+	.shifttype {
+		white-space: nowrap;
+	}
+	tbody tr td {
+		padding-bottom: 0.6em;
+	}
+	.icon.small {
+		height: 1em;
+	}
+	.hoverpointer {
+		cursor: pointer;
+	}
+	.modal-content {
+		text-align: center;
+		padding: 0;
+		border: none;
+		width: 260px;
+	}
+	.modal-content fieldset {
+		color: white;
+		font-weight: bolder;
+		border: 6px double white;
+		padding-block-start: 1em;
+		padding-block-end: 1em;
+	}
+	.modal-content button {
+		margin-top: 0.6em;
+		padding: 0 2em;
+	}
+	.legend2 {
+	  position: absolute;
+	  top: 0;
+	  left: 2em;
+	  background: #c0c0c0;
+	  line-height:1.2em;
+	}
+	.greentext {
+		color: green;
+	}
+	.tooltiptext.small {
+		width: 70px;
+		margin-left: -35px;
+	}
+	.legend2 .greentext {
+		display: inline-block;
+		transform: translate3d(0,-0.1em,10em);
+	}
+	.legend2 .greentext:hover {
+		transform: none;
+	}
+	.icon.cancel {
+		cursor: pointer;
+		font-size: 1em;
+	}
+	.icon.cancel img {
+		width: 1em;
+		margin-left: 0.8em;
+		filter: invert(13%) sepia(90%) saturate(4444%) hue-rotate(11deg) brightness(88%) contrast(97%);
+	}
+	.redtext {
+		color: red;
+	}
+	.nowrap {
+		white-space: nowrap;
+	}
 </style>

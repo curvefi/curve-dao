@@ -1,22 +1,22 @@
 <template>
 	<div class='window white'>
+	    <swap-native v-if='swapbtc' @loaded='loaded'></swap-native>
+	    <swap v-if='!swapbtc || (swapbtc && !loaded)'></swap>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 	        <label for='swapbtc'>Swap BTC</label>
 	    	<span v-show='loading' class='loading line'></span>
 	    </div>
-	    <swap-native v-if='swapbtc' @loaded='loaded'></swap-native>
-	    <swap v-if='!swapbtc || (swapbtc && !loaded)'></swap>
     </div>
 </template>
 
 <script>
-    import { getters, contract as currentContract, gas as contractGas} from '../contract'
+    import { getters, contract as currentContract, gas as contractGas} from '../../contract'
 	import Swap from './Swap.vue'
 
-	import LoadingComponent from './ren/LoadingComponent.vue'
+	import LoadingComponent from '../ren/LoadingComponent.vue'
     const SwapNative = () => ({
-        component: import('./ren/Gateway.vue'),
+        component: import('../ren/Gateway.vue'),
 
         loading: Swap,
 
@@ -31,13 +31,15 @@
 
 
 		data: () => ({
-			swapbtc: false,
+			swapbtc: true,
 			loading: false,
 		}),
 
 		watch: {
 			swapbtc(val) {
+				console.log(val, "THE VAL SWAP BTC")
 				if(swapbtc) this.loading = true
+				else this.loading = false
 			}
 		},
 
@@ -62,6 +64,7 @@
 
 <style scoped>
 	.swapBTC-container {
+		margin-top: 1em;
 		margin-bottom: 1em;
 	}
 	.loading.line {

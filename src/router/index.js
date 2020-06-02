@@ -1,9 +1,11 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 const PoolApp = () => import('../components/PoolApp.vue')
-const Swap = () => import('../components/Swap.vue')
-const SwapRouter = () => import('../components/SwapRouter.vue')
-const Deposit = () => import('../components/Deposit.vue')
+const Swap = () => import('../components/swap/Swap.vue')
+const SwapRouter = () => import('../components/swap/SwapRouter.vue')
+const Deposit = () => import('../components/deposit/Deposit.vue')
+const DepositRouter = () => import('../components/deposit/DepositRouter.vue')
+const DepositRen = () => import('../components/ren/Deposit.vue')
 const Withdraw = () => import('../components/Withdraw.vue')
 const WithdrawOld = () => import('../components/WithdrawOld.vue')
 const Stats = () => import('../components/Stats.vue')
@@ -167,6 +169,17 @@ let routes = [
     ],
   },
   {
+    path:'/ren/depositren',
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'DepositRen',
+        component: DepositRen,
+      }
+    ],
+  },
+  {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren)/',
     name: 'Index',
     component: PoolApp,
@@ -179,7 +192,7 @@ let routes = [
       {
         path: 'deposit',
         name: 'Deposit',
-        component: Deposit
+        component: DepositRouter
       },
       {
         path: 'withdraw',

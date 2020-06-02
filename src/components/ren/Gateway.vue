@@ -1,17 +1,6 @@
 <template>
 	<div class='rengateway'>
-		<div id='modal' class='modal' v-show='showModal'>
-			<div class='modal-content window white'>
-				<fieldset>
-					<div class='legend2 hoverpointer' @click='showModal = false'>
-						[<span class='greentext'>■</span>]
-					</div>
-					<legend>QR CODE</legend>
-					<vue-qrcode :value="qrValue" :options="qrOptions"></vue-qrcode>
-					<button @click='showModal =false'> OK </button>
-				</fieldset>
-			</div>
-		</div>
+		
 		<div class='exchange'>
 
             <div class='exchangefields'>
@@ -123,76 +112,9 @@
 
 		<button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
-		<div class='info-message gentle-message' v-show='showCompleted'>
-			Swap completed
-		</div>
+		<tx-table></tx-table>
 
-		<table class='tui-table'>
-			<thead>
-				<tr>
-					<th>Type</th>
-					<th>BTC Address</th>
-					<th>Confirmations</th>
-					<th>Status</th>
-					<th>Progress</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for='transaction in transactions'>
-					<td class='shifttype'>
-						{{ transaction.type == 0 ? 'BTC->wBTC' : 'wBTC->BTC' }}
-					</td>
-					<td>
-						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
-						<span v-show='transaction.gatewayAddress'>
-							<span class='hoverpointer'>{{transaction.gatewayAddress}}</span>
-							<span class='hoverpointer' v-show='transaction.type == 0' @click='copy(transaction)'>
-								<span class='tooltip'>
-									<img class='icon small' src='@/assets/copy-solid.svg'>
-									<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
-								</span>
-							</span>
-							<img class='icon small hoverpointer' v-show='transaction.type == 0'
-								@click='showQR(transaction)' src='@/assets/qrcode-solid.svg'>
-						</span>
-					</td>
-					<td>
-						<a :href="getTxHashLink(transaction)"> 
-							<span v-show='transaction.type == 0 && transaction.state < 10'>{{ transaction.confirmations }} / {{ confirmations }}</span>
-							<span v-show='transaction.type == 0 && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
-							<span v-show='transaction.type == 0 && [14,15].includes(transaction.state)'>
-								Done
-							</span>
-							<span v-show='transaction.type == 1 && transaction.state >= 30 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
-							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
-						</a>
-						<div v-show='transaction.type == 0 && transaction.state == 14'>
-							<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash">Etherscan</a>
-						</div>
-					</td>
-					<td>
-						<tx-state 
-							:state='transaction.state' 
-							:transaction='transaction'
-							@mint='mintThenSwap'/>
-					</td>
-					<td class='nowrap'>
-						<span v-show='transaction.type == 0'>
-							{{ txProgress(transaction) }}%
-							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
-						</span>
-						<span v-show='transaction.type == 1'>
-							{{ txProgress(transaction) }}%
-							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
-						</span>
-						<span v-show='transaction.type == 0 && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
-							<!-- [<span class='redtext'>&times;</span>] -->
-							<img src='@/assets/trash-alt-solid.svg'>
-						</span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		
 	</div>	
 </template>
 
@@ -201,13 +123,14 @@
 	import { getters, allCurrencies, contract } from '../../contract'
 	import RenSDK from '@renproject/ren'
 	import BN from 'bignumber.js'
-	import TxState from './TxState.vue'
 	import * as helpers from '../../utils/helpers'
 	import * as common from '../../utils/common'
 	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
 	let Box = null
-	import VueQrcode from '@chenfengyuan/vue-qrcode'
 	import * as subscriptionStore from '../common/subscriptionStore'
+	import Table from './Table.vue'
+	import * as store from './shiftStore'
+	import { state } from './shiftState'
 
 
 	const txObject = () => ({
@@ -238,24 +161,12 @@
 
 	export default {
 		components: {
-			TxState,
-			VueQrcode,
+			'tx-table': Table,
 		},
 		data: () => ({
 			toInput: '0.00',
 			toInputOriginal: 0,
 			address: '',
-			sdk: new RenSDK('mainnet'),
-			transactions: [],
-
-			minersFee: 35000,
-			minersLockFee: 0,
-			minersReleaseFee: 0,
-			mintFee: 0,
-			burnFee: 0,
-
-			default_account: '',
-			adapterContract: null,
 
 			confirmations: 6,
 			// 1 - getting btc deposit address, 2 - waiting to confirm on btc network, 3 - 
@@ -297,13 +208,13 @@
             	return this.toInputOriginal / this.fromInput
             },
             amountAfterBTC() {
-            	return (this.fromInput * 1e8 * (1-this.mintFee/10000) - this.minersLockFee) / 1e8 
+            	return (this.fromInput * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8 
             },
             amountAfterWBTC() {
-            	return (this.toInputOriginal * 1e8 * (1-this.burnFee/10000) - this.minersReleaseFee) / 1e8
+            	return (this.toInputOriginal * 1e8 * (1-state.burnFee/10000) - state.minersReleaseFee) / 1e8
             },
             minOrderSize() {
-            	return this.minersReleaseFee + this.burnFee / 10000
+            	return state.minersReleaseFee + state.burnFee / 10000
             },
             lessThanMinOrder() {
             	if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
@@ -322,20 +233,7 @@
         		}
         		else return {}
         	},
-        	showCompleted() {
-        		let tx = this.transactions[0]
-        		if(!tx) return;
-        		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 65
-        	},
-        	qrOptions() {
-        		return {
-        			width: 200,
-        			margin: 0,
-        			color: {
-        				light: '#0000'
-        			}
-        		}
-        	},
+        	
 		},
 		watch: {
 			from_currency(val, oldval) {
@@ -376,43 +274,12 @@
 		},
 		methods: {
 			async mounted() {
-
-				this.adapterContract = new contract.web3.eth.Contract(adapterABI, adapterAddress)
-				this.address = this.default_account = contract.default_account
-				if(this.from_currency == 1) this.address = this.default_account
-				//console.log(await this.sdk.renVM.sendMessage('ren_queryFees', {}))
+				if(this.from_currency == 1) this.address = contract.default_account
 				this.from_cur_handler()
-				//resume only transactions submitted to btc network
-				this.loadTransactions()
+			},
 
-				let fees = await this.sdk.getFees()
-				this.minersLockFee = fees.btc.lock
-				this.minersReleaseFee = fees.btc.release
-				this.mintFee = fees.btc.ethereum.mint
-				this.burnFee = fees.btc.ethereum.burn
-
-				//this.listenForBurn('0x5c1ebb46dea75421fe3a1afe4349ebb8238c1a6a7bbbd85db6577fd351ee28c7')
-
-				//test wait for burn
-				// const burn = this.sdk.burnAndRelease({
-				//     // Send BTC from the Ethereum blockchain to the Bitcoin blockchain.
-				//     // This is the reverse of shitIn.
-				//     sendToken: RenJS.Tokens.BTC.Eth2Btc,
-
-				//     // The web3 provider to talk to Ethereum
-				//     web3Provider: web3.currentProvider,
-
-				//     // The transaction hash of our contract call
-				//     ethereumTxHash: '0x272e83c156c60cff7a87d1bbc365fee1f05269b0d08c2be0b041115cafbe16f0',
-				// })
-				// await burn.readFromEthereum()
-				// //console.log(burn)
-				// //console.log(await burn.queryTx())
-				// let promiEvent = await burn.submit()
-				// console.log(promiEvent, "PROMI EVENT")
-				////promiEvent.on('txHash', hash => console.log(hash)).on('status', status => console.log(status));
-
-
+			use3Box() {
+				store.use3Box()
 			},
 
 			set_max_balance() {
@@ -424,44 +291,9 @@
 				this.set_to_amount()
 			},
 
-			set_from_amount() {
-
-			},
-
 			getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.swapwrapped, this.currentPool)
             },
-
-			showQR({ fromInput, gatewayAddress }) {
-				this.showModal = true
-				this.qrValue = `bitcoin:${gatewayAddress}?amount=${fromInput}`
-			},
-
-			getTxHashLink(transaction) {
-				let hash = transaction.type == 0 ? 
-					'https://blockchain.info/btc/tx/' + transaction.btcTxHash 
-					: 'https://etherscan.io/tx/' + transaction.ethTxHash;
-				return hash;
-			},
-
-			txProgress(transaction) {
-        		if(transaction.type == 0) {
-        			let progress = transaction.state / 14 * 100 | 0
-        			if(progress > 100) progress = 100
-        			return [14, 15].includes(transaction.state) ? 100 : progress
-        		}
-        		if(transaction.type == 1) {
-        			let progress = ((transaction.state - 30) / 35) * 100 | 0
-        			if(progress > 100) progress = 100
-        			return transaction.state == 65 ? 100 : progress
-        		}
-        	},
-
-			copy(transaction) {
-				this.copied = true;
-				setTimeout(() => this.copied = false, 600)
-				helpers.copyToClipboard(transaction.gatewayAddress)
-			},
 
 			async set_to_amount() {
 				this.highlight_input();
@@ -469,8 +301,8 @@
 				let j = this.to_currency
 				let dx = BN(this.fromInput).times(1e8).toFixed(0,1)
 				let original_dx = dx
-				let fee = i == 0 ? this.minersLockFee : this.minersReleaseFee
-				let ethfee = i == 0 ? this.mintFee : this.burnFee
+				let fee = i == 0 ? state.minersLockFee : state.minersReleaseFee
+				let ethfee = i == 0 ? state.mintFee : state.burnFee
 				ethfee = 1 - ethfee/10000
 				dx = BN(this.fromInput).times(1e8).times(ethfee).minus(fee).toFixed(0,1)
 
@@ -521,13 +353,15 @@
 			},
 
 			swapInputs() {
-
+				[this.fromInput, this.toInput] = [this.toInput, this.fromInput]
+                this.from_currency = this.to_currency
+                this.from_cur_handler()
 			},
 
 			async from_cur_handler() {
 				this.address = ''
-				if(this.from_currency == 0) this.address = this.default_account
-                let currentAllowance = BN(await contract.coins[1].methods.allowance(this.default_account, adapterAddress).call())
+				if(this.from_currency == 0) this.address = contract.default_account
+                let currentAllowance = BN(await contract.coins[1].methods.allowance(contract.default_account, adapterAddress).call())
                 let maxAllowance = contract.max_allowance.div(BN(2))
                 if (currentAllowance.gt(maxAllowance))
                     this.inf_approval = true;
@@ -539,8 +373,8 @@
             },
 
 			async setMaxBalance() {
-				let balance = await contract.coins[1].methods.balanceOf(this.default_account).call()
-				this.maxBalance = this.default_account ? balance : 0
+				let balance = await contract.coins[1].methods.balanceOf(contract.default_account).call()
+				this.maxBalance = contract.default_account ? balance : 0
 				//console.log(this.maxBalance)
 			},
 
@@ -551,390 +385,21 @@
 				this.toInput = BN(get_dy).div(1e8).toFixed(8);
 			},
 
-			async loadTransactions() {
-				let items = await this.getAllItems()
-				this.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
-				let mints = this.transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>this.sendMint(t))
-				console.log(mints, "MINTS")
-				let burns = this.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
-				console.log(burns, "THE BURNS")
-				if(burns.length) {
-					web3.eth.subscribe('newBlockHeaders')
-						.on('data', block => {
-							console.log("NEW BLOCK")
-							for(let transaction of burns) {
-								console.log(transaction, "TRANSACTION")
-								if(transaction.state > 63 || transaction.confirmations >= 30) continue;
-								transaction.confirmations = block.number - transaction.ethStartBlock + 1
-								transaction.ethCurrentBlock = block.number
-								transaction.state = 30 + transaction.confirmations
-								this.upsertTx(transaction)
-							}
-						})
-				}
-				await Promise.all([...mints, ...burns.map(t=>this.listenForBurn(t.id))])
-			},
-
-			async use3Box() {
-				Box = require('3box')
-				if(this.box !== null) return;
-				this.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
-				this.space = await this.box.openSpace('curvebtc')
-				this.loadTransactions();
-				await this.space.syncDone
-			},
-
-			async setItem(key, item) {
-				if(this.space !== null) {
-					return await this.space.private.set(key, JSON.stringify(item))
-				}
-				return localStorage.setItem(key, JSON.stringify(item))
-			},
-
-			async removeItem(key) {
-				if(this.space !== null) {
-					return await this.space.private.remove(key)
-				}
-				return localStorage.removeItem(key)	
-			},
-
-			async getItem(key) {
-				if(this.space !== null) return await this.space.private.get(key)
-				return localStorage.getItem(key)
-			},
-
-			async getAllItems() {
-				let storage = localStorage
-				if(this.space !== null) {
-					storage = await this.space.private.all();
-				}
-				return Object.keys(storage).filter(key => key.startsWith('curvebtc_')).map(k => JSON.parse(storage[k]))
-			},
-
-			removeTx(transaction) {
-				this.transactions = this.transactions.filter(t => t.id != transaction.id)
-				this.removeItem('curvebtc_' + transaction.id)
-			},
-
-			upsertTx(transaction) {
-				let key = 'curvebtc_' + transaction.id
-				transaction.web3Provider = null;
-				if(transaction.params && transaction.params.web3Provider)
-					transaction.params.web3Provider = null;
-				transaction.box = null;
-				transaction.space = null
-				if(transaction.type == 0) this.postTxNotification(transaction.btcTxHash)
-				if(transaction.type == 1) this.postTxNotification(transaction.ethTxHash)
-				this.setItem(key, transaction)
-			},
-
-			postTxNotification(txHash) {
-				let subscription = subscriptionStore.subscription
-				console.log(subscription)
-				fetch('https://f9dfeb7663cb.ngrok.io/addtx', 
-					{
-					    method: 'POST', 
-					    headers: {
-					      'Content-Type': 'application/json'
-					      // 'Content-Type': 'application/x-www-form-urlencoded',
-					    },
-					    body: JSON.stringify({ subscription, txHash: txHash})
-					})
-			},
-
-			async mint() {
-				let mint = await this.initMint();
-				let transaction = this.transactions[0]
-				await this.sendMint(transaction, mint)
-			},
-
-			async initMint(transaction) {
-				let _minWbtcAmount, _wbtcDestination;
-				if(transaction) {
-					var { id, amount, nonce, address } = transaction
-					_minWbtcAmount = transaction.contractParams[0].value
-				}
-				else {
-					amount = this.from_currency == 0 ? this.amountAfterBTC : this.fromInput;
-					address = this.address
-					_minWbtcAmount = BN(this.toInput).times(1e8).times(0.99).toFixed(0, 1)
-				}
-				
-				let transfer = {
-				    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
-				    sendToken: RenJS.Tokens.BTC.Btc2Eth,
-
-				    // The contract we want to interact with
-				    sendTo: adapterAddress,
-
-				    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
-
-				    // The name of the function we want to call
-				    contractFn: "mintThenSwap",
-				    
-				    nonce: nonce || RenJS.utils.randomNonce(),
-
-				    // Arguments expected for calling `deposit`
-				    contractParams: [
-				        {
-			                name: "_minWbtcAmount",
-			                type: "uint256",
-			                value: _minWbtcAmount,
-			            },
-			            {
-			                name: "_wbtcDestination",
-			                type: "address",
-			                value: address,
-			            },
-				    ],
-				    
-				    // Web3 provider for submitting mint to Ethereum
-				    web3Provider: web3.currentProvider,
-				}
-				const mint = this.sdk.lockAndMint(transfer);
-				if(!id) {
-					transfer.id = helpers.generateID();
-					transfer.timestamp = Date.now()
-					transfer.type = 0
-					transfer.amount = this.from_currency == 0 ? this.amountAfterBTC : this.fromInput;
-					transfer.address = this.address;
-					transfer.fromInput = this.fromInput;
-					transfer.toInput = this.toInput;
-					let tx = {...txObject(), ...transfer}
-					this.upsertTx(tx)
-					this.transactions.unshift(tx)
-				}
-
-				return mint;
-			},
-
-			async sendMint(transfer, mint) {
-
-				let transaction = this.transactions.find(t => t.id == transfer.id)
-				console.log(transaction)
-				//transaction is ready to be sent to eth network
-				if(transaction.renResponse && transaction.signature) {
-					if(transaction.state == 12 || transaction.state == 14)
-						transaction.state = 15
-					transaction.confirmations = 'Confirmed'
-					this.upsertTx(transaction)
-					//await this.mintThenSwap(transfer)
-				}
-				else {
-					console.log("SEND MINT")
-					mint = mint || await this.initMint(transfer);
-
-					//transaction initated, but didn't get an address, so updating
-					if(!transaction.params) {
-						transaction.params = mint.params;
-						transaction.gatewayAddress = await mint.gatewayAddress()
-						transaction.state = 1
-						this.upsertTx(transaction)
-					}
-
-					let deposit
-					//transaction was submitted to btc network
-					if(transaction.btcTxHash && String(transaction.btcTxVOut) !== 'undefined') {
-						deposit = await mint.wait(this.confirmations, {
-							txHash: transaction.btcTxHash,
-							vOut: +transaction.btcTxVOut,
-						})
-						.on('deposit', deposit => {
-							console.log('DEPOSIT SUBMITTED', deposit)
-							if(deposit.utxo) {
-								let confirmations = deposit.utxo.confirmations
-								if(transaction.state == 2) {
-									transaction.state = 3;
-								}
-								else
-									transaction.state = 3 + confirmations
-
-								transaction.confirmations = confirmations
-								transaction.btcTxHash = deposit.utxo.txHash
-								transaction.btcTxVOut = deposit.utxo.vOut
-								this.upsertTx(transaction)
-							}
-						})
-					}
-					//trasaction not submitted to btc network
-					else {
-						deposit = await mint.wait(this.confirmations)
-										.on('deposit', deposit => {
-											console.log("DEPOSIT", deposit)
-											if(deposit.utxo) {
-												if(transaction.state == 1) {
-													transaction.state = 2
-												}
-												transaction.confirmations = deposit.utxo.confirmations
-												transaction.btcTxHash = deposit.utxo.txHash
-												transaction.btcTxVOut = deposit.utxo.vOut
-												this.upsertTx(transaction)
-											}
-										})
-					}
-
-					transaction.state = 10
-
-					let signature = await deposit.submit()
-					transaction.state = 11
-					transaction.renResponse = signature.renVMResponse;
-					transaction.signature = signature.signature
-					transaction.utxoAmount = transaction.renResponse.autogen.amount
-					this.upsertTx(transaction)
-					this.mintThenSwap(transaction)
-				}
-			},
-
-			async mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }) {
-				let transaction = this.transactions.find(t => t.id == id);
-				let min_amount = params.contractCalls[0].contractParams[0].value
-				
-				let get_dy = await contract.swap.methods.get_dy(0, 1, BN(amount).times(1e8).toFixed(0, 1)).call()
-
-				await new Promise((resolve, reject) => {
-					return this.adapterContract.methods.mintThenSwap(
-						params.contractCalls[0].contractParams[0].value,
-						params.contractCalls[0].contractParams[1].value,
-						utxoAmount,
-						renResponse.autogen.nhash,
-						signature,
-					).send({
-						from: this.default_account
-					})
-					.once('transactionHash', resolve)
-					.once('receipt', () => {
-						//this.transactions = this.transactions.filter(t => t.id != id)
-						transaction.state = 14
-						transaction.ethTxHash = receipt.transactionHash
-						this.upsertTx(transaction)
-					})
-					.on('error', err => {
-						transaction.state = 16;
-						this.upsertTx(transaction)
-					})
-					.catch(err => reject(err))
-				})
-
-				transaction.state = 12
-
-				if(get_dy < min_amount) transaction.state = 13
-				this.upsertTx(transaction)
-				
-			},
-
-			async burn() {
-				await common.approveAmount(contract.coins[1], 
-					BN(this.fromInput).times(1e8), 
-					this.default_account, adapterAddress)
-				console.log(RenJS.utils.BTC.addressToHex(this.address),
-					BN(this.fromInput).times(1e8),
-					BN(this.toInputOriginal))
-				let id = helpers.generateID();
-				let txhash = await new Promise((resolve, reject) => {
-					return this.adapterContract.methods.swapThenBurn(
-						RenJS.utils.BTC.addressToHex(this.address),
-						BN(this.fromInput).times(1e8).toFixed(0, 1),
-						BN(this.toInputOriginal).times(0.97).toFixed(0, 1),
-					).send({
-						from: this.default_account,
-						gas: 600000,
-					})
-					.once('transactionHash', resolve)
-					.once('receipt', receipt => {
-						let transaction = this.transactions.find(t => t.id == id)
-						this.listenForBurn(transaction.id)
-						let startBlockNumber = receipt.blockNumber
-						transaction.confirmations = 1
-						transaction.state = 31;
-						transaction.ethStartBlock = startBlockNumber
-						this.upsertTx(transaction)
-						let subscription = web3.eth.subscribe('newBlockHeaders')
-							.on('data', block => {
-								if(transaction.confirmations >= 30) subscription.unsubcribe()
-								transaction.confirmations = block.number - transaction.ethStartBlock + 1
-								transaction.ethCurrentBlock = block.number
-								transaction.state = 30 + transaction.confirmations
-								console.log("NEW TX RECEIPT", transaction)
-								this.upsertTx(transaction)
-							})
-					})
-					.on('error', (err, receipt) => {
-						console.log(err, receipt, "ERR RECEIPT")
-					})
-					.catch(err => reject(err))
-				})
-				this.transactions.unshift({
-					id: id,
-					timestamp: Date.now(),
-					type: 1,
-					gatewayAddress: this.address,
-					confirmations: 'Started',
-					state: 30,
-					ethTxHash: txhash,
-				})
-				let tx = this.transactions[0]
-				this.upsertTx(tx)
-				
-
-			},
-			async listenForBurn(id) {
-
-				let tx = this.transactions.find(t => t.id == id)
-				console.log(tx.ethTxHash, "TX HASH")
-				let burn = await this.sdk.burnAndRelease({
-				 	sendToken: RenJS.Tokens.BTC.Eth2Btc,
-
-				    // The web3 provider to talk to Ethereum
-				    web3Provider: web3.currentProvider,
-
-				    // The transaction hash of our contract call
-				    ethereumTxHash: tx.ethTxHash,
-				}).readFromEthereum()
-				let promiEvent = await burn.submit()
-				.on('txHash', hash => {
-					let tx = this.transactions.find(t => t.id == id)
-					console.log(hash)
-					tx.renVMHash = hash
-					//tx.state = 31
-					this.upsertTx(tx)
-				})
-				.on('status', status => {
-					let tx = this.transactions.find(t => t.id == id)
-					if(status == 'confirming' && tx.state >= 62) {
-						tx.confirmations = "Confirming"
-						tx.state = 62
-						this.upsertTx(tx)
-					}
-					if(status == 'pending') {
-						tx.confirmations = "Pending"
-						tx.state = 63
-						this.upsertTx(tx)
-					}
-					if(status == 'executing') {
-						tx.confirmations = "Executing"
-						tx.state = 64
-						this.upsertTx(tx)
-					}
-					console.log(status)
-				})
-				tx.state = 65
-				tx.confirmations = "Done"
-				this.upsertTx(tx)
-
-				// setInterval(async () => {
-				// 	console.log("BURN LOG")
-				// 	let res = await burn.queryTx()
-				// 	console.log(res, "BURN RES")
-				// 	if(res.txStatus.toLowerCase() == 'confirming') tx.state = 12
-				// 	if(res.txStatus.toLowerCase() == 'done' || res.txStatus.toLowerCase() == 'confirmed') tx.state = 13
-				// 	tx.confirmations = res.txStatus
-				// 	this.upsertTx(tx)
-				// }, 1000)
-			},
-
 			async submit() {
-				if(this.from_currency == 0) this.mint()
-				if(this.from_currency == 1) this.burn()
+				if(this.from_currency == 0) 
+					store.mint({
+						from_currency: this.from_currency,
+						amountAfterBTC: this.amountAfterBTC,
+						address: this.address,
+						fromInput: this.fromInput,
+						toInput: this.toInput,
+					})
+				if(this.from_currency == 1) 
+					store.burn({
+						address: this.address,
+						fromInput: this.fromInput,
+						toInputOriginal: this.toInputOriginal,
+					})
 			}
 		}
 	}
@@ -1006,73 +471,8 @@
 	.maxbalance:hover {
 		text-decoration: underline;
 	}
-	.shifttype {
-		white-space: nowrap;
-	}
 	.window.white.rengateway {
 		width: 80%;
 		max-width: 700px;
-	}
-	tbody tr td {
-		padding-bottom: 0.6em;
-	}
-	.icon.small {
-		height: 1em;
-	}
-	.hoverpointer {
-		cursor: pointer;
-	}
-	.modal-content {
-		text-align: center;
-		padding: 0;
-		border: none;
-		width: 260px;
-	}
-	.modal-content fieldset {
-		color: white;
-		font-weight: bolder;
-		border: 6px double white;
-		padding-block-start: 1em;
-		padding-block-end: 1em;
-	}
-	.modal-content button {
-		margin-top: 0.6em;
-		padding: 0 2em;
-	}
-	.legend2 {
-	  position: absolute;
-	  top: 0;
-	  left: 2em;
-	  background: #c0c0c0;
-	  line-height:1.2em;
-	}
-	.greentext {
-		color: green;
-	}
-	.tooltiptext.small {
-		width: 70px;
-		margin-left: -35px;
-	}
-	.legend2 .greentext {
-		display: inline-block;
-		transform: translate3d(0,-0.1em,10em);
-	}
-	.legend2 .greentext:hover {
-		transform: none;
-	}
-	.icon.cancel {
-		cursor: pointer;
-		font-size: 1em;
-	}
-	.icon.cancel img {
-		width: 1em;
-		margin-left: 0.8em;
-		filter: invert(13%) sepia(90%) saturate(4444%) hue-rotate(11deg) brightness(88%) contrast(97%);
-	}
-	.redtext {
-		color: red;
-	}
-	.nowrap {
-		white-space: nowrap;
 	}
 </style>

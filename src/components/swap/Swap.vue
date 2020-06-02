@@ -146,11 +146,11 @@
 </template>
 
 <script>
-    import * as common from '../utils/common.js'
-    import { getters, contract as currentContract, gas as contractGas} from '../contract'
-    import * as helpers from '../utils/helpers'
-    import allabis from '../allabis'
-    import * as priceStore from './common/priceStore'
+    import * as common from '../../utils/common.js'
+    import { getters, contract as currentContract, gas as contractGas} from '../../contract'
+    import * as helpers from '../../utils/helpers'
+    import allabis from '../../allabis'
+    import * as priceStore from '../common/priceStore'
 
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
@@ -263,6 +263,7 @@
         },
         methods: {        
             async mounted() {
+                console.log(currentContract.default_account)
                 this.btcPrice = await priceStore.getBTCPrice()
                 if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
                 this.c_rates = currentContract.c_rates
@@ -335,7 +336,7 @@
                 this.promise = helpers.makeCancelable(promise)
             },
             async from_cur_handler() {
-                let currentAllowance = cBN(await this.coins[this.from_currency].methods.allowance(this.default_account, currentContract.swap_address).call())
+                let currentAllowance = cBN(await this.coins[this.from_currency].methods.allowance(currentContract.default_account, currentContract.swap_address).call())
                 let maxAllowance = currentContract.max_allowance.div(cBN(2))
                 if (currentAllowance.gt(maxAllowance))
                     this.inf_approval = true;
@@ -359,15 +360,15 @@
             async set_max_balance() {
                 let balance
                 if(this.currentPool == 'susdv2' && this.from_currency == 3)
-                    balance = await this.coins[this.from_currency].methods.transferableSynths(this.default_account).call(); 
+                    balance = await this.coins[this.from_currency].methods.transferableSynths(currentContract.default_account).call(); 
                 else
-                    balance = await this.coins[this.from_currency].methods.balanceOf(this.default_account).call();
+                    balance = await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call();
                 let amount = cBN(balance).div(this.precisions[this.from_currency]).toFixed()
                 this.fromInput = currentContract.default_account ? amount : 0
                 await this.set_to_amount();
             },
             async highlight_input() {
-                let balance = parseFloat(await this.coins[this.from_currency].methods.balanceOf(this.default_account).call()) /
+                let balance = parseFloat(await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call()) /
                         this.precisions[this.from_currency];
                 if (this.fromInput > balance)
                     this.fromBgColor = 'red'
@@ -375,12 +376,12 @@
                     this.fromBgColor = 'blue'
             },
             async set_from_amount(i) {
-                let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(this.default_account).encodeABI()]]
+                let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]]
                 if(this.currentPool == 'susdv2' && i == 3)
-                    balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(this.default_account).encodeABI()])
+                    balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(currentContract.default_account).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(balanceCalls).call()
                 let balances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-                let amounts = balances.map(balance => this.default_account ? balance : 0)
+                let amounts = balances.map(balance => currentContract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
                 if(amounts[1] !== undefined) this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
             },
@@ -399,7 +400,7 @@
                         //dx = cBN(dx).times(currentContract.c_rates[i])
                         calls.push([currentContract.swap._address, currentContract.swap.methods.get_dy(i, j, dx).encodeABI()])
                     }
-                    calls.push([this.coins[this.to_currency]._address , this.coins[this.to_currency].methods.balanceOf(this.default_account).encodeABI()])
+                    calls.push([this.coins[this.to_currency]._address , this.coins[this.to_currency].methods.balanceOf(currentContract.default_account).encodeABI()])
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                     let [b, get_dy_underlying, balance] = decoded
@@ -460,7 +461,7 @@
                 try {
                     await exchangeMethod(i, j, dx, min_dy)
                         .send({
-                            from: this.default_account,
+                            from: currentContract.default_account,
                             gas: this.swapwrapped ? 
                                     contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         })
@@ -482,7 +483,7 @@
                 this.estimateGas = 0;
                 await common.update_fee_info();
                 this.from_cur_handler();
-                let balance = await this.coins[i].methods.balanceOf(this.default_account).call();
+                let balance = await this.coins[i].methods.balanceOf(currentContract.default_account).call();
                 this.maxBalance = balance;
             }
         }

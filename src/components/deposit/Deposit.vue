@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div class="window white add-liquidity">
+		<div class="add-liquidity">
             <fieldset class="currencies">
                 <legend>Currencies:</legend>
                 <ul>
@@ -120,15 +120,15 @@
 
 <script>
 	import Vue from 'vue'
-    import * as common from '../utils/common.js'
-    import { getters, contract as currentContract, gas as contractGas } from '../contract'
-    import allabis from '../allabis'
+    import * as common from '../../utils/common.js'
+    import { getters, contract as currentContract, gas as contractGas } from '../../contract'
+    import allabis from '../../allabis'
     const compound = allabis.compound
-    import * as helpers from '../utils/helpers'
+    import * as helpers from '../../utils/helpers'
 
     import BN from 'bignumber.js'
 
-    import Slippage from './common/Slippage.vue'
+    import Slippage from '../common/Slippage.vue'
 
     export default {
     	components: {

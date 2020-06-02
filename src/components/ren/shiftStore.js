@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import RenSDK from '@renproject/ren'
 const sdk = new RenSDK('mainnet')
-import Box from '3box'
+let Box
 import BN from 'bignumber.js'
 import { getters, allCurrencies, contract } from '../../contract'
 import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
+import * as common from '../../utils/common'
+import * as helpers from '../../utils/helpers'
 import * as subscriptionStore from '../common/subscriptionStore'
 import EventBus from '../graphs/EventBus'
 import { state } from './shiftState'
@@ -47,7 +49,18 @@ EventBus.$on('burn', () => {
 
 state.adapterContract = new contract.web3.eth.Contract(adapterABI, adapterAddress)
 state.address = state.default_account =  contract.default_account
+state.sdk = sdk
 
+async function init() {
+	let fees = await sdk.getFees()
+	state.minersLockFee = fees.btc.lock
+	state.minersReleaseFee = fees.btc.release
+	state.mintFee = fees.btc.ethereum.mint
+	state.burnFee = fees.btc.ethereum.burn
+	loadTransactions()
+}
+
+init()
 
 export async function loadTransactions() {
 	let items = await getAllItems()
@@ -75,6 +88,7 @@ export async function loadTransactions() {
 
 
 export async function use3Box() {
+	Box = require('3box')
 	if(state.box !== null) return;
 	state.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
 	state.space = await state.box.openSpace('curvebtc')
@@ -131,6 +145,7 @@ export function postTxNotification(txHash) {
 
 export function upsertTx(transaction) {
 	let key = 'curvebtc_' + transaction.id
+	if(!state.transactions.find)
 	transaction.web3Provider = null;
 	if(transaction.params && transaction.params.web3Provider)
 		transaction.params.web3Provider = null;
@@ -141,23 +156,43 @@ export function upsertTx(transaction) {
 	setItem(key, transaction)
 }
 
-export async function mint(data) {
-	let mint = await initMint(null, data);
-	let transaction = state.transactions[0]
-	await sendMint(transaction, mint)
+function newTx() {
+	let transaction = {...txObject()}
+	transaction.id = helpers.generateID()
+	transaction.timestamp = Date.now()
+	return transaction
 }
 
-export async function initMint(transaction, data) {
-	let _minWbtcAmount, _wbtcDestination;
-	if(transaction) {
-		var { id, amount, nonce, address } = transaction
-		_minWbtcAmount = transaction.contractParams[0].value
-	}
-	else {
-		amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
-		address = data.address
-		_minWbtcAmount = BN(data.toInput).times(1e8).times(0.99).toFixed(0, 1)
-	}
+export async function mint(data) {
+	let transaction = {...newTx()}
+	transaction.type = 0
+	transaction.amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
+	transaction.address = data.address;
+	transaction.fromInput = data.fromInput;
+	transaction.toInput = data.toInput;
+	upsertTx(transaction)
+	state.transactions.unshift(transaction)
+
+	await sendMint(transaction)
+}
+
+export async function deposit(data) {
+	let transaction = {...newTx()}
+	//type 3 is deposit
+	transaction.type = 3
+	transaction.address = data.address
+	transaction.amounts = data.amounts
+	transaction.min_amount = data.min_amount
+
+	state.transactions.unshift(transaction)
+
+	await sendDeposit(transaction)
+}
+
+function initSwapMint(transaction) {
+	console.log(transaction, "THE TRANSACTION")
+	var { id, amount, nonce, address, toInput } = transaction
+	let _minWbtcAmount = BN(toInput).times(1e8).times(0.99).toFixed(0, 1)
 	
 	let transfer = {
 	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
@@ -190,24 +225,62 @@ export async function initMint(transaction, data) {
 	    // Web3 provider for submitting mint to Ethereum
 	    web3Provider: web3.currentProvider,
 	}
-	const mint = sdk.lockAndMint(transfer);
-	if(!id) {
-		transfer.id = helpers.generateID();
-		transfer.timestamp = Date.now()
-		transfer.type = 0
-		transfer.amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
-		transfer.address = data.address;
-		transfer.fromInput = data.fromInput;
-		transfer.toInput = data.toInput;
-		let tx = {...txObject(), ...transfer}
-		upsertTx(tx)
-		state.transactions.unshift(tx)
+
+	return transfer
+}
+
+function initDepositMint(transaction) {
+	var { id, amounts, min_amount, nonce, address } = transaction
+	
+	let transfer = {
+	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
+	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
+
+	    // The contract we want to interact with
+	    sendTo: adapterAddress,
+
+	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
+
+	    // The name of the function we want to call
+	    contractFn: "mintThenSwap",
+	    
+	    nonce: nonce || RenJS.utils.randomNonce(),
+
+	    // Arguments expected for calling `deposit`
+	    contractParams: [
+            {
+                name: "_wbtcDestination",
+                type: "address",
+                value: address,
+            },
+	        {
+                name: "amounts",
+                type: "uint256[2]",
+                value: amounts,
+            },
+            {
+                name: "min_mint_amount",
+                type: "uint256",
+                value: min_amount,
+            },
+	    ],
+	    
+	    // Web3 provider for submitting mint to Ethereum
+	    web3Provider: web3.currentProvider,
 	}
 
+	return transfer
+}
+
+export async function initMint(transaction) {
+	let transfer;
+	if(transaction.type == 0) transfer = initSwapMint(transaction)
+	if(transaction.type == 3) transfer = initDepositMint(transaction)
+	const mint = sdk.lockAndMint(transfer);
 	return mint;
 }
 
-export async function sendMint(transfer, mint) {
+export async function sendMint(transfer) {
 
 	let transaction = state.transactions.find(t => t.id == transfer.id)
 	console.log(transaction)
@@ -221,7 +294,7 @@ export async function sendMint(transfer, mint) {
 	}
 	else {
 		console.log("SEND MINT")
-		mint = mint || await initMint(transfer);
+		mint = await initMint(transfer);
 
 		//transaction initated, but didn't get an address, so updating
 		if(!transaction.params) {
@@ -280,7 +353,8 @@ export async function sendMint(transfer, mint) {
 		transaction.signature = signature.signature
 		transaction.utxoAmount = transaction.renResponse.autogen.amount
 		upsertTx(transaction)
-		mintThenSwap(transaction)
+		if(transaction.type == 0) mintThenSwap(transaction)
+		if(transaction.type == 3) mintThenDeposit(transaction)
 	}
 }
 
@@ -318,24 +392,108 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 
 	if(get_dy < min_amount) transaction.state = 13
 	upsertTx(transaction)
-	
 }
 
+export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmount, renResponse, signature }) {
+	//handle change calc_token_amount like in mintThenSwap
+	let transaction = state.transactions.find(t => t.id == id);
+	
+	await new Promise((resolve, reject) => {
+		return state.adapterContract.methods.mintThenDeposit(
+			params.contractCalls[0].contractParams[0].value,
+			params.contractCalls[0].contractParams[1].value,
+			params.contractCalls[0].contractParams[2].value,
+			renResponse.autogen.nhash,
+			signature,
+		).send({
+			from: state.default_account
+		})
+		.once('transactionHash', resolve)
+		.once('receipt', () => {
+			//this.transactions = this.transactions.filter(t => t.id != id)
+			transaction.state = 14
+			transaction.ethTxHash = receipt.transactionHash
+			upsertTx(transaction)
+		})
+		.on('error', err => {
+			transaction.state = 16;
+			upsertTx(transaction)
+		})
+		.catch(err => reject(err))
+	})
 
-export async function burn(data) {
+	transaction.state = 12
+
+	upsertTx(transaction)
+}
+
+export async function burnSwap(data) {
 	await common.approveAmount(contract.coins[1], 
 		BN(data.fromInput).times(1e8), 
 		state.default_account, adapterAddress)
-	let id = helpers.generateID();
-	let txhash = await new Promise((resolve, reject) => {
-		return state.adapterContract.methods.swapThenBurn(
-			RenJS.utils.BTC.addressToHex(this.address),
-			BN(this.fromInput).times(1e8).toFixed(0, 1),
-			BN(this.toInputOriginal).times(0.97).toFixed(0, 1),
+
+	let burn = state.adapterContract.methods.swapThenBurn(
+			RenJS.utils.BTC.addressToHex(data.address),
+			BN(data.fromInput).times(1e8).toFixed(0, 1),
+			BN(data.toInputOriginal).times(0.97).toFixed(0, 1),
 		).send({
 			from: state.default_account,
 			gas: 600000,
 		})
+	burn(burn, data.address)
+}
+
+export async function removeLiquidityThenBurn(data) {
+	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+
+	let burn = state.adapterContract.methods.removeLiquidityThenBurn(
+		RenJS.utils.BTC.addressToHex(data.address),
+		BN(data.amount).toFixed(0, 1),
+		BN(data.min_amounts).toFixed(0, 1),
+	).send({
+		from: state.default_account,
+		gas: 600000,
+	})
+
+	burn(burn, data.address)
+}
+
+
+export async function removeLiquidityImbalanceThenBurn(data) {
+	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+
+	let burn = state.adapterContract.methods.removeLiquidityImbalanceThenBurn(
+		RenJS.utils.BTC.addressToHex(data.address),
+		data.amounts.map(amount => BN(amount).toFixed(0,1)),
+		BN(data.max_burn_amount).toFixed(0, 1),
+	).send({
+		from: state.default_account,
+		gas: 600000,
+	})
+
+	burn(burn, data.address)
+}
+
+export async function removeLiquidityOneCoinThenBurn(data) {
+	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+
+	let burn = state.adapterContract.methods.removeLiquidityOneCoinThenBurn(
+		RenJS.utils.BTC.addressToHex(data.address),
+		BN(data.token_amounts).toFixed(0,1),
+		BN(data.min_amount).toFixed(0, 1),
+	).send({
+		from: state.default_account,
+		gas: 600000,
+	})
+
+	burn(burn, data.address)
+}
+
+
+export async function burn(burn, address) {
+	let id = helpers.generateID();
+	let txhash = await new Promise(async (resolve, reject) => {
+		await burn
 		.once('transactionHash', resolve)
 		.once('receipt', receipt => {
 			let transaction = state.transactions.find(t => t.id == id)
@@ -364,15 +522,13 @@ export async function burn(data) {
 		id: id,
 		timestamp: Date.now(),
 		type: 1,
-		gatewayAddress: this.address,
+		gatewayAddress: address,
 		confirmations: 'Started',
 		state: 30,
 		ethTxHash: txhash,
 	})
 	let tx = state.transactions[0]
 	upsertTx(tx)
-	
-
 }
 
 export async function listenForBurn(id) {

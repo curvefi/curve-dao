@@ -910,7 +910,10 @@
                     this.setExchangeRate(exchangeRate)
                 }
                 catch(err) {
-                    console.error(err)
+                    if(!err.canceled) {
+                        console.error(err)
+                        this.toInput = 0
+                    }
                 }
                 finally {
                     this.highlight_input()

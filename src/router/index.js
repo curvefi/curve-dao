@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 const PoolApp = () => import('../components/PoolApp.vue')
 const Swap = () => import('../components/Swap.vue')
+const SwapRouter = () => import('../components/SwapRouter.vue')
 const Deposit = () => import('../components/Deposit.vue')
 const Withdraw = () => import('../components/Withdraw.vue')
 const WithdrawOld = () => import('../components/WithdrawOld.vue')
@@ -173,7 +174,7 @@ let routes = [
       {
         path: '',
         name: 'Swap',
-        component: Swap
+        component: SwapRouter,
       },
       {
         path: 'deposit',

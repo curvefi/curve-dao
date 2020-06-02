@@ -1,5 +1,5 @@
 <template>
-	<div class='window white rengateway'>
+	<div class='rengateway'>
 		<div id='modal' class='modal' v-show='showModal'>
 			<div class='modal-content window white'>
 				<fieldset>
@@ -42,9 +42,12 @@
                             @input='set_to_amount'
                             v-model='fromInput'>
                         </li>
-                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
                             <label :for="'from_cur_'+i">
+                            	<img 
+                                    :class="{'token-icon': true, [currency+'-icon']: true}" 
+                                    :src='getTokenIcon(currency)'>
                                 <span>{{currency | capitalize}}</span>
                             </label>
                         </label>
@@ -73,9 +76,12 @@
                                 ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                             </p> -->
                         </li>
-                        <li v-for='(currency, i) in Object.keys(currencies)'>
+                        <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                             <label :for="'to_cur_'+i">
+                            	<img 
+                                    :class="{'token-icon': true, [currency+'-icon']: true}" 
+                                    :src='getTokenIcon(currency)'>
                                 <span>{{currency | capitalize}}</span>
                             </label>
                         </label>
@@ -158,7 +164,6 @@
 								Done
 							</span>
 							<span v-show='transaction.type == 1 && transaction.state >= 30 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
-							<span v-show='transaction.type == 1 && transaction.state == 30'>Started</span>
 							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
 						</a>
 						<div v-show='transaction.type == 0 && transaction.state == 14'>
@@ -174,11 +179,11 @@
 					<td class='nowrap'>
 						<span v-show='transaction.type == 0'>
 							{{ txProgress(transaction) }}%
-							<span :class="{'loading line': transaction.state != 14}"></span>
+							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
 						</span>
 						<span v-show='transaction.type == 1'>
 							{{ txProgress(transaction) }}%
-							<span :class="{'loading line': transaction.state != 65}"></span>
+							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
 						</span>
 						<span v-show='transaction.type == 0 && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
 							<!-- [<span class='redtext'>&times;</span>] -->
@@ -200,7 +205,7 @@
 	import * as helpers from '../../utils/helpers'
 	import * as common from '../../utils/common'
 	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
-	import Box from '3box'
+	let Box = null
 	import VueQrcode from '@chenfengyuan/vue-qrcode'
 	import * as subscriptionStore from '../common/subscriptionStore'
 
@@ -360,6 +365,7 @@
 			})
 		},
 		mounted() {
+			this.$emit('loaded')
 			let modal = document.querySelector('#modal')
 			window.addEventListener('click', () => {
 				if (event.target == modal) {
@@ -421,6 +427,10 @@
 			set_from_amount() {
 
 			},
+
+			getTokenIcon(token) {
+                return helpers.getTokenIcon(token, this.swapwrapped, this.currentPool)
+            },
 
 			showQR({ fromInput, gatewayAddress }) {
 				this.showModal = true
@@ -543,13 +553,15 @@
 
 			async loadTransactions() {
 				let items = await this.getAllItems()
-				this.transactions = Object.values(await this.getAllItems()).sort((a, b) => b.timestamp - a.timestamp)
+				this.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 				let mints = this.transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>this.sendMint(t))
 				console.log(mints, "MINTS")
-				let burns = this.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state != 65)
+				let burns = this.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
+				console.log(burns, "THE BURNS")
 				if(burns.length) {
 					web3.eth.subscribe('newBlockHeaders')
 						.on('data', block => {
+							console.log("NEW BLOCK")
 							for(let transaction of burns) {
 								console.log(transaction, "TRANSACTION")
 								if(transaction.state > 63 || transaction.confirmations >= 30) continue;
@@ -560,11 +572,11 @@
 							}
 						})
 				}
-				burns = burns.map(t=>this.listenForBurn(t.ethTxHash))
-				await Promise.all([...mints, ...burns])
+				await Promise.all([...mints, ...burns.map(t=>this.listenForBurn(t.id))])
 			},
 
 			async use3Box() {
+				Box = require('3box')
 				if(this.box !== null) return;
 				this.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
 				this.space = await this.box.openSpace('curvebtc')
@@ -829,20 +841,25 @@
 					})
 					.once('transactionHash', resolve)
 					.once('receipt', receipt => {
-						this.listenForBurn(receipt.transactionHash)
 						let transaction = this.transactions.find(t => t.id == id)
+						this.listenForBurn(transaction.id)
 						let startBlockNumber = receipt.blockNumber
 						transaction.confirmations = 1
+						transaction.state = 31;
 						transaction.ethStartBlock = startBlockNumber
 						this.upsertTx(transaction)
 						let subscription = web3.eth.subscribe('newBlockHeaders')
 							.on('data', block => {
-								if(transaction.confirmations == 30) subscription.unsubcribe()
+								if(transaction.confirmations >= 30) subscription.unsubcribe()
 								transaction.confirmations = block.number - transaction.ethStartBlock + 1
 								transaction.ethCurrentBlock = block.number
 								transaction.state = 30 + transaction.confirmations
+								console.log("NEW TX RECEIPT", transaction)
 								this.upsertTx(transaction)
 							})
+					})
+					.on('error', (err, receipt) => {
+						console.log(err, receipt, "ERR RECEIPT")
 					})
 					.catch(err => reject(err))
 				})
@@ -860,10 +877,10 @@
 				
 
 			},
-			async listenForBurn(ethTxHash) {
-				console.log(ethTxHash, "TX HASH")
+			async listenForBurn(id) {
 
-				let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
+				let tx = this.transactions.find(t => t.id == id)
+				console.log(tx.ethTxHash, "TX HASH")
 				let burn = await this.sdk.burnAndRelease({
 				 	sendToken: RenJS.Tokens.BTC.Eth2Btc,
 
@@ -871,18 +888,18 @@
 				    web3Provider: web3.currentProvider,
 
 				    // The transaction hash of our contract call
-				    ethereumTxHash: ethTxHash,
+				    ethereumTxHash: tx.ethTxHash,
 				}).readFromEthereum()
 				let promiEvent = await burn.submit()
 				.on('txHash', hash => {
-					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
+					let tx = this.transactions.find(t => t.id == id)
 					console.log(hash)
 					tx.renVMHash = hash
 					//tx.state = 31
 					this.upsertTx(tx)
 				})
 				.on('status', status => {
-					let tx = this.transactions.find(t => t.ethTxHash == ethTxHash)
+					let tx = this.transactions.find(t => t.id == id)
 					if(status == 'confirming' && tx.state >= 62) {
 						tx.confirmations = "Confirming"
 						tx.state = 62

@@ -1,6 +1,6 @@
 <template>
 	<div>
-        <div class="window white">
+        <div class="">
             <div class='exchange'>
                 <div class='exchangefields'>
                     <fieldset class='item'>
@@ -139,6 +139,7 @@
                 <div class='info-message gentle-message' v-show='estimateGas'>
                     Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
                 </div>
+
             </div>
         </div>
 </div>
@@ -155,8 +156,8 @@
     var cBN = (val) => new BigNumber(val);
 
 
-
 	export default {
+
         data: () => ({
             disabled: true,
             from_currency: 0,
@@ -496,5 +497,8 @@
     }
     #no-balance {
         text-align: center;
+    }
+    .swapBTC-container {
+        margin-top: 1em;
     }
 </style>

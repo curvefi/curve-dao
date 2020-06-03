@@ -41,8 +41,11 @@
                     :ref="`inputs${i}`"
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
-                    <div v-show='i == 0'>
+                    <div v-show='i == 0 && amountAfterBTC > 0'>
                         BTC Amount received after renVM fees: {{ amountAfterBTC }}
+                    </div>
+                    <div v-show='i == 0 && amountAfterBTC < 0'>
+                        Minimum withdraw amount in BTC is {{ minOrderSize }}
                     </div>
                 </li>
                 <li v-show = "!['susd','susdv2','tbtc','ren'].includes(currentPool)">
@@ -121,7 +124,7 @@
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
             <button id="remove-liquidity"
-                :disabled = "!btcAddress"
+                :disabled = "!btcAddress || amountAfterBTC < 0"
                 @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
                 Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
             </button>            
@@ -170,7 +173,7 @@
     			color: '#d0d0d0',
     		},
     		inputs: [],
-            btcAddress: 'bc1q8f5jx46hnf65ng5gv843k2dy0wvvhsvn4kxn7t',
+            btcAddress: '',
     		inputStyles: [],
             swapbtc: false,
             loading: false,
@@ -265,8 +268,12 @@
             amountAfterBTC() {
               return ((this.inputs[0] * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8).toFixed(8)
             },
+            minOrderSize() {
+                return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8).toFixed(8)
+            },
         },
         mounted() {
+            this.$emit('loaded')
         	if(this.currentPool == 'susdv2') {
         		this.showstaked = true
         	}
@@ -386,7 +393,6 @@
 					this.inputs[i] = event.target.value
 					return;
 				}
-				if(this.currentPool == 'susd') return;
 				this.to_currency = null
 		        var values = this.inputs.map((x,i) => x / currentContract.c_rates[i])
 		        values = values.map(v=>BN(Math.floor(v).toString()).toFixed(0))
@@ -410,10 +416,10 @@
 		            var availableAmount = BN(decoded[decoded.length-2])
 		            availableAmount = availableAmount.div(BN(1 - currentContract.fee * currentContract.N_COINS / (4 * (currentContract.N_COINS - 1))))
 		            var maxAvailableAmount = BN(decoded[decoded.length-1]);
-		            if(availableAmount.gt(maxAvailableAmount.plus(BN(this.staked_balance)))) {
+		            if(i == 1 && availableAmount.gt(maxAvailableAmount.plus(BN(this.staked_balance))) || i == 0 && this.amountAfterBTC < 0) {
 		                this.setAllInputBackground('red')
 		            }
-		            else {
+		            else if(i == 0 && this.amountAfterBTC > 0) {
 		                this.setAllInputBackground('blue')
 		            }
 		            this.calcSlippage(this.inputs, false);

@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class='transaction-table'>
 		<button class='simplebutton' @click='use3Box'>
 			<span v-show='space === null'>
 				Use permanent storage
@@ -267,5 +267,8 @@
 	}
 	.nowrap {
 		white-space: nowrap;
+	}
+	.transaction-table {
+		margin-top: 1em;
 	}
 </style>

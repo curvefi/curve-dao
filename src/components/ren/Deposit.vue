@@ -10,7 +10,7 @@
                                 <img 
                                     :class="{'token-icon': true, [currency+'-icon']: true}" 
                                     :src='getTokenIcon(currency)'>
-    	                        <span>{{currency | capitalize}}</span>
+    	                        <span>{{currency | capitalize}} </span>
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show='i == 1'>
                                     <span>Max: {{ maxBalanceCoin(i) }} </span>
                                 </span>
@@ -25,8 +25,11 @@
                             :style = "{backgroundColor: bgColors[i]}"
                             @input='change_currency(i, true)'
                         >
-                        <div v-show='i == 0'>
+                        <div v-show="i == 0 && amountAfterBTC > 0">
                             Amount after renVM fees: {{ amountAfterBTC }}
+                        </div>
+                        <div v-show="i == 0 && amountAfterBTC < 0">
+                            Minimum deposit amount in BTC is {{ minOrderSize }}
                         </div>
 
                     </li>
@@ -53,7 +56,7 @@
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
             <p style="text-align: center">
-                <button id="add-liquidity" @click='handle_add_liquidity()'>
+                <button id="add-liquidity" :disabled='amountAfterBTC < 0' @click='handle_add_liquidity()'>
                 		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
                 </button>
                 <div class='info-message gentle-message' v-show='show_loading'>
@@ -155,11 +158,12 @@
             return (this.inputs[0] * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8
           },
           minOrderSize() {
-            return state.minersReleaseFee + state.burnFee / 10000
+            return ((state.minersLockFee + state.mintFee / 10000) / 1e8).toFixed(8)
           },
           
         },
         mounted() {
+            this.$emit('loaded')
 	        this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
         },

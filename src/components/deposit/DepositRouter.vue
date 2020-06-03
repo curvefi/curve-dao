@@ -30,14 +30,13 @@
 
 
 		data: () => ({
-			swapbtc: true,
+			swapbtc: false,
 			loading: false,
 		}),
 
 		watch: {
 			swapbtc(val) {
-				console.log(val, "THE VAL SWAP BTC")
-				if(swapbtc) this.loading = true
+				if(val) this.loading = true
 				else this.loading = false
 			}
 		},

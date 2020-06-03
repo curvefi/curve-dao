@@ -1,5 +1,20 @@
 <template>
 	<div>
+		<button class='simplebutton' @click='use3Box'>
+			<span v-show='space === null'>
+				Use permanent storage
+				<span class='tooltip'> [?]
+					<span class='tooltiptext long'>
+						Use 3box instead of local storage
+						<!-- Data about ren transaction is stored in local storage, which can be cleared, currently.
+						That means if you clear the storage, a loss of funds may occur.
+						Using 3box permanent storage is recommended.  -->
+					</span>
+				</span>
+			</span>
+			<span v-show='space !== null'>Permanent storage loaded</span>
+		</button>
+
 		<div id='modal' class='modal' v-show='showModal'>
 			<div class='modal-content window white'>
 				<fieldset>
@@ -34,29 +49,34 @@
 					</td>
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
-						<span v-show='transaction.gatewayAddress'>
-							<span class='hoverpointer'>{{transaction.gatewayAddress}}</span>
-							<span class='hoverpointer' v-show='transaction.type == 0' @click='copy(transaction)'>
+						<span class='nowrap' v-show='transaction.gatewayAddress'>
+							<span class='hoverpointer tooltip' @click='copy(transaction)'>
+								{{shortenAddress(transaction.gatewayAddress)}}
+								<span class='tooltiptext long'>
+									{{transaction.gatewayAddress}}
+								</span>
+							</span>
+							<span class='hoverpointer' v-show='[0,3].includes(transaction.type)' @click='copy(transaction)'>
 								<span class='tooltip'>
 									<img class='icon small' src='@/assets/copy-solid.svg'>
 									<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
 								</span>
 							</span>
-							<img class='icon small hoverpointer' v-show='transaction.type == 0'
+							<img class='icon small hoverpointer' v-show='[0,3].includes(transaction.type)'
 								@click='showQR(transaction)' src='@/assets/qrcode-solid.svg'>
 						</span>
 					</td>
 					<td>
 						<a :href="getTxHashLink(transaction)"> 
-							<span v-show='transaction.type == 0 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
-							<span v-show='transaction.type == 0 && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
-							<span v-show='transaction.type == 0 && [14,15].includes(transaction.state)'>
+							<span v-show='[0,3].includes(transaction.type) && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
+							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
+							<span v-show='[0,3].includes(transaction.type) && [14,15].includes(transaction.state)'>
 								Done
 							</span>
 							<span v-show='transaction.type == 1 && transaction.state >= 30 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
 							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
 						</a>
-						<div v-show='transaction.type == 0 && transaction.state == 14'>
+						<div v-show='[0,3].includes(transaction.type) && transaction.state == 14'>
 							<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash">Etherscan</a>
 						</div>
 					</td>
@@ -67,7 +87,7 @@
 							@mint='mintThenSwap'/>
 					</td>
 					<td class='nowrap'>
-						<span v-show='transaction.type == 0'>
+						<span v-show='[0,3].includes(transaction.type)'>
 							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
 						</span>
@@ -75,7 +95,7 @@
 							{{ txProgress(transaction) }}%
 							<span :class="{'loading line': txProgress(transaction) < 100}"></span>
 						</span>
-						<span v-show='transaction.type == 0 && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
+						<span v-show='[0,3].includes(transaction.type) && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
 							<!-- [<span class='redtext'>&times;</span>] -->
 							<img src='@/assets/trash-alt-solid.svg'>
 						</span>
@@ -121,6 +141,9 @@
         		if(!tx) return;
         		return tx.type == 0 && [14,15].includes(tx.state) || tx.type == 1 && tx.state == 65
         	},
+        	space() {
+        		return state.space
+        	},
 		},
 
 		methods: {
@@ -135,15 +158,19 @@
 				helpers.copyToClipboard(transaction.gatewayAddress)
 			},
 
+			shortenAddress(address) {
+				return address.slice(0,6) + '...' + address.slice(-6)
+			},
+
 			getTxHashLink(transaction) {
-				let hash = transaction.type == 0 ? 
+				let hash = [0,3].includes(transaction.type) ? 
 					'https://blockchain.info/btc/tx/' + transaction.btcTxHash 
 					: 'https://etherscan.io/tx/' + transaction.ethTxHash;
 				return hash;
 			},
 
 			txProgress(transaction) {
-        		if(transaction.type == 0) {
+        		if([0,3].includes(transaction.type)) {
         			let progress = transaction.state / 14 * 100 | 0
         			if(progress > 100) progress = 100
         			return [14, 15].includes(transaction.state) ? 100 : progress
@@ -161,6 +188,10 @@
 
 			mintThenSwap(transaction) {
 				store.mintThenSwap(transaction)
+			},
+
+			use3Box() {
+				return store.use3Box()
 			},
 
 		}

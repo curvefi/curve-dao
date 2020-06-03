@@ -6,7 +6,9 @@ const SwapRouter = () => import('../components/swap/SwapRouter.vue')
 const Deposit = () => import('../components/deposit/Deposit.vue')
 const DepositRouter = () => import('../components/deposit/DepositRouter.vue')
 const DepositRen = () => import('../components/ren/Deposit.vue')
-const Withdraw = () => import('../components/Withdraw.vue')
+const Withdraw = () => import('../components/withdraw/Withdraw.vue')
+const WithdrawRouter = () => import('../components/withdraw/WithdrawRouter.vue')
+const WithdrawRen = () => import('../components/ren/Withdraw.vue')
 const WithdrawOld = () => import('../components/WithdrawOld.vue')
 const Stats = () => import('../components/Stats.vue')
 const FAQ = () => import('../views/FAQ.vue')
@@ -180,6 +182,17 @@ let routes = [
     ],
   },
   {
+    path:'/ren/withdrawren',
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'WithdrawRen',
+        component: WithdrawRen,
+      }
+    ],
+  },
+  {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren)/',
     name: 'Index',
     component: PoolApp,
@@ -197,7 +210,7 @@ let routes = [
       {
         path: 'withdraw',
         name: 'Withdraw',
-        component: Withdraw
+        component: WithdrawRouter
       },
       {
         path: 'withdraw_old',

@@ -1,0 +1,73 @@
+<template>
+	<div class='window white'>
+	    <withdraw-native v-if='swapbtc' @loaded='loaded'></withdraw-native>
+	    <withdraw v-if='!swapbtc || (swapbtc && !loaded)'></withdraw>
+		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
+	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
+	        <label for='swapbtc'>Withdraw BTC</label>
+	    	<span v-show='loading' class='loading line'></span>
+	    </div>
+    </div>
+</template>
+
+<script>
+    import { getters, contract as currentContract, gas as contractGas} from '../../contract'
+	import Withdraw from './Withdraw.vue'
+
+	import LoadingComponent from '../ren/LoadingComponent.vue'
+    const WithdrawNative = () => ({
+        component: import('../ren/Withdraw.vue'),
+
+        loading: Withdraw,
+
+        delay: 0,
+    })
+
+	export default {
+		components: {
+			Withdraw,
+			WithdrawNative,
+		},
+
+
+		data: () => ({
+			swapbtc: true,
+			loading: false,
+		}),
+
+		watch: {
+			swapbtc(val) {
+				console.log(val, "THE VAL SWAP BTC")
+				if(swapbtc) this.loading = true
+				else this.loading = false
+			}
+		},
+
+		computed: {
+			swapComponent() {
+				if(this.swapbtc) return 'SwapNative'
+				return 'Withdraw'
+			},
+			currentPool() {
+				return getters.currentPool()
+			},
+		},
+
+		methods: {
+			loaded() {
+				if(this.swapComponent == 'WithdrawNative') this.loading = false;
+			}
+		},
+
+	}
+</script>
+
+<style scoped>
+	.swapBTC-container {
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
+	.loading.line {
+		margin-left: 1em;
+	}
+</style>

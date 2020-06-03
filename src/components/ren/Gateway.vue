@@ -4,20 +4,6 @@
 		<div class='exchange'>
 
             <div class='exchangefields'>
-				<button class='simplebutton' @click='use3Box'>
-					<span v-show='space === null'>
-						Use permanent storage
-						<span class='tooltip'> [?]
-							<span class='tooltiptext long'>
-								Use 3box instead of local storage
-								<!-- Data about ren transaction is stored in local storage, which can be cleared, currently.
-								That means if you clear the storage, a loss of funds may occur.
-								Using 3box permanent storage is recommended.  -->
-							</span>
-						</span>
-					</span>
-					<span v-show='space !== null'>Permanent storage loaded</span>
-				</button>
 
 				<div class='flexbreak'></div>
 
@@ -132,7 +118,8 @@
 	import * as store from './shiftStore'
 	import { state } from './shiftState'
 
-
+	console.log(store.mint, "MINT")
+	
 	const txObject = () => ({
 		id: '',
 		timestamp: null,
@@ -171,7 +158,6 @@
 			confirmations: 6,
 			// 1 - getting btc deposit address, 2 - waiting to confirm on btc network, 3 - 
 			box: null,
-			space: null,
 			showModal: false,
 			qrValue: null,
 
@@ -278,10 +264,6 @@
 				this.from_cur_handler()
 			},
 
-			use3Box() {
-				store.use3Box()
-			},
-
 			set_max_balance() {
 				if(this.from_currency == 0) {
 					this.fromInput = 0
@@ -386,7 +368,8 @@
 			},
 
 			async submit() {
-				if(this.from_currency == 0) 
+				console.log(store, "THE STORE")
+				if(this.from_currency == 0)
 					store.mint({
 						from_currency: this.from_currency,
 						amountAfterBTC: this.amountAfterBTC,
@@ -395,7 +378,7 @@
 						toInput: this.toInput,
 					})
 				if(this.from_currency == 1) 
-					store.burn({
+					store.burnSwap({
 						address: this.address,
 						fromInput: this.fromInput,
 						toInputOriginal: this.toInputOriginal,

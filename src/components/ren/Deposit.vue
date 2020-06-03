@@ -191,6 +191,9 @@
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
+            use3Box() {
+                store.use3Box()
+            },
             maxBalanceCoin(i) {
                 return this.toFixed(this.wallet_balances[i] * this.rates[i])
             },
@@ -269,12 +272,13 @@
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
-                let wbtcBalance = decoded[0]
-                let maxDiff = (BN(wbtcBalance).div(1e8)).minus(this.inputs[i])
+                let wbtcBalance = BN(decoded[0])    
+                let maxDiff = (BN(wbtcBalance).div(1e8)).minus(this.inputs[1])
                 if(wbtcBalance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                     Vue.set(this.amounts, 1, BN(wbtcBalance).toFixed(0,1))
                 }
                 else Vue.set(this.amounts, 1, BN(this.inputs[1]).times(1e8).toFixed(0,1))
+                Vue.set(this.amounts, 0, BN(this.amountAfterBTC).times(1e8).toFixed(0,1))
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
                 var token_amount = 0;
@@ -284,13 +288,14 @@
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
+                console.log(token_amount, "THE TOKEN AMOUNT")
 				this.estimateGas = contractGas.deposit[this.currentPool] / 2
-		        await common.approveAmount(this.coins[1], this.amounts[1], currentContract.default_account, adapterAddress)
+		        await common.approveAmount(this.coins[1], BN(this.amounts[1]), currentContract.default_account, adapterAddress)
 	
 			    let receipt;
 			    let minted = 0;
                 this.waitingMessage = 'Please confirm deposit transaction'
-		    	let add_liquidity = store.deposit({ amounts: this.amounts, min_amount: token_amount })
+		    	let add_liquidity = store.deposit({ btcAmount: this.inputs[0], amounts: this.amounts, min_amount: token_amount })
 			    try {
 			    	receipt = await add_liquidity
 			    }

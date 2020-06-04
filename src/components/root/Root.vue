@@ -5,7 +5,15 @@
 
 		<div class="window white">
 	        <fieldset class='poolsdialog'>
-	            <legend>Curve pools</legend>
+	            <legend>
+	            	Curve pools
+	            	<span class='tooltip'>
+	            		$
+	            		<span class='tooltiptext'>
+	            			Your total balances: ${{ +sumBalances.toFixed(2) }} 
+	            		</span>
+	            	</span>
+	            </legend>
 	            <div :class="{selected: activePoolLink == 0}">
 	                <router-link to = '/compound'>
 	                	<span class='index'>0.</span>  
@@ -365,6 +373,9 @@
 			totalVolume() {
 				return volumeStore.totalVolume()
 			},
+			sumBalances() {
+				return Object.values(this.balances).filter(balance => balance > 0).reduce((a, b) => a + b, 0)
+			},
 		},
 		methods: {
 			async getCurveRewards() {
@@ -394,14 +405,14 @@
 				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-				this.balances = []
+				//this.balances = []
 				helpers.chunkArr(decoded, 2).slice(0,this.pools.length).map((v, i) => {
 					let key = this.pools[i]
-					this.balances[key] = +v[0] * (+v[1]) / 1e36;
-					if(['tbtc', 'ren'].includes(key)) this.balances[key] *= this.btcPrice
+					Vue.set(this.balances, key, +v[0] * (+v[1]) / 1e36);
+					if(['tbtc', 'ren'].includes(key)) Vue.set(this.balances, key, this.balances[key] * this.btcPrice)
 				})
 				let len = decoded.length
-				this.balances.susdv2 += (+decoded[len-1] * decoded[len-2]) / 1e36
+				Vue.set(this.balances, 'susdv2', this.balances.susdv2 + (+decoded[len-1] * decoded[len-2]) / 1e36)
 			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement 

@@ -82,7 +82,7 @@ export async function loadTransactions() {
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
 				transaction.ethCurrentBlock = block.number
 				transaction.state = 30 + transaction.confirmations
-				upsertTx(transaction)
+				//upsertTx(transaction)
 			}
 		})
 	await Promise.all([...mints, ...burns.map(t=>listenForBurn(t.id))])
@@ -126,9 +126,9 @@ export async function getAllItems() {
 	return Object.keys(storage).filter(key => key.startsWith('curvebtc_')).map(k => JSON.parse(storage[k]))
 }
 
-export function removeTx(transaction) {
+export async function removeTx(transaction) {
 	state.transactions = state.transactions.filter(t => t.id != transaction.id)
-	removeItem('curvebtc_' + transaction.id)
+	await removeItem('curvebtc_' + transaction.id)
 }
 
 export function postTxNotification(txHash) {
@@ -592,14 +592,17 @@ export async function burn(burn, address) {
 		})
 		.catch(err => reject(err))
 	})
-	let { emitter } = blocknative(txhash)
-	emitter.on('txSpeedUp', transaction => {
+	let { emitter } = blocknative.transaction(txhash)
+	emitter.on('txSpeedUp', async transaction => {
 		console.log("SPEED UP")
 		console.log(transaction.originalHash, "ORIGINAL HASH", transaction.hash, "NEW HASH")
 		let tx = state.transactions.find(t => t.ethTxHash == transaction.originalHash)
-		removeTx(tx)
+		await removeTx(tx)
 		tx.ethTxHash = transaction.hash
-		upsertTx(tx)
+		tx.ethStartBlock = transaction.blockNumber
+		tx.state = 30
+		tx.confirmations = 0
+		setTimeout(() => upsertTx(tx), 1000)
 	})
 	state.transactions.unshift({
 		id: id,
@@ -630,12 +633,13 @@ export async function listenForBurn(id) {
 	let promiEvent = await burn.submit()
 	.on('txHash', hash => {
 		let tx = state.transactions.find(t => t.id == id)
-		console.log(hash)
+		console.log(hash, 'txHash event from ren')
 		tx.renVMHash = hash
 		//tx.state = 31
 		upsertTx(tx)
 	})
 	.on('status', status => {
+		console.log(status, "NEW STATUS")
 		let tx = state.transactions.find(t => t.id == id)
 		if(status == 'confirming' && tx.state >= 62) {
 			tx.confirmations = "Confirming"
@@ -654,6 +658,7 @@ export async function listenForBurn(id) {
 		}
 		console.log(status)
 	})
+	console.log("BURN SUBMITTED")
 	tx.state = 65
 	tx.confirmations = "Done"
 	upsertTx(tx)

@@ -284,7 +284,7 @@
                 else Vue.set(this.amounts, 1, BN(this.inputs[1]).times(1e8).toFixed(0,1))
                 Vue.set(this.amounts, 0, BN(this.amountAfterBTC).times(1e8).toFixed(0,1))
 				let total_supply = +decoded[decoded.length-1];
-				this.waitingMessage = 'Please approve spending your coins'
+				// /this.waitingMessage = 'Please approve spending your coins'
                 var token_amount = 0;
                 if(total_supply > 0) {
                     let token_amounts = this.amounts
@@ -292,13 +292,12 @@
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
-                console.log(token_amount, "THE TOKEN AMOUNT")
 				this.estimateGas = contractGas.deposit[this.currentPool] / 2
 		        await common.approveAmount(this.coins[1], BN(this.amounts[1]), currentContract.default_account, adapterAddress)
 	
 			    let receipt;
 			    let minted = 0;
-                this.waitingMessage = 'Please confirm deposit transaction'
+                //this.waitingMessage = 'Please confirm deposit transaction'
 		    	let add_liquidity = store.deposit({ btcAmount: this.inputs[0], amounts: this.amounts, min_amount: token_amount })
 			    try {
 			    	receipt = await add_liquidity

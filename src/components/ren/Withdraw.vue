@@ -25,7 +25,7 @@
                     <label :for="'currency_'+i" class='currency_label'>
                         <img 
                             :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
-                            :src='getTokenIcon(currency)'>
+                            :src="getTokenIcon(i == 0 ? 'btc' : currency)">
                         <span v-show='withdrawc'>{{currencies[currency]}}
 	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'">(in {{currency | capitalize}})</span>
                     	</span>
@@ -72,17 +72,17 @@
                             <span v-show='i > 0'>+</span>
                             <img 
                             :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
-                            :src='getTokenIcon(currency)'>
+                            :src="getTokenIcon(i == 0 ? 'btc' : currency)">
                         </span>
                     </label>
         		</li>
-				<li v-for='(currency, i) in Object.keys(currencies)' class='withdrawin'>
-	                <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' :checked='to_currency === i' @click='handleCheck(i)'>
-	                <label :for="'to_cur_'+i">
+				<li class='withdrawin'>
+	                <input type="radio" :id="'to_cur_'+0" name="to_cur" :value='0' :checked='to_currency === 0' @click='handleCheck(0)'>
+	                <label :for="'to_cur_'+0">
                         <img 
-                            :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
-                            :src='getTokenIcon(currency)'> 
-                            <span> {{ currencies[currency] }} </span>
+                            :class="{'token-icon': true, ['btc-icon']: true}" 
+                            :src="getTokenIcon('btc')"> 
+                            <span> BTC </span>
                     </label>
 	            </li>
 	            <li>
@@ -241,7 +241,7 @@
 			...getters,
             currencies() {
                 return {
-                    btc: 'BTC',
+                    renbtc: 'BTC',
                     wbtc: 'wBTC',
                 }
             },

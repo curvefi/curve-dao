@@ -31,7 +31,9 @@ export function approve_to_migrate(amount, account) {
 
 export async function ensure_allowance_zap_out(amount, fromContract, toContract) {
     var default_account = currentContract.default_account
+    if(!fromContract) fromContract = currentContract.swap_token;
     if(!toContract) toContract = allabis[currentContract.currentContract].deposit_address
+    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, toContract).call())
     if(allowance.lt(cBN(amount))) {    
         if(allowance > 0) await approve(fromContract, 0, default_account, toContract)
         await approve(fromContract, amount, default_account, toContract)

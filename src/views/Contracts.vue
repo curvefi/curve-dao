@@ -11,6 +11,9 @@
 	                		<img class='icon' :src="getTokenUrl(i)"> 
 	                		<span class='text'>[{{tokenNames[i].ticker}}] {{tokenNames[i].name}} token address</span>
 	                	</a>
+	                	<a :href = "'https://etherscan.io/address/' + depositZaps[i].deposit" v-show="allPools[i] != 'ren'">
+	                		<img class='icon' :src="getTokenUrl(i)"> <span class='text'>deposit address</span>
+	                	</a>
 	            </fieldset>
 	        </fieldset>
 	    </div>
@@ -21,7 +24,7 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
+			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren'],
 			tokenNames: [
 				{ name: 'cCurve', ticker: 'cCrv' },
 				{ name: 'tCurve', ticker: 'tCrv' },
@@ -35,8 +38,13 @@
 		}),
 		computed: {
 			contractAddresses() {
-				return Object.keys(allabis).filter(pool => !['y', 'susd'].includes(pool)).map(pool => 
+				return Object.keys(allabis).filter(pool => !['y', 'susd', 'tbtc'].includes(pool)).map(pool => 
 					({swap: allabis[pool].swap_address, token: allabis[pool].token_address})
+				)
+			},
+			depositZaps() {
+				return Object.keys(allabis).filter(pool => !['y', 'susd', 'tbtc'].includes(pool)).map(pool => 
+					({deposit: allabis[pool].deposit_address, token: allabis[pool].token_address})
 				)
 			}
 		},

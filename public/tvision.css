@@ -124,7 +124,8 @@ button:before,
 .button:before {
   top: 0;
   left: 0;
-  right: 0;
+  /*comment because of chrome accessibility feature*/
+  /*right: 0;*/
   bottom: 0;
   content: "";
   position: absolute;

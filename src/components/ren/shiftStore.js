@@ -20,6 +20,9 @@ const txObject = () => ({
 	amount: '',
 	fromInput: 0,
 	toInput: 0,
+	minExchangeRate: 0,
+	newMinExchangeRate: 0,
+	slippage: 0,
 	toAmount: 0,
 	address: '',
 	params: '',
@@ -37,6 +40,9 @@ const txObject = () => ({
 	btcTxVOut: '',
 	renResponse: '',
 	signature: '',
+
+	min_amount: 0,
+	amounts: 0,
 })
 
 state.adapterContract = new contract.web3.eth.Contract(adapterABI, adapterAddress)
@@ -162,6 +168,10 @@ export async function mint(data) {
 	transaction.address = data.address;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
+	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
+	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((1000-data.slippage)/1000)).toFixed(0,1)
+	//slippage is in BPS
+	transaction.slippage = data.slippage
 	upsertTx(transaction)
 	state.transactions.unshift(transaction)
 
@@ -170,9 +180,9 @@ export async function mint(data) {
 
 function initSwapMint(transaction) {
 	console.log(transaction, "THE TRANSACTION")
-	var { id, amount, nonce, address, toInput, params } = transaction
-	let _minWbtcAmount = BN(toInput).times(1e8).times(0.99).toFixed(0, 1)
-	console.log(amount, "AMOUNT", nonce, "NONCE", address, "ADDRESS", _minWbtcAmount, "MIN WBTC AMOUNT")
+	var { id, amount, nonce, address, toInput, params, minExchangeRate, slippage } = transaction
+	// let _minWbtcAmount = BN(toInput).times(1e8).times(0.99).toFixed(0, 1)
+	console.log(amount, "AMOUNT", nonce, "NONCE", address, "ADDRESS", minExchangeRate, "MIN EXCHANGE RATE", slippage, "SLIPPAGE")
 	
 	let transfer = {
 	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
@@ -191,9 +201,14 @@ function initSwapMint(transaction) {
 	    // Arguments expected for calling `deposit`
 	    contractParams: [
 	        {
-                name: "_minWbtcAmount",
+                name: "_minExchangeRate",
                 type: "uint256",
-                value: _minWbtcAmount,
+                value: minExchangeRate,
+            },
+            {
+            	name: "slippage",
+            	type: 'uint256',
+            	value: slippage,
             },
             {
                 name: "_wbtcDestination",
@@ -217,6 +232,7 @@ export async function deposit(data) {
 	transaction.address = data.address
 	transaction.amounts = data.amounts.map(amount => BN(amount).toFixed(0,1))
 	transaction.min_amount = data.min_amount
+	transaction.new_min_amount = data.min_amount
 	upsertTx(transaction)
 	state.transactions.unshift(transaction)
 
@@ -242,6 +258,11 @@ function initDepositMint(transaction) {
 
 	    // Arguments expected for calling `deposit`
 	    contractParams: [
+            {
+                name: "_wbtcDestination",
+                type: "address",
+                value: contract.default_account,
+            },
 	        {
                 name: "amounts",
                 type: "uint256[2]",
@@ -251,11 +272,6 @@ function initDepositMint(transaction) {
                 name: "min_mint_amount",
                 type: "uint256",
                 value: min_amount,
-            },
-            {
-                name: "_wbtcDestination",
-                type: "address",
-                value: contract.default_account,
             },
 	    ],
 	    
@@ -361,38 +377,47 @@ export async function sendMint(transfer) {
 	}
 }
 
-export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }) {
+export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
-	let min_amount = params.contractCalls[0].contractParams[0].value
-	
-	let get_dy = await contract.swap.methods.get_dy(0, 1, BN(amount).times(1e8).toFixed(0, 1)).call()
-	await new Promise((resolve, reject) => {
-		return state.adapterContract.methods.mintThenSwap(
-			params.contractCalls[0].contractParams[0].value,
-			params.contractCalls[0].contractParams[1].value,
-			utxoAmount,
-			renResponse.autogen.nhash,
-			signature,
-		).send({
-			from: state.default_account
+	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, BN(utxoAmount).toFixed(0, 1)).call())
+	let exchangeRateNow = get_dy.times(1e8).div(utxoAmount)
+	let minExchangeRate = transaction.newMinExchangeRate
+	//rates changed, ask user if they still want to swap
+		//handle the case where they only want to mint
+	if(exchangeRateNow < transaction.newMinExchangeRate && !swapNow && !receiveRen) {
+		transaction.state = 13
+	}
+	else {
+		//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
+		await new Promise((resolve, reject) => {
+			return state.adapterContract.methods.mintThenSwap(
+				params.contractCalls[0].contractParams[0].value,
+				transaction.newMinExchangeRate,
+				params.contractCalls[0].contractParams[1].value,
+				params.contractCalls[0].contractParams[2].value,
+				utxoAmount,
+				renResponse.autogen.nhash,
+				signature,
+			).send({
+				from: state.default_account
+			})
+			.once('transactionHash', resolve)
+			.once('receipt', () => {
+				//this.transactions = this.transactions.filter(t => t.id != id)
+				transaction.state = 14
+				transaction.ethTxHash = receipt.transactionHash
+				upsertTx(transaction)
+			})
+			.on('error', err => {
+				transaction.state = 16;
+				upsertTx(transaction)
+			})
+			.catch(err => reject(err))
 		})
-		.once('transactionHash', resolve)
-		.once('receipt', () => {
-			//this.transactions = this.transactions.filter(t => t.id != id)
-			transaction.state = 14
-			transaction.ethTxHash = receipt.transactionHash
-			upsertTx(transaction)
-		})
-		.on('error', err => {
-			transaction.state = 16;
-			upsertTx(transaction)
-		})
-		.catch(err => reject(err))
-	})
 
-	transaction.state = 12
+		transaction.state = 12
+	}
 
-	if(get_dy < min_amount) transaction.state = 13
 	upsertTx(transaction)
 }
 
@@ -403,8 +428,10 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	await new Promise((resolve, reject) => {
 		return state.adapterContract.methods.mintThenDeposit(
 			params.contractCalls[0].contractParams[0].value,
+			utxoAmount,
 			params.contractCalls[0].contractParams[1].value,
 			params.contractCalls[0].contractParams[2].value,
+			transaction.new_min_amount,
 			renResponse.autogen.nhash,
 			signature,
 		).send({

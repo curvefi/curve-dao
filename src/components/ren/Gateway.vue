@@ -75,6 +75,18 @@
             	<span id="exchange-rate" v-show='!lessThanMinOrder'>{{ exchangeRateOriginal && exchangeRateOriginal.toFixed(4) }}</span>
             	<span v-show='lessThanMinOrder'>N/A</span>
             </p>
+            <div id='max_slippage'><span>Max slippage:</span> 
+                <input id="slippage05" type="radio" name="slippage" value='0.005' @click='maxSlippage = 0.5; customSlippageDisabled = true'>
+                <label for="slippage05">0.5%</label>
+
+                <input id="slippage1" type="radio" name="slippage" checked value='0.01' @click='maxSlippage = 1; customSlippageDisabled = true'>
+                <label for="slippage1">1%</label>
+
+                <input id="custom_slippage" type="radio" name="slippage" value='-' @click='customippageDisabled = false'>
+                <label for="custom_slippage" @click='customSlippageDisabled = false'>
+                    <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
+                </label>
+            </div>
             <p class='simple-error' v-show='lessThanMinOrder'>
             	Minimum order size is {{ (minOrderSize / 1e8).toFixed(8) }} 
             </p>
@@ -118,7 +130,6 @@
 	import * as store from './shiftStore'
 	import { state } from './shiftState'
 
-	console.log(store.mint, "MINT")
 	
 	const txObject = () => ({
 		id: '',
@@ -170,6 +181,9 @@
 			get_dy_original: '',
 			fromBgColor: '',
 			bgColor: '',
+			maxSlippage: 1,
+            maxInputSlippage: '',
+            customSlippageDisabled: true,
 			swapwrapped: false,
 			currencies: {
 				btc: 'BTC',
@@ -368,15 +382,19 @@
 			},
 
 			async submit() {
-				console.log(store, "THE STORE")
-				if(this.from_currency == 0)
+				let maxSlippage = this.maxSlippage;
+                if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
+				if(this.from_currency == 0) {
+                	var min_dy = this.toInput * (1-maxSlippage)
 					store.mint({
 						from_currency: this.from_currency,
 						amountAfterBTC: this.amountAfterBTC,
 						address: this.address,
 						fromInput: this.fromInput,
 						toInput: this.toInput,
+						slippage: maxSlippage * 10,
 					})
+				}
 				if(this.from_currency == 1) 
 					store.burnSwap({
 						address: this.address,

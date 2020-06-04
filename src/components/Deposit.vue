@@ -98,7 +98,7 @@
                 <div class='simple-error' v-show='errorStaking'>
                     There was an error in staking your tokens. You can manually stake them on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a>
                 </div>
-                <div class='simple-error pulse' v-show='compareInputsWarning.length'>
+                <div class='simple-error pulse' v-show='compareInputsWarning.length && !max_balances'>
                     Not enough balance for currencies {{ compareInputsWarning.toString() }}
                     <p v-show='compareInputsWarning.length == N_COINS - 1'> 
                         Maybe you forgot to uncheck the first 

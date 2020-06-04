@@ -1,5 +1,11 @@
 import Vue from 'vue'
 import RenSDK from '@renproject/ren'
+import BlocknativeSdk from 'bnc-sdk'
+import Web3 from 'web3'
+const blocknative = new BlocknativeSdk({
+	dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
+	networkId: 1,
+})
 const sdk = new RenSDK('mainnet', {
 	//logLevel: 'trace'
 })
@@ -67,20 +73,18 @@ export async function loadTransactions() {
 	console.log(mints, "MINTS")
 	let burns = state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
 	console.log(burns, "THE BURNS")
-	if(burns.length) {
-		web3.eth.subscribe('newBlockHeaders')
-			.on('data', block => {
-				console.log("NEW BLOCK")
-				for(let transaction of burns) {
-					console.log(transaction, "TRANSACTION")
-					if(transaction.state > 63 || transaction.confirmations >= 30) continue;
-					transaction.confirmations = block.number - transaction.ethStartBlock + 1
-					transaction.ethCurrentBlock = block.number
-					transaction.state = 30 + transaction.confirmations
-					upsertTx(transaction)
-				}
-			})
-	}
+	web3.eth.subscribe('newBlockHeaders')
+		.on('data', block => {
+			console.log("NEW BLOCK")
+			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+				console.log(transaction, "TRANSACTION")
+				if(transaction.state > 63 || transaction.confirmations >= 30) continue;
+				transaction.confirmations = block.number - transaction.ethStartBlock + 1
+				transaction.ethCurrentBlock = block.number
+				transaction.state = 30 + transaction.confirmations
+				upsertTx(transaction)
+			}
+		})
 	await Promise.all([...mints, ...burns.map(t=>listenForBurn(t.id))])
 }
 
@@ -377,54 +381,93 @@ export async function sendMint(transfer) {
 	}
 }
 
+export async function swapNow(transaction) {
+	mintThenSwap(transaction, true)
+}
+
+export async function receiveRen(transaction) {
+	mintThenSwap(transaction, false, true)
+}
+
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
 	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, BN(utxoAmount).toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(utxoAmount)
-	let minExchangeRate = transaction.newMinExchangeRate
 	//rates changed, ask user if they still want to swap
 		//handle the case where they only want to mint
-	if(exchangeRateNow < transaction.newMinExchangeRate && !swapNow && !receiveRen) {
+	if(exchangeRateNow.lt(BN(transaction.newMinExchangeRate)) && !swapNow && !receiveRen) {
 		transaction.state = 13
+		return;
 	}
-	else {
-		//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
-		await new Promise((resolve, reject) => {
-			return state.adapterContract.methods.mintThenSwap(
-				params.contractCalls[0].contractParams[0].value,
-				transaction.newMinExchangeRate,
-				params.contractCalls[0].contractParams[1].value,
-				params.contractCalls[0].contractParams[2].value,
-				utxoAmount,
-				renResponse.autogen.nhash,
-				signature,
-			).send({
-				from: state.default_account
-			})
-			.once('transactionHash', resolve)
-			.once('receipt', () => {
-				//this.transactions = this.transactions.filter(t => t.id != id)
-				transaction.state = 14
-				transaction.ethTxHash = receipt.transactionHash
-				upsertTx(transaction)
-			})
-			.on('error', err => {
-				transaction.state = 16;
-				upsertTx(transaction)
-			})
-			.catch(err => reject(err))
+	if(swapNow) {
+		transaction.newMinExchangeRate = BN(exchangeRateNow).times(BN((1000-data.slippage)/1000)).toFixed(0,1)
+	}
+	if(receiveRen) {
+		//make the rate impossibly high so the check for exchange always fails
+		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
+	}
+	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
+	await new Promise((resolve, reject) => {
+		return state.adapterContract.methods.mintThenSwap(
+			params.contractCalls[0].contractParams[0].value,
+			transaction.newMinExchangeRate,
+			params.contractCalls[0].contractParams[1].value,
+			params.contractCalls[0].contractParams[2].value,
+			utxoAmount,
+			renResponse.autogen.nhash,
+			signature,
+		).send({
+			from: state.default_account
 		})
+		.once('transactionHash', resolve)
+		.once('receipt', () => {
+			//this.transactions = this.transactions.filter(t => t.id != id)
+			transaction.state = 14
+			transaction.ethTxHash = receipt.transactionHash
+			upsertTx(transaction)
+		})
+		.on('error', err => {
+			transaction.state = 16;
+			upsertTx(transaction)
+		})
+		.catch(err => reject(err))
+	})
 
-		transaction.state = 12
-	}
+	transaction.state = 12
 
 	upsertTx(transaction)
 }
 
-export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmount, renResponse, signature }) {
+export async function depositNow(transaction) {
+	mintThenDeposit(transaction, true)
+}
+
+export async function receiveRenDeposit(transaction) {
+	mintThenDeposit(transaction, false, true)
+}
+
+function calcFee() {
+	let N_COINS = 2
+	return getters.fee() * N_COINS / (4 * (N_COINS -1))
+}
+
+export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmount, renResponse, signature }, depositNow = false, receiveRen = false) {
 	//handle change calc_token_amount like in mintThenSwap
 	let transaction = state.transactions.find(t => t.id == id);
-	
+	let calc_token_amount = await contract.swap.methods.calc_token_amount(transaction.amounts, true)
+	if(calc_token_amount  < transaction.new_min_amount && !depositNow && !receiveRen) {
+		transaction.state = 15
+		return;
+	}
+	if(depositNow) {
+		calc_token_amount = BN(calc_token_amount).times(BN(1).minus(BN(this.calcFee)))
+		calc_token_amount = calc_token_amount.times(0.99).toFixed(0,1)
+		transaction.new_min_amount = calc_token_amount
+	}
+	if(receiveRen) {
+		//make the new_min_mint_amount parameter in contract 0 so it always fails and mints renBTC
+		transaction.new_min_amount = 0
+	}
 	await new Promise((resolve, reject) => {
 		return state.adapterContract.methods.mintThenDeposit(
 			params.contractCalls[0].contractParams[0].value,
@@ -531,23 +574,32 @@ export async function burn(burn, address) {
 			transaction.state = 31;
 			transaction.ethStartBlock = startBlockNumber
 			upsertTx(transaction)
-			let subscription = web3.eth.subscribe('newBlockHeaders')
-				.on('data', block => {
-					if(transaction.confirmations >= 30) {
-						return
-						//subscription.unsubcribe()
-					}
-					transaction.confirmations = block.number - transaction.ethStartBlock + 1
-					transaction.ethCurrentBlock = block.number
-					transaction.state = 30 + transaction.confirmations
-					console.log("NEW TX RECEIPT", transaction)
-					upsertTx(transaction)
-				})
+			// let subscription = web3.eth.subscribe('newBlockHeaders')
+			// 	.on('data', block => {
+			// 		if(transaction.confirmations >= 30) {
+			// 			return
+			// 			//subscription.unsubcribe()
+			// 		}
+			// 		transaction.confirmations = block.number - transaction.ethStartBlock + 1
+			// 		transaction.ethCurrentBlock = block.number
+			// 		transaction.state = 30 + transaction.confirmations
+			// 		console.log("NEW TX RECEIPT", transaction)
+			// 		upsertTx(transaction)
+			// 	})
 		})
 		.on('error', (err, receipt) => {
 			console.log(err, receipt, "ERR RECEIPT")
 		})
 		.catch(err => reject(err))
+	})
+	let { emitter } = blocknative(txhash)
+	emitter.on('txSpeedUp', transaction => {
+		console.log("SPEED UP")
+		console.log(transaction.originalHash, "ORIGINAL HASH", transaction.hash, "NEW HASH")
+		let tx = state.transactions.find(t => t.ethTxHash == transaction.originalHash)
+		removeTx(tx)
+		tx.ethTxHash = transaction.hash
+		upsertTx(tx)
 	})
 	state.transactions.unshift({
 		id: id,

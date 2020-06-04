@@ -82,8 +82,7 @@
                         <img 
                             :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
                             :src='getTokenIcon(currency)'> 
-                            <span v-show='!withdrawc'> {{ currency | capitalize }} </span>
-                            <span v-show='withdrawc'> {{ currencies[currency] }} </span>
+                            <span> {{ currencies[currency] }} </span>
                     </label>
 	            </li>
 	            <li>
@@ -242,7 +241,7 @@
 			...getters,
             currencies() {
                 return {
-                    renbtc: 'BTC',
+                    btc: 'BTC',
                     wbtc: 'wBTC',
                 }
             },
@@ -274,11 +273,7 @@
         },
         mounted() {
             this.$emit('loaded')
-        	if(this.currentPool == 'susdv2') {
-        		this.showstaked = true
-        	}
         	this.$watch(() => this.showstaked, this.handle_change_share)
-        	if(currentContract.currentContract == 'susd') this.withdrawc = true;
         	this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
         },
@@ -335,14 +330,12 @@
             },
             handleCheck(val) {
             	if(val === this.to_currency) {
-            		if(this.withdrawc == false) this.withdrawc = true
             		this.to_currency = null
 
             		currentContract.slippage = 0
             		currentContract.showSlippage = false
             	}
             	else {
-            		this.withdrawc = false
             		this.to_currency = val
             	}
             },
@@ -445,52 +438,11 @@
 				let min_amounts = []
 				for(let i = 0; i < currentContract.N_COINS; i++) {
 			    	min_amounts[i] = (BN(1).div(BN(this.getMaxSlippage))).times(this.share/100).times(BN(this.balances[i]))
-					if(!this.withdrawc) {
-						min_amounts[i] = min_amounts[i]
-										.times(allabis[currentContract.currentContract].coin_precisions[i])
-										.times(currentContract.c_rates[i])
-					}
 					min_amounts[i] = min_amounts[i].times(BN(this.token_balance))
 						            .div(BN(this.token_supply))
 						            .toFixed(0,1)
 				}
 				return min_amounts;
-			},
-			async unstake(amount, exit = false) {
-                this.waitingMessage = `
-                    Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal.
-                    <br>
-                    A bit more tokens are needed to unstake to ensure that withdrawal is successful.
-                    You'll see them in your unstaked balance afterwards.
-                        
-                `;
-                try {
-    				await new Promise((resolve, reject) => {
-    					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
-    						.send({
-    							from: currentContract.default_account,
-    							gas: 125000,
-    						})
-    						.once('transactionHash', resolve)
-                            .catch(err => reject(err))
-    				})
-                    if(exit) {
-        				await new Promise((resolve, reject) => {
-        					currentContract.curveRewards.methods.getReward()
-        						.send({
-        							from: currentContract.default_account,
-        							gas: 200000,
-        						})
-        						.once('transactionHash', resolve)
-                                .catch(err => reject(err))
-        				})
-                    }
-                }
-                catch(err) {
-                    this.waitingMessage = ''
-                    this.show_loading = false;
-                    throw err
-                }
 			},
             setLoadingAction(val) {
                 this.loadingAction = val;
@@ -558,7 +510,6 @@
                     if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
-                        await common.ensure_allowance_zap_out(amount)
                         let min_amount;
                         try {
                             min_amount = await currentContract.swap.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
@@ -570,6 +521,7 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
+                        console.log('remove liqudiity one coin then burn')
 			        	await store
 			        		.removeLiquidityOneCoinThenBurn({
                                 address: this.btcAddress,
@@ -686,30 +638,6 @@
 	        	this.share = 100
 	        	await this.handle_remove_liquidity();
 	        },
-            async migrateUSDT() {
-                this.withdrawc = false;
-                let amounts = this.inputs;
-                amounts.push(0);
-                this.handle_remove_liquidity()
-                await init(currentContract.contracts.pax)
-
-                amounts = amounts.map((v, i)=>BN(v).times(allabis.pax.coin_precisions[i]).toFixed(0))
-                this.waitingMessage = 'Please approve spending your coins'
-                await common.ensure_allowance(amounts, true, 'pax', 3)
-                let pax_deposit_zap = new currentContract.web3.eth.Contract(allabis.pax.deposit_abi, allabis.pax.deposit_address)
-                let token_amount = await currentContract.contracts.pax.swap.methods.calc_token_amount(amounts, true).call();
-                token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
-                this.waitingMessage = 'Please confirm deposit to PAX pool transaction'
-                let nonZeroInputs = amounts.filter(Number).length
-                let gas = contractGas.depositzap.pax.deposit(nonZeroInputs) | 0
-                let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
-                    from: currentContract.default_account,
-                    gas: gas
-                })
-                .once('transactionHash', hash => {
-                    this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
-                })
-            }
         },
 
     }

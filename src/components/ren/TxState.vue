@@ -23,11 +23,17 @@
 		</span>
 		<span v-show='state == 15'>
 			Got {{ (transaction.utxoAmount / 1e8).toFixed(8) }} renBTC, do you want to 
-			<button @click="$emit('mint', transaction)">swap</button>
+			<button @click="$emit('mint', transaction)">mint and swap</button>
 		</span>
-		<span v-show='state == 13'>
-			Exchange rates expired, you got {{ (transaction.utxoAmount / 1e8).toFixed(8) }} BTC shifted to renBTC.
-			If you want to continue swapping to WBTC, go to the <router-link to="/ren/swap">swap page</router-link>
+		<span v-show='state == 13 && transaction.type == 0'>
+			Exchange rates expired, you got {{ (transaction.utxoAmount / 1e8).toFixed(8) }} deposited.
+			Do you want to <button @click="$emit('swapNow', transaction)">swap now</button> or
+			<button @click="$emit('receiveRen', transaction)">receive renBTC</button>
+		</span>
+		<span v-show='state == 13 && transaction.type == 3'>
+			Minimum token receive amount expired, you got {{ (transaction.utxoAmount / 1e8).toFixed(8) }} deposited
+			Do you wnat to <button @click="$emit('depositNow', transaction)">deposit now</button> or
+			<button @click="$emit('receiveRenDeposit', transaction)">receive renBTC</button>
 		</span>
 		<span v-show='state == 16'>
 			ETH transaction failed

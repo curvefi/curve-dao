@@ -84,7 +84,12 @@
 						<tx-state 
 							:state='transaction.state' 
 							:transaction='transaction'
-							@mint='mintThenSwap'/>
+							@swapNow='swapNow'
+							@receiveRen='receiveRen'
+							@depositNow='depositNow'
+							@receiveRenDeposit='receiveRenDeposit'
+							@mint='mintThenSwap'
+							/>
 					</td>
 					<td class='nowrap'>
 						<span v-show='[0,3].includes(transaction.type)'>
@@ -192,6 +197,22 @@
 
 			use3Box() {
 				return store.use3Box()
+			},
+
+			swapNow(transaction) {
+				store.swapNow(transactions)
+			},
+
+			receiveRen(transaction) {
+				store.receiveRen(transaction)
+			},
+
+			depositNow(transaction) {
+				store.depositNow(transaction)
+			},
+
+			receiveRenDeposit(transaction) {
+				store.receiveRenDeposit(transaction)
 			},
 
 		}

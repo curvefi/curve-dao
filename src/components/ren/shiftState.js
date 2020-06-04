@@ -23,3 +23,11 @@ export const state = Vue.observable({
 
 	adapterContract: null,
 })
+
+export function hasIncomplete() {
+	for(let [key, value] of Object.entries(localStorage)) {
+		if(!key.startsWith('curvebtc_')) continue;
+		if([0,3].includes(value.type) && ![14,15].includes(value.state)) return true
+		if(value.type == 1 && value.state != 65) return true
+	}
+}

@@ -122,11 +122,6 @@
                 <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
                     Max balance you can use is {{ (+maxSynthBalance).toFixed(2) }}
                 </p>
-                <p class='info-message gentle-message pulse'>
-                    Synthetix susd update in progress, trading susd may become not available for 1-2 hours.
-                    <br>
-                    <span>Trading other pairs is not affected.</span>
-                </p>
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade'>
                         Sell <span class='loading line' v-show='loadingAction'></span>

@@ -64,11 +64,6 @@
             <p style="text-align: center" v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
-            <p class='info-message gentle-message pulseinfo'>
-                Synthetix susd update in progress, depositing susd may become not available for 1-2 hours.
-                <br>
-                <span>Trading other pairs is not affected.</span>
-            </p>
             <p style="text-align: center">
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"

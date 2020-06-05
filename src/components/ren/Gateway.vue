@@ -91,7 +91,7 @@
             	Minimum mint order size is {{ (minOrderSize / 1e8).toFixed(8) }} 
             </p>
             <p class='simple-error' v-show='lessThanMinOrder && from_currency == 1'>
-            	Minimum burn order size is 0.00035547
+            	Minimum burn order size is {{ (minOrderSize / 1e8 + 0.00000547).toFixed(8) }}
             </p>
             <div class='input address'>
 				<label for='address'>{{ from_currency == 1 ? 'BTC withdrawal' : 'ETH' }} address</label>

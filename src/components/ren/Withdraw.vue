@@ -268,7 +268,7 @@
               return ((this.inputs[0] * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8).toFixed(8)
             },
             minOrderSize() {
-                return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8).toFixed(8)
+                return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8 + 0.00000547).toFixed(8)
             },
         },
         mounted() {

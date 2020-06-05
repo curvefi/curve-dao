@@ -4,7 +4,12 @@
 	    <deposit v-if='!swapbtc || (swapbtc && !loaded)'></deposit>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
-	        <label for='swapbtc'>Deposit BTC</label>
+	        <label for='swapbtc'>
+	        	Deposit BTC
+	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
+	        		( {{hasIncomplete}} incomplete transactions)
+	        	</span>
+	        </label>
 	    	<span v-show='loading' class='loading line'></span>
 	    </div>
     </div>
@@ -12,6 +17,7 @@
 
 <script>
     import { getters, contract as currentContract, gas as contractGas} from '../../contract'
+    import * as shiftState from '../ren/shiftState'
 	import Deposit from './Deposit.vue'
 
     const DepositNative = () => ({
@@ -48,6 +54,9 @@
 			},
 			currentPool() {
 				return getters.currentPool()
+			},
+			hasIncomplete() {
+				return shiftState.hasIncomplete()
 			},
 		},
 

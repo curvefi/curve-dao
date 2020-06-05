@@ -25,9 +25,13 @@ export const state = Vue.observable({
 })
 
 export function hasIncomplete() {
+	let len = 0
 	for(let [key, value] of Object.entries(localStorage)) {
 		if(!key.startsWith('curvebtc_')) continue;
-		if([0,3].includes(value.type) && ![14,15].includes(value.state)) return true
-		if(value.type == 1 && value.state != 65) return true
+		value = JSON.parse(value)
+		if(value.removed) continue;
+		if([0,3].includes(value.type) && ![14,15].includes(value.state)) len++
+		if(value.type == 1 && value.state != 65) len++
 	}
+	return len
 }

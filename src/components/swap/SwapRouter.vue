@@ -4,7 +4,12 @@
 	    <swap v-if='!swapbtc || (swapbtc && !loaded)'></swap>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
-	        <label for='swapbtc'>Swap BTC</label>
+	        <label for='swapbtc'>
+	        	Swap BTC
+	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
+	        		( {{hasIncomplete}} incomplete transactions)
+	        	</span>
+	        </label>
 	    	<span v-show='loading' class='loading line'></span>
 	    </div>
     </div>
@@ -12,6 +17,7 @@
 
 <script>
     import { getters, contract as currentContract, gas as contractGas} from '../../contract'
+    import * as shiftState from '../ren/shiftState'
 	import Swap from './Swap.vue'
 
 	import LoadingComponent from '../ren/LoadingComponent.vue'
@@ -31,7 +37,7 @@
 
 
 		data: () => ({
-			swapbtc: true,
+			swapbtc: false,
 			loading: false,
 		}),
 
@@ -49,6 +55,9 @@
 			},
 			currentPool() {
 				return getters.currentPool()
+			},
+			hasIncomplete() {
+				return shiftState.hasIncomplete()
 			},
 		},
 

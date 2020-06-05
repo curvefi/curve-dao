@@ -71,15 +71,15 @@ init()
 export async function loadTransactions() {
 	let items = await getAllItems()
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
-	state.transactions = state.transactions.filter(t => !t.removed)
-	let mints = state.transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>sendMint(t))
+	let transactions = state.transactions.filter(t => !t.removed)
+	let mints = transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
-	let burns = state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
+	let burns = transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
 	console.log(burns, "THE BURNS")
 	web3.eth.subscribe('newBlockHeaders')
 		.on('data', block => {
 			console.log("NEW BLOCK")
-			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+			for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
 				console.log(transaction, "TRANSACTION")
 				if(transaction.state > 63 || transaction.confirmations >= 30) continue;
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
@@ -91,16 +91,15 @@ export async function loadTransactions() {
 	await Promise.all([...mints, ...burns.map(t=>listenForBurn(t.id))])
 }
 
-export async function showRemoved(val) {
-	let items = await getAllItems()
-	let transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
-	if(val) state.transactions = transactions
-	else state.transactions = transactions.filter(t => !t.removed)
+export function refresh(transaction) {
+	transaction.removed = false
+	upsertTx(transaction)
+	sendMint(transaction)
 }
 
-
 export async function use3Box() {
-	Box = require('3box')
+	Box = await import('3box')
+	Box = Box.default
 	if(state.box !== null) return;
 	state.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
 	state.space = await state.box.openSpace('curvebtc')
@@ -318,9 +317,12 @@ export async function sendMint(transfer) {
 			transaction.state = 11
 			transaction.confirmations = 'Confirmed'
 			upsertTx(transaction)
-			console.log("HERE")
 			if(transaction.type == 0) await mintThenSwap(transfer)
 			if(transaction.type == 3) await mintThenDeposit(transaction)
+		}
+		else {
+			transaction.state = 14
+			upsertTx(transaction)
 		}
 	}
 	else {

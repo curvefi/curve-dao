@@ -1,11 +1,10 @@
 <template>
 	<div class='window white'>
-	    <withdraw-native v-if='swapbtc' @loaded='loaded'></withdraw-native>
-	    <withdraw v-if='!swapbtc || (swapbtc && !loaded)'></withdraw>
+	    <component :is='componentRouter' @loaded='loaded'></component>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 	        <label for='swapbtc'>
-	        	Withdraw BTC
+	        	Swap BTC
 	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
 	        		( {{hasIncomplete}} incomplete transactions)
 	        	</span>
@@ -16,25 +15,48 @@
 </template>
 
 <script>
-    import { getters, contract as currentContract, gas as contractGas} from '../../contract'
-    import * as shiftState from '../ren/shiftState'
-	import Withdraw from './Withdraw.vue'
+    import { getters, contract as currentContract, gas as contractGas} from '../contract'
+    import * as shiftState from './ren/shiftState'
 
-	import LoadingComponent from '../ren/LoadingComponent.vue'
-    const WithdrawNative = () => ({
-        component: import('../ren/Withdraw.vue'),
+	import LoadingComponent from './ren/LoadingComponent.vue'
+	const Swap = () => import('./swap/Swap.vue')
+    const SwapNative = () => ({
+        component: import('./ren/Gateway.vue'),
 
-        loading: Withdraw,
+        loading: Swap,
 
         delay: 0,
     })
 
+    const Deposit = () => import('./deposit/Deposit.vue')
+    const DepositNative = () => ({
+        component: import('./ren/Deposit.vue'),
+
+        loading: Swap,
+
+        delay: 0,
+    })
+
+    const Withdraw = () => import('./withdraw/Withdraw.vue')
+    const WithdrawNative = () => ({
+    	component: import('./ren/Withdraw.vue'),
+
+    	loading: Withdraw
+    })
+
 	export default {
 		components: {
+			Swap,
+			SwapNative,
+
+			Deposit,
+			DepositNative,
+
 			Withdraw,
 			WithdrawNative,
 		},
 
+		props: ['component'],
 
 		data: () => ({
 			swapbtc: false,
@@ -49,9 +71,9 @@
 		},
 
 		computed: {
-			swapComponent() {
-				if(this.swapbtc) return 'WithdrawNative'
-				return 'Withdraw'
+			componentRouter() {
+				if(this.swapbtc) return this.component+'Native'
+				return this.component
 			},
 			currentPool() {
 				return getters.currentPool()
@@ -63,7 +85,7 @@
 
 		methods: {
 			loaded() {
-				if(this.swapComponent == 'WithdrawNative') this.loading = false;
+				if(this.componentRouter == this.component + 'Native') this.loading = false;
 			}
 		},
 

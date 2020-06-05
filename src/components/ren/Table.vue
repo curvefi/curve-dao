@@ -32,8 +32,11 @@
 			Swap completed
 		</div>
 
-		<input id='showremoved' type='checkbox' v-model='showRemoved'/>
-		<label for='showremoved'>Show removed transactions</label>
+		<p v-show='transactions.filter(t => t.removed).length'>
+			<input id='showremoved' type='checkbox' v-model='showRemoved'/>
+			<label for='showremoved'>Show removed transactions</label>
+		</p>
+
 		<table class='tui-table'>
 			<thead>
 				<tr>
@@ -45,7 +48,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr v-for='transaction in transactions'>
+				<tr v-for='transaction in filteredTransactions'>
 					<td class='shifttype'>
 						{{ transaction.type == 0 ? 'BTC->wBTC' : 'wBTC->BTC' }}
 					</td>
@@ -143,15 +146,13 @@
         	showRemoved: false,
 		}),
 
-		watch: {
-			showRemoved(val) {
-				store.showRemoved(val)
-			}
-		},
-
 		computed: {
 			transactions() {
 				return state.transactions
+			},
+			filteredTransactions() {
+				if(this.showRemoved) return state.transactions
+				return state.transactions.filter(t => !t.removed)
 			},
 			showCompleted() {
         		let tx = state.transactions[0]

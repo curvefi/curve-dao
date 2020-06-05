@@ -33,7 +33,7 @@ navigator.serviceWorker.ready
     }
 
     // Get the server's public key
-    const response = await fetch('https://f9dfeb7663cb.ngrok.io/vapidPublicKey');
+    const response = await fetch('https://pushservice.curve.fi/vapidPublicKey');
     const vapidPublicKey = await response.text();
     // Chrome doesn't accept the base64-encoded (string) vapidPublicKey yet
     // urlBase64ToUint8Array() is defined in /tools.js
@@ -50,7 +50,7 @@ navigator.serviceWorker.ready
   subscriptionStore.setSubscription(subscription)
   console.log(subscriptionStore.subscription)
   // Send the subscription details to the server using the Fetch API.
-  fetch('https://f9dfeb7663cb.ngrok.io/register', {
+  fetch('https://pushservice.curve.fi/register', {
     method: 'post',
     headers: {
       'Content-type': 'application/json'

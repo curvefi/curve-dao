@@ -47,6 +47,13 @@ module.exports = {
 	    workboxOptions: {
 	      // swSrc is required in InjectManifest mode.
 	      swSrc: 'src/service-worker.js',
+	      include: [
+	      	'.*woff2.*',
+	      	'.*png.*',
+	      	'.*jpg.*',
+	      	'.*svg.*',
+	      	'.*tvisionbase.css.*',
+	      ],
 	      // ...other Workbox options...
 	    },
     },

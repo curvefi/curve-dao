@@ -28,14 +28,22 @@
 			</div>
 		</div>
 
-		<div class='info-message gentle-message' v-show='showCompleted'>
-			Swap completed
-		</div>
+
+		<span class='notification tooltip' @click='showNotifications'>
+			<img src='bell-solid.svg' class='bell notification icon hoverpointer'>
+			<span class='tooltiptext'>
+				Enable push notifications on transactions received
+			</span>
+		</span>
 
 		<p v-show='transactions.filter(t => t.removed).length'>
 			<input id='showremoved' type='checkbox' v-model='showRemoved'/>
 			<label for='showremoved'>Show removed transactions</label>
 		</p>
+
+		<div class='info-message gentle-message' v-show='showCompleted'>
+			Swap completed
+		</div>
 
 		<table class='tui-table'>
 			<thead>
@@ -232,6 +240,46 @@
 			refresh(transaction) {
 				store.refresh(transaction)
 			},
+			showNotifications() {
+				navigator.serviceWorker.ready
+					.then(function(registration) {
+					  // Use the PushManager to get the user's subscription to the push service.
+					  return registration.pushManager.getSubscription()
+					  .then(async function(subscription) {
+					    // If a subscription was found, return it.
+					    if (subscription) {
+					      return subscription;
+					    }
+
+					    // Get the server's public key
+					    const response = await fetch('https://pushservice.curve.fi/vapidPublicKey');
+					    const vapidPublicKey = await response.text();
+					    // Chrome doesn't accept the base64-encoded (string) vapidPublicKey yet
+					    // urlBase64ToUint8Array() is defined in /tools.js
+					    const convertedVapidKey = helpers.urlBase64ToUint8Array(vapidPublicKey);
+
+					    // Otherwise, subscribe the user (userVisibleOnly allows to specify that we don't plan to
+					    // send notifications that don't have a visible effect for the user).
+					    return registration.pushManager.subscribe({
+					      userVisibleOnly: true,
+					      applicationServerKey: convertedVapidKey
+					    });
+					  });
+					}).then(function(subscription) {
+					  subscriptionStore.setSubscription(subscription)
+					  console.log(subscriptionStore.subscription)
+					  // Send the subscription details to the server using the Fetch API.
+					  fetch('https://pushservice.curve.fi/register', {
+					    method: 'post',
+					    headers: {
+					      'Content-type': 'application/json'
+					    },
+					    body: JSON.stringify({
+					      subscription: subscription
+					    }),
+					  });
+					});
+			},
 
 		}
 	}
@@ -318,5 +366,9 @@
 		width: 1em;
 		margin-left: 0.8em;
 		filter: invert(37%) sepia(11%) saturate(2344%) hue-rotate(174deg) brightness(101%) contrast(104%);
+	}
+	.notification.tooltip {
+		margin-left: 1em;
+		margin-top: 1em;
 	}
 </style>

@@ -1,3 +1,10 @@
+self.__precacheManifest = [].concat(self.__precacheManifest || []);
+workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
+
+self.addEventListener("message", (e)=>{
+    if (e.data.action == 'skipWaiting') self.skipWaiting()
+})
+
 //Web Push Notifications//
 let click_open_url
 self.addEventListener('push', function(event) {

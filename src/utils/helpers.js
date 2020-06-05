@@ -36,18 +36,14 @@ export function getTokenIcon(token, wrapped, pool) {
     else if(wrapped && ['iearn', 'y', 'busd', 'pax'].includes(pool) && token != 'pax') {
         token = '_y' + token
     }
+    let publicPath = process.env.BASE_URL
     let asset
-    try {
-        asset = require('../assets/tokens/' + token + '.png')
+    let pngs = ['dai', 'busd', 'pax', '_ydai', '_yusdc', '_yusdt', '_ytusd', '_ybusd']
+    if(pngs.includes(token)) {
+        asset = publicPath + 'tokens/' + token + '.png'
     }
-    catch(err) {
-        try {
-            asset = require('../assets/tokens/' + token + '.svg')
-        }
-        catch(err) {
-            console.error(err)
-            asset = ''
-        }
+    else {
+      asset = publicPath + 'tokens/' + token + '.svg'
     }
     return asset;
 }

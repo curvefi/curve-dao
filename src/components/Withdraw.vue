@@ -103,6 +103,11 @@
                 <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
             </label>
         </div>
+        <p class='info-message gentle-message pulse'>
+            Synthetix susd update in progress, withdrawing susd may become not available for 1-2 hours.
+            <br>
+            <span>Trading other pairs is not affected.</span>
+        </p>
         <div id='withdraw_buttons'>
             <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
 	        	You don't have any available amount to withdraw
@@ -785,5 +790,9 @@
     }
     .withdrawin {
         margin-bottom: 0.3em;
+    }
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
     }
 </style>

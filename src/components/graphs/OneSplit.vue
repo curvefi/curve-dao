@@ -141,6 +141,11 @@
             <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
                 Max balance you can use is {{ maxSynthBalanceText }}
             </p>
+            <p class='info-message gentle-message pulse'>
+                Synthetix susd update in progress, trading susd may become not available for 1-2 hours.
+                <br>
+                <span>Trading other pairs is not affected.</span>
+            </p>
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>
                     Sell <span class='loading line' v-show='loadingAction'></span>
@@ -999,6 +1004,10 @@
     }
     .coins.renbtc {
         margin-top: 1em;
+    }
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

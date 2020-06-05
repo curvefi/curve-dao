@@ -87,8 +87,11 @@
                     <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
                 </label>
             </div>
-            <p class='simple-error' v-show='lessThanMinOrder'>
-            	Minimum order size is {{ (minOrderSize / 1e8).toFixed(8) }} 
+            <p class='simple-error' v-show='lessThanMinOrder && from_currency == 0'>
+            	Minimum mint order size is {{ (minOrderSize / 1e8).toFixed(8) }} 
+            </p>
+            <p class='simple-error' v-show='lessThanMinOrder && from_currency == 1'>
+            	Minimum burn order size is 0.00035547
             </p>
             <div class='input address'>
 				<label for='address'>{{ from_currency == 1 ? 'BTC withdrawal' : 'ETH' }} address</label>
@@ -218,7 +221,7 @@
             },
             lessThanMinOrder() {
             	if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
-            	if(this.from_currency == 1 && BN(this.fromInput).times(1e8).lt(BN(this.minOrderSize))) return true	
+            	if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true	
             },
         	toInputFormat() {
         		if(!this.toInput || typeof this.toInput == 'string') return '0.00'

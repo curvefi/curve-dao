@@ -32,6 +32,8 @@
 			Swap completed
 		</div>
 
+		<input id='showremoved' type='checkbox' v-model='showRemoved'/>
+		<label for='showremoved'>Show removed transactions</label>
 		<table class='tui-table'>
 			<thead>
 				<tr>
@@ -67,7 +69,7 @@
 						</span>
 					</td>
 					<td>
-						<a :href="getTxHashLink(transaction)"> 
+						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer"> 
 							<span v-show='[0,3].includes(transaction.type) && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
 							<span v-show='[0,3].includes(transaction.type) && [14,15].includes(transaction.state)'>
@@ -77,7 +79,7 @@
 							<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
 						</a>
 						<div v-show='[0,3].includes(transaction.type) && transaction.state == 14'>
-							<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash">Etherscan</a>
+							<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash" target="_blank" rel="noopener noreferrer">Etherscan</a>
 						</div>
 					</td>
 					<td>
@@ -103,6 +105,9 @@
 						<span v-show='[0,3].includes(transaction.type) && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
 							<!-- [<span class='redtext'>&times;</span>] -->
 							<img src='@/assets/trash-alt-solid.svg'>
+						</span>
+						<span v-show='transaction.removed' class='icon refresh' @click='refresh(transaction)'>
+							<img src='@/assets/sync-solid.svg'>
 						</span>
 					</td>
 				</tr>
@@ -135,7 +140,14 @@
 				}
         	},
         	copied: false,
+        	showRemoved: false,
 		}),
+
+		watch: {
+			showRemoved(val) {
+				store.showRemoved(val)
+			}
+		},
 
 		computed: {
 			transactions() {
@@ -150,6 +162,7 @@
         		return state.space
         	},
 		},
+
 
 		methods: {
 			showQR({ fromInput, gatewayAddress }) {
@@ -213,6 +226,10 @@
 
 			receiveRenDeposit(transaction) {
 				store.receiveRenDeposit(transaction)
+			},
+
+			refresh(transaction) {
+				store.refresh(transaction)
 			},
 
 		}
@@ -291,5 +308,14 @@
 	}
 	.transaction-table {
 		margin-top: 1em;
+	}
+	.icon.refresh {
+		cursor: pointer;
+		font-size: 1em;
+	}
+	.icon.refresh img {
+		width: 1em;
+		margin-left: 0.8em;
+		filter: invert(37%) sepia(11%) saturate(2344%) hue-rotate(174deg) brightness(101%) contrast(104%);
 	}
 </style>

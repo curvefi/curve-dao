@@ -49,6 +49,8 @@ const txObject = () => ({
 
 	min_amount: 0,
 	amounts: 0,
+
+	removed: false,
 })
 
 state.adapterContract = new contract.web3.eth.Contract(adapterABI, adapterAddress)
@@ -69,6 +71,7 @@ init()
 export async function loadTransactions() {
 	let items = await getAllItems()
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
+	state.transactions = state.transactions.filter(t => !t.removed)
 	let mints = state.transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
 	let burns = state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
@@ -86,6 +89,13 @@ export async function loadTransactions() {
 			}
 		})
 	await Promise.all([...mints, ...burns.map(t=>listenForBurn(t.id))])
+}
+
+export async function showRemoved(val) {
+	let items = await getAllItems()
+	let transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
+	if(val) state.transactions = transactions
+	else state.transactions = transactions.filter(t => !t.removed)
 }
 
 
@@ -128,7 +138,10 @@ export async function getAllItems() {
 
 export async function removeTx(transaction) {
 	state.transactions = state.transactions.filter(t => t.id != transaction.id)
-	await removeItem('curvebtc_' + transaction.id)
+	transaction.removed = true;
+	upsertTx(transaction)
+	//don't actually delete, just hide from user
+	//await removeItem('curvebtc_' + transaction.id)
 }
 
 export function postTxNotification(txHash) {
@@ -301,12 +314,14 @@ export async function sendMint(transfer) {
 	console.log(transaction, "TRANSACTION")
 	//transaction is ready to be sent to eth network
 	if(transaction.renResponse && transaction.signature) {
-		if(transaction.state == 12 || transaction.state == 14)
-			transaction.state = 15
-		transaction.confirmations = 'Confirmed'
-		upsertTx(transaction)
-		if(transaction.type == 0) await mintThenSwap(transfer)
-		if(transaction.type == 3) await mintThenDeposit(transaction)
+		if((transaction.state == 12 || transaction.state == 14) && !transaction.ethTxHash) {
+			transaction.state = 11
+			transaction.confirmations = 'Confirmed'
+			upsertTx(transaction)
+			console.log("HERE")
+			if(transaction.type == 0) await mintThenSwap(transfer)
+			if(transaction.type == 3) await mintThenDeposit(transaction)
+		}
 	}
 	else {
 		let mint = await initMint(transfer);
@@ -358,6 +373,7 @@ export async function sendMint(transfer) {
 								if(deposit.utxo) {
 									if(transaction.state == 1) {
 										transaction.state = 2
+										this.showModal = false
 									}
 									transaction.confirmations = deposit.utxo.confirmations
 									if(transaction.confirmations) transaction.state = 3 + deposit.utxo.confirmations
@@ -371,6 +387,8 @@ export async function sendMint(transfer) {
 		transaction.state = 10
 
 		let signature = await deposit.submit()
+		let wasSubmitted = await mint.findTransaction(web3.currentProvider)
+		if(wasSubmitted && wasSubmitted.length) transaction.state = 14;
 		transaction.state = 11
 		transaction.renResponse = signature.renVMResponse;
 		transaction.signature = signature.signature
@@ -407,7 +425,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
 	}
 	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
-	await new Promise((resolve, reject) => {
+	let txhash = await new Promise((resolve, reject) => {
 		return state.adapterContract.methods.mintThenSwap(
 			params.contractCalls[0].contractParams[0].value,
 			transaction.newMinExchangeRate,
@@ -417,7 +435,8 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			renResponse.autogen.nhash,
 			signature,
 		).send({
-			from: state.default_account
+			from: state.default_account,
+			gas: 600000,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -434,6 +453,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	})
 
 	transaction.state = 12
+	transaction.ethTxHash = txhash
 
 	upsertTx(transaction)
 }
@@ -456,7 +476,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	let transaction = state.transactions.find(t => t.id == id);
 	let calc_token_amount = await contract.swap.methods.calc_token_amount(transaction.amounts, true)
 	if(calc_token_amount  < transaction.new_min_amount && !depositNow && !receiveRen) {
-		transaction.state = 15
+		transaction.state = 13
 		return;
 	}
 	if(depositNow) {
@@ -468,7 +488,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		//make the new_min_mint_amount parameter in contract 0 so it always fails and mints renBTC
 		transaction.new_min_amount = 0
 	}
-	await new Promise((resolve, reject) => {
+	let txhash = await new Promise((resolve, reject) => {
 		return state.adapterContract.methods.mintThenDeposit(
 			params.contractCalls[0].contractParams[0].value,
 			utxoAmount,
@@ -495,6 +515,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	})
 
 	transaction.state = 12
+	transaction.ethTxHash = txhash
 
 	upsertTx(transaction)
 }

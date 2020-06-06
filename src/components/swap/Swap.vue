@@ -40,7 +40,7 @@
                         </ul>
                     </fieldset>
                     <fieldset class='item iconcontainer' @click='swapInputs'>
-                        <img src='@/assets/exchange-alt-solid.svg' id='exchangeicon'/>
+                        <img :src="publicPath + 'exchange-alt-solid.svg'" id='exchangeicon'/>
                     </fieldset>
                     <fieldset class='item'>
                         <legend>To:</legend>
@@ -256,6 +256,9 @@
                     return (1 / this.exchangeRate).toFixed(4)
                 else
                     return this.exchangeRate
+            },
+            publicPath() {
+                return process.env.BASE_URL
             },
         },
         mounted() {

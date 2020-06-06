@@ -21,6 +21,7 @@ import '../public/tvisionbase.css'
 import '../public/tvision.css'
 import './registerServiceWorker'
 
+subscriptionStore.init();
 
 Vue.config.productionTip = false
 

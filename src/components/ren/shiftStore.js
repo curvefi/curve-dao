@@ -76,6 +76,9 @@ export async function loadTransactions() {
 	console.log(mints, "MINTS")
 	let burns = transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
 	console.log(burns, "THE BURNS")
+	for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+		listenForReplacement(transaction.ethTxHash)
+	}
 	web3.eth.subscribe('newBlockHeaders')
 		.on('data', block => {
 			console.log("NEW BLOCK")
@@ -143,31 +146,17 @@ export async function removeTx(transaction) {
 	//await removeItem('curvebtc_' + transaction.id)
 }
 
-export function postTxNotification(txHash) {
-	let subscription = subscriptionStore.subscription
-	console.log(subscription)
-	fetch('https://f9dfeb7663cb.ngrok.io/addtx', 
-		{
-		    method: 'POST', 
-		    headers: {
-		      'Content-Type': 'application/json'
-		      // 'Content-Type': 'application/x-www-form-urlencoded',
-		    },
-		    body: JSON.stringify({ subscription, txHash: txHash})
-		})
-}
-
-
 export function upsertTx(transaction) {
+	console.log("UPSERT TX", transaction)
 	let key = 'curvebtc_' + transaction.id
 	transaction.web3Provider = null;
 	if(transaction.params && transaction.params.web3Provider)
 		transaction.params.web3Provider = null;
 	transaction.box = null;
 	transaction.space = null
-	if(transaction.type == 0) postTxNotification(transaction.btcTxHash)
-	if(transaction.type == 1) postTxNotification(transaction.ethTxHash)
 	setItem(key, transaction)
+	if(transaction.type == 0) subscriptionStore.postTxNotification(transaction.btcTxHash)
+	if(transaction.type == 1) subscriptionStore.postTxNotification(transaction.ethTxHash)
 }
 
 function newTx() {
@@ -615,18 +604,7 @@ export async function burn(burn, address) {
 		})
 		.catch(err => reject(err))
 	})
-	let { emitter } = blocknative.transaction(txhash)
-	emitter.on('txSpeedUp', async transaction => {
-		console.log("SPEED UP")
-		console.log(transaction.originalHash, "ORIGINAL HASH", transaction.hash, "NEW HASH")
-		let tx = state.transactions.find(t => t.ethTxHash == transaction.originalHash)
-		await removeTx(tx)
-		tx.ethTxHash = transaction.hash
-		tx.ethStartBlock = transaction.blockNumber
-		tx.state = 30
-		tx.confirmations = 0
-		setTimeout(() => upsertTx(tx), 1000)
-	})
+	listenForReplacement(txhash)
 	state.transactions.unshift({
 		id: id,
 		timestamp: Date.now(),
@@ -638,6 +616,31 @@ export async function burn(burn, address) {
 	})
 	let tx = state.transactions[0]
 	upsertTx(tx)
+}
+
+export async function listenForReplacement(txhash) {
+	let { emitter } = blocknative.transaction(txhash)
+	emitter.on('txSpeedUp', async transaction => {
+		console.log("SPEED UP", transaction)
+		console.log(transaction.originalHash, "ORIGINAL HASH", transaction.hash, "NEW HASH")
+		let tx = state.transactions.find(t => t.ethTxHash == transaction.originalHash)
+		await removeTx(tx)
+		tx.removed = false
+		tx.ethTxHash = transaction.hash
+		tx.ethStartBlock = +transaction.blockNumber
+		tx.state = 30
+		tx.confirmations = 0
+		upsertTx(tx)
+		state.transactions.unshift(tx)
+	})
+	emitter.on('txConfirmed', async transaction => {
+		console.log('TRANSACTION CONFIRMED', transaction)
+		let tx = state.transactions.find(t => t.ethTxHash == transaction.hash)
+		tx.ethStartBlock = +transaction.blockNumber
+		tx.confirmations = 1
+		tx.state = 31
+		upsertTx(tx)
+	})
 }
 
 export async function listenForBurn(id) {

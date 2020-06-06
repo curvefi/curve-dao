@@ -42,7 +42,8 @@
 		},
 		methods: {
 			getTokenUrl(i) {
-				return require(`../assets/${this.tokenNames[i].ticker}1.png`)
+				let publicPath = process.env.BASE_URL
+				return publicPath + 'curveIcons/' + this.tokenNames[i].ticker + '.png'
 			}
 		},
 		metaInfo: {

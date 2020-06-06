@@ -29,10 +29,17 @@
 		</div>
 
 
-		<span class='notification tooltip' @click='showNotifications'>
+		<span class='notification tooltip' v-show='!hasSubscription' @click='subscribeNotifications'>
 			<img src='bell-solid.svg' class='bell notification icon hoverpointer'>
 			<span class='tooltiptext'>
 				Enable push notifications on transactions received
+			</span>
+		</span>
+
+		<span class='notification tooltip' v-show='hasSubscription' @click='unsubscribeNotifications'>
+			<img src='bell-slash-solid.svg' class='bell notification icon hoverpointer'>
+			<span class='tooltiptext'>
+				Disable push notifications on transactions received
 			</span>
 		</span>
 
@@ -71,12 +78,12 @@
 							</span>
 							<span class='hoverpointer' v-show='[0,3].includes(transaction.type)' @click='copy(transaction)'>
 								<span class='tooltip'>
-									<img class='icon small' src='@/assets/copy-solid.svg'>
+									<img class='icon small' :src="publicPath + 'copy-solid.svg'">
 									<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
 								</span>
 							</span>
 							<img class='icon small hoverpointer' v-show='[0,3].includes(transaction.type)'
-								@click='showQR(transaction)' src='@/assets/qrcode-solid.svg'>
+								@click='showQR(transaction)' :src="publicPath + 'qrcode-solid.svg'">
 						</span>
 					</td>
 					<td>
@@ -115,10 +122,10 @@
 						</span>
 						<span v-show='[0,3].includes(transaction.type) && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
 							<!-- [<span class='redtext'>&times;</span>] -->
-							<img src='@/assets/trash-alt-solid.svg'>
+							<img :src="publicPath + 'trash-alt-solid.svg'">
 						</span>
 						<span v-show='transaction.removed' class='icon refresh' @click='refresh(transaction)'>
-							<img src='@/assets/sync-solid.svg'>
+							<img :src="publicPath + 'sync-solid.svg'">
 						</span>
 					</td>
 				</tr>
@@ -133,6 +140,7 @@
 	import * as helpers from '../../utils/helpers'
 	import TxState from './TxState.vue'
 	import VueQrcode from '@chenfengyuan/vue-qrcode'
+	import * as subscriptionStore from '../common/subscriptionStore'
 
 	export default {
 		components: {
@@ -169,6 +177,12 @@
         	},
         	space() {
         		return state.space
+        	},
+        	hasSubscription() {
+        		return subscriptionStore.state.subscription !== null 
+        	},
+        	publicPath() {
+        		return process.env.BASE_URL
         	},
 		},
 
@@ -240,45 +254,11 @@
 			refresh(transaction) {
 				store.refresh(transaction)
 			},
-			showNotifications() {
-				navigator.serviceWorker.ready
-					.then(function(registration) {
-					  // Use the PushManager to get the user's subscription to the push service.
-					  return registration.pushManager.getSubscription()
-					  .then(async function(subscription) {
-					    // If a subscription was found, return it.
-					    if (subscription) {
-					      return subscription;
-					    }
-
-					    // Get the server's public key
-					    const response = await fetch('https://pushservice.curve.fi/vapidPublicKey');
-					    const vapidPublicKey = await response.text();
-					    // Chrome doesn't accept the base64-encoded (string) vapidPublicKey yet
-					    // urlBase64ToUint8Array() is defined in /tools.js
-					    const convertedVapidKey = helpers.urlBase64ToUint8Array(vapidPublicKey);
-
-					    // Otherwise, subscribe the user (userVisibleOnly allows to specify that we don't plan to
-					    // send notifications that don't have a visible effect for the user).
-					    return registration.pushManager.subscribe({
-					      userVisibleOnly: true,
-					      applicationServerKey: convertedVapidKey
-					    });
-					  });
-					}).then(function(subscription) {
-					  subscriptionStore.setSubscription(subscription)
-					  console.log(subscriptionStore.subscription)
-					  // Send the subscription details to the server using the Fetch API.
-					  fetch('https://pushservice.curve.fi/register', {
-					    method: 'post',
-					    headers: {
-					      'Content-type': 'application/json'
-					    },
-					    body: JSON.stringify({
-					      subscription: subscription
-					    }),
-					  });
-					});
+			subscribeNotifications() {
+				subscriptionStore.subscribeNotifications()
+			},
+			unsubscribeNotifications() {
+				subscriptionStore.unsubscribeNotifications()
 			},
 
 		}

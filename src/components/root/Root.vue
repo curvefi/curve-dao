@@ -29,7 +29,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.compound > 0'>Balance: ${{balances.compound && balances.compound.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.compound > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.compound && balances.compound.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -58,7 +58,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.usdt > 0'>Balance: ${{balances.usdt && balances.usdt.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.usdt > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.usdt && balances.usdt.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -105,7 +105,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.pax > 0'>Balance: ${{balances.pax && balances.pax.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.pax > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.pax && balances.pax.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -135,7 +135,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.y > 0'>Balance: ${{balances.y && balances.y.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.y > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.y && balances.y.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -165,7 +165,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.busd > 0'>Balance: ${{balances.busd && balances.busd.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.busd > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.busd && balances.busd.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -216,7 +216,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.susdv2 > 0'>Balance: ${{balances.susdv2 && balances.susdv2.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.susdv2 > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.susdv2 && balances.susdv2.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -245,7 +245,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.tbtc > 0'>Balance: ${{balances.tbtc && balances.tbtc.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.tbtc > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.tbtc && balances.tbtc.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -274,7 +274,7 @@
                	 		<span class='balance'>
            	 				<span class='showmobile' v-show='balances.ren > 0'>Balance: ${{balances.ren && balances.ren.toFixed(2)}} </span>
                	 			<span class='tooltip' v-show='balances.ren > 0'>
-               	 				<img src='../../assets/dollar-sign-solid.svg'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
                	 				<span class='tooltiptext'>Balance: ${{balances.ren && balances.ren.toFixed(2)}}</span>
                	 			</span>
                	 		</span>
@@ -365,6 +365,9 @@
 			totalVolume() {
 				return volumeStore.totalVolume()
 			},
+			publicPath() {
+                return process.env.BASE_URL
+            },
 		},
 		methods: {
 			async getCurveRewards() {

@@ -64,7 +64,7 @@
     </div>
     <div id="screen">
         <div :class="'blue window ' + $route.name">
-            <h1><img src="../../assets/logo_optimized.svg" alt="🌀 Curve"></h1>
+            <h1><img :src="publicPath + 'logo_optimized.svg'" alt="🌀 Curve"></h1>
         </div>
         <router-view/>
     </div>
@@ -100,7 +100,10 @@
       ...getters,
       poolMenu() {
         return poolMenu;
-      }
+      },
+      publicPath() {
+        return process.env.BASE_URL
+      },
     },
     methods: {
       changePools(pool) {

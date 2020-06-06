@@ -17,7 +17,7 @@
         generates income for liquidity providers.</p>
 
         <h3>Has Curve been audited?</h3>
-        <p>Curve smart contracts were <a href="https://www.curve.fi/curve_audits/01-ToB.pdf">c</a> by
+        <p>Curve smart contracts were <router-link to="/audits">Audited</router-link> by
         Trail of Bits.</p>
         <p>However, security audits don't eliminate risks completely.
         Please don’t supply your life savings, or assets you

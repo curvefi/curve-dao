@@ -41,6 +41,10 @@
 			loading: false,
 		}),
 
+		created() {
+			if(this.$route.path.includes('native')) this.swapbtc = true
+		},
+
 		watch: {
 			swapbtc(val) {
 				if(val) this.loading = true

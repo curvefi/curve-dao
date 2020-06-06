@@ -269,7 +269,7 @@
                 let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]
-				this.show_loading = true
+				//this.show_loading = true
 				let calls = [
 						  [this.coins[1]._address, this.coins[1].methods.balanceOf(currentContract.default_account).encodeABI()]
                         ]

@@ -44,6 +44,8 @@ const txObject = () => ({
 	state: 0,
 	btcTxHash: '',
 	btcTxVOut: '',
+	secret: '',
+	secretHash: '',
 	renResponse: '',
 	signature: '',
 
@@ -75,16 +77,26 @@ export async function loadTransactions() {
 	let mints = transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
 	let burns = transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
-	console.log(burns, "THE BURNS")
-	for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+	console.log(burns, "BURNS")
+	let currentBlock = await contract.web3.eth.getBlockNumber()
+	let listenTransactions = transactions
+								.filter(t => (!t.btcTxHash && t.ethTxHash && t.state && t.state != 65) || t.btcTxHash && t.ethTxHash && t.state && t.state != 14)
+	for(let transaction of listenTransactions) {
 		listenForReplacement(transaction.ethTxHash)
+	}
+	for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+		let receipt = await contract.web3.eth.getTransactionReceipt(transaction.ethTxHash)
+		transaction.ethStartBlock = +receipt.blockNumber
+		transaction.confirmations = currentBlock - transaction.ethStartBlock + 1
+		transaction.state = 30 + transaction.confirmations
+		upsertTx(transaction)
 	}
 	web3.eth.subscribe('newBlockHeaders')
 		.on('data', block => {
 			console.log("NEW BLOCK")
-			for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
 				console.log(transaction, "TRANSACTION")
-				if(transaction.state > 63 || transaction.confirmations >= 30) continue;
+				if(transaction.state >= 63 || transaction.confirmations >= 30) continue;
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
 				transaction.ethCurrentBlock = block.number
 				transaction.state = 30 + transaction.confirmations
@@ -155,7 +167,7 @@ export function upsertTx(transaction) {
 	transaction.box = null;
 	transaction.space = null
 	setItem(key, transaction)
-	if(transaction.type == 0) subscriptionStore.postTxNotification(transaction.btcTxHash)
+	if([0, 3].includes(transaction.type)) subscriptionStore.postTxNotification(transaction.btcTxHash)
 	if(transaction.type == 1) subscriptionStore.postTxNotification(transaction.ethTxHash)
 }
 
@@ -220,6 +232,11 @@ function initSwapMint(transaction) {
                 type: "address",
                 value: address,
             },
+            // {
+            // 	name: "secretHash",
+            // 	type: "bytes32",
+            // 	value: transaction.secretHash,
+            // },
 	    ],
 	    
 	    // Web3 provider for submitting mint to Ethereum
@@ -278,6 +295,11 @@ function initDepositMint(transaction) {
                 type: "uint256",
                 value: min_amount,
             },
+            // {
+            // 	name: "secretHash",
+            // 	type: "bytes32",
+            // 	value: transaction.secretHash,
+            // },
 	    ],
 	    
 	    // Web3 provider for submitting mint to Ethereum
@@ -289,6 +311,8 @@ function initDepositMint(transaction) {
 
 export async function initMint(transaction) {
 	let transfer;
+	transaction.secret = helpers.randomBytes(32)
+	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	if(transaction.type == 0) transfer = initSwapMint(transaction)
 	if(transaction.type == 3) transfer = initDepositMint(transaction)
 	upsertTx(transfer)
@@ -628,7 +652,8 @@ export async function listenForReplacement(txhash) {
 		tx.removed = false
 		tx.ethTxHash = transaction.hash
 		tx.ethStartBlock = +transaction.blockNumber
-		tx.state = 30
+		if(transaction.type == 1) tx.state = 30
+		else tx.state = 12
 		tx.confirmations = 0
 		upsertTx(tx)
 		state.transactions.unshift(tx)
@@ -638,7 +663,8 @@ export async function listenForReplacement(txhash) {
 		let tx = state.transactions.find(t => t.ethTxHash == transaction.hash)
 		tx.ethStartBlock = +transaction.blockNumber
 		tx.confirmations = 1
-		tx.state = 31
+		if(tx.type == 1) tx.state = 31
+		else tx.state = 14
 		upsertTx(tx)
 	})
 }

@@ -8,14 +8,17 @@ self.addEventListener("message", (e)=>{
 //Web Push Notifications//
 let click_open_url
 self.addEventListener('push', function(event) {
-  let push_message = event.data.json()
-  console.log(push_message, "EVENT")
+  let data = event.data.json()
+  let { title, icon, body } = data
+  console.log(title, icon, body, data, "EVENT")
   // push notification can send event.data.json() as well
-  click_open_url = 'https://www.curve.fi/ren/gateway'
+  click_open_url = 'https://www.curve.fi/ren/native'
   const options = {
-    body: push_message.tx,
+    title: title,
+    icon: icon,
+    body: body,
   };
-  event.waitUntil(self.registration.showNotification("Transaction received", options));
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', function(event) {

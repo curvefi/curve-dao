@@ -48,6 +48,18 @@ export function getTokenIcon(token, wrapped, pool) {
     return asset;
 }
 
+export function randomBytes(bytes) {
+  //taken from https://github.com/renproject/ren-js/blob/master/packages/lib/ren-utils/src/common.ts
+  const uints = new Uint32Array(bytes / 4); // 4 bytes (32 bits)
+  // @ts-ignore
+  window.crypto.getRandomValues(uints);
+  let str = "";
+  for (const uint of uints) {
+      str += "0".repeat(8 - uint.toString(16).length) + uint.toString(16);
+  }
+  return str
+}
+
 export function interpolate(x, x0, x1) {
   return (y0, y1) => y0 + (x - x0)*(y1 - y0)/(x1 - x0)
 }

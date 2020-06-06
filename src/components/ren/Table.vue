@@ -28,16 +28,15 @@
 			</div>
 		</div>
 
-
 		<span class='notification tooltip' v-show='!hasSubscription' @click='subscribeNotifications'>
-			<img src='bell-solid.svg' class='bell notification icon hoverpointer'>
+			<img :src="publicPath + 'bell-solid.svg'" class='bell notification icon hoverpointer'>
 			<span class='tooltiptext'>
 				Enable push notifications on transactions received
 			</span>
 		</span>
 
 		<span class='notification tooltip' v-show='hasSubscription' @click='unsubscribeNotifications'>
-			<img src='bell-slash-solid.svg' class='bell notification icon hoverpointer'>
+			<img :src="publicPath + 'bell-slash-solid.svg"' class='bell notification icon hoverpointer'>
 			<span class='tooltiptext'>
 				Disable push notifications on transactions received
 			</span>
@@ -65,7 +64,7 @@
 			<tbody>
 				<tr v-for='transaction in filteredTransactions'>
 					<td class='shifttype'>
-						{{ transaction.type == 0 ? 'BTC->wBTC' : 'wBTC->BTC' }}
+						{{ [0, 3].includes(transaction.type) ? 'BTC->wBTC' : 'wBTC->BTC' }}
 					</td>
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>
@@ -141,6 +140,9 @@
 	import TxState from './TxState.vue'
 	import VueQrcode from '@chenfengyuan/vue-qrcode'
 	import * as subscriptionStore from '../common/subscriptionStore'
+	console.log(subscriptionStore, "SUBSCRIPTION STORE")
+	console.log(subscriptionStore.state, "STATE")
+	console.log(subscriptionStore.state.subscription, "SUBSCRIPTION")
 
 	export default {
 		components: {

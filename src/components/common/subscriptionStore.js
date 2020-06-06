@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import * as helpers from '../../utils/helpers'
 export let state = Vue.observable({
-	suscription: null,
+	subscription: null,
 })
 
 export function setSubscription(subscription) {
@@ -10,16 +10,17 @@ export function setSubscription(subscription) {
 
 export async function init() {
 	let swregistration = await navigator.serviceWorker.ready
-	let subscription = swregistration.pushManager.getSubscription()
-	console.log(subscription, "THE SUBSCRIPTION YOU GOT")
+	let subscription = await swregistration.pushManager.getSubscription()
+	console.log(subscription, "SUBSCRIPTION")
 	if(subscription !== null) {
 	  await updateSubscriptionServer(subscription)
-	  setSubscription(subscription)
+	  state.subscription = subscription
+	  console.log(state.subscription, "SUBSCRIPTION")
 	}
 }
 
 export async function subscribeNotifications() {
-	let swregistration = navigator.serviceWorker.ready
+	let swregistration = await navigator.serviceWorker.ready
 	let response = await fetch('https://pushservice.curve.fi/vapidPublicKey');
     let vapidPublicKey = await response.text();
     // Chrome doesn't accept the base64-encoded (string) vapidPublicKey yet
@@ -38,8 +39,8 @@ export async function subscribeNotifications() {
 }
 
 export async function unsubscribeNotifications() {
-	let swregistration = navigator.serviceWorker.ready
-	let subscription = swregistration.pushManager.getSubscription()
+	let swregistration = await navigator.serviceWorker.ready
+	let subscription = await swregistration.pushManager.getSubscription()
 	await subscription.unsubscribe()
 	await fetch('https://pushservice.curve.fi/removeSubscription', {
 		method: 'POST',
@@ -54,6 +55,7 @@ export async function unsubscribeNotifications() {
 }
 
 export async function updateSubscriptionServer(newSubscription) {
+	if(state.subscription === null && !newSubscription) registerSubscription(newSubscription)
 	await fetch('https://pushservice.curve.fi/updateSubscription', {
 		method: 'POST',
 		headers: {

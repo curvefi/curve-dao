@@ -456,7 +456,7 @@
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]
                 this.estimateGas = 0;
-                this.show_loading = true;
+                //this.show_loading = true;
                 let inOneCoin = currentContract.deposit_zap
                 if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
 

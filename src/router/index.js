@@ -193,6 +193,17 @@ let routes = [
     ],
   },
   {
+    path:'/ren/native',
+    component: PoolApp,
+    children: [
+      {
+        path: '',
+        name: 'Swap',
+        component: SwapRouter,
+      }
+    ]
+  },
+  {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren)/',
     name: 'Index',
     component: PoolApp,

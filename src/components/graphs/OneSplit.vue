@@ -78,7 +78,7 @@
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                             <label :for="'to_cur_'+i">
                                 <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
-                                <span v-show='!swapwrapped'> {{currency == 'susd' ? 'sUSD' : (currency.toUpperCase())}} </span>
+                                <span v-show='!swapwrapped'> {{currency | capitalize}} </span>
                                 <span v-show='swapwrapped'> {{currencies[currency]}} </span>
                             </label>
                         </li>

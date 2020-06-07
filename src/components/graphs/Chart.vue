@@ -437,7 +437,7 @@
 						let amount = 1
 						let get_method = 'get_dy_underlying'
 						if(['tbtc', 'ren'].includes(pool)) {
-							amount = 1/1e8
+							amount = 1/1e4
 							get_method = 'get_dy'
 						}
 						return [
@@ -482,7 +482,9 @@
 								if(i == length-1) {
 									let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
 									let lastPrice = +(BN(lastPrices[j])).div(amount * abis[this.pools[j]].coin_precisions[this.toCurrency])
-									if(this.inverse) lastPrice = 1/lastPrice
+									let amount = 1
+									if(['tbtc', 'ren'].includes(this.pools[j])) amount = 1e4;
+									if(this.inverse) lastPrice = amount/lastPrice
 									this.ohlcData[i].prices[this.pairIdx].push(lastPrice)
 								}
 								this.ohlcData[i].prices[this.pairIdx].push(...v.prices[this.pairIdx])

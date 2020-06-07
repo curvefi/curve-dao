@@ -33,7 +33,7 @@ export const getters = {
 }
 
 export async function updatePoolInfo() {
-	state.poolInfo = []
+	//state.poolInfo = []
 	let calls = []
 	for(let [key, pool] of state.pools.entries()) {
 		if(pool == 'y') pool = 'iearn'
@@ -54,6 +54,7 @@ export async function updatePoolInfo() {
 		if(pool == 'y') pool = 'iearn'
 		let cont = contract.contracts[pool]
 		if(pool == contract.currentContract) cont = contract
+		if(state.poolInfo[key] && state.poolInfo[key].timestamp) continue;
 		state.poolInfo[key] = {}
 		state.poolInfo[key].A = decoded[key*3];
 		state.poolInfo[key].fee = cont.fee * 1e10

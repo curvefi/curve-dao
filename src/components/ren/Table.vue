@@ -36,7 +36,7 @@
 		</span>
 
 		<span class='notification tooltip' v-show='hasSubscription' @click='unsubscribeNotifications'>
-			<img :src="publicPath + 'bell-slash-solid.svg"' class='bell notification icon hoverpointer'>
+			<img :src="publicPath + 'bell-slash-solid.svg'" class='bell notification icon hoverpointer'>
 			<span class='tooltiptext'>
 				Disable push notifications on transactions received
 			</span>

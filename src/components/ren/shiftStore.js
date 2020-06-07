@@ -74,7 +74,8 @@ export async function loadTransactions() {
 	let items = await getAllItems()
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 	let transactions = state.transactions.filter(t => !t.removed)
-	let mints = transactions.filter(t => t.btcTxHash && ![14,15].includes(t.state)).map(t=>sendMint(t))
+	//send all txs so case is handled when user goes to submit 
+	let mints = transactions.filter(t => [0,3].includes(t.type) && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
 	let burns = transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)
 	console.log(burns, "BURNS")
@@ -187,6 +188,8 @@ export async function mint(data) {
 	transaction.toInput = data.toInput;
 	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
 	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((1000-data.slippage)/1000)).toFixed(0,1)
+	transaction.secret = '0x' + helpers.randomBytes(32)
+	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	//slippage is in BPS
 	transaction.slippage = data.slippage
 	upsertTx(transaction)
@@ -197,6 +200,8 @@ export async function mint(data) {
 
 function initSwapMint(transaction) {
 	console.log(transaction, "THE TRANSACTION")
+	console.log(transaction.secret, "THE SECRET")
+	console.log(transaction.secretHash, "TRANSACTION SECRET HASH")
 	var { id, amount, nonce, address, toInput, params, minExchangeRate, slippage } = transaction
 	// let _minWbtcAmount = BN(toInput).times(1e8).times(0.99).toFixed(0, 1)
 	console.log(amount, "AMOUNT", nonce, "NONCE", address, "ADDRESS", minExchangeRate, "MIN EXCHANGE RATE", slippage, "SLIPPAGE")
@@ -232,11 +237,6 @@ function initSwapMint(transaction) {
                 type: "address",
                 value: address,
             },
-            // {
-            // 	name: "secretHash",
-            // 	type: "bytes32",
-            // 	value: transaction.secretHash,
-            // },
 	    ],
 	    
 	    // Web3 provider for submitting mint to Ethereum
@@ -295,11 +295,6 @@ function initDepositMint(transaction) {
                 type: "uint256",
                 value: min_amount,
             },
-            // {
-            // 	name: "secretHash",
-            // 	type: "bytes32",
-            // 	value: transaction.secretHash,
-            // },
 	    ],
 	    
 	    // Web3 provider for submitting mint to Ethereum
@@ -311,8 +306,6 @@ function initDepositMint(transaction) {
 
 export async function initMint(transaction) {
 	let transfer;
-	transaction.secret = helpers.randomBytes(32)
-	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	if(transaction.type == 0) transfer = initSwapMint(transaction)
 	if(transaction.type == 3) transfer = initDepositMint(transaction)
 	upsertTx(transfer)

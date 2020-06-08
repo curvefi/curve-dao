@@ -1,6 +1,8 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, sCurveRewards_abi, sCurveRewards_address, multicall_abi, multicall_address } from './allabis'
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, 
+	sCurveRewards_abi, sCurveRewards_address, synthetixExchanger_address, synthetixExchanger_ABI,
+	multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -261,6 +263,7 @@ const state = Vue.observable({
 			future_A_time: null,
 			usdStake: null,
 			curveRewards: null,
+			snxExchanger: null,
 		},
 		pax: {
 			currentContract: 'pax',
@@ -342,6 +345,7 @@ const state = Vue.observable({
 	usdStake: null,
 
 	curveRewards: null,
+	snxExchanger: null,
 
 })
 
@@ -424,6 +428,8 @@ export async function init(contract, refresh = false) {
 
 		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    	
+    	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(['tbtc', 'ren'].includes(contract.currentContract)) {
     	//initial_A

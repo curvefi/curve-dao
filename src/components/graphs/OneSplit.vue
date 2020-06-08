@@ -29,6 +29,14 @@
                         Max: 
                         <span v-show='maxSynthBalance  != -1 && from_currency == 5'> {{ maxSynthBalanceText }} / </span>
                         <span v-show = 'maxBalance != -1'>{{maxBalanceText}}</span>
+                        <span v-show='susdWaitingPeriod' class='susd-waiting-period'>
+                            <span class='tooltip'>
+                                <img src='@/assets/clock-regular.svg' class='icon small'>
+                                <span class='tooltiptext'>
+                                    Cannot transfer during waiting period
+                                </span>
+                            </span>
+                        </span>
                         <span v-show="from_currency == 5" class='tooltip'> [?]
                             <span class='tooltiptext'>
                                 Max transferrable amount is {{ maxSynthBalanceText }}. You can free the remaining balance by settling.
@@ -171,7 +179,9 @@
 <script>
     import EventBus from './EventBus'
 
-    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, onesplit_address, onesplit_abi } from '../../allabis'
+    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi,
+        synthetixExchanger_address, synthetixExchanger_ABI,
+        onesplit_address, onesplit_abi } from '../../allabis'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -191,6 +201,8 @@
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
             maxBalance: -1,
             maxSynthBalance: -1,
+            susdWaitingPeriod: false,
+            snxExchanger: null,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
@@ -629,17 +641,31 @@
             async set_from_amount(i) {
                 let coinAddress = this.getCoins(i)._address
                 let balanceCalls = [
-                    [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]
-                ]
+                    [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]]
                 if(i == 5) {
                     balanceCalls.push([coinAddress, 
                         this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                    balanceCalls.push([this.snxExchanger._address, 
+                        this.snxExchanger.methods
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .encodeABI()
+                    ])
                 }
                 let aggcalls = await contract.multicall.methods.aggregate(balanceCalls).call()
                 let balances = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
                 let amounts = balances.map(balance => contract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
-                this.maxSynthBalance = amounts[1]
+                let highlight_red = this.fromInput > balances[0] / this.precisions(this.from_currency)
+                if(i == 5) {
+                    this.maxSynthBalance = amounts[1]
+                    this.susdWaitingPeriod = (+amounts[2] != 0)
+                    highlight_red = this.fromInput > this.maxSynthBalance / this.precisions(this.from_currency)
+                    if(this.susdWaitingPeriod) highlight_red = true
+                }
+                if(highlight_red) 
+                    this.fromBgColor = 'red'
+                else
+                    this.fromBgColor = 'blue'
                 // let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 // if(!contract.default_account) balance = 0
                 // let amount = balance / this.precisions(i)
@@ -916,13 +942,15 @@
                     }
                 }
                 finally {
-                    this.highlight_input()
+                    //this.highlight_input()
                 }
             },
             async set_max_balance() {
                 let balance
-                if(this.from_currency == 5)
+                if(this.from_currency == 5) {
                     balance = await this.getCoins(this.from_currency).methods.trnasferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                    if(this.susdWaitingPeriod) balance = 0
+                }
                 else
                     balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 let amount = BN(balance).div(this.precisions(this.from_currency)).toFixed()
@@ -967,6 +995,8 @@
                     this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                     this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                 }
+
+                this.snxExchanger = new contract.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
             }
         }
     }

@@ -561,6 +561,10 @@ fieldset:nth-child(1) .maxbalance:hover {
   width: 1.5em;
   height: 1.5em;
 }
+.icon.small {
+  width: 0.95em;
+  height: 0.95em;
+}
 
 .ethicon {
   filter: invert(0.4) sepia(1) saturate(0.8) hue-rotate(223deg);
@@ -1028,6 +1032,9 @@ input[type=range]:focus::-ms-fill-upper {
 .susd-icon {
     width: 1.5em;
     height: 1.5em;
+}
+.susd-waiting-period {
+    margin-left: 3px;
 }
 .pax-icon {
     border-color: transparent;

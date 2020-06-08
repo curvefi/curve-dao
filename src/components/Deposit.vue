@@ -21,6 +21,14 @@
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
                                     Max: <span v-show="currentPool == 'susdv2' && i == 3">{{transferableBalanceText}}/</span>
                                     <span>{{ maxBalanceCoin(i) }} </span>
+                                    <span v-show="susdWaitingPeriod">
+                                        <span class='tooltip'>
+                                            <img src='@/assets/clock-regular.svg' class='icon small'>
+                                            <span class='tooltiptext'>
+                                                Cannot transfer during waiting period
+                                            </span>
+                                        </span>
+                                    </span>
                                     <span v-show="currentPool == 'susdv2' && i == 3" class='tooltip'> [?]
                                         <span class='tooltiptext'>
                                             Max transferrable amount is {{ transferableBalanceText }}. You can free the remaining balance by settling.
@@ -148,6 +156,7 @@
     		inf_approval: true,
     		wallet_balances: [],
             transferableBalance: null,
+            susdWaitingPeriod: false,
     		balances: [],
     		inputs: [],
     		amounts: [],
@@ -203,7 +212,9 @@
             let currencies = []
             for(let [i, currency] of Object.keys(this.currencies).entries()) {
                 let balance = this.wallet_balances[i]
-                if(this.currentPool == 'susdv2' && i == 3) balance = this.transferableBalance
+                if(this.currentPool == 'susdv2' && i == 3) {
+                    balance = this.susdWaitingPeriod ? 0 : this.transferableBalance
+                }
                 let diff3 = BN(BN(balance).times(this.rates[i])).minus(this.inputs[i])
                 if(diff3.lt(BN(-0.01))) currencies.push(this.depositc ? this.currencies[currency] : currency.toUpperCase())
             }
@@ -269,7 +280,10 @@
             },
             setMaxBalanceCoin(i) {
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
-                if(this.currentPool == 'susdv2' && i == 3) Vue.set(this.inputs, i, this.transferableBalance * this.rates[i])
+                if(this.currentPool == 'susdv2' && i == 3) {
+                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance * this.rates[i]
+                    Vue.set(this.inputs, i, maxbalance_susd)
+                }
             },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
@@ -326,17 +340,24 @@
 			    }
                 if(this.currentPool == 'susdv2') {
                     calls.push([this.coins[3]._address, this.coins[3].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                    calls.push([currentContract.snxExchanger._address, 
+                        currentContract.snxExchanger.methods
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .encodeABI()])
                 }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                 let balances = decoded
-                if(this.currentPool == 'susdv2') balances = decoded.slice(0, -1)
+                if(this.currentPool == 'susdv2') balances = decoded.slice(0, -2)
 			    helpers.chunkArr(balances, 2).map((v, i) => {
 			    	Vue.set(this.wallet_balances, i, v[0])
 			    	if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0)
 			    	Vue.set(this.balances, i, +v[1])
 			    })
-                if(this.currentPool == 'susdv2') this.transferableBalance = decoded[decoded.length -1]
+                if(this.currentPool == 'susdv2') {
+                    this.transferableBalance = decoded[decoded.length - 2]
+                    this.susdWaitingPeriod = (+decoded[decoded.length - 1] != 0)
+                }
 			    if (this.max_balances) {
 			        this.disabled = true;
 			        for (let i = 0; i < currentContract.N_COINS; i++) {
@@ -347,6 +368,7 @@
 			            if(val == 0) val = '0.00'
 			            Vue.set(this.inputs, i, val)
                         if(this.currentPool == 'susdv2' && i == 3) {
+                            let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance
                             Vue.set(this.inputs, i, (this.transferableBalance / 1e18).toFixed(2))
                         }
 			        }
@@ -374,21 +396,32 @@
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]
 				this.show_loading = true
-				let calls = [...Array(currentContract.N_COINS).keys()].map(i=> {
+                let calls = [...Array(currentContract.N_COINS).keys()].map(i=> {
                           if(this.currentPool == 'susdv2' && i == 3)
                             return [this.coins[3]._address, this.coins[3].methods.transferableSynths(currentContract.default_account).encodeABI()]
-						  return [this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
+                          return [this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
                         }
-					)
-				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
-				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
-				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
-                decoded.slice(0, decoded.length-1).forEach((balance, i) => {
+                    )
+                let endOffset = 1
+                calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
+                if(this.currentPool == 'susdv2') {
+                    calls.push([
+                            currentContract.snxExchanger._address, 
+                            currentContract.snxExchanger.methods
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .encodeABI()
+                        ])
+                    endOffset = 2
+                }
+                let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
+                decoded.slice(0, decoded.length-endOffset).forEach((balance, i) => {
                     let abi = allabis[currentContract.currentContract]
                     let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
                     let bal = balance
                     if(this.depositc) bal = BN(bal).times(currentContract.c_rates[i])
                     else bal = BN(bal).div(precisions)
+                    if(this.currentPool == 'susdv2' && i == 3 && +decoded[decoded.length - 1] != 0) bal = 0
                     let maxDiff = BN(bal).minus(BN(this.inputs[i]))
                     if(bal.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                         if(!this.depositc) balance = BN(balance).div(precisions).div(currentContract.c_rates[i])
@@ -406,6 +439,7 @@
                     let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
                     let balance = this.wallet_balances[i]
                     if(this.currentPool == 'susdv2' && i == 3) balance = this.transferableBalance
+                    if(this.currentPool == 'susdv2' && i == 3 && +decoded[decoded.length - 1] != 0) balance = 0
                     if(BN(balance).gt(0) && maxDiff.lt(0) && maxDiff.lt(BN(this.minAmount))) return BN(balance).toFixed(0, 1)
                     return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                 })

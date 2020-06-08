@@ -21,16 +21,16 @@
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
                                     Max: <span v-show="currentPool == 'susdv2' && i == 3">{{transferableBalanceText}}/</span>
                                     <span>{{ maxBalanceCoin(i) }} </span>
-                                    <span v-show="susdWaitingPeriod">
+                                    <span v-show="i == 3 && susdWaitingPeriod">
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
-                                            <span class='tooltiptext'>
+                                            <span class='tooltiptext normalFont'>
                                                 Cannot transfer during waiting period
                                             </span>
                                         </span>
                                     </span>
                                     <span v-show="currentPool == 'susdv2' && i == 3" class='tooltip'> [?]
-                                        <span class='tooltiptext'>
+                                        <span class='tooltiptext long normalFont'>
                                             Max transferrable amount is {{ transferableBalanceText }}. You can free the remaining balance by settling.
                                         </span>
                                     </span>

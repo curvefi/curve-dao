@@ -196,7 +196,6 @@
 	import * as helpers from '../../utils/helpers'
 	import * as common from '../../utils/common'
 	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
-	import Box from '3box'
 	import VueQrcode from '@chenfengyuan/vue-qrcode';
 
 

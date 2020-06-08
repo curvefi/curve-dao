@@ -780,7 +780,7 @@ input[type=range]:focus::-ms-fill-upper {
 
 /* Tooltip text */
 .tooltip .tooltiptext {
-  font-size: 0.8em;
+  font-size: 0.8rem;
   visibility: hidden;
   width: 140px;
   background-color: #3465a4e6;

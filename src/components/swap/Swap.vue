@@ -7,8 +7,16 @@
                         <legend>From:</legend>
                         <div class='maxbalance' @click='set_max_balance'>
                             Max: <span v-show="currentPool == 'susdv2' && from_currency == 3">{{maxSynthText}}/</span><span>{{maxBalanceText}}</span>
+                            <span v-show='susdWaitingPeriod' class='susd-waiting-period'>
+                                <span class='tooltip'>
+                                    <img src='@/assets/clock-regular.svg' class='icon small'>
+                                    <span class='tooltiptext'>
+                                        Cannot transfer during waiting period
+                                    </span>
+                                </span>
+                            </span>
                             <span v-show="currentPool == 'susdv2' && from_currency == 3" class='tooltip'> [?]
-                                <span class='tooltiptext'>
+                                <span class='tooltiptext long'>
                                     Max transferrable amount is {{ maxSynthText }}. You can free the remaining balance by settling.
                                 </span>
                             </span>
@@ -119,9 +127,9 @@
                 <p class='trade-buttons' v-show="currentPool == 'ren'">
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
                 </p>
-                <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
+                <!-- <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
                     Max balance you can use is {{ (+maxSynthBalance).toFixed(2) }}
-                </p>
+                </p> -->
                 <p class='trade-buttons'>
                     <button id="trade" @click='handle_trade'>
                         Sell <span class='loading line' v-show='loadingAction'></span>
@@ -168,6 +176,7 @@
             btcPrice: null,
             maxBalance: -1,
             maxSynthBalance: -1,
+            susdWaitingPeriod: false,
             maxBalanceText: 0,
             maxSynthText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
@@ -204,7 +213,6 @@
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
-                
                 this.swapExchangeRate()
                 this.from_cur_handler()
             },
@@ -334,7 +342,7 @@
                     this.disabled = true
                 }
                 finally {
-                    this.highlight_input();
+                    //this.highlight_input();
                 }
                 this.promise = helpers.makeCancelable(promise)
             },
@@ -362,8 +370,10 @@
             },
             async set_max_balance() {
                 let balance
-                if(this.currentPool == 'susdv2' && this.from_currency == 3)
-                    balance = await this.coins[this.from_currency].methods.transferableSynths(currentContract.default_account).call(); 
+                if(this.currentPool == 'susdv2' && this.from_currency == 3) {
+                    balance = await this.coins[this.from_currency].methods.transferableSynths(this.default_account).call();
+                    if(this.susdWaitingPeriod) balance = 0
+                }
                 else
                     balance = await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call();
                 let amount = cBN(balance).div(this.precisions[this.from_currency]).toFixed()
@@ -371,7 +381,8 @@
                 await this.set_to_amount();
             },
             async highlight_input() {
-                let balance = parseFloat(await this.coins[this.from_currency].methods.balanceOf(currentContract.default_account).call()) /
+                let balanceCall = this.coins[this.from_currency].methods.balanceOf(this.default_account).call()
+                let balance = parseFloat(await this.coins[this.from_currency].methods.balanceOf(this.default_account).call()) /
                         this.precisions[this.from_currency];
                 if (this.fromInput > balance)
                     this.fromBgColor = 'red'
@@ -379,14 +390,31 @@
                     this.fromBgColor = 'blue'
             },
             async set_from_amount(i) {
-                let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]]
-                if(this.currentPool == 'susdv2' && i == 3)
-                    balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(currentContract.default_account).encodeABI()])
+                let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(this.default_account).encodeABI()]]
+                if(this.currentPool == 'susdv2' && i == 3) {
+                    balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(this.default_account).encodeABI()])
+                    balanceCalls.push([
+                        currentContract.snxExchanger._address, 
+                        currentContract.snxExchanger.methods
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .encodeABI()
+                    ])
+                }
                 let aggcalls = await currentContract.multicall.methods.aggregate(balanceCalls).call()
                 let balances = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
                 let amounts = balances.map(balance => currentContract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
-                if(amounts[1] !== undefined) this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
+                let highlight_red = this.fromInput > this.maxBalance / this.precisions[this.from_currency]
+                if(this.currentPool == 'susdv2' && i == 3) {
+                    this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
+                    this.susdWaitingPeriod = (+amounts[2] != 0)
+                    highlight_red = this.fromInput > this.maxSynthBalance / this.precisions[this.from_currency]
+                    if(this.susdWaitingPeriod) highlight_red = true
+                }
+                if(highlight_red) 
+                    this.fromBgColor = 'red'
+                else 
+                    this.fromBgColor = 'blue'
             },
             setAmountPromise() {
                 let promise = new Promise(async (resolve, reject) => {
@@ -472,7 +500,7 @@
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                                     to confirm: no further action needed`
-                        });
+                        })
                 }
                 catch(err) {
                     console.error(err)
@@ -504,5 +532,9 @@
     }
     .swapBTC-container {
         margin-top: 1em;
+    }
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
     }
 </style>

@@ -256,9 +256,8 @@
           }
         }
       }
-      let N_COINS = allabis[this.currentPool].N_COINS;
-      this.currentPool && this.l_info && this.l_info[N_COINS-1] !== undefined && this.updateShares()
-      this.$watch(() => this.currentPool && this.l_info && this.l_info[N_COINS-1] !== undefined, val => this.updateShares())
+      this.hasLoadedInfo && this.updateShares()
+      this.$watch(() => this.hasLoadedInfo, val => this.updateShares())
     },
     computed: {
       showShares: getters.showShares,
@@ -329,6 +328,10 @@
       },
       isBTC() {
         return ['tbtc', 'ren'].includes(this.currentPool)
+      },
+      hasLoadedInfo() {
+        let N_COINS = allabis[this.currentPool].N_COINS;
+        return this.currentPool && (this.l_info && this.l_info[N_COINS-1] !== undefined) || (this.staked_info && this.staked_info[N_COINS - 1] !== undefined)
       },
     }
   }

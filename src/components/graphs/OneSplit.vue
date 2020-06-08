@@ -29,6 +29,14 @@
                         Max: 
                         <span v-show='maxSynthBalance  != -1 && from_currency == 5'> {{ maxSynthBalanceText }} / </span>
                         <span v-show = 'maxBalance != -1'>{{maxBalanceText}}</span>
+                        <span v-show='susdWaitingPeriod' class='susd-waiting-period'>
+                            <span class='tooltip'>
+                                <img src='@/assets/clock-regular.svg' class='icon small'>
+                                <span class='tooltiptext'>
+                                    Cannot transfer during waiting period
+                                </span>
+                            </span>
+                        </span>
                         <span v-show="from_currency == 5" class='tooltip'> [?]
                             <span class='tooltiptext'>
                                 Max transferrable amount is {{ maxSynthBalanceText }}. You can free the remaining balance by settling.
@@ -78,7 +86,7 @@
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
                             <label :for="'to_cur_'+i">
                                 <img :class="{'icon token-icon': true, [currency+'-icon']: true}" :src='getTokenIcon(currency)'>
-                                <span v-show='!swapwrapped'> {{currency == 'susd' ? 'sUSD' : (currency.toUpperCase())}} </span>
+                                <span v-show='!swapwrapped'> {{currency | capitalize}} </span>
                                 <span v-show='swapwrapped'> {{currencies[currency]}} </span>
                             </label>
                         </li>
@@ -171,7 +179,9 @@
 <script>
     import EventBus from './EventBus'
 
-    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, onesplit_address, onesplit_abi } from '../../allabis'
+    import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi,
+        synthetixExchanger_address, synthetixExchanger_ABI,
+        onesplit_address, onesplit_abi } from '../../allabis'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -191,6 +201,8 @@
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
             maxBalance: -1,
             maxSynthBalance: -1,
+            susdWaitingPeriod: false,
+            snxExchanger: null,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
@@ -392,15 +404,23 @@
             publicPath() {
                 return process.env.BASE_URL
             },
+            exchangeRateSwapped() {
+                if(this.swaprate)
+                    return (1 / this.exchangeRate).toFixed(4)
+                else
+                    return this.exchangeRate
+            },
         },
         watch: {
             from_currency(val, oldval) {
                 if(val == this.to_currency) {
                     this.to_currency = oldval;
                 }
+                this.swapExchangeRate()
                 this.from_cur_handler()
             },
             to_currency(val, oldval) {
+                this.swapExchangeRate()
                 this.to_cur_handler()
             },
             pools() {
@@ -569,7 +589,7 @@
                             await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
                 }
                 catch(err) {
-                    this.handleError()
+                    this.handleError(err)
                 }
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
@@ -594,7 +614,7 @@
                         })
                     }
                     catch(err) {
-                        this.handleError()
+                        this.handleError(err)
                     }
                 }
                 else {
@@ -614,10 +634,11 @@
                         })
                     }
                     catch(err) {
-                        this.handleError()
+                        this.handleError(err)
                     }
                     this.waitingMessage = ''
                     this.show_loading = false;
+
                     this.from_cur_handler();
                     let balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                     if(!contract.default_account) balance = 0
@@ -628,17 +649,31 @@
             async set_from_amount(i) {
                 let coinAddress = this.getCoins(i)._address
                 let balanceCalls = [
-                    [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]
-                ]
+                    [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]]
                 if(i == 5) {
                     balanceCalls.push([coinAddress, 
                         this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                    balanceCalls.push([this.snxExchanger._address, 
+                        this.snxExchanger.methods
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .encodeABI()
+                    ])
                 }
                 let aggcalls = await contract.multicall.methods.aggregate(balanceCalls).call()
                 let balances = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
                 let amounts = balances.map(balance => contract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
-                this.maxSynthBalance = amounts[1]
+                let highlight_red = this.fromInput > balances[0] / this.precisions(this.from_currency)
+                if(i == 5) {
+                    this.maxSynthBalance = amounts[1]
+                    this.susdWaitingPeriod = (+amounts[2] != 0)
+                    highlight_red = this.fromInput > this.maxSynthBalance / this.precisions(this.from_currency)
+                    if(this.susdWaitingPeriod) highlight_red = true
+                }
+                if(highlight_red) 
+                    this.fromBgColor = 'red'
+                else
+                    this.fromBgColor = 'blue'
                 // let balance = await this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 // if(!contract.default_account) balance = 0
                 // let amount = balance / this.precisions(i)
@@ -909,16 +944,21 @@
                     this.setExchangeRate(exchangeRate)
                 }
                 catch(err) {
-                    console.error(err)
+                    if(!err.canceled) {
+                        console.error(err)
+                        this.toInput = 0
+                    }
                 }
                 finally {
-                    this.highlight_input()
+                    //this.highlight_input()
                 }
             },
             async set_max_balance() {
                 let balance
-                if(this.from_currency == 5)
+                if(this.from_currency == 5) {
                     balance = await this.getCoins(this.from_currency).methods.trnasferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                    if(this.susdWaitingPeriod) balance = 0
+                }
                 else
                     balance = await this.getCoins(this.from_currency).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                 let amount = BN(balance).div(this.precisions(this.from_currency)).toFixed()
@@ -963,6 +1003,8 @@
                     this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                     this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                 }
+
+                this.snxExchanger = new contract.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
             }
         }
     }
@@ -995,6 +1037,10 @@
     }
     .coins.renbtc {
         margin-top: 1em;
+    }
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

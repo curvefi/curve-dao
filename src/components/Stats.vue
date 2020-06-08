@@ -21,7 +21,7 @@
 		    			<span v-show='volumeData[0] != -1'> {{ volumeData[0] | formatNumber(0) }}$</span>	
 		    		</span>
 		    	</p>
-		    	<p v-show = "['tbtc', 'ren']">Daily BTC trading volume:
+		    	<p v-show = "['tbtc', 'ren'].includes(getPool)">Daily BTC trading volume:
 		    		<span :class="{'loading line': volumeData[0] < 0}">
 		    			<span v-show='volumeData[1] != -1'> {{ volumeData[1] | formatNumber(8) }} BTC</span>
 		    		</span>
@@ -293,7 +293,7 @@
 	                	let price = point.prices[key] && point.prices[key][3]
 	                	if(i == 0) price = 1 / price
 	                	price = price || 1
-	                	if(subdomain == 'ren2') price = point.prices['0-1'] && point.prices['0-1'][3] || 0
+	                	if(subdomain == 'ren2') price = point.prices['0-1'] && point.prices['0-1'][3] || 1
 
 	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain].coin_precisions[i];
 	            		return real_amount / S * (point.virtual_price / this.virtual_price_0) * price

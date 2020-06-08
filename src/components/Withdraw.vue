@@ -786,4 +786,8 @@
     .withdrawin {
         margin-bottom: 0.3em;
     }
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
+    }
 </style>

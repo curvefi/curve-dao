@@ -21,6 +21,12 @@ export const state = Vue.observable({
 	space: null,
 	box: null,
 
+	msg_signature: null,
+	password: null,
+	aes_key: null,
+	fireUser: null,
+
+
 	adapterContract: null,
 })
 

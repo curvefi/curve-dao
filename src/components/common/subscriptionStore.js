@@ -88,9 +88,23 @@ export async function postTxNotification(txHash) {
 		{
 		    method: 'POST', 
 		    headers: {
-		      'Content-Type': 'application/json'
+		      'Content-type': 'application/json'
 		      // 'Content-Type': 'application/x-www-form-urlencoded',
 		    },
 		    body: JSON.stringify({ subscription, txHash: txHash})
+		})
+}
+
+
+export async function removeTxNotification(txHash) {
+	let subscription = state.subscription
+	console.log(subscription)
+	return fetch('https://pushservice.curve.fi/removetx',
+		{
+			method: 'POST',
+			headers: {
+				'Content-type': 'application/json',
+			},
+			body: JSON.stringify({ subscription, txHash, txHash })
 		})
 }

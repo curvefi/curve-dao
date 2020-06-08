@@ -2,6 +2,11 @@ import Vue from 'vue'
 import RenSDK from '@renproject/ren'
 import BlocknativeSdk from 'bnc-sdk'
 import Web3 from 'web3'
+import CryptoJS from 'crypto-js'
+
+let firebaseApp
+let firestore
+
 const blocknative = new BlocknativeSdk({
 	dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
 	networkId: 1,
@@ -114,39 +119,124 @@ export function refresh(transaction) {
 }
 
 export async function use3Box() {
-	Box = await import('3box')
-	Box = Box.default
-	if(state.box !== null) return;
-	state.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
-	state.space = await state.box.openSpace('curvebtc')
-	loadTransactions();
-	await state.space.syncDone
+	const Firebase = await import('firebase/app')
+	await import('firebase/auth');
+	await import('firebase/firestore');
+
+	let firebaseConfig = {
+	    apiKey: "AIzaSyBk5JTJZmktp7QLBkf9mfzuluPprb-hKPM",
+	    authDomain: "curvebtc-70420.firebaseapp.com",
+	    databaseURL: "https://curvebtc-70420.firebaseio.com",
+	    projectId: "curvebtc-70420",
+	    storageBucket: "curvebtc-70420.appspot.com",
+	    messagingSenderId: "474354572456",
+	    appId: "1:474354572456:web:23dc684ead6423e0d2b69d"
+	  };
+
+	firebaseApp = Firebase.initializeApp(firebaseConfig)
+
+	firestore = firebaseApp.firestore();
+	// Box = await import('3box')
+	// Box = Box.default
+	// if(state.box !== null) return;
+	// state.box = await Box.openBox(contract.default_account, contract.web3.currentProvider)
+	// state.space = await state.box.openSpace('curvebtc')
+	// loadTransactions();
+	// await state.space.syncDone
+	let msg_signature =	await new Promise((resolve, reject) => {
+								web3.currentProvider.sendAsync({
+									method: 'eth_signTypedData',
+									params: [[{
+										type: 'address',
+										name: 'Address',
+										value: contract.default_account,
+									}], 
+									contract.default_account],
+									from: contract.default_account}, 
+									(err, result) => {if(err) {reject(err)} else resolve(result)
+								})
+							})
+	msg_signature = msg_signature.result
+	state.msg_signature = msg_signature
+
+	console.log(msg_signature, "SIGNATURE")
+	let password = contract.web3.utils.sha3('password' + msg_signature)
+	state.password = password
+	let aes_key = contract.web3.utils.sha3('encryption' + msg_signature)
+	state.aes_key = aes_key
+	let encrypted_data = CryptoJS.AES.encrypt(JSON.stringify({test: 'test', test1: 'test1', test3: 'test3'}), aes_key).toString()
+	console.log(encrypted_data)
+	let decrypted_data = JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted_data, aes_key)))
+	console.log(decrypted_data)
+
+	try {
+		let user = firebaseApp.auth().createUserWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+	}
+	catch(err) {
+		console.error(err)
+		if(err.code == 'auth/email-already-in-use') {
+			let user = firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		}
+	}
+	//let user = firebaseApp.auth().signInWithEmailAndPassword('testuser@curve.fi', 'test123321')
+	firebaseApp.auth().onAuthStateChanged(user => {
+		if(user) {
+			state.fireUser = user
+			loadTransactions()
+		}
+	})
 }
 
 export async function setItem(key, item) {
 	item.web3Provider = null
-	if(state.space !== null) {
-		return await state.space.private.set(key, JSON.stringify(item))
+	// if(state.space !== null) {
+	// 	return await state.space.private.set(key, JSON.stringify(item))
+	// }
+	if(state.fireUser) {
+		console.log(item, "SET ITEM")
+		//fix firebase undefined error
+		//not needed when data is encrypted
+		//if(item.params && item.params.contractCalls[0].txConfig === undefined) item.params.contractCalls[0].txConfig = null
+		item = {data: CryptoJS.AES.encrypt(JSON.stringify(item), state.aes_key).toString()}
+		return firestore.collection(state.fireUser.uid).doc(key).set(item)
 	}
 	return localStorage.setItem(key, JSON.stringify(item))
 }
 
 export async function removeItem(key) {
-	if(state.space !== null) {
-		return await state.space.private.remove(key)
+	// if(state.space !== null) {
+	// 	return await state.space.private.remove(key)
+	// }
+	if(state.fireUser) {
+		return firestore.collection(state.fireUser.uid).doc(key).delete(item)
 	}
 	return localStorage.removeItem(key)	
 }
 
 export async function getItem(key) {
-	if(state.space !== null) return await state.space.private.get(key)
+	//if(state.space !== null) return await state.space.private.get(key)
+	if(state.fireUser) {
+		let docRef = firestore.collection.doc(key)
+		let doc = await docRef.get()
+		if(doc.exists) { 
+			let encrypted = doc.data().data
+			return JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted, state.aes_key)))
+		}
+	}
 	return localStorage.getItem(key)
 }
 
 export async function getAllItems() {
 	let storage = localStorage
-	if(state.space !== null) {
-		storage = await state.space.private.all();
+	// if(state.space !== null) {
+	// 	storage = await state.space.private.all();
+	// }
+	if(state.fireUser) {
+		console.log(state.fireUser.uid, "GET ALL ITEMS UID")
+		let data = await firestore.collection(state.fireUser.uid).get()
+		data = data.docs.map(doc => doc.data().data).map(encrypted => JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted, state.aes_key))))
+		console.log(data, "THE DATA")
+		return data
 	}
 	return Object.keys(storage).filter(key => key.startsWith('curvebtc_')).map(k => JSON.parse(storage[k]))
 }
@@ -460,6 +550,8 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		.catch(err => reject(err))
 	})
 
+	subscriptionStore.removeTxNotification(transaction.btcTxHash)
+
 	transaction.state = 12
 	transaction.ethTxHash = txhash
 
@@ -521,6 +613,8 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		})
 		.catch(err => reject(err))
 	})
+
+	subscriptionStore.removeTxNotification(transaction.btcTxHash)
 
 	transaction.state = 12
 	transaction.ethTxHash = txhash
@@ -679,6 +773,7 @@ export async function listenForBurn(id) {
 	.on('txHash', hash => {
 		let tx = state.transactions.find(t => t.id == id)
 		console.log(hash, 'txHash event from ren')
+		subscriptionStore.removeTxNotification(tx.ethTxHash)
 		tx.renVMHash = hash
 		//tx.state = 31
 		upsertTx(tx)

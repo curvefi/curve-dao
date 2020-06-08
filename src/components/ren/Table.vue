@@ -1,6 +1,6 @@
 <template>
 	<div class='transaction-table'>
-		<button class='simplebutton' @click='use3Box'>
+		<button class='simplebutton' @click='useFirestore'>
 			<span v-show='space === null'>
 				Use permanent storage
 				<span class='tooltip'> [?]
@@ -151,7 +151,6 @@
 		},
 
 		data: () => ({
-			showModal: false,
 			qrValue: null,
 			qrOptions: {
 				width: 200,
@@ -186,6 +185,14 @@
         	publicPath() {
         		return process.env.BASE_URL
         	},
+        	showModal: {
+        		get() {
+        			return state.showModal
+        		},
+        		set(value) {
+        			state.showModal = value
+        		},
+        	}
 		},
 
 
@@ -233,8 +240,8 @@
 				store.mintThenSwap(transaction)
 			},
 
-			use3Box() {
-				return store.use3Box()
+			useFirestore() {
+				return store.useFirestore()
 			},
 
 			swapNow(transaction) {

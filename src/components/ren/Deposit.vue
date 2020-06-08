@@ -195,8 +195,8 @@
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
-            use3Box() {
-                store.use3Box()
+            useFirestore() {
+                store.useFirestore()
             },
             maxBalanceCoin(i) {
                 return this.toFixed(this.wallet_balances[i] * this.rates[i])

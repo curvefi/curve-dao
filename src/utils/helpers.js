@@ -242,5 +242,80 @@ export function chunkArr(arr, chunks) {
   return new Array(Math.ceil(arr.length / chunks)).fill().map((_, i) => arr.slice(i*chunks,i*chunks+chunks))
 }
 
+export async function AES_GCM_encrypt(message, secretkey) {
+  var iv = crypto.getRandomValues(new Uint8Array(16));
+  var ivHex = bytesToHexString(iv);
+  var pwUtf8 = new TextEncoder().encode(secretkey);
+  let hash = await crypto.subtle.digest('SHA-256', pwUtf8)
+  var pwHex = bytesToHexString(hash);
+  var keyData = hexStringToUint8Array(pwHex);
+  let key = await crypto.subtle.importKey("raw", keyData, "aes-gcm", false, ["encrypt"])
+  var plainText = message;
+  let cypherText = await crypto.subtle.encrypt({
+    name: "aes-gcm",
+    iv: iv
+  }, key, asciiToUint8Array(plainText));
+  return ivHex + bytesToHexString(cypherText)
+}
+
+export async function AES_GCM_decrypt(message, secretkey) {
+  var pwUtf8 = new TextEncoder().encode(secretkey);
+  let hash = await crypto.subtle.digest('SHA-256', pwUtf8)
+  var pwHex = bytesToHexString(hash);
+  var keyData = hexStringToUint8Array(pwHex);
+  let key = await crypto.subtle.importKey("raw", keyData, "aes-gcm", false, ["decrypt"])
+  var cipherText = message;
+  var iv = hexStringToUint8Array(cipherText.slice(0, 32));
+  var cipherHex = cipherText.slice(32);
+  let plainText = await crypto.subtle.decrypt({
+    name: "aes-gcm",
+    iv: iv
+  }, key, hexStringToUint8Array(cipherHex));
+  return bytesToASCIIString(plainText);
+}
+
+export function hexStringToUint8Array(hexString) {
+  if (hexString.length % 2 != 0)
+    throw "Invalid hexString";
+  var arrayBuffer = new Uint8Array(hexString.length / 2);
+
+  for (var i = 0; i < hexString.length; i += 2) {
+    var byteValue = parseInt(hexString.substr(i, 2), 16);
+    if (byteValue == NaN)
+      throw "Invalid hexString";
+    arrayBuffer[i / 2] = byteValue;
+  }
+
+  return arrayBuffer;
+}
+
+export function bytesToHexString(bytes) {
+  if (!bytes)
+    return null;
+
+  bytes = new Uint8Array(bytes);
+  var hexBytes = [];
+
+  for (var i = 0; i < bytes.length; ++i) {
+    var byteString = bytes[i].toString(16);
+    if (byteString.length < 2)
+      byteString = "0" + byteString;
+    hexBytes.push(byteString);
+  }
+
+  return hexBytes.join("");
+}
+
+export function asciiToUint8Array(str) {
+  var chars = [];
+  for (var i = 0; i < str.length; ++i)
+    chars.push(str.charCodeAt(i));
+  return new Uint8Array(chars);
+}
+
+export function bytesToASCIIString(bytes) {
+  return String.fromCharCode.apply(null, new Uint8Array(bytes));
+}
+
 
 Vue.filter('formatNumber', formatNumber)

@@ -2,7 +2,6 @@ import Vue from 'vue'
 import RenSDK from '@renproject/ren'
 import BlocknativeSdk from 'bnc-sdk'
 import Web3 from 'web3'
-import CryptoJS from 'crypto-js'
 
 let firebaseApp
 let firestore
@@ -118,10 +117,9 @@ export function refresh(transaction) {
 	sendMint(transaction)
 }
 
-export async function use3Box() {
-	const Firebase = await import('firebase/app')
-	await import('firebase/auth');
-	await import('firebase/firestore');
+export async function useFirestore() {
+	const importResolves = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/firestore')]) 
+	const Firebase = importResolves[0]
 
 	let firebaseConfig = {
 	    apiKey: "AIzaSyBk5JTJZmktp7QLBkf9mfzuluPprb-hKPM",
@@ -164,10 +162,6 @@ export async function use3Box() {
 	state.password = password
 	let aes_key = contract.web3.utils.sha3('encryption' + msg_signature)
 	state.aes_key = aes_key
-	let encrypted_data = CryptoJS.AES.encrypt(JSON.stringify({test: 'test', test1: 'test1', test3: 'test3'}), aes_key).toString()
-	console.log(encrypted_data)
-	let decrypted_data = JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted_data, aes_key)))
-	console.log(decrypted_data)
 
 	try {
 		let user = firebaseApp.auth().createUserWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
@@ -178,7 +172,6 @@ export async function use3Box() {
 			let user = firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
 		}
 	}
-	//let user = firebaseApp.auth().signInWithEmailAndPassword('testuser@curve.fi', 'test123321')
 	firebaseApp.auth().onAuthStateChanged(user => {
 		if(user) {
 			state.fireUser = user
@@ -197,7 +190,7 @@ export async function setItem(key, item) {
 		//fix firebase undefined error
 		//not needed when data is encrypted
 		//if(item.params && item.params.contractCalls[0].txConfig === undefined) item.params.contractCalls[0].txConfig = null
-		item = {data: CryptoJS.AES.encrypt(JSON.stringify(item), state.aes_key).toString()}
+		item = {data: await helpers.AES_GCM_encrypt(JSON.stringify(item), state.aes_key)}
 		return firestore.collection(state.fireUser.uid).doc(key).set(item)
 	}
 	return localStorage.setItem(key, JSON.stringify(item))
@@ -220,7 +213,7 @@ export async function getItem(key) {
 		let doc = await docRef.get()
 		if(doc.exists) { 
 			let encrypted = doc.data().data
-			return JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted, state.aes_key)))
+			return JSON.parse(await helpers.AES_GCM_decrypt(encrypted, state.aes_key))
 		}
 	}
 	return localStorage.getItem(key)
@@ -234,7 +227,7 @@ export async function getAllItems() {
 	if(state.fireUser) {
 		console.log(state.fireUser.uid, "GET ALL ITEMS UID")
 		let data = await firestore.collection(state.fireUser.uid).get()
-		data = data.docs.map(doc => doc.data().data).map(encrypted => JSON.parse(CryptoJS.enc.Utf8.stringify(CryptoJS.AES.decrypt(encrypted, state.aes_key))))
+		data = await Promise.all(data.docs.map(doc => doc.data().data).map(async encrypted => JSON.parse(await helpers.AES_GCM_decrypt(encrypted, state.aes_key))))
 		console.log(data, "THE DATA")
 		return data
 	}
@@ -289,9 +282,6 @@ export async function mint(data) {
 }
 
 function initSwapMint(transaction) {
-	console.log(transaction, "THE TRANSACTION")
-	console.log(transaction.secret, "THE SECRET")
-	console.log(transaction.secretHash, "TRANSACTION SECRET HASH")
 	var { id, amount, nonce, address, toInput, params, minExchangeRate, slippage } = transaction
 	// let _minWbtcAmount = BN(toInput).times(1e8).times(0.99).toFixed(0, 1)
 	console.log(amount, "AMOUNT", nonce, "NONCE", address, "ADDRESS", minExchangeRate, "MIN EXCHANGE RATE", slippage, "SLIPPAGE")
@@ -471,7 +461,7 @@ export async function sendMint(transfer) {
 								if(deposit.utxo) {
 									if(transaction.state == 1) {
 										transaction.state = 2
-										this.showModal = false
+										state.showModal = false
 									}
 									transaction.confirmations = deposit.utxo.confirmations
 									if(transaction.confirmations) transaction.state = 3 + deposit.utxo.confirmations

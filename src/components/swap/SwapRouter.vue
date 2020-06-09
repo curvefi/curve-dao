@@ -37,7 +37,7 @@
 
 
 		data: () => ({
-			swapbtc: true,
+			swapbtc: false,
 			loading: false,
 		}),
 

@@ -317,6 +317,11 @@ function initSwapMint(transaction) {
                 type: "address",
                 value: address,
             },
+            {
+            	name: "msgSender",
+            	type: "address",
+            	value: contract.default_account,
+            },
 	    ],
 	    
 	    // Web3 provider for submitting mint to Ethereum
@@ -374,6 +379,11 @@ function initDepositMint(transaction) {
                 name: "min_mint_amount",
                 type: "uint256",
                 value: min_amount,
+            },
+            {
+            	name: "msgSender",
+            	type: "address",
+            	value: contract.default_account,
             },
 	    ],
 	    

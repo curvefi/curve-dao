@@ -81,7 +81,7 @@
 									<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
 								</span>
 							</span>
-							<img class='icon small hoverpointer' v-show='[0,3].includes(transaction.type)'
+							<img class='icon small hoverpointer qrcode' v-show='[0,3].includes(transaction.type)'
 								@click='showQR(transaction)' :src="publicPath + 'qrcode-solid.svg'">
 						</span>
 					</td>
@@ -355,6 +355,9 @@
 		width: 1em;
 		margin-left: 0.8em;
 		filter: invert(37%) sepia(11%) saturate(2344%) hue-rotate(174deg) brightness(101%) contrast(104%);
+	}
+	.icon.qrcode {
+		margin-left: 3px;
 	}
 	.notification.tooltip {
 		margin-left: 1em;

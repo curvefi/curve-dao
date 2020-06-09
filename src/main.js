@@ -12,7 +12,7 @@ Vue.use(VueMeta, {
 })
 
 window.domain = ''
-if(window.location.href.includes('localhost')) window.domain = 'https://curve.fi'
+if(window.location.href.includes('localhost') || !window.location.href.includes('curve.fi')) window.domain = 'https://curve.fi'
 
 
 import '../public/tvision.css'

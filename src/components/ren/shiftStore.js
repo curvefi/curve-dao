@@ -3,8 +3,8 @@ import RenSDK from '@renproject/ren'
 import BlocknativeSdk from 'bnc-sdk'
 import Web3 from 'web3'
 
-let firebaseApp
-let firestore
+let firebaseApp = null
+let firestore = null
 
 const blocknative = new BlocknativeSdk({
 	dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
@@ -118,22 +118,24 @@ export function refresh(transaction) {
 }
 
 export async function useFirestore() {
-	const importResolves = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/firestore')]) 
-	const Firebase = importResolves[0]
+	if(firestore == null) {
+		const importResolves = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/firestore')]) 
+		const Firebase = importResolves[0]
 
-	let firebaseConfig = {
-	    apiKey: "AIzaSyBk5JTJZmktp7QLBkf9mfzuluPprb-hKPM",
-	    authDomain: "curvebtc-70420.firebaseapp.com",
-	    databaseURL: "https://curvebtc-70420.firebaseio.com",
-	    projectId: "curvebtc-70420",
-	    storageBucket: "curvebtc-70420.appspot.com",
-	    messagingSenderId: "474354572456",
-	    appId: "1:474354572456:web:23dc684ead6423e0d2b69d"
-	  };
+		let firebaseConfig = {
+		    apiKey: "AIzaSyBk5JTJZmktp7QLBkf9mfzuluPprb-hKPM",
+		    authDomain: "curvebtc-70420.firebaseapp.com",
+		    databaseURL: "https://curvebtc-70420.firebaseio.com",
+		    projectId: "curvebtc-70420",
+		    storageBucket: "curvebtc-70420.appspot.com",
+		    messagingSenderId: "474354572456",
+		    appId: "1:474354572456:web:23dc684ead6423e0d2b69d"
+		  };
 
-	firebaseApp = Firebase.initializeApp(firebaseConfig)
+		firebaseApp = Firebase.initializeApp(firebaseConfig)
 
-	firestore = firebaseApp.firestore();
+		firestore = firebaseApp.firestore();
+	}
 	// Box = await import('3box')
 	// Box = Box.default
 	// if(state.box !== null) return;
@@ -164,13 +166,16 @@ export async function useFirestore() {
 	state.aes_key = aes_key
 
 	try {
-		let user = firebaseApp.auth().createUserWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		let user = await firebaseApp.auth().createUserWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
 	}
 	catch(err) {
 		console.error(err)
-		if(err.code == 'auth/email-already-in-use') {
-			let user = firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
-		}
+		console.log("SIGN IN INSTEAD")
+		let user = await firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		console.log(err.code, "ERR CODE")
+		// if(err.code == 'auth/email-already-in-use') {
+		// 	let user = firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		// }
 	}
 	firebaseApp.auth().onAuthStateChanged(user => {
 		if(user) {
@@ -251,8 +256,8 @@ export function upsertTx(transaction) {
 	transaction.box = null;
 	transaction.space = null
 	setItem(key, transaction)
-	if([0, 3].includes(transaction.type)) subscriptionStore.postTxNotification(transaction.btcTxHash)
-	if(transaction.type == 1) subscriptionStore.postTxNotification(transaction.ethTxHash)
+	if([0, 3].includes(transaction.type) && !transaction.ethTxHash) subscriptionStore.postTxNotification(transaction.btcTxHash)
+	if(transaction.type == 1 && transaction.state < 63) subscriptionStore.postTxNotification(transaction.ethTxHash)
 }
 
 function newTx() {
@@ -406,10 +411,9 @@ export async function initMint(transaction) {
 export async function sendMint(transfer) {
 
 	let transaction = state.transactions.find(t => t.id == transfer.id)
-	console.log(transaction, "TRANSACTION")
 	//transaction is ready to be sent to eth network
 	if(transaction.renResponse && transaction.signature) {
-		if((transaction.state == 12 || transaction.state == 14) && !transaction.ethTxHash) {
+		if(!transaction.ethTxHash) {
 			transaction.state = 11
 			transaction.confirmations = 'Confirmed'
 			upsertTx(transaction)

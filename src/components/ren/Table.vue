@@ -86,8 +86,9 @@
 						</span>
 					</td>
 					<td>
-						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer"> 
-							<span v-show='[0,3].includes(transaction.type) && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
+						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>-</span>
+						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer" v-show='!([0,3].includes(transaction.type) && transaction.state == 1)'> 
+							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 2 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
 							<span v-show='[0,3].includes(transaction.type) && [14,15].includes(transaction.state)'>
 								Done

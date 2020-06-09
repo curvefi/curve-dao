@@ -5,7 +5,7 @@
 				Use permanent storage
 				<span class='tooltip'> [?]
 					<span class='tooltiptext long'>
-						Use 3box instead of local storage
+						Use cloud storage of encrypted transaction data instead of local storage
 						<!-- Data about ren transaction is stored in local storage, which can be cleared, currently.
 						That means if you clear the storage, a loss of funds may occur.
 						Using 3box permanent storage is recommended.  -->
@@ -86,7 +86,7 @@
 						</span>
 					</td>
 					<td>
-						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>-</span>
+						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>---</span>
 						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer" v-show='!([0,3].includes(transaction.type) && transaction.state == 1)'> 
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 2 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>

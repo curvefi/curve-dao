@@ -147,9 +147,9 @@ export async function useFirestore() {
 								web3.currentProvider.sendAsync({
 									method: 'eth_signTypedData',
 									params: [[{
-										type: 'address',
-										name: 'Address',
-										value: contract.default_account,
+										type: 'string',
+										name: 'Message',
+										value: 'Sign in to store transaction data',
 									}], 
 									contract.default_account],
 									from: contract.default_account}, 
@@ -232,6 +232,7 @@ export async function getAllItems() {
 	if(state.fireUser) {
 		console.log(state.fireUser.uid, "GET ALL ITEMS UID")
 		let data = await firestore.collection(state.fireUser.uid).get()
+		console.log(data, "INITIAL DATA")
 		data = await Promise.all(data.docs.map(doc => doc.data().data).map(async encrypted => JSON.parse(await helpers.AES_GCM_decrypt(encrypted, state.aes_key))))
 		console.log(data, "THE DATA")
 		return data

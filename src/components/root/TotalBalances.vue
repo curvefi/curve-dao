@@ -19,6 +19,7 @@
 	import BN from 'bignumber.js'
 	import * as volumeStore from '@/components/common/volumeStore'
     import { contract } from '../../contract'
+    import * as priceStore from '../common/priceStore'
 
 	export default {
 		props: {
@@ -41,6 +42,7 @@
 		},
 		methods: {
 			async totalBalances() {
+				if(!priceStore.state.btcPrice) await priceStore.getBTCPrice()
 			    let total = BN(0);
 			    let tokenContracts = {}
 			    let swapContracts = {}
@@ -68,7 +70,10 @@
 			    let aggcalls = await multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 			    chunkArr(decoded, 2).map((v, i, arr) => {
-			    	total = total.plus(BN(v[0]).times(BN(v[1])).div(1e36))
+			    	let balance = BN(v[0]).times(BN(v[1])).div(1e36)
+			    	//renBTC
+			    	if(i == 6) balance = balance.times(BN(priceStore.state.btcPrice))
+			    	total = total.plus(balance)
 			    })
 			    this.total = total.toFixed(0);
 			},

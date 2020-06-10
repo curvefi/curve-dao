@@ -113,11 +113,11 @@ let pairToName = (pair, pool) => {
 	let i = pair.split('-')[0]
 	let j = pair.split('-')[1]
 
-	return (Object.keys(currencies[pool])[i] + '/' + Object.keys(currencies[pool])[j]).toUpperCase()
+	return (Object.keys(currencies[pool])[i] + '⇄' + Object.keys(currencies[pool])[j]).toUpperCase()
 }
 
 let pairReverse = (pair) => {
-	return pair.split('/')[1] + '/' + pair.split('/')[0]
+	return pair.split('⇄')[1] + '⇄' + pair.split('⇄')[0]
 }
 
 let getVolumePerPair = (data, pools, allabis) => {
@@ -134,15 +134,15 @@ let getVolumePerPair = (data, pools, allabis) => {
 			for(let [pair, val] of vol) {
 				let pairName = pairToName(pair, pool)
 				if(!volumes[pairName]) volumes[pairName] = []
-				if(!volumes[pairReverse(pairName)]) volumes[pairReverse(pairName)] = []
+				//if(!volumes[pairReverse(pairName)]) volumes[pairReverse(pairName)] = []
 				volumes[pairName].push([
 					v.timestamp * 1000,
 					val[0] / allabis[key == 'susd' ? 'susdv2' : key].coin_precisions[pair.split('-')[0]]
 				])
-				volumes[pairReverse(pairName)].push([
-					v.timestamp * 1000,
-					val[1] / allabis[key == 'susd' ? 'susdv2' : key].coin_precisions[pair.split('-')[1]]
-				])
+				// volumes[pairReverse(pairName)].push([
+				// 	v.timestamp * 1000,
+				// 	val[1] / allabis[key == 'susd' ? 'susdv2' : key].coin_precisions[pair.split('-')[1]]
+				// ])
 			}
 		}
 	}

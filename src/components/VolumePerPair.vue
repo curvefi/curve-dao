@@ -136,7 +136,7 @@
 	            yAxis: {
 	            	opposite: false,
 	            	title: {
-	            		text: 'Total trading volume per day per coin',
+	            		text: 'Total trading volume per day per pair',
 	            		style: {
 	            			color: 'black'
 	            		},
@@ -181,7 +181,7 @@
 			        type: 'pie'
 			    },
 			    title: {
-			        text: 'Share of trading volume per coin for last week'
+			        text: 'Share of trading volume per pair for last week'
 			    },
 			    tooltip: {
 			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -284,7 +284,7 @@
 				this.piechart.series[0] && this.piechart.series[0].remove();
 				this.piechart.update({
 					title: {
-						text: `Share of trading volume per coin for ${this.period != 'all' ? 'last ' + this.period : 'all time'}`
+						text: `Share of trading volume per pair for ${this.period != 'all' ? 'last ' + this.period : 'all time'}`
 					}
 				}, false)
 				let periods = {

@@ -73,8 +73,11 @@
 						{{ transaction.fromInput }}
 						<span v-show='[0, 3].includes(transaction.type)' class='tooltip'>
 							BTC->wBTC
-							<span class='tooltiptext'>
+							<span class='tooltiptext' v-show='transaction.type == 0'>
 								Swap BTC->wBTC
+							</span>
+							<span class='tooltiptext' v-show='transaction.type == 3'>
+								Deposit BTC
 							</span>
 						</span>
 						<span v-show='transaction.type == 1'>
@@ -90,20 +93,19 @@
 									Remove liquidity									
 								</span>
 							</span>
-							<span v-show='transaction.burnType == 1' class='tooltip'>
+							<span v-show='transaction.burnType == 2' class='tooltip'>
 								renBTC->BTC
-								<span class='tooltiptext'>
+								<span class='tooltiptext long'>
 									Remove liquidity imbalance
 								</span>
 							</span>
-							<span v-show='transaction.burnType == 1' class='tooltip'>
+							<span v-show='transaction.burnType == 3' class='tooltip'>
 								renBTC->BTC
-								<span class='tooltiptext'>
-									Remove liquidity one coin
+								<span class='tooltiptext long'>
+									Remove liquidity in BTC
 								</span>
 							</span>
 						</span>
-						{{ [0, 3].includes(transaction.type) ? 'BTC->wBTC' : 'wBTC->BTC' }}
 					</td>
 					<td>
 						<span :class="{'loading line': !transaction.gatewayAddress }"></span>

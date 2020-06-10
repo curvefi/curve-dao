@@ -493,7 +493,7 @@
 			        	await store.removeLiquidityImbalanceThenBurn({
                             address: this.btcAddress,
                             amounts: this.amounts,
-                            renBTCAmount: this.inputs[1],
+                            renBTCAmount: this.inputs[0],
                             max_burn_amount: token_amount,
                         })
                     }
@@ -527,7 +527,7 @@
 			        		.removeLiquidityOneCoinThenBurn({
                                 address: this.btcAddress,
                                 token_amounts: amount,
-                                renBTCAmount: this.inputs[1],
+                                renBTCAmount: this.inputs[0],
                                 min_amount: BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1),
                             })
 			        }
@@ -540,7 +540,7 @@
                                 .removeLiquidityThenBurn({
                                     address: this.btcAddress,
                                     amount: amount, 
-                                    renBTCAmount: this.inputs[1],
+                                    renBTCAmount: this.inputs[0],
                                     min_amounts: min_amounts
                                 })
                         }

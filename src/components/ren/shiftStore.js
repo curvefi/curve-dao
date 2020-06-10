@@ -103,7 +103,7 @@ export async function loadTransactions() {
 			console.log("NEW BLOCK")
 			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
 				console.log(transaction, "TRANSACTION")
-				if(transaction.state >= 63 || transaction.confirmations >= 30) continue;
+				if(transaction.state >= 62 || transaction.confirmations >= 30) continue;
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
 				transaction.ethCurrentBlock = block.number
 				transaction.state = 30 + transaction.confirmations

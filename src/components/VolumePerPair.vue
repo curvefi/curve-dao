@@ -187,7 +187,7 @@
 			        text: 'Share of trading volume per pair for last week'
 			    },
 			    tooltip: {
-			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+			        pointFormat: '{series.name}: <b> {point.percentage:.1f}% </b>'
 			    },
 			    accessibility: {
 			        point: {
@@ -203,7 +203,7 @@
 			                style: {
 			                	fontWeight: 'normal'
 			                },
-			                format: '{point.name}: <b> {point.percentage:.1f% </b>'
+			                format: '{point.name}: <b> {point.percentage:.1f}% </b>'
 			            }
 			        }
 			    },

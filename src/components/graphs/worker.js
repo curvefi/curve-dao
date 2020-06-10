@@ -134,7 +134,7 @@ let getVolumePerPair = (data, pools, allabis) => {
 			for(let [pair, val] of vol) {
 				let pairName = pairToName(pair, pool)
 				if(!volumes[pairName]) volumes[pairName] = []
-				if(!volumes[pairReverse(pairName)]) volumes[pairReverse(pairName)] = []
+				//if(!volumes[pairReverse(pairName)]) volumes[pairReverse(pairName)] = []
 				volumes[pairName].push([
 					v.timestamp * 1000,
 					val[0] / allabis[key == 'susd' ? 'susdv2' : key].coin_precisions[pair.split('-')[0]]

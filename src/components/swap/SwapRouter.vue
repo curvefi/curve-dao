@@ -1,6 +1,6 @@
 <template>
 	<div class='window white'>
-		<div class='info-message gentle-message betaversion'>
+		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 			This is a beta version. Please test with small amounts and use with caution.
 		</div>
 	    <swap-native v-if='swapbtc' @loaded='loaded'></swap-native>

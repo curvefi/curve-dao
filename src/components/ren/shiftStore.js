@@ -27,6 +27,8 @@ const txObject = () => ({
 	id: '',
 	timestamp: null,
 	type: '',
+	mintType: 0,
+	burnType: 0,
 	amount: '',
 	fromInput: 0,
 	toInput: 0,
@@ -298,12 +300,13 @@ function newTx() {
 export async function mint(data) {
 	let transaction = {...newTx()}
 	transaction.type = 0
+	transaction.mintType = 0
 	transaction.amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
 	transaction.address = data.address;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
 	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
-	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((1000-data.slippage)/1000)).toFixed(0,1)
+	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).toFixed(0,1)
 	transaction.secret = '0x' + helpers.randomBytes(32)
 	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	//slippage is in BPS
@@ -368,7 +371,9 @@ export async function deposit(data) {
 	let transaction = {...newTx()}
 	//type 3 is deposit
 	transaction.type = 3
+	transaction.mintType = 1
 	transaction.amount = data.btcAmount
+	transaction.fromInput = data.btcAmount
 	transaction.address = data.address
 	transaction.amounts = data.amounts.map(amount => BN(amount).toFixed(0,1))
 	transaction.min_amount = data.min_amount
@@ -539,8 +544,10 @@ export async function receiveRen(transaction) {
 
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
-	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, BN(utxoAmount).toFixed(0, 1)).call())
-	let exchangeRateNow = get_dy.times(1e8).div(utxoAmount)
+	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee)
+	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
+	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
+	console.log(exchangeRateNow, "EXCHANGE RATE NOW")
 	//rates changed, ask user if they still want to swap
 		//handle the case where they only want to mint
 	if(exchangeRateNow.lt(BN(transaction.newMinExchangeRate)) && !swapNow && !receiveRen) {
@@ -667,7 +674,7 @@ export async function burnSwap(data) {
 			from: state.default_account,
 			gas: 600000,
 		})
-	burn(tx, data.address)
+	burn(tx, data.address, null, 0)
 }
 
 export async function removeLiquidityThenBurn(data) {
@@ -681,7 +688,7 @@ export async function removeLiquidityThenBurn(data) {
 		gas: 600000,
 	})
 
-	burn(tx, data.address)
+	burn(tx, data.address, data.renBTCAmount, 1)
 }
 
 
@@ -697,7 +704,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		gas: 600000,
 	})
 
-	burn(tx, data.address)
+	burn(tx, data.address, data.renBTCAmount, 2)
 }
 
 export async function removeLiquidityOneCoinThenBurn(data) {
@@ -712,11 +719,11 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		gas: 600000,
 	})
 
-	burn(tx, data.address)
+	burn(tx, data.address, data.renBTCAmount, 3)
 }
 
 
-export async function burn(burn, address) {
+export async function burn(burn, address, renBTCAmount, burnType) {
 	let id = helpers.generateID();
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
@@ -750,8 +757,10 @@ export async function burn(burn, address) {
 	listenForReplacement(txhash)
 	state.transactions.unshift({
 		id: id,
+		fromInput: renBTCAmount,
 		timestamp: Date.now(),
 		type: 1,
+		burnType: burnType,
 		gatewayAddress: address,
 		confirmations: 'Started',
 		state: 30,

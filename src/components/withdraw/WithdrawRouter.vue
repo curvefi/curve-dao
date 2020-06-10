@@ -1,5 +1,8 @@
 <template>
 	<div class='window white'>
+		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
+			This is a beta version. Please test with small amounts and use with caution.
+		</div>
 	    <withdraw-native v-if='swapbtc' @loaded='loaded'></withdraw-native>
 	    <withdraw v-if='!swapbtc || (swapbtc && !loaded)'></withdraw>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>

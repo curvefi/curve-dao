@@ -70,6 +70,39 @@
 			<tbody>
 				<tr v-for='transaction in filteredTransactions'>
 					<td class='shifttype'>
+						{{ transaction.fromInput }}
+						<span v-show='[0, 3].includes(transaction.type)' class='tooltip'>
+							BTC->wBTC
+							<span class='tooltiptext'>
+								Swap BTC->wBTC
+							</span>
+						</span>
+						<span v-show='transaction.type == 1'>
+							<span v-show='transaction.burnType == 0' class='tooltip'>
+								wBTC->BTC
+								<span class='tooltiptext'>
+									Swap wBTC->BTC
+								</span>
+							</span>
+							<span v-show='transaction.burnType == 1' class='tooltip'>
+								renBTC->BTC
+								<span class='tooltiptext'>
+									Remove liquidity									
+								</span>
+							</span>
+							<span v-show='transaction.burnType == 1' class='tooltip'>
+								renBTC->BTC
+								<span class='tooltiptext'>
+									Remove liquidity imbalance
+								</span>
+							</span>
+							<span v-show='transaction.burnType == 1' class='tooltip'>
+								renBTC->BTC
+								<span class='tooltiptext'>
+									Remove liquidity one coin
+								</span>
+							</span>
+						</span>
 						{{ [0, 3].includes(transaction.type) ? 'BTC->wBTC' : 'wBTC->BTC' }}
 					</td>
 					<td>
@@ -92,7 +125,7 @@
 						</span>
 					</td>
 					<td>
-						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>---</span>
+						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>▬</span>
 						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer" v-show='!([0,3].includes(transaction.type) && transaction.state == 1)'> 
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 2 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>

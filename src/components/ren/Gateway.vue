@@ -318,7 +318,7 @@
 				let get_dy_original = contract.swap.methods.get_dy(i, j, BN(this.fromInput).times(1e8).toFixed(0,1)).encodeABI()
 				let get_dys = [get_dy_original]
 				if(this.from_currency == 0) {
-					get_dys.push(contract.swap.methods.get_dy(i, j, BN(this.fromInput).times(1e8).minus(fee).times(ethfee).toFixed(0,1)).encodeABI())
+					get_dys.push(contract.swap.methods.get_dy(i, j, BN(this.amountAfterBTC).times(1e8).toFixed(0,1)).encodeABI())
 				}
 				this.promise.cancel()
 				let calls = get_dys.map(call => [contract.swap._address, call])

@@ -714,3 +714,7 @@ li.coins label:hover {
 .waiting-message .loading.line {
   margin-left: 0.3em;
 }
+
+.betaversion {
+  margin-bottom: 1em;
+}

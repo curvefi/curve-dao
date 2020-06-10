@@ -73,7 +73,7 @@
     </div>
     <div id="screen">
         <div :class="{'blue window': true, [$route.name]: true}">
-            <h1><img :src="publicPath + 'logo_optimized.svg'" alt="🌀 Curve"></h1>
+            <h1><img :src="logoSrc" alt="🌀 Curve"></h1>
         </div>
         <div class="error window half-width info" id="error-window" v-show='error'>
           {{error}}
@@ -135,6 +135,10 @@
       },
       publicPath() {
         return process.env.BASE_URL
+      },
+      logoSrc() {
+        if(!currentContract.swapbtc) return this.publicPath + 'logo_optimized.svg'
+        else return this.publicPath + 'logo_ren_beta_optimized.svg'
       },
     },
     methods: {

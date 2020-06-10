@@ -278,6 +278,7 @@ const state = Vue.observable({
 			...initState(),
 		},
 	},
+	swapbtc: false,
 	currentContract: 'compound',
 	currencies: currencies.compound,
 	N_COINS: N_COINS,

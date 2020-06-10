@@ -37,7 +37,6 @@
 
 
 		data: () => ({
-			swapbtc: false,
 			loading: false,
 		}),
 
@@ -58,6 +57,14 @@
 			},
 			hasIncomplete() {
 				return shiftState.hasIncomplete()
+			},
+			swapbtc: {
+				get() {
+					return currentContract.swapbtc
+				},
+				set(val) {
+					currentContract.swapbtc = val
+				},
 			},
 		},
 

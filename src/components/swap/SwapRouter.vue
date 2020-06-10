@@ -1,5 +1,8 @@
 <template>
 	<div class='window white'>
+		<div class='info-message gentle-message betaversion'>
+			This is a beta version. Please test with small amounts and use with caution.
+		</div>
 	    <swap-native v-if='swapbtc' @loaded='loaded'></swap-native>
 	    <swap v-if='!swapbtc || (swapbtc && !loaded)'></swap>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
@@ -37,7 +40,6 @@
 
 
 		data: () => ({
-			swapbtc: false,
 			loading: false,
 		}),
 
@@ -62,6 +64,14 @@
 			},
 			hasIncomplete() {
 				return shiftState.hasIncomplete()
+			},
+			swapbtc: {
+				get() {
+					return currentContract.swapbtc
+				},
+				set(val) {
+					currentContract.swapbtc = val
+				},
 			},
 		},
 

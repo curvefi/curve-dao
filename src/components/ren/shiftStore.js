@@ -118,6 +118,7 @@ export function refresh(transaction) {
 }
 
 export async function useFirestore() {
+	if(state.fireUser !== null) return;
 	if(firestore == null) {
 		const importResolves = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/firestore')]) 
 		const Firebase = importResolves[0]
@@ -143,24 +144,31 @@ export async function useFirestore() {
 	// state.space = await state.box.openSpace('curvebtc')
 	// loadTransactions();
 	// await state.space.syncDone
-	let msg_signature =	await new Promise((resolve, reject) => {
-								web3.currentProvider.sendAsync({
-									method: 'eth_signTypedData',
-									params: [[{
-										type: 'string',
-										name: 'Message',
-										value: 'Sign in to store transaction data',
-									}], 
-									contract.default_account],
-									from: contract.default_account}, 
-									(err, result) => {if(err) {reject(err)} else resolve(result)
+	let password
+	let msg_signature = findFirebaseUserSignature(contract.default_account)
+	console.log(msg_signature, "FIND SIGNATURE")
+	if(!msg_signature) {
+		msg_signature =	await new Promise((resolve, reject) => {
+									web3.currentProvider.sendAsync({
+										method: 'eth_signTypedData',
+										params: [[{
+											type: 'string',
+											name: 'Message',
+											value: 'Sign in to store transaction data',
+										}], 
+										contract.default_account],
+										from: contract.default_account}, 
+										(err, result) => {if(err) {reject(err)} else resolve(result)
+									})
 								})
-							})
-	msg_signature = msg_signature.result
+		msg_signature = msg_signature.result
+	}
 	state.msg_signature = msg_signature
+	addFirebaseUser(contract.default_account, msg_signature)
 
 	console.log(msg_signature, "SIGNATURE")
-	let password = contract.web3.utils.sha3('password' + msg_signature)
+	password = contract.web3.utils.sha3('password' + msg_signature)
+	console.log(password, "THE PASSWORD")
 	state.password = password
 	let aes_key = contract.web3.utils.sha3('encryption' + msg_signature)
 	state.aes_key = aes_key
@@ -170,7 +178,7 @@ export async function useFirestore() {
 	}
 	catch(err) {
 		console.error(err)
-		console.log("SIGN IN INSTEAD")
+		console.log("SIGN IN INSTEAD", password)
 		let user = await firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
 		console.log(err.code, "ERR CODE")
 		// if(err.code == 'auth/email-already-in-use') {
@@ -259,6 +267,17 @@ export function upsertTx(transaction) {
 	setItem(key, transaction)
 	if([0, 3].includes(transaction.type) && !transaction.ethTxHash) subscriptionStore.postTxNotification(transaction.btcTxHash)
 	if(transaction.type == 1 && transaction.state < 63) subscriptionStore.postTxNotification(transaction.ethTxHash)
+}
+
+function addFirebaseUser(address, signature) {
+	let firetable = JSON.parse(localStorage.getItem('firetable') || '[]')
+	!firetable[0][address] && firetable.push({ [address]: signature })
+	localStorage.setItem('firetable', JSON.stringify(firetable))
+}
+
+function findFirebaseUserSignature(address) {
+	let firetable = JSON.parse(localStorage.getItem('firetable') || '[]')
+	if(firetable.length) return firetable[0][address]
 }
 
 function newTx() {

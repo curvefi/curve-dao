@@ -1,7 +1,7 @@
 <template>
 	<div class='transaction-table'>
 		<button class='simplebutton' @click='useFirestore'>
-			<span v-show='space === null'>
+			<span v-show='fireUser === null'>
 				Use permanent storage
 				<span class='tooltip'> [?]
 					<span class='tooltiptext long'>
@@ -12,8 +12,9 @@
 					</span>
 				</span>
 			</span>
-			<span v-show='space !== null'>Permanent storage loaded</span>
+			<span v-show='fireUser !== null'>Permanent storage loaded</span>
 		</button>
+
 
 		<div id='modal' class='modal' v-show='showModal'>
 			<div class='modal-content window white'>
@@ -42,6 +43,11 @@
 			</span>
 		</span>
 
+		<div v-show='fireUser === null' class='info-message gentle-message'>
+			Data about ren transactions is stored in local storage, which can be cleared or not stored if you use incognito mode.
+			<div>That means if you clear the storage, a loss of funds may occur.</div>
+		</div>
+		
 		<p v-show='transactions.filter(t => t.removed).length'>
 			<input id='showremoved' type='checkbox' v-model='showRemoved'/>
 			<label for='showremoved'>Show removed transactions</label>
@@ -179,6 +185,9 @@
         	},
         	space() {
         		return state.space
+        	},
+        	fireUser() {
+        		return state.fireUser
         	},
         	hasSubscription() {
         		return subscriptionStore.state.subscription !== null 

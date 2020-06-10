@@ -148,19 +148,27 @@ export async function useFirestore() {
 	let msg_signature = findFirebaseUserSignature(contract.default_account)
 	console.log(msg_signature, "FIND SIGNATURE")
 	if(!msg_signature) {
-		msg_signature =	await new Promise((resolve, reject) => {
-									web3.currentProvider.sendAsync({
-										method: 'eth_signTypedData',
-										params: [[{
-											type: 'string',
-											name: 'Message',
-											value: 'Sign in to store transaction data',
-										}], 
-										contract.default_account],
-										from: contract.default_account}, 
-										(err, result) => {if(err) {reject(err)} else resolve(result)
-									})
-								})
+		// msg_signature =	await new Promise((resolve, reject) => {
+		// 							web3.currentProvider.sendAsync({
+		// 								method: 'eth_signTypedData',
+		// 								params: [[{
+		// 									type: 'string',
+		// 									name: 'Message',
+		// 									value: 'Sign in to store transaction data',
+		// 								}], 
+		// 								contract.default_account],
+		// 								from: contract.default_account}, 
+		// 								(err, result) => {if(err) {reject(err)} else resolve(result)
+		// 							})
+		// 						})
+		msg_signature = await new Promise((resolve, reject) => {
+				web3.currentProvider.sendAsync({
+				method: 'personal_sign',
+				params: ["Sign in to store transaction data", contract.default_account],
+				from: contract.default_account,
+			}, (err, result) => {if(err) {reject(err)} else resolve(result)})
+		})
+		console.log(msg_signature, "SIGNATURE")
 		msg_signature = msg_signature.result
 	}
 	state.msg_signature = msg_signature
@@ -271,7 +279,7 @@ export function upsertTx(transaction) {
 
 function addFirebaseUser(address, signature) {
 	let firetable = JSON.parse(localStorage.getItem('firetable') || '[]')
-	!firetable[0][address] && firetable.push({ [address]: signature })
+	if(!firetable.length || (firetable[0] && ! firetable[0][address])) firetable.push({ [address]: signature })
 	localStorage.setItem('firetable', JSON.stringify(firetable))
 }
 

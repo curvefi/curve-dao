@@ -113,11 +113,11 @@ let pairToName = (pair, pool) => {
 	let i = pair.split('-')[0]
 	let j = pair.split('-')[1]
 
-	return (Object.keys(currencies[pool])[i] + '⇄' + Object.keys(currencies[pool])[j]).toUpperCase()
+	return (Object.keys(currencies[pool])[i] + ' ⇄ ' + Object.keys(currencies[pool])[j]).toUpperCase()
 }
 
 let pairReverse = (pair) => {
-	return pair.split('⇄')[1] + '⇄' + pair.split('⇄')[0]
+	return pair.split(' ⇄ ')[1] + ' ⇄ ' + pair.split(' ⇄ ')[0]
 }
 
 let getVolumePerPair = (data, pools, allabis) => {

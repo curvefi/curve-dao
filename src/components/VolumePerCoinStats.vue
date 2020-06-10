@@ -92,7 +92,7 @@
 		            	},
 		            },
 			        series: [{
-			        	name: 'Trading Volume per coin',
+			        	name: (self => `Trading Volume per ${self.embedded ? 'pair' : 'coin'}`)(this),
 			        	lineWidth: 2,
 			        	data: [],
 			        	color: '#0b0a57'

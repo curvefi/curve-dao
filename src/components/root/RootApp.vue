@@ -29,9 +29,16 @@
 
       <router-link to="/">Home</router-link>
       <router-link to="/trade">Trade</router-link>
-      <router-link to="/combinedstats">Stats</router-link>
-      <router-link to="/dailystats">Daily stats</router-link>
-      <router-link to="/volumepercoin">Coin volumes</router-link>
+      <div class='poolsdropdown'>
+        <router-link to="/combinedstats">Stats</router-link>
+        <div class='dropdown'>
+          <router-link to="/combinedstats">Stats</router-link>
+          <router-link to="/dailystats">Daily stats</router-link>
+          <router-link to="/volumepercoin">Coin volumes</router-link>
+          <router-link to="/volumeperpair">Pair volumes</router-link>
+          <router-link to="/totaldeposits">Total deposits</router-link>
+        </div>
+      </div>
       <router-link to="/curvepay">Pay</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
@@ -48,6 +55,11 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
+      <router-link to="/combinedstats" class='showmobile'>Stats</router-link>
+      <router-link to="/dailystats" class='showmobile'>Daily stats</router-link>
+      <router-link to="/volumepercoin" class='showmobile'>Coin volumes</router-link>
+      <router-link to="/volumeperpair" class='showmobile'>Pair volumes</router-link>
+      <router-link to="/totaldeposits" class='showmobile'>Total deposits</router-link>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link to="/events" class='showmobile'>Events</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>

@@ -240,7 +240,7 @@
 				for(let pair of pairs) {
 					for(let [i, val] of pair.entries()) {
 						for(let [j, val1] of pair.entries()) {
-							if(i < j && !allPairs.includes(`${val}/${val1}`.toUpperCase())) {
+							if(i != j && !allPairs.includes(`${val}/${val1}`.toUpperCase())) {
 								allPairs.push(`${val}/${val1}`.toUpperCase())
 							}
 						}

@@ -1,5 +1,5 @@
 <template>
-	<div class='window white'>
+	<div :class="{'window white' : !embedded}">
 		<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 	</div>
 </template>
@@ -28,10 +28,9 @@
 		components: {
 			highcharts: Chart,
 		},
-		props: ['data', 'currency', 'loaded'],
+		props: ['data', 'currency', 'loaded', 'embedded'],
 		data() {
 			return {
-				titles: ['DAI', 'USDC', 'USDT', 'TUSD', 'BUSD', 'sUSD', 'PAX', 'tBTC', 'hBTC', 'wBTC', 'renBTC'],
 				btcs: ['tbtc', 'hbtc', 'wbtc', 'renbtc'],
 				chartdata: {
 					chart: {
@@ -120,7 +119,10 @@
 			},
 			loaded(val) {
 				this.chart.redraw(false)
-			}
+			},
+			currency(val) {
+				this.chart.redraw(false)
+			},
 		},
 		mounted() {
 			this.chart = this.$refs.highcharts.chart;

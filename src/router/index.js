@@ -23,6 +23,7 @@ const CurvePay = () => import('../components/CurvePay.vue')
 const Events = () => import('../components/Events.vue')
 const EstimateGas = () => import('../components/EstimateGas.vue')
 const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
+const VolumePerPair = () => import('../components/VolumePerPair.vue')
 const TotalDeposits = () => import('../components/TotalDeposits.vue')
 
 const ycTokens = () => import('../components/ycTokens/Index.vue')
@@ -109,6 +110,11 @@ let routes = [
         path: 'volumepercoin',
         name: 'VolumePerCoin',
         component: VolumePerCoin,
+      },
+      {
+        path: 'volumeperpair',
+        name: 'VolumePerPair',
+        component: VolumePerPair,
       },
       {
         path: 'totaldeposits',

@@ -49,7 +49,6 @@
 			Started swap WBTC->BTC
 		</span>
 
-		{{ state }}
 		<span v-show='state >= 31 && state < 61'>
 			Waiting for confirmations
 		</span>

@@ -3,18 +3,18 @@
 		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 			This is a beta version. Please test with small amounts and use with caution.
 		</div>
-	    <withdraw-native v-if='swapbtc' @loaded='loaded'></withdraw-native>
-	    <withdraw v-if='!swapbtc || (swapbtc && !loaded)'></withdraw>
 		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 	        <label for='swapbtc'>
-	        	Withdraw BTC
+	        	Withdraw <img :src="publicPath + 'tokens/btc.svg'" class='icon vamiddle'>
 	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
 	        		( {{hasIncomplete}} incomplete transactions)
 	        	</span>
 	        </label>
 	    	<span v-show='loading' class='loading line'></span>
 	    </div>
+	    <withdraw-native v-if='swapbtc' @loaded='loaded'></withdraw-native>
+	    <withdraw v-if='!swapbtc || (swapbtc && !loaded)'></withdraw>
     </div>
 </template>
 
@@ -69,6 +69,9 @@
 					currentContract.swapbtc = val
 				},
 			},
+			publicPath() {
+                return process.env.BASE_URL
+            },
 		},
 
 		methods: {

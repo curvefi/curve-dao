@@ -718,3 +718,7 @@ li.coins label:hover {
 .betaversion {
   margin-bottom: 1em;
 }
+
+.vamiddle {
+  vertical-align: middle;
+}

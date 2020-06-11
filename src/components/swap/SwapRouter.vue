@@ -1,20 +1,22 @@
 <template>
 	<div class='window white'>
-		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
-			This is a beta version. Please test with small amounts and use with caution.
+		<div class='aligncontainer'>
+			<div class='info-message gentle-message betaversion' v-show='swapbtc'>
+				This is a beta version. Please test with small amounts and use with caution.
+			</div>
+			<div v-show="currentPool == 'ren'" class='swapBTC-container'>
+		        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
+		        <label for='swapbtc'>
+		        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='icon vamiddle'>
+		        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
+		        		( {{hasIncomplete}} incomplete transactions)
+		        	</span>
+		        </label>
+		    	<span v-show='loading' class='loading line'></span>
+		    </div>
 		</div>
 	    <swap-native v-if='swapbtc' @loaded='loaded'></swap-native>
 	    <swap v-if='!swapbtc || (swapbtc && !loaded)'></swap>
-		<div v-show="currentPool == 'ren'" class='swapBTC-container'>
-	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
-	        <label for='swapbtc'>
-	        	Swap BTC
-	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
-	        		( {{hasIncomplete}} incomplete transactions)
-	        	</span>
-	        </label>
-	    	<span v-show='loading' class='loading line'></span>
-	    </div>
     </div>
 </template>
 
@@ -73,6 +75,9 @@
 					currentContract.swapbtc = val
 				},
 			},
+			publicPath() {
+                return process.env.BASE_URL
+            },
 		},
 
 		methods: {
@@ -91,5 +96,9 @@
 	}
 	.loading.line {
 		margin-left: 1em;
+	}
+	.aligncontainer {
+		margin: 0 auto;
+		width: 80%;
 	}
 </style>

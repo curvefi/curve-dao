@@ -408,7 +408,8 @@
                 if(this.currentPool == 'susdv2' && i == 3) {
                     this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
                     this.susdWaitingPeriod = (+amounts[2] != 0)
-                    highlight_red = this.fromInput > this.maxSynthBalance / this.precisions[this.from_currency]
+                    console.log(this.maxSynthBalance, "MAX SYNTH BALANCE", this.susdWaitingPeriod, "SUSD WAITING PERIOD")
+                    highlight_red = this.fromInput > this.maxSynthBalance
                     if(this.susdWaitingPeriod) highlight_red = true
                 }
                 if(highlight_red) 

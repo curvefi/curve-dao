@@ -7,7 +7,7 @@
 			<div v-show="currentPool == 'ren'" class='swapBTC-container'>
 		        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 		        <label for='swapbtc'>
-		        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='icon vamiddle'>
+		        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
 		        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
 		        		( {{hasIncomplete}} incomplete transactions)
 		        	</span>

@@ -279,6 +279,11 @@
 		},
 		methods: {
 			async mounted() {
+				//when used in OneSplit component
+				if(contract.currentContract != 'ren') {
+					contract.swap = contract.contracts.ren.swap
+					contract.coins = contract.contracts.ren.coins
+				}
 				if(this.from_currency == 1) this.address = contract.default_account
 				this.from_cur_handler()
 			},

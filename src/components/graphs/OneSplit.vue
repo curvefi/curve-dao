@@ -1,27 +1,28 @@
 <template>
     <div>
-        <div id='poolselect'>
-            <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
-            <label for='compoundpool1'>Compound</label>
-
-            <input id='ypool1' type='checkbox' value='y' v-model='pools'/>
-            <label for='ypool1'>Y</label>
-
-            <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
-            <label for='busdpool1'>bUSD</label>
-
-            <input id='susdpool1' type='checkbox' value='susdv2' v-model='pools'/>
-            <label for='susdpool1'>sUSD</label>
-
-            <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
-            <label for='paxpool1'>PAX</label>
-
-            <input id='renpool1' type='checkbox' value='ren' v-model='pools'/>
-            <label for='renpool1'>ren</label>
-
-        </div>
 
         <div class='swap exchange'>
+            <div id='poolselect'>
+                <input id='compoundpool1' type='checkbox' value='compound' v-model='pools'/>
+                <label for='compoundpool1'>Compound</label>
+
+                <input id='ypool1' type='checkbox' value='y' v-model='pools'/>
+                <label for='ypool1'>Y</label>
+
+                <input id='busdpool1' type='checkbox' value='busd' v-model='pools'/>
+                <label for='busdpool1'>bUSD</label>
+
+                <input id='susdpool1' type='checkbox' value='susdv2' v-model='pools'/>
+                <label for='susdpool1'>sUSD</label>
+
+                <input id='paxpool1' type='checkbox' value='pax' v-model='pools'/>
+                <label for='paxpool1'>PAX</label>
+
+                <input id='renpool1' type='checkbox' value='ren' v-model='pools'/>
+                <label for='renpool1'>ren</label>
+
+            </div>
+            
             <div class='exchangefields'>
                 <fieldset class='item'>
                     <legend>From:</legend>

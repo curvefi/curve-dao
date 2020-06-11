@@ -230,7 +230,7 @@
             async calcSlippage() {
             	try {
                     let inputs = [...this.inputs]
-                    inputs[0] = this.amountAfterBTC
+                    inputs[0] = this.amountAfterBTC > 0 ? this.amountAfterBTC : 0
 	            	this.slippagePromise.cancel();
 	        		this.slippagePromise = helpers.makeCancelable(common.calc_slippage(inputs, true))
 	        		await this.slippagePromise;

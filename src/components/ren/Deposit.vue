@@ -292,6 +292,7 @@
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
+                console.log(this.amounts, "AMOUNTS TO CALC ON", token_amount, "TOKEN AMOUNT")
 				this.estimateGas = contractGas.deposit[this.currentPool] / 2
 		        await common.approveAmount(this.coins[1], BN(this.amounts[1]), currentContract.default_account, adapterAddress)
 	

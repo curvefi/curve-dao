@@ -30,9 +30,14 @@
 			Do you want to <button @click="$emit('swapNow', transaction)">swap now</button> or
 			<button @click="$emit('receiveRen', transaction)">receive renBTC</button>
 		</span>
-		<span v-show='state == 13 && transaction.type == 3'>
+		<span v-show='state == 13 && transaction.type == 3 && !transaction.lessSent'>
 			Minimum token receive amount expired, you got {{ (transaction.utxoAmount / 1e8).toFixed(8) }} deposited
-			Do you wnat to <button @click="$emit('depositNow', transaction)">deposit now</button> or
+			Do you want to <button @click="$emit('depositNow', transaction)">deposit now</button> or
+			<button @click="$emit('receiveRenDeposit', transaction)">receive renBTC</button>
+		</span>
+		<span v-show='state == 13 && transaction.type == 3 && transaction.lessSent'>
+			You sent less than specified amount in BTC. You'll receive min {{ transaction.renCRVmin }}
+			Do you want to <button @click="$emit('depositNow', transaction)">deposit now</button> or
 			<button @click="$emit('receiveRenDeposit', transaction)">receive renBTC</button>
 		</span>
 		<span v-show='state == 16'>
@@ -44,16 +49,17 @@
 			Started swap WBTC->BTC
 		</span>
 
-		<span v-show='state == 31'>
+		{{ state }}
+		<span v-show='state >= 31 && state < 61'>
+			Waiting for confirmations
+		</span>
+
+		<span v-show='state == 61'>
 			Submitted to RenVM
 		</span>
 
-		<span v-show='state == 32'>
+		<span v-show='state == 62'>
 			Waiting for RenVM
-		</span>
-
-		<span v-show='state >= 33 && state < 63'>
-			Waiting for confirmations
 		</span>
 
 		<span v-show='state == 63'>

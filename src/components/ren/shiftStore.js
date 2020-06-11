@@ -57,8 +57,11 @@ const txObject = () => ({
 
 	min_amount: 0,
 	amounts: 0,
+	lessSent: false,
+	renCRVmin: null,
 
 	removed: false,
+
 })
 
 state.adapterContract = new contract.web3.eth.Contract(adapterABI, adapterAddress)
@@ -544,7 +547,7 @@ export async function receiveRen(transaction) {
 
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
-	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee)
+	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
 	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
 	console.log(exchangeRateNow, "EXCHANGE RATE NOW")
@@ -613,13 +616,21 @@ function calcFee() {
 export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmount, renResponse, signature }, depositNow = false, receiveRen = false) {
 	//handle change calc_token_amount like in mintThenSwap
 	let transaction = state.transactions.find(t => t.id == id);
-	let calc_token_amount = await contract.swap.methods.calc_token_amount(transaction.amounts, true)
+	let renAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
+	if(BN(transaction.amounts[0]).lt(utxoAmount)) {
+		transaction.lessSent = true
+	}
+	transaction.amounts[0] = renAmount.toFixed(0,1)
+	console.log(transaction.amounts, "AMOUNTS TO CALC FROM")
+	let calc_token_amount = await contract.swap.methods.calc_token_amount(transaction.amounts, true).call()
+	transaction.renCRVmin = (calc_token_amount / 1e18).toFixed(2);
+	console.log(calc_token_amount, "CALC TOKEN AMOUNT")
 	if(calc_token_amount  < transaction.new_min_amount && !depositNow && !receiveRen) {
 		transaction.state = 13
 		return;
 	}
 	if(depositNow) {
-		calc_token_amount = BN(calc_token_amount).times(BN(1).minus(BN(this.calcFee)))
+		calc_token_amount = BN(calc_token_amount).times(BN(1).minus(BN(calcFee())))
 		calc_token_amount = calc_token_amount.times(0.99).toFixed(0,1)
 		transaction.new_min_amount = calc_token_amount
 	}
@@ -810,19 +821,23 @@ export async function listenForBurn(id) {
 	    // The transaction hash of our contract call
 	    ethereumTxHash: tx.ethTxHash,
 	}).readFromEthereum()
+	if(tx.confirmations >= 30) {
+		tx.state = 61
+		upsertTx(tx)
+	}
 	let promiEvent = await burn.submit()
 	.on('txHash', hash => {
 		let tx = state.transactions.find(t => t.id == id)
 		console.log(hash, 'txHash event from ren')
 		subscriptionStore.removeTxNotification(tx.ethTxHash)
 		tx.renVMHash = hash
-		//tx.state = 31
+		//tx.state = 62
 		upsertTx(tx)
 	})
 	.on('status', status => {
 		console.log(status, "NEW STATUS")
 		let tx = state.transactions.find(t => t.id == id)
-		if(status == 'confirming' && tx.state >= 62) {
+		if(status == 'confirming' && tx.state >= 61) {
 			tx.confirmations = "Confirming"
 			tx.state = 62
 			upsertTx(tx)

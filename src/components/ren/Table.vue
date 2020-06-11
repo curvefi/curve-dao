@@ -44,8 +44,7 @@
 		</span>
 
 		<div v-show='fireUser === null' class='info-message gentle-message'>
-			Data about ren transactions is stored in local storage, which can be cleared or not stored if you use incognito mode.
-			<div>That means if you clear the storage, a loss of funds may occur.</div>
+			Please use permanent storage to prevent potential loss of funds while waiting for BTC deposits
 		</div>
 		
 		<p v-show='transactions.filter(t => t.removed).length'>
@@ -95,13 +94,13 @@
 							</span>
 							<span v-show='transaction.burnType == 2' class='tooltip'>
 								renBTC->BTC
-								<span class='tooltiptext long'>
+								<span class='tooltiptext medium'>
 									Remove liquidity imbalance
 								</span>
 							</span>
 							<span v-show='transaction.burnType == 3' class='tooltip'>
 								renBTC->BTC
-								<span class='tooltiptext long'>
+								<span class='tooltiptext medium'>
 									Remove liquidity in BTC
 								</span>
 							</span>

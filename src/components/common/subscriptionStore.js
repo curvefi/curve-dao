@@ -84,6 +84,7 @@ export async function registerSubscription(subscription) {
 export async function postTxNotification(txHash) {
 	let subscription = state.subscription
 	console.log(subscription)
+	if(subscription === null) return;
 	return fetch('https://pushservice.curve.fi/addtx', 
 		{
 		    method: 'POST', 
@@ -99,6 +100,7 @@ export async function postTxNotification(txHash) {
 export async function removeTxNotification(txHash) {
 	let subscription = state.subscription
 	console.log(subscription)
+	if(subscription === null) return;
 	return fetch('https://pushservice.curve.fi/removetx',
 		{
 			method: 'POST',

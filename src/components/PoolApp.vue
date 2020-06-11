@@ -78,6 +78,9 @@
         <div class="error window half-width info" id="error-window" v-show='error'>
           {{error}}
         </div>
+        <div class='info-message gentle-message window half-width gentle-message' v-show='hasConnectedWallet'>
+          You haven't connected a wallet. <button @click='changeWallets'>Connect wallet</button>
+        </div>
         <router-view/>
     </div>
     <balances-info
@@ -139,6 +142,9 @@
       logoSrc() {
         if(!currentContract.swapbtc) return this.publicPath + 'logo_optimized.svg'
         else return this.publicPath + 'logo_ren_beta_optimized.svg'
+      },
+      hasConnectedWallet() {
+        return this.default_account == '0x0000000000000000000000000000000000000000'
       },
     },
     methods: {

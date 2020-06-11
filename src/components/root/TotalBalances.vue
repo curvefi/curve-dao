@@ -72,6 +72,8 @@
 			    let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 			    chunkArr(decoded, 2).map((v, i, arr) => {
 			    	let balance = BN(v[0]).times(BN(v[1])).div(1e36)
+
+			    	//renBTC
 			    	if(i == 6) balance = balance.times(BN(priceStore.state.btcPrice))
 			    	total = total.plus(balance)
 			    })

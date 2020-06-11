@@ -576,7 +576,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 		).send({
 			from: state.default_account,
-			gas: 600000,
+			gas: 400000,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -648,7 +648,8 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			renResponse.autogen.nhash,
 			signature,
 		).send({
-			from: state.default_account
+			from: state.default_account,
+			gas: 600000,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -683,7 +684,7 @@ export async function burnSwap(data) {
 			BN(data.toInputOriginal).times(0.97).toFixed(0, 1),
 		).send({
 			from: state.default_account,
-			gas: 600000,
+			gas: 400000,
 		})
 	burn(tx, data.address, null, 0)
 }
@@ -696,7 +697,7 @@ export async function removeLiquidityThenBurn(data) {
 		data.min_amounts,
 	).send({
 		from: state.default_account,
-		gas: 600000,
+		gas: 400000,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 1)
@@ -727,7 +728,7 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		BN(data.min_amount).toFixed(0, 1),
 	).send({
 		from: state.default_account,
-		gas: 600000,
+		gas: 400000,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 3)

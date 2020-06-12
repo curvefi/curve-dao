@@ -4,20 +4,26 @@
         <h2>Curve FAQ</h2>
         <h3>What is Curve?</h3>
         <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
-        <p>Curve is an exchange liquidity pool on Ethereum (like <a
-         href="https://uniswap.exchange/">Uniswap</a>)
-        designed for (1) extremely efficient stablecoin trading (2) low
-        risk, supplemental fee income for liquidity providers, without an
-        opportunity cost.</p>
+        <p>
+            Curve is an exchange liquidity pool on Ethereum (like <a
+             href="https://uniswap.exchange/">Uniswap</a>)
+            designed for (1) extremely efficient stablecoin trading (2) low
+            risk, supplemental fee income for liquidity providers, without an
+            opportunity cost.</p>
 
-        <p>Curve allows users (and smart contracts like
-        <a href="http://1inch.exchange/">1inch</a>,
-        <a href="https://paraswap.io/">Paraswap</a>, <a href="https://swap.totle.com/">Totle</a> and <a href="https://dex.ag/">Dex.ag</a>)
-        to trade between DAI and USDC with a bespoke low slippage, low fee algorithm
-        designed specifically for stablecoins and earn fees. Behind the scenes, the
-        liquidity pool is also supplied to the <a href="https://compound.finance/">Compound</a> protocol
-        or <a href="https://iearn.finance/">iearn.finance</a>
-        where it generates even more income for liquidity providers.</p>
+            <p>Curve allows users (and smart contracts like
+            <a href="http://1inch.exchange/">1inch</a>,
+            <a href="https://paraswap.io/">Paraswap</a>, <a href="https://swap.totle.com/">Totle</a> and <a href="https://dex.ag/">Dex.ag</a>)
+            to trade between DAI and USDC with a bespoke low slippage, low fee algorithm
+            designed specifically for stablecoins and earn fees. Behind the scenes, the
+            liquidity pool is also supplied to the <a href="https://compound.finance/">Compound</a> protocol
+            or <a href="https://iearn.finance/">iearn.finance</a>
+            where it generates even more income for liquidity providers.
+
+            <div>
+                <router-link to='/integrations'>Integrations</router-link>
+            </div>
+        </p>
 
         <h3>Has Curve been audited?</h3>
         <p>Curve smart contracts were <router-link to="/audits">Audited</router-link> by

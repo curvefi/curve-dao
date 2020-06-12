@@ -30,6 +30,7 @@ const EstimateGas = () => import('../components/EstimateGas.vue')
 const VolumePerCoin = () => import('../components/VolumePerCoin.vue')
 const VolumePerPair = () => import('../components/VolumePerPair.vue')
 const TotalDeposits = () => import('../components/TotalDeposits.vue')
+const Integrations = () => import('../views/Integrations.vue')
 
 const ycTokens = () => import('../components/ycTokens/Index.vue')
 
@@ -140,6 +141,11 @@ let routes = [
         path: 'registry',
         name: 'Registry',
         component: Registry,
+      },
+      {
+        path: 'integrations',
+        name: 'Integrations',
+        component: Integrations,
       },
     ]
   },

@@ -47,6 +47,7 @@
           <router-link to="/events">Events</router-link>
           <router-link to="/contracts">Contracts</router-link>
           <router-link to="/rootfaq">FAQ</router-link>
+          <router-link to="/integrations">Integrations</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
           <a href="https://t.me/curvefi">@Telegram</a>
           <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB">Dune Analytics</a>
@@ -63,6 +64,7 @@
       <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link to="/events" class='showmobile'>Events</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
+      <router-link to="/integrations" class='showmobile'>Integrations</router-link>
       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile'>@Telegram</a>
       <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='showmobile'>Dune Analytics</a>

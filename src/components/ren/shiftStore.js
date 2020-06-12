@@ -630,7 +630,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	let calc_token_amount = await contract.swap.methods.calc_token_amount(actualAmounts, true).call()
 	transaction.renCRVmin = (calc_token_amount / 1e18).toFixed(2);
 	console.log(calc_token_amount, "CALC TOKEN AMOUNT")
-	if(calc_token_amount  < transaction.new_min_amount && !depositNow && !receiveRen) {
+	if(+calc_token_amount  < +transaction.new_min_amount && !depositNow && !receiveRen) {
 		transaction.state = 13
 		return;
 	}

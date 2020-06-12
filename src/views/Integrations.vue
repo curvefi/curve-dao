@@ -203,7 +203,6 @@
 		height: 0;
 		overflow: hidden;
 		transition: all 0.5s;
-		margin-top: 0.4em;
 		margin-left: 2.2em;
 	}
 
@@ -218,6 +217,8 @@
 	}
 
 	fieldset > div > a {
+		height: 2em;
+		vertical-align: middle;
 		display: flex;
 	}
 
@@ -226,7 +227,12 @@
 	}
 
 	fieldset > div > a .icon-container {
+		height: auto;
 		flex: 0.15;
+	}
+
+	fieldset > img {
+		vertical-align: middle;
 	}
 
 	fieldset > div > a .text {

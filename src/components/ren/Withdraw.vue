@@ -265,7 +265,7 @@
                 return this.fee * N_COINS / (4 * (N_COINS -1))
             },
             amountAfterBTC() {
-              return ((this.inputs[0] * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8).toFixed(8)
+              return (BN(this.inputs[0]).times(1e8).times(1-state.mintFee/10000).minus(state.minersLockFee)).div(1e8).toFixed(8)
             },
             minOrderSize() {
                 return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8 + 0.00000547).toFixed(8)

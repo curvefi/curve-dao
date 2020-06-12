@@ -28,7 +28,7 @@
                         </label>
                         </li>
                         <div v-show='from_currency == 0 && amountAfterBTC >= 0' class='amount-after-fees'> 
-                        	Amount after renVM fees: {{amountAfterBTC.toFixed(8)}}
+                        	Amount after renVM fees: {{amountAfterBTC}}
                         </div>
                     </ul>
                 </fieldset>
@@ -62,7 +62,7 @@
                         </label>
                         </li>
                         <div v-show='from_currency == 1 && amountAfterWBTC >= 0' class='amount-after-fees'>
-                        	Amount after renVM fees: {{amountAfterWBTC.toFixed(8)}}
+                        	Amount after renVM fees: {{amountAfterWBTC}}
                         </div>
                     </ul>
                 </fieldset>
@@ -211,10 +211,10 @@
             	return this.toInputOriginal / this.fromInput
             },
             amountAfterBTC() {
-            	return (this.fromInput * 1e8 * (1-state.mintFee/10000) - state.minersLockFee) / 1e8 
+            	return (BN(this.fromInput).times(1e8).times(1-state.mintFee/10000).minus(state.minersLockFee)).div(1e8).toFixed(8)
             },
             amountAfterWBTC() {
-            	return (this.toInputOriginal * 1e8 * (1-state.burnFee/10000) - state.minersReleaseFee) / 1e8
+            	return (BN(this.toInputOriginal).times(1e8).times(1-state.burnFee/10000).minus(state.minersReleaseFee)).div(1e8).toFixed(8)
             },
             minOrderSize() {
             	return state.minersReleaseFee + state.burnFee / 10000

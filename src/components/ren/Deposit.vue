@@ -185,7 +185,6 @@
                 	this.inf_approval = false
                 this.disabledButtons = false;
                 this.highlightInputs(0)
-                console.log("HERE")
             },
             getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)

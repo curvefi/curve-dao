@@ -211,25 +211,27 @@ export async function setItem(key, item) {
 	// if(state.space !== null) {
 	// 	return await state.space.private.set(key, JSON.stringify(item))
 	// }
+	localStorage.setItem(key, JSON.stringify(item))
 	if(state.fireUser) {
 		console.log(item, "SET ITEM")
 		//fix firebase undefined error
 		//not needed when data is encrypted
 		//if(item.params && item.params.contractCalls[0].txConfig === undefined) item.params.contractCalls[0].txConfig = null
 		item = {data: await helpers.AES_GCM_encrypt(JSON.stringify(item), state.aes_key)}
-		return firestore.collection(state.fireUser.uid).doc(key).set(item)
+		firestore.collection(state.fireUser.uid).doc(key).set(item)
 	}
-	return localStorage.setItem(key, JSON.stringify(item))
+	//return localStorage.setItem(key, JSON.stringify(item))
 }
 
 export async function removeItem(key) {
 	// if(state.space !== null) {
 	// 	return await state.space.private.remove(key)
 	// }
+	localStorage.removeItem(key)
 	if(state.fireUser) {
 		return firestore.collection(state.fireUser.uid).doc(key).delete(item)
 	}
-	return localStorage.removeItem(key)	
+	//return localStorage.removeItem(key)
 }
 
 export async function getItem(key) {
@@ -241,6 +243,7 @@ export async function getItem(key) {
 			let encrypted = doc.data().data
 			return JSON.parse(await helpers.AES_GCM_decrypt(encrypted, state.aes_key))
 		}
+		else return localStorage.getItem(key)
 	}
 	return localStorage.getItem(key)
 }

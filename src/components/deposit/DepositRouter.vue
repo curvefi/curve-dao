@@ -3,7 +3,7 @@
 		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 			This is a beta version. Please test with small amounts and use with caution.
 		</div>
-		<div v-show="currentPool == 'ren'" class='swapBTC-container info-message gentle-message'>
+		<!-- <div v-show="currentPool == 'ren'" class='swapBTC-container info-message gentle-message'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 	        <label for='swapbtc'>
 	        	Deposit <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
@@ -12,7 +12,7 @@
 	        	</span>
 	        </label>
 	    	<span v-show='loading' class='loading line'></span>
-	    </div>
+	    </div> -->
 	    <deposit-native v-if='swapbtc' @loaded='loaded'></deposit-native>
 	    <deposit v-if='!swapbtc || (swapbtc && !loaded)'></deposit>
     </div>

@@ -299,6 +299,7 @@
 			    let receipt;
 			    let minted = 0;
                 //this.waitingMessage = 'Please confirm deposit transaction'
+                console.log(this.amounts, "THE AMOUNTS")
 		    	let add_liquidity = store.deposit({ btcAmount: this.inputs[0], amounts: this.amounts, min_amount: token_amount })
 			    try {
 			    	receipt = await add_liquidity

@@ -621,7 +621,10 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		transaction.lessSent = true
 	}
 	let actualAmounts = transaction.amounts.slice()
-	actualAmounts[0] = renAmount.toFixed(0,1)
+	actualAmounts[0] = BN(utxoAmount).toFixed(0,1)
+	console.log(utxoAmount, "UTXO AMOUNT")
+	console.log(actualAmounts, "ACTUAL AMOUNTS")
+	console.log(renAmount, "REN AMOUNT")
 	//transaction.amounts[0] = renAmount.toFixed(0,1)
 	console.log(transaction.amounts, "AMOUNTS TO CALC FROM")
 	let calc_token_amount = await contract.swap.methods.calc_token_amount(actualAmounts, true).call()

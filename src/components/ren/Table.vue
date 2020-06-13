@@ -290,7 +290,7 @@
 			},
 
 			swapNow(transaction) {
-				store.swapNow(transactions)
+				store.swapNow(transaction)
 			},
 
 			receiveRen(transaction) {

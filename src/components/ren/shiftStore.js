@@ -189,15 +189,21 @@ export async function useFirestore() {
 		// 								(err, result) => {if(err) {reject(err)} else resolve(result)
 		// 							})
 		// 						})
-		msg_signature = await new Promise((resolve, reject) => {
-				web3.currentProvider.sendAsync({
-				method: 'personal_sign',
-				params: [contract.web3.utils.utf8ToHex("Sign in to store transaction data"), contract.default_account],
-				from: contract.default_account,
-			}, (err, result) => {if(err) {reject(err)} else resolve(result)})
-		})
-		console.log(msg_signature, "SIGNATURE")
-		msg_signature = msg_signature.result
+		if(localStorage.getItem('selectedWallet').toLowerCase() == 'authereum') {
+			msg_signature = await contract.web3.currentProvider.signMessageWithSigningKey("Sign in to store transaction data")
+			console.log(msg_signature, "SIGNATURE")
+		}
+		else {
+			msg_signature = await new Promise((resolve, reject) => {
+					web3.currentProvider.sendAsync({
+					method: 'personal_sign',
+					params: [contract.web3.utils.utf8ToHex("Sign in to store transaction data"), contract.default_account],
+					from: contract.default_account,
+				}, (err, result) => {if(err) {reject(err)} else resolve(result)})
+			})
+			console.log(msg_signature, "SIGNATURE")
+			msg_signature = msg_signature.result
+		}
 	}
 	state.msg_signature = msg_signature
 	addFirebaseUser(contract.default_account, msg_signature)

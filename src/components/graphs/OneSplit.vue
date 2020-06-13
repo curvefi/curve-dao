@@ -656,7 +656,7 @@
                         this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                     balanceCalls.push([this.snxExchanger._address, 
                         this.snxExchanger.methods
-                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .maxSecsLeftInWaitingPeriod(contract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
                             .encodeABI()
                     ])
                 }
@@ -665,12 +665,13 @@
                 let amounts = balances.map(balance => contract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
                 let highlight_red = this.fromInput > balances[0] / this.precisions(this.from_currency)
+                console.log(highlight_red, "HIGHLIGHT RED")
                 if(i == 5) {
                     this.maxSynthBalance = amounts[1]
                     this.susdWaitingPeriod = (+amounts[2] != 0)
                     highlight_red = this.fromInput > this.maxSynthBalance / this.precisions(this.from_currency)
                     if(this.susdWaitingPeriod) highlight_red = true
-                }
+                }   
                 if(highlight_red) 
                     this.fromBgColor = 'red'
                 else
@@ -951,7 +952,7 @@
                     }
                 }
                 finally {
-                    //this.highlight_input()
+                    this.set_from_amount(this.from_currency)
                 }
             },
             async set_max_balance() {

@@ -342,7 +342,7 @@
                     this.disabled = true
                 }
                 finally {
-                    //this.highlight_input();
+                    this.set_from_amount(this.from_currency);
                 }
                 this.promise = helpers.makeCancelable(promise)
             },

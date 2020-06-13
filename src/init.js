@@ -61,7 +61,7 @@ const wallets = [
   { walletName: "coinbase" },
   { walletName: "status" },
   { walletName: "fortmatic", apiKey: "pk_live_190B10CE18F47DCD" },
-  { walletName: "authereum" },
+  { walletName: "authereum", apiKey: "_BTsipRcEmPeuVteLOGdoh1CXt733YLZ7u3ipbe_dAk" },
   { 
     walletName: "trust",
     rpcUrl: "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b",

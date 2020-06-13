@@ -149,6 +149,7 @@
 							@depositNow='depositNow'
 							@receiveRenDeposit='receiveRenDeposit'
 							@mint='mintThenSwap'
+							@resubmit='resubmit'
 							/>
 					</td>
 					<td class='nowrap'>
@@ -298,6 +299,10 @@
 
 			depositNow(transaction) {
 				store.depositNow(transaction)
+			},
+
+			resubmit(transaction) {
+				store.resubmit(transaction)
 			},
 
 			receiveRenDeposit(transaction) {

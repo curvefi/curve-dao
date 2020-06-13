@@ -104,6 +104,7 @@ export async function loadTransactions() {
 	}
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 	let transactions = state.transactions.filter(t => !t.removed)
+	checkForFailed(transactions)
 	//send all txs so case is handled when user goes to submit 
 	let mints = transactions.filter(t => [0,3].includes(t.type) && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
@@ -791,7 +792,7 @@ export async function burn(burn, address, renBTCAmount, burnType) {
 			// 	})
 		})
 		.on('error', (err, receipt) => {
-			console.log(err, receipt, "ERR RECEIPT")
+			txFailed(receipt.transactionHash)
 		})
 		.catch(err => reject(err))
 	})
@@ -809,6 +810,31 @@ export async function burn(burn, address, renBTCAmount, burnType) {
 	})
 	let tx = state.transactions[0]
 	upsertTx(tx)
+}
+
+async function checkForFailed(transactions) {
+	transactions = transactions.filter(t => t.ethTxHash)
+	let receipts = await Promise.all(transactions.map(t => contract.web3.getTransactionReceipt(t.ethTxHash)))
+	receipts = receipts.filter(receipt => receipt.blockNumber !== null)
+	for(let receipt of receipts) {
+		if(receipt.status === false) {
+			txFailed(receipt.transactionHash)
+		}
+	}
+}
+
+async function txFailed(txhash) {
+	let transaction = state.transactions.find(t => t.ethTxHash == txhash)
+	transaction.state = 66
+	upsertTx(transaction)
+}
+
+export async function resubmit(transaction) {
+	if(transaction.type == 0) mintThenSwap(trasaction)
+	if(transaction.type == 3) mintThenDeposit(transaction)
+	if(transaction.type == 1 && transaction.burnType == 1) removeLiquidityThenBurn(transaction)
+	if(transaction.type == 1 && transaction.burnType == 2) removeLiquidityImbalanceThenBurn(transaction)
+	if(transaction.type == 1 && transaction.burnType == 3) removeLiquidityOneCoinThenBurn(transaction)
 }
 
 export async function listenForReplacement(txhash) {
@@ -836,6 +862,7 @@ export async function listenForReplacement(txhash) {
 		else tx.state = 14
 		upsertTx(tx)
 	})
+	emitter.on('txFailed', transaction => txFailed(transaction.hash))
 }
 
 export async function listenForBurn(id) {

@@ -42,7 +42,7 @@
 		</span>
 		<span v-show='state == 16'>
 			ETH transaction failed
-			<button @click="$emit('mint', transaction)">resubmit</button>
+			<button @click="$emit('resubmit', transaction)">resubmit</button>
 		</span>
 
 		<span v-show='state == 30'>
@@ -71,6 +71,11 @@
 
 		<span v-show='state == 65'>
 			BTC sent
+		</span>
+
+		<span v-show='state == 66'>
+			ETH transaction failed
+			<button @click="$emit('resubmit', transaction)">resubmit</button>
 		</span>
 	</div>
 </template>

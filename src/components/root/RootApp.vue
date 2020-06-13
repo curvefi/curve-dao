@@ -40,6 +40,7 @@
         </div>
       </div>
       <router-link to="/curvepay">Pay</router-link>
+      <router-link to="/risks">Risks</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>

@@ -54,6 +54,7 @@
           <router-link to="/events">Events</router-link>
           <a :href="'https://etherscan.io/address/' + this.poolAddress">Pool contract</a>
           <a :href="'https://etherscan.io/address/' + this.tokenAddress">Token contract</a>
+          <router-link to="/risks">Risks</router-link>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link to="/integrations">Integrations</router-link>
           <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>

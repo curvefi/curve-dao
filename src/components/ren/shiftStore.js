@@ -192,7 +192,7 @@ export async function useFirestore() {
 		msg_signature = await new Promise((resolve, reject) => {
 				web3.currentProvider.sendAsync({
 				method: 'personal_sign',
-				params: ["Sign in to store transaction data", contract.default_account],
+				params: [contract.web3.utils.utf8ToHex("Sign in to store transaction data"), contract.default_account],
 				from: contract.default_account,
 			}, (err, result) => {if(err) {reject(err)} else resolve(result)})
 		})

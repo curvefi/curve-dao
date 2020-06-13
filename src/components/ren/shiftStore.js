@@ -584,7 +584,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		return;
 	}
 	if(swapNow) {
-		transaction.newMinExchangeRate = BN(exchangeRateNow).times(BN((1000-data.slippage)/1000)).toFixed(0,1)
+		transaction.newMinExchangeRate = BN(exchangeRateNow).times(BN((10000-transaction.slippage)/10000)).toFixed(0,1)
 	}
 	if(receiveRen) {
 		//make the rate impossibly high so the check for exchange always fails

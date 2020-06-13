@@ -74,7 +74,8 @@ async function init() {
 	state.minersReleaseFee = fees.btc.release
 	state.mintFee = fees.btc.ethereum.mint
 	state.burnFee = fees.btc.ethereum.burn
-	loadTransactions()
+	if(findFirebaseUserSignature(contract.default_account)) useFirestore()
+	else loadTransactions()
 }
 
 init()

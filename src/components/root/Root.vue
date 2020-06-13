@@ -387,13 +387,15 @@
 				let calls = [
 					[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
 					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
+					[curveRewards._address, curveRewards.methods.DURATION().encodeABI()],
+					[curveRewards._address, curveRewards.methods.rewardRate().encodeABI()],
 				]
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
 				let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
 				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
 				let snxPrice = await request.json();
 				snxPrice = snxPrice.quotes.USD.price;
-				this.snxRewards = 365 * 48000/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+				this.snxRewards = 365 * (decoded[2] * decoded[3] / 1e18)/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
 			},
 			async getBalances() {
 				if(!contract.default_account) return;

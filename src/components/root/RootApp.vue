@@ -134,6 +134,7 @@
         changeContract(pool)
       },
       async changeWallets() {
+        onboard.walletReset()
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
         init(false)

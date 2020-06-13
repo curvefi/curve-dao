@@ -154,10 +154,12 @@
         changeContract(pool)
       },
       async changeWallets() {
+        currentContract.default_account = ''
         onboard.walletReset()
         localStorage.removeItem('selectedWallet')
         currentContract.totalShare = 0
-        init(false)
+        let userSelectedWallet = await onboard.walletSelect();
+        await onboard.walletCheck();
       },
       async changeAccounts() {
         return onboard.accountSelect();

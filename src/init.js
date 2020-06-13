@@ -114,7 +114,7 @@ export const onboard = Onboard({
       }
     },
     address: account => {
-      if(state.contract.default_account)
+      if(state.contract.default_account && state.contract.initializedContracts)
         common.update_fee_info()
       state.contract.default_account = account;
     }

@@ -79,8 +79,29 @@ async function init() {
 
 init()
 
+async function syncStores(items) {
+
+	//sync firebase to localstorage
+	for(let item of items) {
+		localStorage.setItem('curvebtc_' + item.id, JSON.stringify(item))
+	}
+
+	//sync not synced local items to firebase
+	for(let key of Object.keys(localStorage).filter(key => key.startsWith('curvebtc_'))) {
+		let item = {data: await helpers.AES_GCM_encrypt(localStorage[key], state.aes_key)}
+		firestore.collection(state.fireUser.uid).doc(key).set(item)
+	}
+}
+
 export async function loadTransactions() {
 	let items = await getAllItems()
+	if(state.fireUser !== null && firestore !== null) {
+		syncStores(items)
+		let unsyncedLocal = Object.keys(localStorage)
+				.filter(key => key.startsWith('curvebtc_') && items.find(item => item.id == '_' + key.split('__')[1]) == undefined)
+				.map(key => JSON.parse(localStorage[key]))
+				items = items.concat(unsyncedLocal)
+	}
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 	let transactions = state.transactions.filter(t => !t.removed)
 	//send all txs so case is handled when user goes to submit 

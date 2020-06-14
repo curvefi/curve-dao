@@ -96,7 +96,7 @@ async function syncStores(items) {
 	// 					.filter(key => key.startsWith('curvebtc_'))
 	// 					.filter(key => items.find(item => 'curvebtc_' + item.id == key) == undefined)
 
-	for(let key of Object.keys(localStorage)) {
+	for(let key of Object.keys(localStorage).filter(key => key.startsWith('curvebtc_'))) {
 		let data = await helpers.AES_GCM_encrypt(localStorage[key], state.aes_key)
 		await fetch('https://pushservice.curve.fi/db/upserttx', {
 			method: 'POST',
@@ -336,21 +336,26 @@ export async function getAllItems() {
 		catch(err) {
 			console.error(err)
 		}
-		let dbdata = await fetch('https://pushservice.curve.fi/db/transactions', {
-			method: 'POST',
-			headers: {
-				'Content-type': 'application/json',
-			},
-			body: JSON.stringify({
-				password: state.password,
+		try {
+			let dbdata = await fetch('https://pushservice.curve.fi/db/transactions', {
+				method: 'POST',
+				headers: {
+					'Content-type': 'application/json',
+				},
+				body: JSON.stringify({
+					password: state.password,
+				})
 			})
-		})
-		dbdata = (await dbdata.json()).result
-		dbdata = await Promise.all(dbdata
-					.filter(dbitem => data.find(d => dbitem.key == 'curvebtc_' + d.id) === undefined)
-					.map(async dbitem => JSON.parse(await helpers.AES_GCM_decrypt(dbitem.transaction, state.aes_key))))
-		dbdata = dbdata || []
-		data = data.concat(dbdata)
+			dbdata = (await dbdata.json()).result
+			dbdata = await Promise.all(dbdata
+						.filter(dbitem => data.find(d => dbitem.key == 'curvebtc_' + d.id) === undefined)
+						.map(async dbitem => JSON.parse(await helpers.AES_GCM_decrypt(dbitem.transaction, state.aes_key))))
+			dbdata = dbdata || []
+			data = data.concat(dbdata)
+		}
+		catch(err) {
+			console.error(err)
+		}
 		return data
 	}
 	return Object.keys(storage).filter(key => key.startsWith('curvebtc_')).map(k => JSON.parse(storage[k]))

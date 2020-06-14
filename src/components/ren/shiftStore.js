@@ -69,6 +69,10 @@ state.address = state.default_account =  contract.default_account
 state.sdk = sdk
 
 async function init() {
+	if(contract.currentContract != 'ren') {
+		contract.swap = contract.contracts.ren.swap
+		contract.coins = contract.contracts.ren.coins
+	}
 	let fees = await sdk.getFees()
 	state.minersLockFee = fees.btc.lock
 	state.minersReleaseFee = fees.btc.release

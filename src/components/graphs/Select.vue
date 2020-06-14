@@ -102,9 +102,9 @@
 				}
 				let currency_i = this.pair.val.split('-')[0]
 				let currency_j = this.pair.val.split('-')[1]
-
 				let poolsWithPair = Object.fromEntries(Object.entries(this.filteredCurrencies).filter(([key, pairs]) => Object.keys(pairs).includes(currency_i) && Object.keys(pairs).includes(currency_j)))
-				this.pools = tradeStore.pools = Object.keys(poolsWithPair).filter(pool => this.pools.includes(pool))
+				poolsWithPair = Object.keys(poolsWithPair).map(pool => pool == 'iearn' ? 'y' : pool)
+				this.pools = tradeStore.pools = poolsWithPair.filter(pool => this.pools.includes(pool))
 				tradeStore.pairIdx = this.pair.idx
 				tradeStore.pairVal = this.pair.val
 				tradeStore.interval = this.interval

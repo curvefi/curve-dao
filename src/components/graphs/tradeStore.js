@@ -33,7 +33,7 @@ export const getters = {
 }
 
 export async function updatePoolInfo() {
-	//state.poolInfo = []
+	state.poolInfo = []
 	let calls = []
 	for(let [key, pool] of state.pools.entries()) {
 		if(pool == 'y') pool = 'iearn'

@@ -61,9 +61,9 @@
                             </label>
                         </label>
                         </li>
-                        <!-- <div v-show='from_currency == 1 && amountAfterWBTC >= 0' class='amount-after-fees'>
-                        	Amount after renVM fees: {{amountAfterWBTC}}
-                        </div> -->
+                        <div v-show='from_currency == 1 && toInputOriginal >= 0' class='amount-after-fees'>
+                        	Amount before renVM fees: {{toInputOriginal}}
+                        </div>
                     </ul>
                 </fieldset>
             </div>

@@ -5,6 +5,8 @@
             <img :src="publicPath + 'logo.png'" class='icon'> Curve Finance
         </h2>
 
+        <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
+
         <h3>Audits</h3>
 
         <p>
@@ -31,6 +33,12 @@
             <p>
                 Curve will be transitioning to a DAO to be fully decentralized.
             </p>
+        </p>
+
+        <h3>Permanent loss of a peg</h3>
+
+        <p>
+            If one of the stablecoins in the pool goes significantly down below the peg of 1.0 and never returns to the peg, it'll effectively mean that pool liquidity providers hold almost all their liquidity in that currency.
         </p>
 
     </div>

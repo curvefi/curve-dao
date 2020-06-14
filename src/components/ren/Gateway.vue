@@ -61,9 +61,9 @@
                             </label>
                         </label>
                         </li>
-                        <div v-show='from_currency == 1 && amountAfterWBTC >= 0' class='amount-after-fees'>
+                        <!-- <div v-show='from_currency == 1 && amountAfterWBTC >= 0' class='amount-after-fees'>
                         	Amount after renVM fees: {{amountAfterWBTC}}
-                        </div>
+                        </div> -->
                     </ul>
                 </fieldset>
             </div>
@@ -205,6 +205,7 @@
 				return BN(this.maxBalance).div(1e8).toFixed(8)
 			},
 			exchangeRate() {
+				if(this.from_currency == 1) return this.amountAfterWBTC / this.fromInput
             	return this.toInput / this.fromInput
             },
             exchangeRateOriginal() {
@@ -339,7 +340,7 @@
 					}
 					else {
 						this.toInput = (result - fee)*ethfee / 1e8
-						this.toInput = result / 1e8
+						//this.toInput = result / 1e8
 						this.toInputOriginal = result / 1e8
 					}
 				}

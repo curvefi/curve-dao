@@ -2,7 +2,7 @@
 	<div class="window white">
         <h2>
             Risks of using 
-            <img :src="publicPath + 'logo.png'" class='icon'> Curve Finance
+            <span><img :src="publicPath + 'logo.png'" class='icon'> Curve Finance</span>
         </h2>
 
         <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
@@ -57,11 +57,18 @@
 <style>
     h2 {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
     }
 
     h2 img {
         margin-left: 0.7em;
         margin-right: 0.3em;
+    }
+
+    @media only screen and (max-device-width: 470px) {
+        h2 img {
+            margin-left: 0;
+        }
     }
 </style>

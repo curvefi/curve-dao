@@ -88,11 +88,11 @@ async function syncStores(items) {
 	}
 
 	//sync not synced local items to firebase and db
-	let localOnlyItems = Object.keys(localStorage)
-						.filter(key => key.startsWith('curvebtc_'))
-						.filter(key => items.find(item => 'curvebtc_' + item.id == key) == undefined)
+	// let localOnlyItems = Object.keys(localStorage)
+	// 					.filter(key => key.startsWith('curvebtc_'))
+	// 					.filter(key => items.find(item => 'curvebtc_' + item.id == key) == undefined)
 
-	for(let key of localOnlyItems) {
+	for(let key of Object.keys(localStorage)) {
 		let data = await helpers.AES_GCM_encrypt(localStorage[key], state.aes_key)
 		await fetch('https://pushservice.curve.fi/db/upserttx', {
 			method: 'POST',
@@ -117,7 +117,8 @@ export async function loadTransactions() {
 		let unsyncedLocal = Object.keys(localStorage)
 				.filter(key => key.startsWith('curvebtc_') && items.find(item => item.id == '_' + key.split('__')[1]) == undefined)
 				.map(key => JSON.parse(localStorage[key]))
-				items = items.concat(unsyncedLocal)
+				.filter(item => item.id)
+		items = items.concat(unsyncedLocal)
 	}
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 	let transactions = state.transactions.filter(t => !t.removed)
@@ -237,7 +238,12 @@ export async function useFirestore() {
 	catch(err) {
 		console.error(err)
 		console.log("SIGN IN INSTEAD", password)
-		let user = await firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		try {
+			let user = await firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
+		}
+		catch(err) {
+			console.error(err)
+		}
 		console.log(err.code, "ERR CODE")
 		// if(err.code == 'auth/email-already-in-use') {
 		// 	let user = firebaseApp.auth().signInWithEmailAndPassword(`${contract.default_account}@curve.fi`, password)
@@ -259,7 +265,6 @@ export async function setItem(key, item) {
 	localStorage.setItem(key, JSON.stringify(item))
 	if(state.fireUser) {
 		let data = await helpers.AES_GCM_encrypt(JSON.stringify(item), state.aes_key)
-		console.log(item, "SET ITEM")
 		try {
 			await fetch('https://pushservice.curve.fi/db/upserttx', {
 				method: 'POST',
@@ -338,7 +343,7 @@ export async function getAllItems() {
 		})
 		dbdata = (await dbdata.json()).result
 		dbdata = await Promise.all(dbdata
-					.filter(dbitem => data.find(d => dbitem.id == 'curvebtc_' + d.id) === undefined)
+					.filter(dbitem => data.find(d => dbitem.key == 'curvebtc_' + d.id) === undefined)
 					.map(async dbitem => JSON.parse(await helpers.AES_GCM_decrypt(dbitem.transaction, state.aes_key))))
 		dbdata = dbdata || []
 		data = data.concat(dbdata)

@@ -61,7 +61,7 @@
 				<tr>
 					<th>Type</th>
 					<th>BTC Address</th>
-					<th>Confirmations</th>
+					<th class='confirmations'>Confirmations</th>
 					<th>Status</th>
 					<th>Progress</th>
 				</tr>
@@ -129,7 +129,9 @@
 						<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>▬</span>
 						<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer" v-show='!([0,3].includes(transaction.type) && transaction.state == 1)'> 
 							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 2 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
-							<span v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>Confirmed</span>
+							<span class='confirmed' v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>
+								Confirmed
+							</span>
 							<span v-show='[0,3].includes(transaction.type) && [14,15].includes(transaction.state)'>
 								Done
 							</span>
@@ -411,5 +413,22 @@
 	.notification.tooltip {
 		margin-left: 1em;
 		margin-top: 1em;
+	}
+
+	@media only screen and (max-device-width: 700px) {
+		.confirmations, .confirmed {
+			font-size: 0;
+			letter-spacing: -1px;
+			color: transparent;
+		}
+		.confirmations::after, .confirmed::after {
+			content: "✓";
+			font-size: 16px;
+			letter-spacing: normal;
+			color: black;
+		}
+		.shifttype {
+			white-space: pre-line;
+		}
 	}
 </style>

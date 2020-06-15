@@ -51,6 +51,14 @@
         will be displayed. The exchange rate might surprise you - that’s the
         power of Curve.</p>
 
+        <h3>Fees</h3>
+        <p>
+            Currently the fee on all pools is 0.04% which all goes to liquidity providers. There is no admin fee.
+        </p>
+        <p>
+            In the future, fees and pool parameters will be decided by a DAO.
+        </p>
+
         <h3>How do I provide liquidity to Curve?</h3>
 
         <p>Curve uses <a href="https://compound.finance/ctokens">cTokens</a>,

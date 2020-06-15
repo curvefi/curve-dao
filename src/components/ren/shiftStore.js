@@ -781,7 +781,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 export async function burnSwap(data) {
 	await common.approveAmount(contract.coins[1], 
 		BN(data.fromInput).times(1e8), 
-		state.default_account, adapterAddress)
+		state.default_account, adapterAddress, data.inf_approval)
 
 	let tx = state.adapterContract.methods.swapThenBurn(
 			RenJS.utils.BTC.addressToHex(data.address),

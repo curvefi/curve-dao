@@ -148,6 +148,7 @@
       },
       hasConnectedWallet() {
         return this.default_account == '0x0000000000000000000000000000000000000000'
+                && !['Donate', 'StatsDaily', 'Audits', 'Stats', 'Contracts', 'FAQ', 'RootFAQ'].includes(this.$route.name)
       },
     },
     methods: {

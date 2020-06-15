@@ -791,6 +791,7 @@
 				if(address.toLowerCase() == '0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB'.toLowerCase()) return 'busd zap'
 				if(address.toLowerCase() == '0xFCBa3E75865d2d561BE8D220616520c171F12851'.toLowerCase()) return 'susd zap'
 				if(address.toLowerCase() == '0xA50cCc70b6a011CffDdf45057E39679379187287'.toLowerCase()) return 'pax zap'
+				if(address.toLowerCase() == '0x9fe350dfa5f66bc086243f21a8f0932514316627'.toLowerCase()) return 'Curve Ren Adapter'
 				return address.slice(0,6) + '...' + address.slice(-6)
 			},
 			totalAmount(event) {

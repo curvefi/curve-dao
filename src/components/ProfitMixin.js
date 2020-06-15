@@ -187,6 +187,7 @@ export default {
 			}
 			const decimals = ['yUSDC', 'yUSDT'].includes(curr) ? 6 : 18;
 		    if (decimals === 18) {
+		    	console.log(value, "THE VALUE")
 		        return Number(currentContract.web3.utils.fromWei(value.toFixed(0)));
 		    }
 		    return value.toNumber() / 10 ** decimals;
@@ -417,6 +418,7 @@ export default {
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
 		        this.depositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
 		        if(this.currentPool == 'ren') this.depositsUSD = depositUsdSum / 100 * this.btcPrice
+		        console.log("GET FROM LAST BLOCK")
 		    }
 
 		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({
@@ -471,7 +473,6 @@ export default {
 		        }
 		    }
 		    console.timeEnd('timer')
-		    this.clearCache();
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dlastAddress', default_account)
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);

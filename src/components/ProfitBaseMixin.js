@@ -13,7 +13,6 @@ export default {
       })
       this.$watch(()=>currentContract.currentContract, val => {
           this.nullifyAmounts()
-          this.clearCache()
           this.mounted();
       })
     },

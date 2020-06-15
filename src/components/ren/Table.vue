@@ -123,6 +123,12 @@
 							</span>
 							<img class='icon small hoverpointer qrcode' v-show='[0,3].includes(transaction.type)'
 								@click='showQR(transaction)' :src="publicPath + 'qrcode-solid.svg'">
+							<span class='tooltip'>
+								<img class='icon small hoverpointer' :src="publicPath + 'ethereum-brands_optimized.svg'">
+								<span class='tooltiptext long'>
+									{{ transaction.fromAddress }}
+								</span>
+							</span>
 						</span>
 					</td>
 					<td>

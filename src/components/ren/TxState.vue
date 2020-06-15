@@ -14,6 +14,7 @@
 		</span>
 		<span v-show='state == 11'>
 			Got BTC {{ (transaction.utxoAmount / 1e8).toFixed(8) }}, now initiating swap
+			<button @click="$emit('resubmit', transaction)">Resubmit</button>
 		</span>
 		<span v-show='state == 12'>
 			Waiting for swap confirmation

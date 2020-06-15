@@ -36,6 +36,7 @@ const txObject = () => ({
 	newMinExchangeRate: 0,
 	slippage: 0,
 	toAmount: 0,
+	fromAddress: '',
 	address: '',
 	params: '',
 	ethTxHash: '',
@@ -406,6 +407,7 @@ export async function mint(data) {
 	transaction.mintType = 0
 	transaction.amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
 	transaction.address = data.address;
+	transaction.fromAddress = contract.default_account;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
 	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
@@ -478,6 +480,7 @@ export async function deposit(data) {
 	transaction.amount = data.btcAmount
 	transaction.fromInput = data.btcAmount
 	transaction.address = data.address
+	transaction.fromAddress = contract.default_account;
 	transaction.amounts = data.amounts.map(amount => BN(amount).toFixed(0,1))
 	transaction.min_amount = data.min_amount
 	transaction.new_min_amount = data.min_amount
@@ -875,6 +878,7 @@ export async function burn(burn, address, renBTCAmount, burnType) {
 	state.transactions.unshift({
 		id: id,
 		fromInput: renBTCAmount,
+		fromAddress: contract.default_account,
 		timestamp: Date.now(),
 		type: 1,
 		burnType: burnType,

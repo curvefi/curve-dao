@@ -268,6 +268,7 @@
 
 		        this.chart.redraw();
 		        this.chart.hideLoading();
+		        this.$nextTick(() => this.chart.reflow())
 
 		        this.loading = false;
 			},

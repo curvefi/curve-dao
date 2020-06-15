@@ -168,6 +168,7 @@
 				<table class="tui-table" v-if='displayedEvent == 2'>
 				    <thead>
 				        <tr>
+				        	<th>Time</th>
 				        	<th>Block #</th>
 				        	<th>Provider</th>
 				        	<!-- <th>Invariant</th> -->
@@ -179,9 +180,14 @@
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 6'><span class='loading line'></span></td>
+				    		<td v-for='n in 7'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
+				        	<td>
+				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				        			{{ formatDate(event.timestamp) }}
+				        		</a>
+				        	</td>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 				        			{{ event.blockNumber }}

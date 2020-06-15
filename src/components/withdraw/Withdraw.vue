@@ -131,6 +131,12 @@
             >
                 Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
             </button>
+            <button id='unstake-snx'
+                @click='handle_remove_liquidity(true, true)'
+                v-show="currentPool == 'susdv2' && staked_balance > 0"
+            >
+                Unstake
+            </button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
@@ -458,14 +464,20 @@
                         .catch(err => reject(err))
                 })
             },
-			async unstake(amount, exit = false) {
-                this.waitingMessage = `
+			async unstake(amount, exit = false, unstake_only = false) {
+                if(unstake_only)
+                    this.waitingMessage = `
+                        Unstaking ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr
+                    `
+                else 
+                    this.waitingMessage = `
                     Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal.
                     <br>
                     A bit more tokens are needed to unstake to ensure that withdrawal is successful.
                     You'll see them in your unstaked balance afterwards.
                         
                 `;
+
                 try {
     				await new Promise((resolve, reject) => {
     					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
@@ -490,7 +502,7 @@
                 this.loadingAction = val;
                 setTimeout(() => this.loadingAction = false, 500)
             },
-			async handle_remove_liquidity(unstake = false) {
+			async handle_remove_liquidity(unstake = false, unstake_only = false) {
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)
@@ -527,7 +539,8 @@
                     token_amount = BN(token_amount).times(BN(1).plus(this.calcFee))
 			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
                     if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
-                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake)
+                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if(unstake_only) return;
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || this.currentPool == 'susdv2') {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
@@ -585,7 +598,8 @@
                     var amount = BN(this.share).div(BN(100)).times(balance)
 
                     if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
-                        await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake)
+                        await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if(unstake_only) return;
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
@@ -772,7 +786,7 @@
 </script>
 
 <style>
-	#remove-liquidity, #remove-liquidity-unstake {
+	#remove-liquidity, #remove-liquidity-unstake, #claim-snx {
 		margin-right: 1em;
 	}
 	#withdrawold {

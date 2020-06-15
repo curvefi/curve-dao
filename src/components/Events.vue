@@ -105,7 +105,7 @@
 				<table class="tui-table" v-if='displayedEvent == 1'>
 				    <thead>
 				        <tr>
-				        	<th>Timestamp</th>
+				        	<th>Time</th>
 				        	<th>Block #</th>
 				        	<th>Provider</th>
 				        	<!-- <th>Invariant</th> -->
@@ -813,12 +813,13 @@
 				let pool = this.allAddresses.find(v => v.address.toLowerCase() == event.address.toLowerCase()).pool
 				let poolIdx = this.pools.indexOf(pool);
 				let rates;
+				let timestamp = await this.getTimestamp(event.blockNumber)
+				event.timestamp = timestamp
 				if(event.blockNumber > this.latestblock - 120) {
 					await this.getRates(event.blockNumber)
 					rates = this.c_rates[pool]
 				}
 				else {
-					let timestamp = await this.getTimestamp(event.blockNumber)
 					let poolInfo = this.interpolatePoint(timestamp, poolIdx)
 					rates = poolInfo.rates.map((rate, i) => rate / 1e18 / allabis[pool].coin_precisions[i])
 				}

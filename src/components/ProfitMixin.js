@@ -416,6 +416,7 @@ export default {
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
 		        this.depositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
+		        if(this.currentPool == 'ren') this.depositsUSD = depositUsdSum * this.btcPrice
 		    }
 
 		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({
@@ -494,6 +495,7 @@ export default {
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
 			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
 			        this.withdrawalsUSD = +localStorage.getItem(this.currentPool + 'lastWithdrawalsUSD')
+			        if(this.currentPool == 'ren') this.withdrawalsUSD = withdrawals * this.btcPrice
 		    }
 		    const logs = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,

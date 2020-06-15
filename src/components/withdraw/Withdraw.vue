@@ -125,6 +125,12 @@
         		@click='handle_remove_liquidity(true)'>
         		Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
         	</button>
+            <button id='claim-snx'
+                @click='claim_SNX'
+                v-show="currentPool == 'susdv2' && pendingSNXRewards / 1e18 > 0.1"
+            >
+                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
+            </button>
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
@@ -184,6 +190,7 @@
     		withdrawc: false,
     		donate_dust: true,
     		showstaked: false,
+            pendingSNXRewards: 0,
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
@@ -269,7 +276,10 @@
             	}
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-
+                if(this.currentPool == 'susdv2') {
+                    let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+                    this.pendingSNXRewards = await curveRewards.methods.earned(this.default_account).call()
+                }
 
                 await common.update_fee_info();
                 await this.update_balances();
@@ -436,6 +446,18 @@
 				}
 				return min_amounts;
 			},
+            async claim_SNX() {
+                await new Promise((resolve, reject) => {
+                    currentContract.curveRewards.methods.getReward()
+                        .send({
+                            from: currentContract.default_account,
+                            gas: 200000,
+                        })
+                        .once('transactionHash', resolve)
+                        .on('receipt', () => this.pendingSNXRewards = 0)
+                        .catch(err => reject(err))
+                })
+            },
 			async unstake(amount, exit = false) {
                 this.waitingMessage = `
                     Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal.
@@ -455,15 +477,7 @@
                             .catch(err => reject(err))
     				})
                     if(exit) {
-        				await new Promise((resolve, reject) => {
-        					currentContract.curveRewards.methods.getReward()
-        						.send({
-        							from: currentContract.default_account,
-        							gas: 200000,
-        						})
-        						.once('transactionHash', resolve)
-                                .catch(err => reject(err))
-        				})
+        				this.claim_SNX()
                     }
                 }
                 catch(err) {
@@ -758,7 +772,7 @@
 </script>
 
 <style>
-	#remove-liquidity {
+	#remove-liquidity, #remove-liquidity-unstake {
 		margin-right: 1em;
 	}
 	#withdrawold {

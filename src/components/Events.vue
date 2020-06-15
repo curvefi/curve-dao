@@ -37,6 +37,7 @@
 				<table class="tui-table" v-if='displayedEvent == 0'>
 				    <thead>
 				        <tr>
+				        	<th>Time</th>
 				        	<th>Block #</th>
 				            <th>Swap</th>
 				            <th>tokens sold</th>
@@ -49,9 +50,14 @@
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 7'><span class='loading line'></span></td>
+				    		<td v-for='n in 8'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
+				        	<td>
+				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				        			{{ formatDate(event.timestamp) }}
+				        		</a>
+				        	</td>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 				        			{{ event.blockNumber }}
@@ -99,6 +105,7 @@
 				<table class="tui-table" v-if='displayedEvent == 1'>
 				    <thead>
 				        <tr>
+				        	<th>Timestamp</th>
 				        	<th>Block #</th>
 				        	<th>Provider</th>
 				        	<!-- <th>Invariant</th> -->
@@ -109,9 +116,14 @@
 				    </thead>
 				    <tbody>
 				    	<tr v-show='!exchanges.length' class='loadingtr'>
-				    		<td v-for='n in 6'><span class='loading line'></span></td>
+				    		<td v-for='n in 7'><span class='loading line'></span></td>
 				    	</tr>
 				        <tr v-for='event in paginatedExchanges'>
+				        	<td>
+				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				        			{{ formatDate(event.timestamp) }}
+				        		</a>
+				        	</td>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
 				        			{{ event.blockNumber }}
@@ -365,7 +377,7 @@
 			},
 			changePagination() {
 				return this.page, this.perPage, Date.now()
-			}
+			},
 
 		},
 		watch: {
@@ -843,7 +855,10 @@
 					this.page = this.gotopage
 				else
 					this.page = 0
-			}
+			},
+			formatDate(date) {
+				return helpers.formatDateToHuman(date).split(' ')[1]
+			},
 
 		}
 	}
@@ -887,7 +902,7 @@
 		padding: 0;
 		color: black;
 	}
-	tbody tr td:nth-child(5) a, tbody tr td:nth-child(6) a {
+	tbody tr td:nth-child(1) a, tbody tr td:nth-child(5) a, tbody tr td:nth-child(6) a {
 		font-weight: normal;
 	}
 	#pages {

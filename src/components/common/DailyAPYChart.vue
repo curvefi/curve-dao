@@ -197,7 +197,6 @@
 		        	])
 		        }
 
-		        this.chart.setSize(undefined, 600)
 		        this.chart.addSeries({
 		        	name: 'Daily APY',
 		        	lineWidth: 2,
@@ -268,8 +267,6 @@
 
 		        this.chart.redraw();
 		        this.chart.hideLoading();
-		        this.$nextTick(() => this.chart.reflow())
-		        setTimeout(() => this.chart.reflow(), 1000)
 
 		        this.loading = false;
 			},

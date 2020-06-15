@@ -408,10 +408,10 @@ fieldset:nth-child(1) .maxbalance:hover {
   box-shadow: none;
 }
 
-button.bn-onboard-custom:first-letter {
+button.bn-onboard-custom:first-letter, #derivation-select button:first-letter {
   color: inherit;
 }
-button.bn-onboard-custom {
+button.bn-onboard-custom, #derivation-select button {
   box-shadow: none;
 }
 

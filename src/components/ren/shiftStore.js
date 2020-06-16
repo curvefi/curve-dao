@@ -411,7 +411,7 @@ export async function mint(data) {
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
 	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
-	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).toFixed(0,1)
+	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).minus(1).toFixed(0,1)
 	transaction.secret = '0x' + helpers.randomBytes(32)
 	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	//slippage is in BPS
@@ -661,7 +661,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		return;
 	}
 	if(swapNow) {
-		transaction.newMinExchangeRate = BN(exchangeRateNow).times(BN((10000-transaction.slippage)/10000)).toFixed(0,1)
+		transaction.newMinExchangeRate = BN(exchangeRateNow).times(BN((10000-transaction.slippage)/10000)).minus(1).toFixed(0,1)
 	}
 	if(receiveRen) {
 		//make the rate impossibly high so the check for exchange always fails

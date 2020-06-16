@@ -519,13 +519,13 @@
 		flex: 0.5;
 	}
 	.pools {
-		flex: 1.8;
+		flex: 1.7;
 	}
 	.apr {
 		flex: 0.62;
 	}
 	.volume {
-		flex: 0.7;
+		flex: 0.8;
 	}
 	.balance {
 		width: 12px;

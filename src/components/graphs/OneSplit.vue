@@ -318,7 +318,8 @@
                 return ['compound', 'y', 'busd', 'susd', 'pax', 'ren', '1split'][this.bestPool]
             },
             selldisabled() {
-                if([7,8].includes(this.from_currency) && ![7,8].includes(this.to_currency)) return true
+                if([7,8].includes(this.from_currency) && ![7,8].includes(this.to_currency) 
+                    || [7,8].includes(this.to_currency) && ![7,8].includes(this.from_currency)) return true
                 // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                 //     return true
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))

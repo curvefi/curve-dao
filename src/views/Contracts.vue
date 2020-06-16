@@ -24,7 +24,7 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren'],
+			allPools: ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc'],
 			tokenNames: [
 				{ name: 'cCurve', ticker: 'cCrv' },
 				{ name: 'tCurve', ticker: 'tCrv' },
@@ -34,6 +34,7 @@
 				{ name: 'pCurve', ticker: 'pCrv' },
 				// { name: 'tbtcCurve', ticker: 'tbtcCrv' },
 				{ name: 'renCurve', ticker: 'renCrv' },
+				{ name: 'sbtcCurve', ticker: 'sbtcCrv' },
 			]
 		}),
 		computed: {

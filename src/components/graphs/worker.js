@@ -50,6 +50,11 @@ const currencies = {
 		renbtc: 'renBTC',
 		wbtc: 'wBTC',
 	},
+	sbtc: {
+		renbtc: 'renBTC',
+		wbtc: 'wBTC',
+		sbtc: 'sBTC',
+	},
 }
 
 let calcPrice = (config, fromCurrency, toCurrency, precisions, usefee = false) => {
@@ -63,6 +68,9 @@ let calcPriceWrapped = (config, fromCurrency, toCurrency, precisions, usefee = f
 }
 
 let normalizeCoinIdx = (i, pool) => {
+	if(pool == 'sbtc' && i == 0) return 8;
+	if(pool == 'sbtc' && i == 1) return 10;
+	if(pool == 'sbtc' && i == 2) return 11;
 	if(pool == 'ren' && i == 0) return 10;
 	if(pool == 'ren' && i == 1) return 8;
 	if(pool == 'tbtc' && i == 0) return 7;

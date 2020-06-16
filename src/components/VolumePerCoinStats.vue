@@ -31,7 +31,7 @@
 		props: ['data', 'currency', 'loaded', 'embedded'],
 		data() {
 			return {
-				btcs: ['tbtc', 'hbtc', 'wbtc', 'renbtc'],
+				btcs: ['tbtc', 'hbtc', 'wbtc', 'renbtc', 'sbtc'],
 				chartdata: {
 					chart: {
 						panning: true,
@@ -102,7 +102,7 @@
 		                pointFormatter: (function(self) {
 		                	return function() {
 		                		let value = this.y.toFixed(2)
-		                		if(['TBTC', 'WBTC', 'HBTC', 'renBTC'].includes(self.currency)) value = this.y.toFixed(8)
+		                		if(['TBTC', 'WBTC', 'HBTC', 'renBTC', 'sBTC'].includes(self.currency)) value = this.y.toFixed(8)
 			                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	}
 		                })(this)

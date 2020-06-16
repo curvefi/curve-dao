@@ -25,6 +25,7 @@
         pax: 'PAX',
         tbtc: 'TBTC',
         ren: 'renBTC',
+        sbtc: 'sBTC',
     }
 
 	export default {

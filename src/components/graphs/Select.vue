@@ -24,6 +24,9 @@
 
 			<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
 			<label for='renpool'>renBTC</label>
+
+			<input id='sbtcpool' type='checkbox' value='sbtc' v-model='pools'/>
+			<label for='sbtcpool'>sBTC</label>
 		</div>
 
 		<select class='tvision' v-model='pair'>

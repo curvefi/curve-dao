@@ -30,6 +30,9 @@
 
 					<input id='renpool' type='checkbox' value='ren' v-model='pools'/>
 					<label for='renpool'>renBTC</label>
+
+					<input id='sbtcpool' type='checkbox' value='sbtc' v-model='pools'/>
+					<label for='sbtcpool'>sBTC</label>
 				</div>
 
 				<button @click="selectPoolsHandler" id='select'>Select</button>
@@ -278,8 +281,8 @@
 
 	export default {
 		data: () => ({
-			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
-			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren'],
+			allPools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren', 'sbtc'],
+			pools: ['compound', 'usdt', 'iearn', 'busd', 'susdv2', 'pax', 'tbtc', 'ren', 'sbtc'],
 			createdAtBlocks: [9554040, 9456293, 9476468, 9567295, 9906598, 10041041, 10074719, 10068305],
 			allEvents: ['Exchange', 'Deposit', 'Withdraw'],
 			event: 0,
@@ -422,7 +425,7 @@
 				return this.pools.map(pool => {
 					let topics = [];
 					if(this.event == 0) {
-						if(['tbtc', 'ren'].includes(pool)) {
+						if(['tbtc', 'ren', 'sbtc'].includes(pool)) {
 							topics = [
 								this.swapContracts[this.allPools.indexOf(pool)]
 									.getPastEvents(this.tokenExchangeEvent, 
@@ -639,7 +642,7 @@
 				for(let [i, pool] of pools.entries()) {
 					let abi = allabis[pool]
 					//usdt in usdt pool and susdv2 pool are already in the array, no need to calculate
-					if(['susdv2', 'tbtc', 'ren'].includes(pool)) continue;
+					if(['susdv2', 'tbtc', 'ren', 'sbtc'].includes(pool)) continue;
 					else if(['iearn', 'busd', 'pax'].includes(pool)) {
 						let len = 4;
 						if(pool == 'pax') len = 3
@@ -726,7 +729,7 @@
 			getSubscriptions() {
 				for(let pool of this.pools) {
 					if(this.event == 0) {
-						if(!['tbtc', 'ren'].includes(pool)) {
+						if(!['tbtc', 'ren', 'sbtc'].includes(pool)) {
 							this.subscriptions.push(
 								this.swapContracts[this.allPools.indexOf(pool)]
 								.events.TokenExchangeUnderlying()

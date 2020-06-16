@@ -107,7 +107,7 @@ export const gas = {
 		},
 		susdv2: {
 			exchange: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
-			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 200000,
+			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
 		},
 		pax: {
 			exchange: (i, j) => 800000,

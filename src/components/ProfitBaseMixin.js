@@ -11,9 +11,16 @@ export default {
       this.$watch(()=>currentContract.initializedContracts, val => {
           if(val) this.mounted();
       })
-      this.$watch(()=>currentContract.currentContract, val => {
+      this.$watch(()=>currentContract.currentContract, (val, oldval) => {
           this.nullifyAmounts()
-          this.mounted();
+          if(val.toLowerCase() != oldval.toLowerCase()) {
+              this.cancel = true;
+              setTimeout(()=>{
+                  this.cancel = false;
+                  this.nullifyAmounts();
+                  this.mounted();
+              }, 1000);
+          }
       })
     },
     mounted() {

@@ -1,5 +1,5 @@
 import * as common from '../utils/common.js'
-import { getters, contract as currentContract } from '../contract'
+import { getters, contract as currentContract, allCurrencies } from '../contract'
 import { makeCancelable, interpolate } from '../utils/helpers'
 
 import allabis, { sCurveRewards_address } from '../allabis'
@@ -58,11 +58,9 @@ export default {
 	        	let res = await fetch(`${window.domain}/raw-stats/${subdomain}-1440m.json`);
 	        	res = await res.json();
 	        	this.priceData = res
-		        for(let i = 0; i < currentContract.N_COINS; i++) {
-			        let symbol = await currentContract.coins[i].methods.symbol().call()
-			        this.ADDRESSES[symbol] = currentContract.coins[i]._address;
-			    }
-
+	        	for(let [i, symbol] of Object.values(allCurrencies[this.currentPool]).entries()) {
+	        		this.ADDRESSES[symbol] = allabis[this.currentPool].coins[i]
+	        	}
 			    let [available, availableUSD, stakedBalanceUSD, stakedBalance] = await this.getAvailableAmount()
 			    if(this.currentPool == 'susdv2') {
 			    	this.getStakedBalance = stakedBalance
@@ -187,8 +185,7 @@ export default {
 			}
 			const decimals = ['yUSDC', 'yUSDT'].includes(curr) ? 6 : 18;
 		    if (decimals === 18) {
-		    	console.log(value, "THE VALUE")
-		        return Number(currentContract.web3.utils.fromWei(value.toFixed(0)));
+		        return Number(currentContract.web3.utils.fromWei(value.toString(0)));
 		    }
 		    return value.toNumber() / 10 ** decimals;
 		},
@@ -418,7 +415,6 @@ export default {
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
 		        this.depositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
 		        if(this.currentPool == 'ren') this.depositsUSD = depositUsdSum / 100 * this.btcPrice
-		        console.log("GET FROM LAST BLOCK")
 		    }
 
 		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({

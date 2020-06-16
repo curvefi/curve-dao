@@ -126,7 +126,7 @@
 							<span class='tooltip'>
 								<img class='icon small hoverpointer' :src="publicPath + 'ethereum-brands_optimized.svg'">
 								<span class='tooltiptext long'>
-									Sent from: {{ transaction.fromAddress }}
+									From: {{ transaction.fromAddress }}
 								</span>
 							</span>
 						</span>

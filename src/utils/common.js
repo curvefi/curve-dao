@@ -115,8 +115,8 @@ export async function approveAmount(contract, amount, account, toContract, infin
         }
     }
     else {
-        if(currentAllowance.lt(currentContract.max_allowance.div(cBN(2))) && cBN(amount).gt(0)) {
-            if(currentAllowance > 0 && requiresResetAllowance.includes(contract._address))
+        if(current_allowance.lt(currentContract.max_allowance.div(cBN(2))) && cBN(amount).gt(0)) {
+            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address))
                 await approve(contract, 0, account, toContract)
             await approve(contract, currentContract.max_allowance, account, toContract)
         }

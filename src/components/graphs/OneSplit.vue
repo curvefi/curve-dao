@@ -21,6 +21,8 @@
                 <input id='renpool1' type='checkbox' value='ren' v-model='pools'/>
                 <label for='renpool1'>ren</label>
 
+                <input id='sbtcpool' type='checkbox' value='sbtc' v-model='pools'/>
+                <label for='sbtcpool'>sBTC</label>
             </div>
             
             <div class='exchangefields'>
@@ -199,7 +201,7 @@
 
     export default {
         data: () => ({
-            pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
+            pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc'],
             maxBalance: -1,
             maxSynthBalance: -1,
             susdWaitingPeriod: false,
@@ -218,8 +220,8 @@
             customSlippageDisabled: true,
             inf_approval: false,
             distribution: null,
-            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX, renBTC, wBTC
-            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18, 1e8, 1e8],
+            //DAI, USDC, USDT, TUSD, BUSD, sUSD, PAX, renBTC, wBTC, sBTC
+            coin_precisions: [1e18, 1e6, 1e6, 1e18, 1e18, 1e18, 1e18, 1e8, 1e8, 1e18],
             swap: [],
             addresses: [],
             coins: [],
@@ -275,6 +277,7 @@
                         pax: 'PAX',
                         renbtc: 'renBTC',
                         wbtc: 'wBTC',
+                        sbtc: 'sBTC',
                         // tbtc: 'tBTC',
                         // hbtc: 'hBTC',
                         // wbtc: 'wBTC',
@@ -315,11 +318,11 @@
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) 
                 //     || (this.to_currency == 6 && [3,4,5].includes(this.from_currency))) return 'Not Available'
                 if(this.bestPool === null) return 'Not available'
-                return ['compound', 'y', 'busd', 'susd', 'pax', 'ren', '1split'][this.bestPool]
+                return ['compound', 'y', 'busd', 'susd', 'pax', 'ren', 'sbtc', '1split'][this.bestPool]
             },
             selldisabled() {
-                if([7,8].includes(this.from_currency) && ![7,8].includes(this.to_currency) 
-                    || [7,8].includes(this.to_currency) && ![7,8].includes(this.from_currency)) return true
+                if([7,8,9].includes(this.from_currency) && ![7,8,9].includes(this.to_currency) 
+                    || [7,8,9].includes(this.to_currency) && ![7,8,9].includes(this.from_currency)) return true
                 // if(this.from_currency == 5 && ![0,1,2].includes(this.to_currency) || this.to_currency == 5 && ![0,1,2].includes(this.from_currency))
                 //     return true
                 // if((this.from_currency == 6 && [3,4,5].includes(this.to_currency)) || (this.to_currency == 6 && [3,4,5].includes(this.from_currency)))
@@ -327,7 +330,7 @@
                 return false;
             },
             allPools() {
-                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren']
+                return ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc']
             },
             warningNoPool() {
                 this.message = 'Please select '
@@ -573,13 +576,13 @@
                 let min_dy = BN(this.toInput).times(this.precisions(j)).times(BN(1 - maxSlippage)).toFixed(0)
                 let pool = contract.currentContract
                 let bestContract = contract;
-                if(this.bestPool > 0 && this.bestPool < 6) {
+                if(this.bestPool > 0 && this.bestPool < 7) {
                     let poolIdx = this.bestPool
                     pool = Object.keys(contract.contracts).filter(pool=>pool != 'usdt' && pool != 'tbtc')[this.bestPool]
                     bestContract = contract.contracts[pool]
                 }
                 let address = bestContract.swap._address
-                if(this.bestPool == 6) {
+                if(this.bestPool == 7) {
                     address = this.onesplit_address
                     bestContract.swap._address = address
                 }
@@ -596,7 +599,7 @@
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
                                         for min ${this.toFixed(min_dy / this.precisions(j))} ${this.getCurrency(this.to_currency)}`
-                if(this.bestPool == 6) {
+                if(this.bestPool == 7) {
                     try {
                         await this.onesplit.methods.swap(
                             this.getCoins(this.from_currency)._address,
@@ -819,23 +822,27 @@
                             ]
                         ]
                     }
-                    else if(([7,8].includes(this.from_currency) || [7,8].includes(this.to_currency)) && this.pools.includes('ren')) {
+                    else if(([7,8,9].includes(this.from_currency) || [7,8,9].includes(this.to_currency)) 
+                            && (this.pools.includes('ren') || this.pools.includes('sbtc'))) {
                         let from_currency = this.from_currency - 7
                         let to_currency = this.to_currency - 7
 
-                        let dx = BN(this.fromInput).times(contractAbis.ren.coin_precisions[from_currency])
-                        calls = [
-                            [
-                                this.swap[7]._address,
-                                this.swap[7].methods.get_dy(from_currency, to_currency, dx.toFixed(0, 1)).encodeABI()
+                        let dx = BN(this.fromInput).times(contractAbis.sbtc.coin_precisions[from_currency])
+                        let poolidx = this.pools.filter(pool => ['ren', 'sbtc'].includes(pool)).map(pool => this.allPools.indexOf(pool) + 1)
+                        if(this.from_currency == 9 || this.to_currency == 9) poolidx = [poolidx.filter(id => id != 7)]
+                        calls = poolidx.map(i => {
+                            return [
+                                this.swap[i]._address,
+                                this.swap[i].methods.get_dy(from_currency, to_currency, dx.toFixed(0, 1)).encodeABI()
                             ]
-                        ]
+                        }
+                        )
                     }
                     else {
                         //susd is already checked outside this function
                         //now coins are DAI, USDC, USDT, other cases are handled and they go through all pools
                         dx = BN(this.fromInput).times(contractAbis.usdt.coin_precisions[this.from_currency])
-                        let poolidx = this.pools.filter(pool => !['tbtc', 'ren'].includes(pool)).map(pool => this.allPools.indexOf(pool))
+                        let poolidx = this.pools.filter(pool => !['tbtc', 'ren', 'sbtc'].includes(pool)).map(pool => this.allPools.indexOf(pool))
                         if(this.from_currency == 2 || this.to_currency == 2) poolidx =  poolidx.filter(id => id != 0)
                         calls = poolidx.map(i =>
                             [
@@ -898,12 +905,12 @@
                     else*/
                     if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
-                        this.bestPool = 6
+                        this.bestPool = 7
                         let [_, txPrice1split] = this.calculateGas('1split')
                         this.estimateGas = txPrice1split
                     }
                     else {
-                        let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', 'ren', '1split']
+                        let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', 'ren', 'sbtc', '1split']
                         this.swapPromise.cancel()
                         let promises = [this.realComparePools()]
                         if(!([7, 8].includes(this.from_currency) && [7,8].includes(this.to_currency)) || this.fromInput > 100) {
@@ -1008,6 +1015,10 @@
                     this.coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                     this.underlying_coins.push(new contract.web3.eth.Contract(ERC20_abi, contractAbis.ren.coins[i]))
                 }
+
+                //sbtc
+                this.coins.push(new contract.web3.eth.Contract(synthERC20_abi, contractAbis.sbtc.coins[2]))
+                this.underlying_coins.push(new contract.web3.eth.Contract(synthERC20_abi, contractAbis.sbtc.coins[2]))
 
                 this.snxExchanger = new contract.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
             }

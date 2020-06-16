@@ -410,8 +410,8 @@ export async function mint(data) {
 	transaction.fromAddress = contract.default_account;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
-	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
-	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).minus(1).toFixed(0,1)
+	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).minus(1).toFixed(0,1)
+	transaction.newMinExchangeRate = transaction.minExchangeRate
 	transaction.secret = '0x' + helpers.randomBytes(32)
 	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
 	//slippage is in BPS
@@ -665,7 +665,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	}
 	if(receiveRen) {
 		//make the rate impossibly high so the check for exchange always fails
-		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
+		transaction.newMinExchangeRate = BN(100000000000000).toFixed(0,1)
 	}
 	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
 	let txhash = await new Promise((resolve, reject) => {

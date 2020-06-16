@@ -469,6 +469,13 @@
                 if(BN(this.maxBalance).gt(0) && BN(this.maxBalance).div(this.precisions[i]).minus(BN(this.fromInput)).lt(BN(this.minAmount))) {
                     dx = this.maxBalance
                 }
+                if(
+                    this.currentPool == 'susdv2' && this.from_currency == 3 &&
+                    BN(this.maxSynthBalance).gt(0) && 
+                    BN(this.maxSynthBalance).minus(BN(this.fromInput)).lt(BN(this.minAmount))
+                ) {
+                    dx = BN(this.maxSynthBalance).times(1e18).toFixed(0,1)
+                }
                 var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`

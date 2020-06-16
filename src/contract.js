@@ -164,7 +164,7 @@ export const gas = {
 	},
 	depositzap: {
 		compound: {
-			deposit: x => (172664*x + 471691)*1.5 | 0,
+			deposit: x => (172664*x + 471691)*2.5 | 0,
 			withdraw: 2000000 / 2,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (181733*x + 506125)*1.5 | 0,

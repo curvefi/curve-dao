@@ -206,7 +206,8 @@
       },
       async updateShares() {
         if(!(this.usdShare1 > 0 || (this.currentPool == 'susdv2' && this.usdStake1) > 0)) return;
-        let pool = this.currentPool == 'iearn' ? 'y' : this.currentPool == 'susdv2' ? 'susd' : this.currentPool
+        let pool = this.currentPool
+        pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool  
         let req = await fetch(`${window.domain}/raw-stats/${pool}-1m.json`)
         this.lastPoint = await req.json()
         this.lastPoint = this.lastPoint[this.lastPoint.length - 1]

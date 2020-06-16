@@ -9,8 +9,8 @@
 		<div class="window white" v-for='(currency, i) in Object.keys(filteredCurrencies)'>
 			  <p class='simple-error' v-show="currency == 'susd'"> Old susd pool. Please <router-link to="/susd/withdraw">withdraw and move</router-link> funds to <router-link to="/susdv2">susdv2</router-link> pool </p>
 		      <p class='text-center'>
-		      	<router-link :to="currency" v-show="currency != 'susd' && !['tbtc', 'ren'].includes(currency)">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
-	      		<span v-show="['tbtc', 'ren'].includes(currency)">{{currency}}</span>
+		      	<router-link :to="currency" v-show="currency != 'susd' && !['tbtc', 'ren', 'sbtc'].includes(currency)">{{currency == 'iearn' ? 'y' : currency}}.curve.fi</router-link>
+	      		<span v-show="['tbtc', 'ren', 'sbtc'].includes(currency)">{{currency}}</span>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 		      </p>
 		      <stats :pool= 'currency'/>
@@ -180,7 +180,7 @@
 				        */
 			         	if (contract.tethered && contract.tethered[i] 
 			         		&& contract.use_lending && !contract.use_lending[i] 
-			         		|| key == 'susdv2' || (key == 'pax' && i == 3) || key == 'tbtc' || key == 'ren') {
+			         		|| key == 'susdv2' || (key == 'pax' && i == 3) || key == 'tbtc' || key == 'ren' || key == 'sbtc') {
 			            	this.all_c_rates[key].c_rates[i] = 1 / contract.coin_precisions[i]
 			         	}
 			         	else {
@@ -363,6 +363,17 @@
 							total += calcBalance
 						}
 						ind = 92
+					}
+					if(key == 'sbtc') {
+						let N_COINS = contracts[key].N_COINS
+						let start = 108
+						let slice = decoded.slice(start)
+						for(let i = 0; i < N_COINS; i++) {
+							let calcBalance = this.all_c_rates[key].c_rates[i] * (slice[i])
+							this.bal_infos[key].push(calcBalance)
+							total += calcBalance
+						}
+						ind = 103
 					}
 				    this.totals.push(total)
 				    this.virtual_prices.push(+decoded[ind+8] / 1e18)

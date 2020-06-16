@@ -387,21 +387,21 @@
 					let fetchpool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool
 					return fetch(`${window.domain}/raw-stats/${fetchpool}-${jsonInterval}.json`)
 				});
-				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren'))
+				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren') || tradeStore.pools.includes('sbtc'))
 					urls.push(
 						fetch(`
 						https://api.coinpaprika.com/v1/tickers/btc-bitcoin/historical?
 							start=1589587198&interval=${jsonInterval == '1440m' ? '1d' : jsonInterval}&limit=5000`
 					))
 				let requests = await Promise.all(urls)
-				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren')) {
+				if(tradeStore.pools.includes('tbtc') || tradeStore.pools.includes('ren') || tradeStore.pools.includes('sbtc')) {
 					this.btcPrices = await requests[requests.length - 1].json()
 					requests = requests.slice(0, -1)
 				}
 				let data = []
 				for(let res of requests) {
 					let json = await res.json()
-					if(res.url.includes('tbtc') || res.url.includes('ren')) {
+					if(res.url.includes('tbtc') || res.url.includes('ren') || res.url.includes('sbtc')) {
 						json = json.map(d => {
 							d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => 
 								[k, v.map(vol => vol * volumeStore.findClosestPrice(d.timestamp, this.btcPrices))]))
@@ -436,7 +436,7 @@
 					let lastPriceCalls = this.pools.map(pool=> {
 						let amount = 1
 						let get_method = 'get_dy_underlying'
-						if(['tbtc', 'ren'].includes(pool)) {
+						if(['tbtc', 'ren', 'sbtc'].includes(pool)) {
 							amount = 1/1e4
 							get_method = 'get_dy'
 						}
@@ -464,7 +464,7 @@
 								if(Object.keys(v).length === 0 && v.constructor === Object) continue;
 								if(v === undefined) continue;
 								let amount = 1
-								if(['tbtc', 'ren'].includes(this.pools[j])) amount = 1/1e8
+								if(['tbtc', 'ren', 'sbtc'].includes(this.pools[j])) amount = 1/1e8
 								//console.log(v, poolConfigs[j], poolConfigs, i, j, fromCurrency, toCurrency, "CALC CONFIG")
 								let get_dy_underlying = await calcWorker.calcPrice(
 									{...v, ...this.poolConfigs[j]}, this.fromCurrency, this.toCurrency, amount * abis[this.pools[j]].coin_precisions[this.fromCurrency])
@@ -482,7 +482,7 @@
 								if(i == length-1) {
 									let dx = BN(abis[this.pools[j]].coin_precisions[this.fromCurrency]).toFixed(0)
 									let amount = 1
-									if(['tbtc', 'ren'].includes(this.pools[j])) amount = 1/1e4;
+									if(['tbtc', 'ren', 'sbtc'].includes(this.pools[j])) amount = 1/1e4;
 									let lastPrice = +(BN(lastPrices[j])).div(amount * abis[this.pools[j]].coin_precisions[this.toCurrency])
 									if(this.inverse) lastPrice = 1/lastPrice
 									this.ohlcData[i].prices[this.pairIdx].push(lastPrice)

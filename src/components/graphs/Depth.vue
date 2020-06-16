@@ -356,7 +356,7 @@
 					if(pool == contract.currentContract) cont = contract
 					let balanceFrom = cont.bal_info[fromCurrency]
 					let balanceTo = cont.bal_info[toCurrency]
-					if(['tbtc' ,'ren'].includes(pool)) {
+					if(['tbtc' ,'ren', 'sbtc'].includes(pool)) {
 						balanceFrom *= this.btcPrice
 						balanceTo *= this.btcPrice
 					}
@@ -379,7 +379,7 @@
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]
-						if(['tbtc', 'ren'].includes(pools[j])) {
+						if(['tbtc', 'ren', 'sbtc'].includes(pools[j])) {
 							dx1 /= this.btcPrice
 							dy1 /= this.btcPrice
 						}

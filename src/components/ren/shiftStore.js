@@ -929,6 +929,7 @@ export async function listenForReplacement(txhash) {
 		if(transaction.type == 1) tx.state = 30
 		else tx.state = 12
 		tx.confirmations = 0
+		console.log(tx.confirmations, "THE SPEED UP CONFIRMATIONS")
 		upsertTx(tx)
 		state.transactions.unshift(tx)
 	})

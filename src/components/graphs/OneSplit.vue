@@ -606,7 +606,7 @@
                             this.usedFlags,
                         ).send({
                             from: contract.default_account,
-                            gas: 6000000
+                            gas: 4000000
                         })
                         .once('transactionHash', hash => {
                             this.waitingMessage = `Waiting for swap 
@@ -665,7 +665,6 @@
                 let amounts = balances.map(balance => contract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
                 let highlight_red = this.fromInput > balances[0] / this.precisions(this.from_currency)
-                console.log(highlight_red, "HIGHLIGHT RED")
                 if(i == 5) {
                     this.maxSynthBalance = amounts[1]
                     this.susdWaitingPeriod = (+amounts[2] != 0)
@@ -866,8 +865,11 @@
                 let i = this.normalizeCurrency(this.from_currency)
                 let j = this.normalizeCurrency(this.to_currency)
                 let onesplitGas = 4000000
-                let poolgas = contractGas.swap[pool].exchange_underlying(i, j) / 2
-                let txPricePool = poolgas * this.gasPrice / 1e18 * this.ethPrice
+                let txPricePool = 0
+                if(pool != '1split') {
+                    let poolgas = contractGas.swap[pool].exchange_underlying(i, j) / 2
+                    txPricePool = poolgas * this.gasPrice / 1e18 * this.ethPrice
+                }
                 let txPrice1split = onesplitGas * this.gasPrice / 1e18 * this.ethPrice
                 return [txPricePool, txPrice1split]
             },
@@ -895,7 +897,7 @@
                     else*/
                     if([3,4,5,6].includes(this.from_currency) && [3,4,5,6].includes(this.to_currency)) {
                         exchangeRate = (await this.set_to_amount_onesplit())[1]
-                        this.bestPool = 5
+                        this.bestPool = 6
                         let [_, txPrice1split] = this.calculateGas('1split')
                         this.estimateGas = txPrice1split
                     }

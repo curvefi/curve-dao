@@ -18,7 +18,7 @@
 		async created() {
 			let pools = Object.keys(allabis)
 							.filter(pool => pool != 'y' && pool != 'susd' && pool != 'tbtc')
-							.map(pool => pool == 'susdv2' ? 'susd' : pool == 'iearn' ? 'y' : pool == 'ren' ? 'ren2' : pool)
+							.map(pool => pool == 'susdv2' ? 'susd' : pool == 'iearn' ? 'y' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool)
 			this.pools = pools
 			let data = await Promise.all(pools.map(pool => fetch(`https://beta.curve.fi/raw-stats/${pool}-30m.json`)))
 			this.data = await Promise.all(data.map(d => d.json()))

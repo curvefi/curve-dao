@@ -195,7 +195,7 @@
         		await this.handle_sync_balances()
         		!this.max_balances && this.highlightAllInputs();
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
-        		await this.calcSlippage()
+        		//await this.calcSlippage()
         	}
         },
         computed: {
@@ -253,12 +253,12 @@
 
             async mounted(oldContract) {
 
-            	if(['susd', 'susdv2', 'tbtc', 'ren'].includes(currentContract.currentContract)) this.depositc = true;
+            	if(['susd', 'susdv2', 'tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) this.depositc = true;
             	this.changeSwapInfo(this.depositc)
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
                 await this.handle_sync_balances();
-                await this.calcSlippage()
+                //await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
                 	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
@@ -271,7 +271,7 @@
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
-                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
@@ -548,7 +548,7 @@
 				if(event) {
 					this.inputs[i] = event.target.value
 				}
-	            await this.calcSlippage()
+	            //await this.calcSlippage()
 	            var value = this.inputs[i]
 	            this.highlightInputs(i)
 

@@ -576,7 +576,7 @@
 				for(let subscription of this.subscriptions) subscription.unsubscribe()
 				this.exchanges = []
 				//get historic rates
-				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool)
+				let fetchpools = this.pools.map(pool => pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool)
 				let requests = await Promise.all(fetchpools.map(pool => fetch(`${window.domain}/raw-stats/${pool}-1m.json`)))
 				let jsons = await Promise.all(requests.map(request => request.json()))
 				this.jsons = jsons

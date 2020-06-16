@@ -67,6 +67,11 @@ const currencies = {
 		renbtc: 'renBTC',
 		wbtc: 'wBTC',
 	},
+	sbtc: {
+		renbtc: 'renBTC',
+		wbtc: 'wBTC',
+		sbtc: 'sBTC',
+	},
 }
 
 export const allCurrencies = currencies
@@ -81,6 +86,7 @@ export const poolMenu = {
 	pax: 'PAX',
 	tbtc: 'TBTC',
 	ren: 'renBTC',
+	sbtc: 'sBTC',
 }
 
 export const gas = {
@@ -121,6 +127,10 @@ export const gas = {
 			exchange: (i, j) => 300000,
 			exchange_underlying: (i, j) => 300000,
 		},
+		sbtc: {
+			exchange: (i, j) => (i == 2 || j == 2) ? 600000 : 300000,
+			exchange_underlying: (i, j) => (i == 2 || j == 2) ? 600000 : 300000,
+		},
 	},
 	deposit: {
 		compound: 1300000,
@@ -132,6 +142,7 @@ export const gas = {
 		pax: 1300000,
 		tbtc: 300000 * 1.5,
 		ren: 300000,
+		sbtc: 600000,
 	},
 	withdraw: {
 		compound: {
@@ -160,6 +171,9 @@ export const gas = {
 		},
 		ren: {
 			imbalance: x => 600000,
+		},
+		sbtc: {
+			imbalance: x => 800000,
 		},
 	},
 	depositzap: {
@@ -213,6 +227,13 @@ export const gas = {
 			withdraw: 250000,
 			withdrawShare: 250000,
 			withdrawImbalance: x => 600000,
+		},
+		//no deposit zap
+		sbtc: {
+			deposit: x => 600000,
+			withdraw: 350000,
+			withdrawShare: 350000,
+			withdrawImbalance: x => 800000,
 		},
 	}
 }
@@ -275,6 +296,10 @@ const state = Vue.observable({
 		},
 		ren: {
 			currentContract: 'ren',
+			...initState(),
+		},
+		sbtc: {
+			currentContract: 'sbtc',
 			...initState(),
 		},
 	},
@@ -432,7 +457,7 @@ export async function init(contract, refresh = false) {
     	
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
-    if(['tbtc', 'ren'].includes(contract.currentContract)) {
+    if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {
     	//initial_A
     	calls.push([allabis[contract.currentContract].swap_address, '0x5409491a'])
     	//initial_A_time
@@ -440,7 +465,7 @@ export async function init(contract, refresh = false) {
     	//future_A_time
     	calls.push([allabis[contract.currentContract].swap_address, '0x14052288'])
     }
-    if(!['susd', 'tbtc', 'ren'].includes(contract.currentContract))
+    if(!['susd', 'tbtc', 'ren', 'sbtc'].includes(contract.currentContract))
     	state.deposit_zap = new state.web3.eth.Contract(allabis[state.currentContract].deposit_abi, allabis[state.currentContract].deposit_address)
     contract.swap = new state.web3.eth.Contract(allabis[contract.currentContract].swap_abi, allabis[contract.currentContract].swap_address);
     contract.swap_token = new state.web3.eth.Contract(ERC20_abi, allabis[contract.currentContract].token_address);
@@ -456,7 +481,7 @@ export async function init(contract, refresh = false) {
       calls.push(...(await common.update_fee_info('new', contract, false)));
     for (let i = 0; i < allabis[contract.currentContract].N_COINS; i++) {
 	  	let coinsCall = contract.swap.methods.coins(i).encodeABI()
-	  	let underlyingCoinsCall = ['tbtc', 'ren'].includes(contract.currentContract) ?
+	  	let underlyingCoinsCall = ['tbtc', 'ren', 'sbtc'].includes(contract.currentContract) ?
 	  								contract.swap.methods.coins(i).encodeABI()
 	  								: contract.swap.methods.underlying_coins(i).encodeABI();
     	calls.push([contract.swap._address, coinsCall])

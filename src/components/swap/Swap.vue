@@ -30,7 +30,7 @@
                                 <p class='actualvalue' v-show='swapwrapped'>
                                     ≈ {{toFixed(actualFromValue)}} {{Object.keys(currencies)[this.from_currency] | capitalize}}
                                 </p>
-                                <p class='actualvalue' v-show="currentPool == 'ren'">
+                                <p class='actualvalue' v-show="['sbtc', 'ren'].includes(currentPool)">
                                     ≈ {{ actualFromValue }}$
                                 </p>
                             </li>
@@ -40,8 +40,8 @@
                                     <img 
                                         :class="{'token-icon': true, [currency+'-icon']: true, 'y': swapwrapped}" 
                                         :src='getTokenIcon(currency)'>
-                                    <span v-show="!swapwrapped && !['tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
-                                    <span v-show="swapwrapped || ['tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
+                                    <span v-show="!swapwrapped && !['tbtc', 'ren', 'sbtc'].includes(currentPool)">{{currency | capitalize}}</span>
+                                    <span v-show="swapwrapped || ['tbtc', 'ren', 'sbtc'].includes(currentPool)">{{currencies[currency]}}</span>
                                 </label>
                             </label>
                             </li>
@@ -65,7 +65,7 @@
                                 <p class='actualvalue' v-show='swapwrapped'>
                                     ≈ {{toFixed(actualToValue)}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                                 </p>
-                                <p class='actualvalue' v-show="currentPool == 'ren'">
+                                <p class='actualvalue' v-show="['ren', 'sbtc'].includes(currentPool)">
                                     ≈ {{ actualToValue }}$
                                 </p>
                             </li>
@@ -124,7 +124,7 @@
                 <p class='simple-error' v-show='exchangeRate<=0.98'>
                     Warning! Exchange rate is too low!
                 </p>
-                <p class='trade-buttons' v-show="currentPool == 'ren'">
+                <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
                 </p>
                 <!-- <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
@@ -239,18 +239,18 @@
                 return allabis[currentContract.currentContract].coin_precisions
             },
             actualFromValue() {
-                if(!this.swapwrapped && this.currentPool != 'ren') return;
-                if(this.currentPool == 'ren') return (this.fromInput * this.btcPrice).toFixed(2)
+                if(!this.swapwrapped && !['ren','sbtc'].includes(this.currentPool)) return;
+                if(['ren', 'sbtc'].includes(this.currentPool)) return (this.fromInput * this.btcPrice).toFixed(2)
                 return (this.fromInput * this.c_rates[this.from_currency] * this.toFixed(this.precisions[this.from_currency]))
             },
             actualToValue() {
-                if(!this.swapwrapped && this.currentPool != 'ren') return;
-                if(this.currentPool == 'ren') return (this.toInput * this.btcPrice).toFixed(2)
+                if(!this.swapwrapped && !['ren', 'sbtc'].includes(this.currentPool)) return;
+                if(['ren', 'sbtc'].includes(this.currentPool)) return (this.toInput * this.btcPrice).toFixed(2)
                 return (this.toInput * this.c_rates[this.to_currency] * this.toFixed(this.precisions[this.to_currency]))
             },
             ...getters,
             minAmount() {
-                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+                if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return 1e-8
                 return 0.01
             },
             selldisabled() {
@@ -276,7 +276,7 @@
             async mounted() {
                 console.log(currentContract.default_account)
                 this.btcPrice = await priceStore.getBTCPrice()
-                if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
+                if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
                 this.c_rates = currentContract.c_rates
                 this.coins = currentContract.underlying_coins
                 if(this.swapwrapped) {
@@ -299,11 +299,11 @@
             toFixed(num) {
                 if(num == '' || num == undefined || num == 0) return '0.00'
                 if(!BigNumber.isBigNumber(num)) num = +num
-                if(['tbtc', 'ren'].includes(currentContract.currentContract)) return num.toFixed(8)
+                if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return num.toFixed(8)
                 return num.toFixed(2)
             },
             getCurrency(i) {
-                if(!this.swapwrapped && !['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) return (Object.keys(this.currencies)[i]).toUpperCase()
+                if(!this.swapwrapped && !['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) return (Object.keys(this.currencies)[i]).toUpperCase()
                 return Object.values(this.currencies)[i] 
             },
             swapInputs() {
@@ -469,6 +469,13 @@
                 if(BN(this.maxBalance).gt(0) && BN(this.maxBalance).div(this.precisions[i]).minus(BN(this.fromInput)).lt(BN(this.minAmount))) {
                     dx = this.maxBalance
                 }
+                if(
+                    this.currentPool == 'susdv2' && this.from_currency == 3 &&
+                    BN(this.maxSynthBalance).gt(0) && 
+                    BN(this.maxSynthBalance).minus(BN(this.fromInput)).lt(BN(this.minAmount))
+                ) {
+                    dx = BN(this.maxSynthBalance).times(1e18).toFixed(0,1)
+                }
                 var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
@@ -489,7 +496,7 @@
                                         for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`
                 min_dy = cBN(min_dy).toFixed(0);
                 let exchangeMethod = currentContract.swap.methods.exchange_underlying
-                if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
+                if(this.swapwrapped || ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
                 try {
                     await exchangeMethod(i, j, dx, min_dy)
                         .send({

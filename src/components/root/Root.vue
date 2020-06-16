@@ -288,6 +288,35 @@
                	 		</span>
 	                </router-link>
 	            </div>
+	            <div :class="{selected: activePoolLink == 6}">
+	                <router-link to = '/sbtc'>
+	                	<span class='index'>6.</span>  
+	                    <span class='pooltext'>sbtc</span>
+	                    <span class='pools'>[renBTC, wBTC, sBTC]</span>  
+	                    <span class='apr'>
+	                    	<span class='tooltip'>APY:
+	                    		<span class='tooltiptext long'>
+		                    		<div>Pool APY + Lending APY (annualized)</div>
+		                    		<div>Daily APY: {{daily_apy[8]}}%</div>
+		                    		<div>Weekly APY: {{weekly_apy[8]}}%</div>
+		                    		<div>Monthly APY: {{monthly_apy[8]}}%</div>
+		                    		<div>Total APY: {{apy[8]}}%</div>
+		                    	</span>
+	                    	</span> 
+	                    	<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}</span>%
+	                    </span>
+	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.sbtc && volumes.sbtc[0] < 0}">
+	                    	<span v-show='volumes.sbtc && volumes.sbtc[0] >= 0'>${{(volumes.sbtc && volumes.sbtc[0] | 0) | formatNumber(0)}}</span>
+               	 		</span></span>
+               	 		<span class='balance'>
+           	 				<span class='showmobile' v-show='balances.sbtc > 0'>Balance: ${{balances.sbtc && balances.sbtc.toFixed(2)}} </span>
+               	 			<span class='tooltip' v-show='balances.sbtc > 0'>
+               	 				<img :src="publicPath + 'dollar-sign-solid.svg'">
+               	 				<span class='tooltiptext'>Balance: ${{balances.sbtc && balances.sbtc.toFixed(2)}}</span>
+               	 			</span>
+               	 		</span>
+	                </router-link>
+	            </div>
 	        </fieldset>
 	    </div>
 
@@ -315,7 +344,7 @@
 		},
 		data: () => ({
 			activePoolLink: -1,
-			pools: ['compound','usdt','y','busd','susdv2','pax','ren'],
+			pools: ['compound','usdt','y','busd','susdv2','pax','ren', 'sbtc'],
 			daily_apy: [],
 			weekly_apy: [],
 			monthly_apy: [],
@@ -331,6 +360,7 @@
 				pax: [-1, -1],
 				tbtc: [-1, -1],
 				ren: [-1, -1],
+				sbtc: [-1, -1],
 			},
 			balances: {
 				compound: -1,
@@ -341,6 +371,7 @@
 				pax: -1,
 				tbtc: -1,
 				ren: -1,
+				sbtc: -1,
 			},
 			snxRewards: null,
 			btcPrice: null,
@@ -414,7 +445,7 @@
 				helpers.chunkArr(decoded, 2).slice(0,this.pools.length).map((v, i) => {
 					let key = this.pools[i]
 					Vue.set(this.balances, key, +v[0] * (+v[1]) / 1e36);
-					if(['tbtc', 'ren'].includes(key)) Vue.set(this.balances, key, this.balances[key] * this.btcPrice)
+					if(['tbtc', 'ren', 'sbtc'].includes(key)) Vue.set(this.balances, key, this.balances[key] * this.btcPrice)
 				})
 				let len = decoded.length
 				Vue.set(this.balances, 'susdv2', this.balances.susdv2 + (+decoded[len-1] * decoded[len-2]) / 1e36)
@@ -443,14 +474,14 @@
 	            }
 			},
 			async getAPY() {
-				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc','ren2']
+				let pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc','ren2','rens']
 	            let stats = await fetch(`${window.domain}/raw-stats/apys.json`)
 	            stats = await stats.json()
                 for(let [key, value] of Object.entries(volumeStore.state.volumes)) {
                 	if(volumeStore.state.volumes[key] && volumeStore.state.volumes[key][0] == -1) {
-                		let volume = key == 'ren' ? stats.volume.ren2 : stats.volume[key]
+                		let volume = key == 'ren' ? stats.volume.ren2 : key == 'sbtc' ? stats.volume.rens : stats.volume[key]
                 		Vue.set(volumeStore.state.volumes[key], 0, volume || 0)
-                		if(['tbtc', 'ren'].includes(key)) {
+                		if(['tbtc', 'ren', 'sbtc'].includes(key)) {
                 			Vue.set(volumeStore.state.volumes[key], 0, volume * this.btcPrice || 0)
                 			Vue.set(volumeStore.state.volumes[key], 1, volume || 0)
                 		}

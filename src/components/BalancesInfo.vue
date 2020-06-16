@@ -15,7 +15,7 @@
             <b>{{totalCurrencies(currencies)}}:</b> 
             <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances)}}</span>
           </li>
-          <li v-show="currentPool == 'ren'">
+          <li v-show="['ren', 'sbtc'].includes(currentPool)">
             <b>{{totalCurrencies(currencies)}}:</b>
             <span :class="{'loading line': totalBalances === null}"> {{(totalBalances * btcPrice) | formatNumber(2)}}$ </span>
           </li>
@@ -192,7 +192,7 @@
     methods: {
       toFixed(num, precisions = 2, round = 4) {
           if(num == '' || num === null || num === undefined) return ''
-          if(precisions == 2 && ['tbtc', 'ren'].includes(this.currentPool)) precisions = 8
+          if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) precisions = 8
           let rounded = this.formatNumber(num, precisions)
           return rounded
       },
@@ -217,7 +217,7 @@
           let price = 1
           let amount = 1
           let toPrecisions = 1e6
-          if(['tbtc', 'ren'].includes(this.currentPool)) {
+          if(['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) {
             amount = 0.0001
             toPrecisions = 1e8
           }
@@ -249,7 +249,7 @@
           if(volumeStore.state.volumes[key][0] == -1) {
             let volume = key == 'ren' ? stats.volume.ren2 : stats.volume[key]
             Vue.set(volumeStore.state.volumes[key], 0,  volume || 0)
-            if(['tbtc', 'ren'].includes(key)) {
+            if(['tbtc', 'ren', 'sbtc'].includes(key)) {
               Vue.set(volumeStore.state.volumes[key], 0,  volume * this.btcPrice || 0)
               Vue.set(volumeStore.state.volumes[key], 1,  volume || 0)
             }
@@ -327,7 +327,7 @@
         return this.poolVolumeUSD
       },
       isBTC() {
-        return ['tbtc', 'ren'].includes(this.currentPool)
+        return ['tbtc', 'ren', 'sbtc'].includes(this.currentPool)
       },
       hasLoadedInfo() {
         let N_COINS = allabis[this.currentPool].N_COINS;

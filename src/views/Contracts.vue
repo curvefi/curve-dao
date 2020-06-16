@@ -11,7 +11,7 @@
 	                		<img class='icon' :src="getTokenUrl(i)"> 
 	                		<span class='text'>[{{tokenNames[i].ticker}}] {{tokenNames[i].name}} token address</span>
 	                	</a>
-	                	<a :href = "'https://etherscan.io/address/' + depositZaps[i].deposit" v-show="allPools[i] != 'ren'">
+	                	<a :href = "'https://etherscan.io/address/' + depositZaps[i].deposit" v-show="!['ren', 'sbtc'].includes(allPools[i])">
 	                		<img class='icon' :src="getTokenUrl(i)"> <span class='text'>deposit address</span>
 	                	</a>
 	            </fieldset>

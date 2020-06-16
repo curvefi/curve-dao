@@ -136,7 +136,7 @@
 					panning: true,
 					zoomType: 'x',
 			        panKey: 'ctrl',
-			        height: 800,
+			        height: 600,
 				},
 				yAxis: [
 					{

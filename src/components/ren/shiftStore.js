@@ -679,7 +679,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 		).send({
 			from: state.default_account,
-			gas: 400000,
+			gas: 400001,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -757,7 +757,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			signature,
 		).send({
 			from: state.default_account,
-			gas: 600000,
+			gas: 600001,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -792,7 +792,7 @@ export async function burnSwap(data) {
 			BN(data.toInputOriginal).times(0.97).toFixed(0, 1),
 		).send({
 			from: state.default_account,
-			gas: 400000,
+			gas: 400001,
 		})
 	burn(tx, data.address, null, 0)
 }
@@ -805,7 +805,7 @@ export async function removeLiquidityThenBurn(data) {
 		data.min_amounts,
 	).send({
 		from: state.default_account,
-		gas: 400000,
+		gas: 400001,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 1)
@@ -821,7 +821,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		BN(data.max_burn_amount).toFixed(0, 1),
 	).send({
 		from: state.default_account,
-		gas: 600000,
+		gas: 600001,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 2)
@@ -836,7 +836,7 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		BN(data.min_amount).toFixed(0, 1),
 	).send({
 		from: state.default_account,
-		gas: 400000,
+		gas: 400001,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 3)
@@ -926,7 +926,7 @@ export async function listenForReplacement(txhash) {
 		tx.removed = false
 		tx.ethTxHash = transaction.hash
 		tx.ethStartBlock = +transaction.blockNumber
-		if(transaction.type == 1) tx.state = 30
+		if(tx.type == 1) tx.state = 30
 		else tx.state = 12
 		tx.confirmations = 0
 		console.log(tx.confirmations, "THE SPEED UP CONFIRMATIONS")

@@ -162,6 +162,21 @@
 	            	</div>
 	            </div>
 
+	            <div>
+	                <a href='https://dydx.exchange/'>
+	                	<div class='index'>11.</div>
+	                	<div class='icon-container'>
+	                		<img class='dydx icon' :src="publicPath + 'icons/integrations/dydx.svg'" alt="dydx exchange">
+					</div>
+            		<span class='text'>dydx exchange</span></a>
+
+	                <div class='descriptionscontainer'>
+	                	<div class='descriptions'>
+		                	dYdX allows trading BTC Perpetual with up to 10x leverage
+		                </div>
+		            </div>
+	            </div>
+
 	        </fieldset>
 	    </div>
 </template>
@@ -237,6 +252,11 @@
 
 	fieldset > div > a .text {
 		flex: 3;
+	}
+
+	.dydx.icon {
+		filter: brightness(0) saturate(100%);
+		transform: scale(1.5);
 	}
 
 </style>

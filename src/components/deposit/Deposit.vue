@@ -466,6 +466,7 @@
 			    let minted = 0;
 			    if(this.depositc) {
                     this.waitingMessage = 'Please confirm deposit transaction'
+                    await helpers.setTimeoutPromise(100)
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
@@ -488,6 +489,7 @@
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
                     this.waitingMessage = 'Please confirm deposit transaction'
+                    await helpers.setTimeoutPromise(100)
 					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
@@ -517,6 +519,7 @@
     									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
     									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
     						})[0].raw.data)
+                        await helpers.setTimeoutPromise(100)
     					await this.stakeTokens(minted)
                     }
                     catch(err) {

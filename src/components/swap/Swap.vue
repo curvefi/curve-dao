@@ -498,6 +498,7 @@
                 let exchangeMethod = currentContract.swap.methods.exchange_underlying
                 if(this.swapwrapped || ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
                 try {
+                    await helpers.setTimeoutPromise(100)
                     await exchangeMethod(i, j, dx, min_dy)
                         .send({
                             from: currentContract.default_account,

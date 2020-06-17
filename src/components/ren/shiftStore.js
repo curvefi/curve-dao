@@ -787,6 +787,7 @@ export async function burnSwap(data) {
 	await common.approveAmount(contract.coins[1], 
 		BN(data.fromInput).times(1e8), 
 		state.default_account, adapterAddress, data.inf_approval)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.swapThenBurn(
 			RenJS.utils.BTC.addressToHex(data.address),
@@ -801,6 +802,8 @@ export async function burnSwap(data) {
 
 export async function removeLiquidityThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
+    
 	let tx = state.adapterContract.methods.removeLiquidityThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),
 		BN(data.amount).toFixed(0, 1),
@@ -816,6 +819,7 @@ export async function removeLiquidityThenBurn(data) {
 
 export async function removeLiquidityImbalanceThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.max_burn_amount, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.removeLiquidityImbalanceThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -831,6 +835,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 
 export async function removeLiquidityOneCoinThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.token_amounts, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.removeLiquidityOneCoinThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),

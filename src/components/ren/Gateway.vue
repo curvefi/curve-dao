@@ -95,7 +95,7 @@
             </p>
             <div class='input address'>
 				<label for='address'>{{ from_currency == 1 ? 'BTC withdrawal' : 'ETH' }} address</label>
-				<input id='address' type='text' v-model='address' placeholder='Address' :style='addressStyle'>
+				<input id='address' type='text' v-model='address' placeholder='Address' :style='addressStyle' :disabled='from_currency == 0'>
 			</div>
 	     	<ul class='infiniteapproval'>
 	            <li>

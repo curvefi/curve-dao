@@ -916,7 +916,7 @@ async function txFailed(txhash) {
 }
 
 export async function resubmit(transaction) {
-	if(transaction.type == 0) mintThenSwap(trasaction)
+	if(transaction.type == 0) mintThenSwap(transaction)
 	if(transaction.type == 3) mintThenDeposit(transaction)
 	if(transaction.type == 1 && transaction.burnType == 1) removeLiquidityThenBurn(transaction)
 	if(transaction.type == 1 && transaction.burnType == 2) removeLiquidityImbalanceThenBurn(transaction)

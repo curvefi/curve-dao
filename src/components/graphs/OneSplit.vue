@@ -933,7 +933,9 @@
                         else this.distribution = null
                         this.bestPool = pools.indexOf(pool)
                     }
-                    let address = this.swap[this.bestPool]._address
+                    let bestPool = this.bestPool
+                    if(bestPool > 0) bestPool +=1
+                    let address = this.swap[bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))
                         this.inf_approval = true;
                     else

@@ -123,6 +123,10 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{l_info && toFixed(l_info[i])}}</span></li>
           <li>
+            <b>{{totalCurrencies(currencies)}}:</b> 
+            <span :class="{'loading line': totalUserBalances === null}"> {{toFixed(totalUserBalances)}}</span>
+          </li>
+          <li>
             <b>USD balance:</b> 
 
             <span>
@@ -144,6 +148,10 @@
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
             <span> {{staked_info && toFixed(staked_info[i])}}</span></li>
+          <li>
+            <b>{{totalCurrencies(currencies)}}:</b> 
+            <span :class="{'loading line': totalStakedBalances === null}"> {{toFixed(totalStakedBalances)}}</span>
+          </li>
           <li>
             <b>USD balance:</b> 
 
@@ -284,6 +292,12 @@
       },
       totalBalances() {
         return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
+      },
+      totalUserBalances() {
+        return this.l_info && this.l_info.reduce((a, b) => a + b, 0) || null
+      },
+      totalStakedBalances() {
+        return this.staked_info && this.staked_info.reduce((a, b) => a + b, 0) || null
       },
       usdShare1() {
         let share = (this.usdShare || getters.usdShare())

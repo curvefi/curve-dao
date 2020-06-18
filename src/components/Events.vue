@@ -55,7 +55,12 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ event.timestamp && formatDate(event.timestamp) }}
+				        			<span class='tooltip'>
+				        				{{ event.timestamp && formatTime(event.timestamp) }}
+				        				<span class='tooltiptext'>
+				        					{{ event.timestamp && formatDateTime(event.timestamp) }}
+				        				</span>
+				        			</span>
 				        		</a>
 				        	</td>
 				        	<td>
@@ -108,7 +113,7 @@
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ event.timestamp && formatDate(event.timestamp) }}
+			        				{{ event.timestamp && formatDateTime(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -187,7 +192,12 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ event.timestamp && formatDate(event.timestamp) }}
+				        			<span class='tooltip'>
+				        				{{ event.timestamp && formatTime(event.timestamp) }}
+				        				<span class='tooltiptext'>
+				        					{{ event.timestamp && formatDateTime(event.timestamp) }}
+				        				</span>
+				        			</span>
 				        		</a>
 				        	</td>
 				        	<td>
@@ -237,7 +247,7 @@
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ event.timestamp && formatDate(event.timestamp) }}
+			        			{{ event.timestamp && formatDateTime(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -309,7 +319,7 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ event.timestamp && formatDate(event.timestamp) }}
+				        			{{ event.timestamp && formatTime(event.timestamp) }}
 				        		</a>
 				        	</td>
 				        	<td>
@@ -364,7 +374,7 @@
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ event.timestamp && formatDate(event.timestamp) }}
+			        			{{ event.timestamp && formatDateTime(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -1059,8 +1069,11 @@
 				else
 					this.page = 0
 			},
-			formatDate(date) {
-				return helpers.formatDateToHuman(date).split(' ')[1]
+			formatDateTime(timestamp) {
+				return helpers.formatDateToHuman(timestamp)
+			},
+			formatTime(timestamp) {
+				return helpers.formatDateToHuman(timestamp).split(' ')[1]
 			},
 
 		}

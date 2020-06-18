@@ -16,7 +16,7 @@
             <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances)}}</span>
           </li>
           <li v-show="currentPool == 'ren'">
-            <b>{{totalCurrencies(currencies)}}:</b>
+            <b>USD total:</b>
             <span :class="{'loading line': totalBalances === null}"> {{(totalBalances * btcPrice) | formatNumber(2)}}$ </span>
           </li>
       </ul>

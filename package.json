@@ -20,6 +20,7 @@
     "highcharts": "^8.1.1",
     "highcharts-vue": "^1.3.5",
     "register-service-worker": "^1.7.1",
+    "set-interval-async": "^1.0.33",
     "vue": "^2.6.11",
     "vue-firestore": "^0.3.30",
     "vue-meta": "^2.3.3",

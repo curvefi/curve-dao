@@ -197,6 +197,8 @@
     const worker = new Worker();
     const calcWorker = Comlink.wrap(worker);
 
+    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
+
     export default {
         data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren'],
@@ -208,6 +210,7 @@
             to_currency: 1,
             fromInput: '1.00',
             toInput: '0.00',
+            updateTimer: null,
             disabled: true,
             bgColor: '#505070',
             fromBgColor: 'blue',
@@ -875,6 +878,8 @@
                 return [txPricePool, txPrice1split]
             },
             async set_to_amount() {
+                this.updateTimer && clearIntervalAsync(this.updateTimer)
+                this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 this.distribution = null
                 let minAmount = 10000
                 if(this.swapwrapped) minAmount *= 50

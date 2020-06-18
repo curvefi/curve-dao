@@ -218,10 +218,10 @@
             	return (BN(this.toInputOriginal).times(1e8).times(1-state.burnFee/10000).minus(state.minersReleaseFee)).div(1e8).toFixed(8)
             },
             minOrderSize() {
-            	return state.minersReleaseFee + state.burnFee / 10000
+            	return state.minersReleaseFee + state.burnFee / 10000 + 1100
             },
             lessThanMinOrder() {
-            	if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
+            	if(this.from_currency == 0 && this.amountAfterBTC < 0.00001) return true
             	if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true	
             },
         	toInputFormat() {

@@ -55,7 +55,7 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			{{ event.timestamp && formatDate(event.timestamp) }}
 				        		</a>
 				        	</td>
 				        	<td>
@@ -102,13 +102,13 @@
 				    </tbody>
 				</table>
 
-				<div class='showmobile' v-if='displayedEvent == 0'>
+				<div class='showmobiletable' v-if='displayedEvent == 0'>
 					<div v-for='event in paginatedExchanges' class='eventmobile'>
 			        		<div>
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ formatDate(event.timestamp) }}
+			        			{{ event.timestamp && formatDate(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -187,7 +187,7 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			{{ event.timestamp && formatDate(event.timestamp) }}
 				        		</a>
 				        	</td>
 				        	<td>
@@ -231,13 +231,13 @@
 				    </tbody>
 				</table>
 
-				<div class='showmobile' v-if='displayedEvent == 1'>
+				<div class='showmobiletable' v-if='displayedEvent == 1'>
 					<div v-for='event in paginatedExchanges' class='eventmobile'>
 			        		<div>
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ formatDate(event.timestamp) }}
+			        			{{ event.timestamp && formatDate(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -267,6 +267,10 @@
 					            		</div>
 				            		</div>
 			            		</a>
+
+			            		<div v-for = 'currAmount in showAmounts(event)'>
+			            			{{ currAmount }}
+			            		</div>
 			            	</div>
 			            	<div>
 			            		Pool:
@@ -305,7 +309,7 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			{{ event.timestamp && formatDate(event.timestamp) }}
 				        		</a>
 				        	</td>
 				        	<td>
@@ -354,13 +358,13 @@
 				    </tbody>
 				</table>
 
-				<div class='showmobile' v-if='displayedEvent == 2'>
+				<div class='showmobiletable' v-if='displayedEvent == 2'>
 					<div v-for='event in paginatedExchanges' class='eventmobile'>
 			        		<div>
 			        			Time:
 
 			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-			        			{{ formatDate(event.timestamp) }}
+			        			{{ event.timestamp && formatDate(event.timestamp) }}
 			        			</a>
 			        		</div>
 			        		<div>
@@ -390,6 +394,12 @@
 					            		</div>
 				            		</div>
 			            		</a>
+
+			            		<div class='tooltiptext'>
+				            		<div v-for = 'currAmount in showAmounts(event)'>
+				            			{{ currAmount }}
+				            		</div>
+			            		</div>
 			            	</div>
 			            	<div>
 			            		Pool:
@@ -423,17 +433,21 @@
 					<button @click='page > 0 && page--'>Prev</button>
 					Page: {{page}} (of {{pages}})
 					<button @click='page < pages && page++'>Next</button>
-					<label for='gotopage'> Go to: </label>
-					<input id='gotopage' type='text' v-model='gotopage'>
-					<button @click='goTo'>Go</button>
-					<label for='perpage'>Per page:</label>
-					<select class='tvision' v-model='perPage' id='perpage'>
-						<option value='10'>10</option>
-						<option value='20'>20</option>
-						<option value='50'>50</option>
-						<option value='100'>100</option>
-						<option value='300'>300</option>
-					</select>
+					<div>
+						<label for='gotopage'> Go to: </label>
+						<input id='gotopage' type='text' v-model='gotopage'>
+						<button @click='goTo'>Go</button>
+					</div>
+					<div>
+						<label for='perpage'>Per page:</label>
+						<select class='tvision' v-model='perPage' id='perpage'>
+							<option value='10'>10</option>
+							<option value='20'>20</option>
+							<option value='50'>50</option>
+							<option value='100'>100</option>
+							<option value='300'>300</option>
+						</select>
+					</div>
 				</div>
 			</div>
 		</fieldset>
@@ -1095,8 +1109,14 @@
 		font-weight: normal;
 	}
 	#pages {
-		text-align: center;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
 		margin-top: 1em;
+	}
+	#pages > div {
+		margin-top: 0.3em;
 	}
 	#pages button {
 		margin-left: 0;

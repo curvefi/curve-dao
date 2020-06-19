@@ -524,6 +524,9 @@ button.bn-onboard-custom, #derivation-select button, #account-select + button {
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
+  .window {
+    width: 90%;
+  }
   .poolsdropdown.right {
     display: none !important;
   }

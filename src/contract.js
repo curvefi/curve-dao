@@ -296,14 +296,17 @@ const state = Vue.observable({
 		},
 		ren: {
 			currentContract: 'ren',
+			adapterContract: null,
 			...initState(),
 		},
 		sbtc: {
 			currentContract: 'sbtc',
+			adapterContract: null,
 			...initState(),
 		},
 	},
 	swapbtc: false,
+	adapterContract: null,
 	currentContract: 'compound',
 	currencies: currencies.compound,
 	N_COINS: N_COINS,
@@ -446,6 +449,9 @@ export async function init(contract, refresh = false) {
 	    state.old_swap = new state.web3.eth.Contract(allabis.compound.old_swap_abi, old_swap_address);
 	    state.old_swap_token = new state.web3.eth.Contract(ERC20_abi, old_token_address);
     	calls.push([state.old_swap_token._address, state.old_swap_token.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    }
+    if(['ren', 'sbtc'].includes(contract.currentContract)) {
+    	state.adapterContract = new state.web3.eth.Contract(allabis[contract.currentContract].adapterABI, allabis[contract.currentContract].adapterAddress)
     }
     if(contract.currentContract == 'susdv2') {
     	//balanceOf(address)

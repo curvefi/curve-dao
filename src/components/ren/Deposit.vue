@@ -11,7 +11,7 @@
                                     :class="{'token-icon': true, [currency+'-icon']: true}" 
                                     :src='getTokenIcon(currency)'>
     	                        <span>{{currency | capitalize}} </span>
-                                <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show='i == 1'>
+                                <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show="['wbtc', 'sbtc'].includes(currency)">
                                     <span>Max: {{ maxBalanceCoin(i) }} </span>
                                 </span>
                             </span>
@@ -78,7 +78,7 @@
 	import Vue from 'vue'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas } from '../../contract'
-    import allabis, { adapterAddress } from '../../allabis'
+    import allabis from '../../allabis'
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
@@ -141,13 +141,22 @@
         computed: {
           ...getters,
           currencies() {
-            return {
-                btc: 'BTC',
-                wbtc: 'wBTC',
+            if(currentContract.currentContract == 'ren') {
+                return {
+                    btc: 'BTC',
+                    wbtc: 'WBTC',
+                }
+            }
+            if(currentContract.currentContract == 'sbtc') {
+                return {
+                    btc: 'BTC',
+                    wbtc: 'wBTC',
+                    sbtc: 'sBTC',   
+                }
             }
           },
           minAmount() {
-          	if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+          	if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return 1e-8
           	return 0.01
           },
           calcFee() {
@@ -159,6 +168,12 @@
           },
           minOrderSize() {
             return ((state.minersLockFee + state.mintFee / 10000) / 1e8).toFixed(8)
+          },
+          fromPrecisions() {
+            return allabis[currentContract.currentContract].coin_precisions[this.from_currency]
+          },
+          toPrecisions() {
+            return allabis[currentContract.currentContract].coin_precisions[this.to_currency]
           },
           
         },
@@ -190,7 +205,7 @@
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
-                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
@@ -241,13 +256,18 @@
             async handle_sync_balances() {
 			    await common.update_fee_info();
 			    let calls = []
-		    	calls.push([this.coins[1]._address, this.coins[1].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
-		    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(1).encodeABI()])
+                for(let [i, coin] of this.coins.slice(1).entries()) {
+    	           calls.push([coin._address, coin.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    	           calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
+                }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
-		    	Vue.set(this.wallet_balances, 1, decoded[0])
-		    	if(!currentContract.default_account) Vue.set(this.wallet_balances, 1, 0)
-		    	Vue.set(this.balances, 1, +decoded[1])
+                console.log(decoded, "DECODED")
+                helpers.chunkArr(decoded, 2).map((v, i) => {
+                    Vue.set(this.wallet_balances, i+1, v[0])
+                    if(!currentContract.default_account) Vue.set(this.wallet_balances, i+1, 0)
+                    Vue.set(this.balances, i+1, +v[1])
+                })
 			},
 			async handle_sync_balances_proportion() {
 				await this.handle_sync_balances();
@@ -269,31 +289,38 @@
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]
 				//this.show_loading = true
-				let calls = [
-						  [this.coins[1]._address, this.coins[1].methods.balanceOf(currentContract.default_account).encodeABI()]
-                        ]
+				let calls = this.coins.slice(1).map(coin => 
+				        [coin._address, coin.methods.balanceOf(currentContract.default_account).encodeABI()]
+                    )
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
-                let wbtcBalance = BN(decoded[0])    
-                let maxDiff = (BN(wbtcBalance).div(1e8)).minus(this.inputs[1])
-                if(wbtcBalance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
-                    Vue.set(this.amounts, 1, BN(wbtcBalance).toFixed(0,1))
-                }
-                else Vue.set(this.amounts, 1, BN(this.inputs[1]).times(1e8).toFixed(0,1))
+                console.log(decoded, "DECODED")
+                decoded.slice(0, -1).forEach((balance, i) => {
+                    balance = BN(balance)
+                    let precisions = allabis[currentContract.currentContract].coin_precisions[i]
+                    let maxDiff = (BN(balance).div(precisions)).minus(this.inputs[i])
+                    if(balance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
+                        Vue.set(this.amounts, i+1, BN(balance).toFixed(0,1))
+                    }
+                    else Vue.set(this.amounts, i+1, BN(this.inputs[i]).times(precisions).toFixed(0,1))
+                })
                 Vue.set(this.amounts, 0, BN(this.amountAfterBTC).times(1e8).toFixed(0,1))
 				let total_supply = +decoded[decoded.length-1];
 				// /this.waitingMessage = 'Please approve spending your coins'
                 var token_amount = 0;
                 if(total_supply > 0) {
                     let token_amounts = this.amounts
+                    console.log(token_amounts, "TOKEN AMOUNTS")
                     token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
                 console.log(this.amounts, "AMOUNTS TO CALC ON", token_amount, "TOKEN AMOUNT")
 				this.estimateGas = contractGas.deposit[this.currentPool] / 2
-		        await common.approveAmount(this.coins[1], BN(this.amounts[1]), currentContract.default_account, adapterAddress)
+		        
+                for(let i = 1; i < currentContract.N_COINS; i++)
+                    await common.approveAmount(this.coins[i], BN(this.amounts[i]), currentContract.default_account, allabis[currentContract.currentContract].adapterAddress)
 	
 			    let receipt;
 			    let minted = 0;

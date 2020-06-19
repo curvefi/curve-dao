@@ -64,7 +64,7 @@
                 </span>
             </legend>
         	<ul>
-        		<li v-show = "!['susdv2','tbtc','ren'].includes(currentPool)">
+        		<li v-show = "!['susdv2','tbtc','ren','sbtc'].includes(currentPool)">
         			<input type='radio' id='to_cur_comb' name="to_cur" :value='10' :checked='to_currency === 10' @click='handleCheck(10)'>
         			<label for='to_cur_comb'>
                         Combination of all coins
@@ -148,7 +148,7 @@
 	import Vue from 'vue'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
-    import allabis, { sCurveRewards_abi, sCurveRewards_address, adapterAddress } from '../../allabis'
+    import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
@@ -240,9 +240,18 @@
         computed: {
 			...getters,
             currencies() {
-                return {
-                    renbtc: 'BTC',
-                    wbtc: 'wBTC',
+                if(currentContract.currentContract == 'ren') {
+                    return {
+                        btc: 'BTC',
+                        wbtc: 'WBTC',
+                    }
+                }
+                if(currentContract.currentContract == 'sbtc') {
+                    return {
+                        btc: 'BTC',
+                        wbtc: 'wBTC',
+                        sbtc: 'sBTC',   
+                    }
                 }
             },
         	showMigrateNew() {
@@ -257,7 +266,7 @@
                 return (100 + maxSlippage)/100
             },
             minAmount() {
-            if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+            if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return 1e-8
                 return 0.01
             },
             calcFee() {
@@ -296,7 +305,7 @@
                 return helpers.getTokenIcon(token, this.withdrawc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
-                if(precisions == 2 && ['tbtc', 'ren'].includes(currentContract.currentContract)) precisions = 8
+                if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
@@ -458,7 +467,7 @@
                 this.estimateGas = 0;
                 //this.show_loading = true;
                 let inOneCoin = currentContract.deposit_zap
-                if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
+                if(['tbtc','ren','sbtc'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
 
 				let min_amounts = []
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
@@ -488,10 +497,11 @@
 		        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                     this.estimateGas = gas / 2;
                     try {
-                        await common.ensure_allowance_zap_out(token_amount, undefined, adapterAddress)
+                        await common.ensure_allowance_zap_out(token_amount, undefined, allabis[currentContract.currentContract].adapterAddress)
 
 			        	await store.removeLiquidityImbalanceThenBurn({
                             address: this.btcAddress,
+                            coinDestination: currentContract.default_account,
                             amounts: this.amounts,
                             renBTCAmount: this.inputs[0],
                             max_burn_amount: token_amount,
@@ -526,6 +536,7 @@
 			        	await store
 			        		.removeLiquidityOneCoinThenBurn({
                                 address: this.btcAddress,
+                                coinDestination: currentContract.default_account,
                                 token_amounts: amount,
                                 renBTCAmount: this.inputs[0],
                                 min_amount: BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1),
@@ -539,6 +550,7 @@
     			        	await store
                                 .removeLiquidityThenBurn({
                                     address: this.btcAddress,
+                                    coinDestination: currentContract.default_account,
                                     amount: amount, 
                                     renBTCAmount: this.inputs[0],
                                     min_amounts: min_amounts
@@ -566,7 +578,7 @@
 			},
 			async handle_change_share() {
                 let inOneCoin = currentContract.deposit_zap
-                if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
+                if(['tbtc','ren','sbtc'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
 
                 this.warninglow = false;
                 this.showWithdrawSlippage = false

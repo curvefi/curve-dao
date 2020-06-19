@@ -302,6 +302,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
             var addr = v[0];
             let coin_abi = cERC20_abi
             if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
+            if(!contract.coins) contract.coins = []
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             var underlying_addr = v[1];
             let underlying_abi = ERC20_abi

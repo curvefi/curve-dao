@@ -3,7 +3,7 @@
 		<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 			This is a beta version. Please test with small amounts and use with caution.
 		</div>
-		<div v-show="currentPool == 'ren'" class='swapBTC-container info-message gentle-message'>
+		<div v-show="['ren', 'sbtc'].includes(currentPool)" class='swapBTC-container info-message gentle-message'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
 	        <label for='swapbtc'>
 	        	Deposit <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
@@ -62,6 +62,7 @@
 			},
 			swapbtc: {
 				get() {
+					return true
 					return currentContract.swapbtc
 				},
 				set(val) {

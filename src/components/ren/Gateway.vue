@@ -61,13 +61,13 @@
                             </label>
                         </label>
                         </li>
-                        <div v-show='from_currency == 1 && toInputOriginal >= 0' class='amount-after-fees'>
-                        	Amount before renVM fees: {{toInputOriginal}}
+                        <div v-show='[1,2].includes(from_currency) && to_currency == 0 && toInputOriginal >= 0' class='amount-after-fees'>
+                        	Amount before renVM fees: {{toInputOriginal.toFixed(8)}}
                         </div>
                     </ul>
                 </fieldset>
             </div>
-            <p class='exchange-rate'>Exchange rate (including fees and renVM fee): 
+            <p class='exchange-rate' v-show='[1,2].includes(this.from_currency) && this.to_currency == 0'>Exchange rate (including fees and renVM fee): 
             	<span id="exchange-rate" v-show='!lessThanMinOrder'>{{ exchangeRate && exchangeRate.toFixed(4) }}</span>
             	<span v-show='lessThanMinOrder'>N/A</span>
             </p>
@@ -94,7 +94,9 @@
             	Minimum burn order size is {{ (minOrderSize / 1e8 + 0.00000547).toFixed(8) }}
             </p>
             <div class='input address'>
-				<label for='address'>{{ from_currency == 1 ? 'BTC withdrawal' : 'ETH' }} address</label>
+				<label for='address' v-show='[1,2].includes(this.from_currency) && this.to_currency == 0'>BTC withdrawal address</label>
+				<label for='address' v-show='this.from_currency == 0 && [1,2].includes(this.to_currency)'>ETH address</label>
+				
 				<input id='address' type='text' v-model='address' placeholder='Address' :style='addressStyle'>
 			</div>
 	     	<ul class='infiniteapproval'>
@@ -121,12 +123,12 @@
 
 <script>
 	import Vue from 'vue'
-	import { getters, allCurrencies, contract } from '../../contract'
+	import { getters, allCurrencies, contract, gas as contractGas } from '../../contract'
 	import RenSDK from '@renproject/ren'
 	import BN from 'bignumber.js'
 	import * as helpers from '../../utils/helpers'
 	import * as common from '../../utils/common'
-	import allabis, { ERC20_abi, adapterABI, adapterAddress } from '../../allabis'
+	import allabis, { ERC20_abi } from '../../allabis'
 	let Box = null
 	import * as subscriptionStore from '../common/subscriptionStore'
 	import Table from './Table.vue'
@@ -188,21 +190,18 @@
             maxInputSlippage: '',
             customSlippageDisabled: true,
 			swapwrapped: false,
-			currencies: {
-				btc: 'BTC',
-				wbtc: 'WBTC',
-			},
 			copied: false,
 			inf_approval: false,
 			promise: helpers.makeCancelable(Promise.resolve()),
 		}),
 		computed: {
 			swapDisabled() {
-				return this.lessThanMinOrder || (this.from_currency == 1 && !this.address)
+				return this.lessThanMinOrder || 
+					([1,2].includes(this.from_currency) && this.to_currency == 0 && !this.address)
 			},
 			maxBalanceText() {
 				if(this.from_currency == 0) return 'N/A'
-				return BN(this.maxBalance).div(1e8).toFixed(8)
+				return BN(this.maxBalance).div(this.fromPrecisions).toFixed(8)
 			},
 			exchangeRate() {
 				if(this.from_currency == 1) return this.amountAfterWBTC / this.fromInput
@@ -221,11 +220,14 @@
             	return state.minersReleaseFee + state.burnFee / 10000
             },
             lessThanMinOrder() {
+            	if([1,2].includes(this.from_currency) && [1,2].includes(this.to_currency)) return false
             	if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
             	if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true	
             },
         	toInputFormat() {
         		if(!this.toInput || typeof this.toInput == 'string') return '0.00'
+        		if([1,2].includes(this.from_currency) && [1,2].includes(this.to_currency))
+        			return +this.toInputOriginal.toFixed(8)
         		return +this.toInput.toFixed(8) 
         	},
         	addressStyle() {
@@ -239,6 +241,27 @@
         	},
         	publicPath() {
                 return process.env.BASE_URL
+            },
+            currencies() {
+            	if(contract.currentContract == 'ren') {
+            		return {
+            			btc: 'BTC',
+						wbtc: 'WBTC',
+            		}
+            	}
+            	if(contract.currentContract == 'sbtc') {
+            		return {
+            			btc: 'BTC',
+						wbtc: 'wBTC',
+						sbtc: 'sBTC',	
+            		}
+            	}
+            },
+            fromPrecisions() {
+            	return allabis[contract.currentContract].coin_precisions[this.from_currency]
+            },
+            toPrecisions() {
+            	return allabis[contract.currentContract].coin_precisions[this.to_currency]
             },
 		},
 		watch: {
@@ -281,11 +304,11 @@
 		methods: {
 			async mounted() {
 				//when used in OneSplit component
-				if(contract.currentContract != 'ren') {
-					contract.swap = contract.contracts.ren.swap
-					contract.coins = contract.contracts.ren.coins
-				}
-				if(this.from_currency == 1) this.address = contract.default_account
+				// if(contract.currentContract != 'ren') {
+				// 	contract.swap = contract.contracts.ren.swap
+				// 	contract.coins = contract.contracts.ren.coins
+				// }
+				if([1,2].includes(this.from_currency)) this.address = contract.default_account
 				this.from_cur_handler()
 			},
 
@@ -294,7 +317,7 @@
 					this.fromInput = 0
 					return;
 				}
-				this.fromInput = BN(this.maxBalance).div(1e8).toFixed(8)
+				this.fromInput = BN(this.maxBalance).div(this.fromPrecisions).toFixed(8)
 				this.set_to_amount()
 			},
 
@@ -306,12 +329,12 @@
 				this.highlight_input();
 				let i = this.from_currency
 				let j = this.to_currency
-				let dx = BN(this.fromInput).times(1e8).toFixed(0,1)
+				let dx = BN(this.fromInput).times(this.fromPrecisions).toFixed(0,1)
 				let original_dx = dx
 				let fee = i == 0 ? state.minersLockFee : state.minersReleaseFee
 				let ethfee = i == 0 ? state.mintFee : state.burnFee
 				ethfee = 1 - ethfee/10000
-				dx = BN(this.fromInput).times(1e8).times(ethfee).minus(fee).toFixed(0,1)
+				dx = BN(this.fromInput).times(this.fromPrecisions).times(ethfee).minus(fee).toFixed(0,1)
 
 				//case WBTC -> BTC
 					//swapping the entered WBTC amount and then from result subtract fees
@@ -321,10 +344,10 @@
 					this.toInput = 0;
 					return;
 				}
-				let get_dy_original = contract.swap.methods.get_dy(i, j, BN(this.fromInput).times(1e8).toFixed(0,1)).encodeABI()
+				let get_dy_original = contract.swap.methods.get_dy(i, j, BN(this.fromInput).times(this.fromPrecisions).toFixed(0,1)).encodeABI()
 				let get_dys = [get_dy_original]
 				if(this.from_currency == 0) {
-					get_dys.push(contract.swap.methods.get_dy(i, j, BN(this.amountAfterBTC).times(1e8).toFixed(0,1)).encodeABI())
+					get_dys.push(contract.swap.methods.get_dy(i, j, BN(this.amountAfterBTC).times(this.fromPrecisions).toFixed(0,1)).encodeABI())
 				}
 				this.promise.cancel()
 				let calls = get_dys.map(call => [contract.swap._address, call])
@@ -333,15 +356,16 @@
 				try {
 					let result = await promise
 					result = result[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
+					console.log(result, "THE RESULT")
 					if(this.from_currency == 0) {
-						let [dy_original, dy] = result.map(v=>v / 1e8)
+						let [dy_original, dy] = result.map(v=>v / this.toPrecisions)
 						this.toInput = dy
 						this.toInputOriginal = dy_original
 					}
 					else {
-						this.toInput = (result - fee)*ethfee / 1e8
+						this.toInput = (result - fee)*ethfee / this.toPrecisions
 						//this.toInput = result / 1e8
-						this.toInputOriginal = result / 1e8
+						this.toInputOriginal = result / this.toPrecisions
 					}
 				}
 				catch(err) {
@@ -351,7 +375,7 @@
 
 			highlight_input() {
 				if(this.from_currency == 0) return;
-				if(this.fromInput > this.maxBalance / 1e8) {
+				if(this.fromInput > this.maxBalance / this.fromPrecisions) {
 					this.fromBgColor = 'red'
 				}
 				else {
@@ -368,7 +392,7 @@
 			async from_cur_handler() {
 				this.address = ''
 				if(this.from_currency == 0) this.address = contract.default_account
-                let currentAllowance = BN(await contract.coins[1].methods.allowance(contract.default_account, adapterAddress).call())
+                let currentAllowance = BN(await contract.coins[this.from_currency].methods.allowance(contract.default_account, allabis[contract.currentContract].adapterAddress).call())
                 let maxAllowance = contract.max_allowance.div(BN(2))
                 if (currentAllowance.gt(maxAllowance))
                     this.inf_approval = true;
@@ -380,25 +404,19 @@
             },
 
 			async setMaxBalance() {
-				let balance = await contract.coins[1].methods.balanceOf(contract.default_account).call()
+				let balance = await contract.coins[this.from_currency].methods.balanceOf(contract.default_account).call()
 				this.maxBalance = contract.default_account ? balance : 0
 				//console.log(this.maxBalance)
-			},
-
-			async setAmount() {
-				let i = this.from_currency
-				let j = this.to_currency
-				let get_dy = await contract.swap.methods.get_dy(i, j, amount).call()
-				this.toInput = BN(get_dy).div(1e8).toFixed(8);
 			},
 
 			async submit() {
 				let maxSlippage = this.maxSlippage;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
-				if(this.from_currency == 0) {
+				if(this.from_currency == 0 && [1,2].includes(this.to_currency)) {
                 	var min_dy = this.toInput * (1-maxSlippage)
 					store.mint({
 						from_currency: this.from_currency,
+						to_currency: this.to_currency,
 						amountAfterBTC: this.amountAfterBTC,
 						address: this.address,
 						fromInput: this.fromInput,
@@ -406,13 +424,40 @@
 						slippage: maxSlippage * 10,
 					})
 				}
-				if(this.from_currency == 1) 
+
+				else if([1,2].includes(this.from_currency) && this.to_currency == 0) { 
 					store.burnSwap({
 						address: this.address,
 						fromInput: this.fromInput,
+						from_currency: this.from_currency,
 						toInputOriginal: this.toInputOriginal,
 						inf_approval: this.inf_approval,
 					})
+				}
+
+				else {
+					let dx = BN(this.fromInput).times(this.fromPrecisions).toFixed(0,1)
+					let i = this.from_currency
+					let j = this.to_currency
+
+					try {
+	                    if (this.inf_approval)
+	                        await common.ensure_underlying_allowance(i, contract.max_allowance, [], undefined, false)
+	                    else
+	                        await common.ensure_underlying_allowance(i, dx, [], undefined, false);
+	                }
+	                catch(err) {
+	                    console.error(err)
+	                    throw err;
+	                }
+
+	                let min_dy = BN(this.toInputOriginal).times(this.toPrecisions).times(1-(maxSlippage / 100)).toFixed(0,1)
+	                console.log(contract.swap.methods.exchange, "SWAP ADDRESS")
+	                await contract.swap.methods.exchange(i, j, dx, min_dy).send({
+	                		from: contract.default_account,
+	                		gas: contractGas.swap[contract.currentContract].exchange(i, j)
+	                	})
+				}
 			}
 		}
 	}

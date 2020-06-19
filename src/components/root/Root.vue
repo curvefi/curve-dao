@@ -207,14 +207,14 @@
 			                    		<div>Total APY: {{apy[4]}}%</div>
 			                    	</span>
 	                    		</span> 
-	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>
-	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
+	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}%</span>
+	                    		<div :class="{'loading line': snxRewards === null}">(+{{snxRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX
 		                                <span class='tooltiptext'>
 		                                    SNX LP reward annualized
 		                                </span>
 		                            </span>)
-	                    		</span>
+	                    		</div>
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd && volumes.susd[0] < 0}">
@@ -304,14 +304,14 @@
 			                    		<div>Total APY: {{apy[8]}}%</div>
 			                    	</span>
 	                    		</span> 
-	                    		<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}</span>
-	                    		<span :class="{'loading line': sbtcRewards === null}">% (+{{sbtcRewards | toFixed2}}%
+	                    		<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}%</span>
+	                    		<div :class="{'loading line': sbtcRewards === null}">(+{{sbtcRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX/REN
 		                                <span class='tooltiptext'>
 		                                    SNX/REN LP reward annualized
 		                                </span>
 		                            </span>)
-	                    		</span>
+	                    		</div>
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.sbtc && volumes.sbtc[0] < 0}">

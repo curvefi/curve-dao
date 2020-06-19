@@ -627,7 +627,8 @@
                 }
                 else {
                     let exchangeMethod = bestContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped || this.bestPoolText == 'susd' || this.bestPoolText == 'ren') exchangeMethod = bestContract.swap.methods.exchange
+                    if(this.swapwrapped || ['susd', 'ren', 'sbtc'].includes(this.bestPoolText)) 
+                        exchangeMethod = bestContract.swap.methods.exchange
                     i = this.normalizeCurrency(i)
                     j = this.normalizeCurrency(j)
                     try {

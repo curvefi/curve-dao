@@ -410,7 +410,7 @@ export async function mint(data) {
 	transaction.fromAddress = contract.default_account;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
-	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
+	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).minus(1).toFixed(0,1)
 	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).minus(1).toFixed(0,1)
 	transaction.secret = '0x' + helpers.randomBytes(32)
 	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
@@ -653,7 +653,9 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
 	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
-	console.log(exchangeRateNow, "EXCHANGE RATE NOW")
+	if(BN(transaction.amount).times(1e8).minus(utxoAmount).gt(10)) {
+		transaction.newMinExchangeRate = BN(transaction.minExchangeRate).minus(1).toFixed(0,1)
+	}
 	//rates changed, ask user if they still want to swap
 		//handle the case where they only want to mint
 	if(exchangeRateNow.lt(BN(transaction.newMinExchangeRate)) && !swapNow && !receiveRen) {
@@ -665,7 +667,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	}
 	if(receiveRen) {
 		//make the rate impossibly high so the check for exchange always fails
-		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
+		transaction.newMinExchangeRate = BN(1000000000000).toFixed(0,1)
 	}
 	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
 	let txhash = await new Promise((resolve, reject) => {
@@ -785,6 +787,7 @@ export async function burnSwap(data) {
 	await common.approveAmount(contract.coins[1], 
 		BN(data.fromInput).times(1e8), 
 		state.default_account, adapterAddress, data.inf_approval)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.swapThenBurn(
 			RenJS.utils.BTC.addressToHex(data.address),
@@ -799,6 +802,8 @@ export async function burnSwap(data) {
 
 export async function removeLiquidityThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
+    
 	let tx = state.adapterContract.methods.removeLiquidityThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),
 		BN(data.amount).toFixed(0, 1),
@@ -814,6 +819,7 @@ export async function removeLiquidityThenBurn(data) {
 
 export async function removeLiquidityImbalanceThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.max_burn_amount, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.removeLiquidityImbalanceThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -829,6 +835,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 
 export async function removeLiquidityOneCoinThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.token_amounts, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let tx = state.adapterContract.methods.removeLiquidityOneCoinThenBurn(
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -909,7 +916,7 @@ async function txFailed(txhash) {
 }
 
 export async function resubmit(transaction) {
-	if(transaction.type == 0) mintThenSwap(trasaction)
+	if(transaction.type == 0) mintThenSwap(transaction)
 	if(transaction.type == 3) mintThenDeposit(transaction)
 	if(transaction.type == 1 && transaction.burnType == 1) removeLiquidityThenBurn(transaction)
 	if(transaction.type == 1 && transaction.burnType == 2) removeLiquidityImbalanceThenBurn(transaction)

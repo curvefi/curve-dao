@@ -199,6 +199,8 @@
     const worker = new Worker();
     const calcWorker = Comlink.wrap(worker);
 
+    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
+
     export default {
         data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc'],
@@ -210,6 +212,7 @@
             to_currency: 1,
             fromInput: '1.00',
             toInput: '0.00',
+            updateTimer: null,
             disabled: true,
             bgColor: '#505070',
             fromBgColor: 'blue',
@@ -882,6 +885,8 @@
                 return [txPricePool, txPrice1split]
             },
             async set_to_amount() {
+                this.updateTimer && clearIntervalAsync(this.updateTimer)
+                this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 this.distribution = null
                 let minAmount = 10000
                 if(this.swapwrapped) minAmount *= 50
@@ -940,7 +945,9 @@
                         else this.distribution = null
                         this.bestPool = pools.indexOf(pool)
                     }
-                    let address = this.swap[this.bestPool]._address
+                    let bestPool = this.bestPool
+                    if(bestPool > 0) bestPool +=1
+                    let address = this.swap[bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))
                         this.inf_approval = true;
                     else

@@ -113,7 +113,7 @@ export const gas = {
 		},
 		susdv2: {
 			exchange: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
-			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 200000,
+			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
 		},
 		pax: {
 			exchange: (i, j) => 800000,
@@ -300,6 +300,7 @@ const state = Vue.observable({
 		},
 		sbtc: {
 			currentContract: 'sbtc',
+			snxExchanger: null,
 			...initState(),
 		},
 	},
@@ -455,6 +456,9 @@ export async function init(contract, refresh = false) {
 		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     	
+    	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
+    }
+    if(contract.currentContract == 'sbtc') {
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {

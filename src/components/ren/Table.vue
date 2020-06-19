@@ -56,7 +56,7 @@
 			Swap completed
 		</div>
 
-		<table class='tui-table'>
+		<table class='tui-table showdesktoptransactions'>
 			<thead>
 				<tr>
 					<th>Type</th>
@@ -71,7 +71,8 @@
 					<td class='shifttype'>
 						{{ transaction.fromInput }}
 						<span v-show='[0, 3].includes(transaction.type)' class='tooltip'>
-							BTC->wBTC
+							<span v-show='transaction.type == 0'> BTC->wBTC </span>
+							<span v-show='transaction.type == 3'> BTC->renBTC </span>
 							<span class='tooltiptext' v-show='transaction.type == 0'>
 								Swap BTC->wBTC
 							</span>
@@ -180,6 +181,125 @@
 				</tr>
 			</tbody>
 		</table>
+		<div class='showmobiletransactions'>
+			<div v-for='transaction in filteredTransactions' class='transactionmobile'>
+				<div class='shifttype'>
+					<b>Type: </b>
+					{{ transaction.fromInput }}
+					<span v-show='[0, 3].includes(transaction.type)' class='tooltip'>
+						<span v-show='transaction.type == 0'> BTC->wBTC </span>
+						<span v-show='transaction.type == 3'> BTC->renBTC </span>
+						<span class='tooltiptext' v-show='transaction.type == 0'>
+							Swap BTC->wBTC
+						</span>
+						<span class='tooltiptext' v-show='transaction.type == 3'>
+							Deposit BTC
+						</span>
+					</span>
+					<span v-show='transaction.type == 1'>
+						<span v-show='transaction.burnType == 0' class='tooltip'>
+							wBTC->BTC
+							<span class='tooltiptext'>
+								Swap wBTC->BTC
+							</span>
+						</span>
+						<span v-show='transaction.burnType == 1' class='tooltip'>
+							renBTC->BTC
+							<span class='tooltiptext'>
+								Remove liquidity									
+							</span>
+						</span>
+						<span v-show='transaction.burnType == 2' class='tooltip'>
+							renBTC->BTC
+							<span class='tooltiptext medium'>
+								Remove liquidity imbalance
+							</span>
+						</span>
+						<span v-show='transaction.burnType == 3' class='tooltip'>
+							renBTC->BTC
+							<span class='tooltiptext medium'>
+								Remove liquidity in BTC
+							</span>
+						</span>
+					</span>
+				</div>
+				<div>
+					<b>BTC address: </b>
+					<span :class="{'loading line': !transaction.gatewayAddress }"></span>
+					<span class='nowrap' v-show='transaction.gatewayAddress'>
+						<span class='hoverpointer tooltip' @click='copy(transaction)'>
+							{{shortenAddress(transaction.gatewayAddress)}}
+							<span class='tooltiptext long'>
+								{{transaction.gatewayAddress}}
+							</span>
+						</span>
+						<span class='hoverpointer' v-show='[0,3].includes(transaction.type)' @click='copy(transaction)'>
+							<span class='tooltip'>
+								<img class='icon small' :src="publicPath + 'copy-solid.svg'">
+								<span class='tooltiptext small'>{{ copied == false ? 'Copy' : 'Copied' }}</span>
+							</span>
+						</span>
+						<img class='icon small hoverpointer qrcode' v-show='[0,3].includes(transaction.type)'
+							@click='showQR(transaction)' :src="publicPath + 'qrcode-solid.svg'">
+						<span class='tooltip'>
+							<img class='icon small hoverpointer' :src="publicPath + 'ethereum-brands_optimized.svg'">
+							<span class='tooltiptext long'>
+								From: {{ transaction.fromAddress }}
+							</span>
+						</span>
+					</span>
+				</div>
+				<div>
+					<b>Confirmations ✓: </b>
+					<span v-show='[0,3].includes(transaction.type) && transaction.state == 1'>▬</span>
+					<a :href="getTxHashLink(transaction)" target="_blank" rel="noopener noreferrer" v-show='!([0,3].includes(transaction.type) && transaction.state == 1)'> 
+						<span v-show='[0,3].includes(transaction.type) && transaction.state >= 2 && transaction.state < 10'>{{ transaction.confirmations }} / 6</span>
+						<span class='confirmed' v-show='[0,3].includes(transaction.type) && transaction.state >= 10 && transaction.state < 14'>
+							Confirmed
+						</span>
+						<span v-show='[0,3].includes(transaction.type) && [14,15].includes(transaction.state)'>
+							Done
+						</span>
+						<span v-show='transaction.type == 1 && transaction.state >= 30 && transaction.state < 60'> {{ transaction.confirmations }} / 30 </span>
+						<span v-show='transaction.type == 1 && transaction.state > 60'> {{ transaction.confirmations }}  </span>
+					</a>
+					<div v-show='[0,3].includes(transaction.type) && transaction.state == 14'>
+						<a :href="'https://etherscan.io/tx/' + transaction.ethTxHash" target="_blank" rel="noopener noreferrer">Etherscan</a>
+					</div>
+				</div>
+				<div>
+					<b>Status: </b>
+					<tx-state 
+						:state='transaction.state' 
+						:transaction='transaction'
+						@swapNow='swapNow'
+						@receiveRen='receiveRen'
+						@depositNow='depositNow'
+						@receiveRenDeposit='receiveRenDeposit'
+						@mint='mintThenSwap'
+						@resubmit='resubmit'
+						/>
+				</div>
+				<div class='nowrap'>
+					<b>Progress: </b>
+					<span v-show='[0,3].includes(transaction.type)'>
+						{{ txProgress(transaction) }}%
+						<span :class="{'loading line': txProgress(transaction) < 100}"></span>
+					</span>
+					<span v-show='transaction.type == 1'>
+						{{ txProgress(transaction) }}%
+						<span :class="{'loading line': txProgress(transaction) < 100}"></span>
+					</span>
+					<span v-show='[0,3].includes(transaction.type) && !transaction.btcTxHash' class='icon cancel' @click='removeTx(transaction)'>
+						<!-- [<span class='redtext'>&times;</span>] -->
+						<img :src="publicPath + 'trash-alt-solid.svg'">
+					</span>
+					<span v-show='transaction.removed' class='icon refresh' @click='refresh(transaction)'>
+						<img :src="publicPath + 'sync-solid.svg'">
+					</span>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -421,7 +541,27 @@
 		margin-top: 1em;
 	}
 
+	.transactionmobile {
+		margin-bottom: 1em;
+		border: 6px double white;
+		padding: 0.6em;
+	}
+
+	.showmobiletransactions {
+		display: none;
+	}
+
+	.transactionmobile:first-child {
+		margin-top: 1em;
+	}
+
 	@media only screen and (max-device-width: 700px) {
+		.showdesktoptransactions {
+			display: none;
+		}
+		.showmobiletransactions {
+			display: block;
+		}
 		.confirmations, .confirmed {
 			font-size: 0;
 			letter-spacing: -1px;

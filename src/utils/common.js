@@ -305,7 +305,7 @@ export async function multiInitState(calls, contract, initContracts = false) {
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             var underlying_addr = v[1];
             let underlying_abi = ERC20_abi
-            if(contract.currentContract == 'susdv2' && i == 3) underlying_abi = synthERC20_abi
+            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i == 2) underlying_abi = synthERC20_abi
             contract.underlying_coins.push(new web3.eth.Contract(underlying_abi, underlying_addr));
         })
         window[contract.currentContract].coins = contract.coins

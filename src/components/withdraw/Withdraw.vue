@@ -556,6 +556,7 @@
                             catch(err) {
                                 this.estimateGas = gas / 2;
                             }
+                            await helpers.setTimeoutPromise(100)
     			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
     				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
@@ -578,6 +579,7 @@
                             this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(token_amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity_imbalance(amounts, token_amount).send({
     				        	from: currentContract.default_account, gas: gas
     				        }).once('transactionHash', () => {
@@ -618,6 +620,7 @@
                         this.waitingMessage = 'Please confirm withdrawal transaction'
                         let args = [amount, this.to_currency, BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1)]
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) args.push(this.donate_dust)
+                        await helpers.setTimeoutPromise(100)                            
 			        	await inOneCoin.methods
 			        		.remove_liquidity_one_coin(...args)
 			        		.send({
@@ -632,6 +635,7 @@
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                             this.waitingMessage = 'Please confirm withdrawal transaction'
                             let min_amounts = await this.getMinAmounts();
+                            await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
     			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
@@ -656,6 +660,7 @@
                             catch(err) {
                                 this.estimateGas = 600000
                             }
+                            await helpers.setTimeoutPromise(100)
     			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
                             .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
                         }
@@ -681,7 +686,7 @@
 			},
 			async handle_change_share() {
                 let inOneCoin = currentContract.deposit_zap
-                if(['tbtc','ren'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
+                if(['tbtc','ren','sbtc'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap
 
                 this.warninglow = false;
                 this.showWithdrawSlippage = false
@@ -772,6 +777,7 @@
                 this.waitingMessage = 'Please confirm deposit to PAX pool transaction'
                 let nonZeroInputs = amounts.filter(Number).length
                 let gas = contractGas.depositzap.pax.deposit(nonZeroInputs) | 0
+                await helpers.setTimeoutPromise(100)
                 let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
                     from: currentContract.default_account,
                     gas: gas

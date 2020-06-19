@@ -7,6 +7,13 @@
  			</fieldset>
  		</div>
 
+ 		<div class='window white'>
+ 			<fieldset>
+ 				<legend>Total trading volume</legend>
+ 				<highcharts :constructor-type="'stockChart'" :options="volumeChartdata" ref='highcharts2'></highcharts>
+ 			</fieldset>
+ 		</div>
+
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
 			<p class='text-center'>
 		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd' && !['tbtc', 'ren'].includes(currency)">
@@ -121,10 +128,56 @@
 	            },
 				series: [],
 			},
+			volumeChartdata: {
+				title: {
+					text: 'Total Trading Volume'
+				},
+				chart: {
+					panning: true,
+					zoomType: 'x',
+			        panKey: 'ctrl',
+			        height: 600,
+				},
+				yAxis: [
+					{
+		            	id: 'volumeAxis',
+		            	//type: 'logarithmic',
+		            	opposite: false,
+		            	title: {
+		            		text: 'Trading volume',
+		            		style: {
+		            			color: 'black'
+		            		},
+		            		margin: 10,
+		            	},
+		            	labels: {
+		            		style: {
+		            			color: 'black',
+		            		},
+		            		align: 'right',
+		            		x: -30,
+		            	},
+			            offset: 0,
+		            }
+	            ],
+				tooltip: {
+	                valueDecimals: 3,
+	                pointFormatter() {
+                		let value = Math.floor(this.y * 100) / 100 + '%';
+                		if(this.series.name == 'Trading Volume') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${this.y.toFixed(0)}</b><br/>`
+	                	return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+	                }
+	            },
+	            legend: {
+	            	enabled: true,
+	            },
+				series: [],
+			},
 			poolData: [],
 			start: 0,
 			end: 0,
 			chart: null,
+			volumeChart: null,
 		}),
 		computed: {
 			volumesData() {
@@ -160,11 +213,22 @@
 						yAxis: 1,
 					})
 
+					this.volumeChart.addSeries({
+						type: 'column',
+						name: 'Trading Volume',
+						data: volumeSeries,
+						color: '#0b0a57',
+					})
+
+					this.volumeChart.hideLoading()
+
 					this.chart.hideLoading()
 				}
 
 			})
 			this.chart = this.$refs.highcharts.chart
+			this.volumeChart = this.$refs.highcharts2.chart
+			this.volumeChart.showLoading()
 			this.chart.showLoading()
 			var start = new Date();
 			start.setHours(0,0,0,0);

@@ -6,7 +6,13 @@
                     <fieldset class='item'>
                         <legend>From:</legend>
                         <div class='maxbalance' @click='set_max_balance'>
-                            Max: <span v-show="currentPool == 'susdv2' && from_currency == 3">{{maxSynthText}}/</span><span>{{maxBalanceText}}</span>
+                            Max: 
+                            <span 
+                                v-show="currentPool == 'susdv2' && from_currency == 3 || currentPool == 'sbtc' && from_currency == 2"
+                            >
+                                {{maxSynthText}}/
+                            </span>
+                            <span>{{maxBalanceText}}</span>
                             <span v-show='susdWaitingPeriod' class='susd-waiting-period'>
                                 <span class='tooltip'>
                                     <img src='@/assets/clock-regular.svg' class='icon small'>
@@ -163,6 +169,8 @@
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
 
+    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
+
 
 	export default {
 
@@ -173,6 +181,7 @@
             inf_approval: true,
             fromInput: '1.00',
             toInput: 0,
+            updateTimer: null,
             btcPrice: null,
             maxBalance: -1,
             maxSynthBalance: -1,
@@ -318,6 +327,8 @@
             },
             async set_to_amount() {
                 this.promise.cancel()
+                this.updateTimer && clearIntervalAsync(this.updateTimer)
+                this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 let promise = this.setAmountPromise()
                 try {
                     let [dy, dy_, dx_, balance] = await promise
@@ -370,7 +381,8 @@
             },
             async set_max_balance() {
                 let balance
-                if(this.currentPool == 'susdv2' && this.from_currency == 3) {
+                if(this.currentPool == 'susdv2' && this.from_currency == 3 ||
+                    this.currentPool == 'sbtc' && this.from_currency == 2) {
                     balance = await this.coins[this.from_currency].methods.transferableSynths(this.default_account).call();
                     if(this.susdWaitingPeriod) balance = 0
                 }
@@ -391,7 +403,7 @@
             },
             async set_from_amount(i) {
                 let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(this.default_account).encodeABI()]]
-                if(this.currentPool == 'susdv2' && i == 3) {
+                if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(this.default_account).encodeABI()])
                     balanceCalls.push([
                         currentContract.snxExchanger._address, 
@@ -405,7 +417,7 @@
                 let amounts = balances.map(balance => currentContract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
                 let highlight_red = this.fromInput > this.maxBalance / this.precisions[this.from_currency]
-                if(this.currentPool == 'susdv2' && i == 3) {
+                if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
                     this.susdWaitingPeriod = (+amounts[2] != 0)
                     console.log(this.maxSynthBalance, "MAX SYNTH BALANCE", this.susdWaitingPeriod, "SUSD WAITING PERIOD")
@@ -470,13 +482,15 @@
                     dx = this.maxBalance
                 }
                 if(
-                    this.currentPool == 'susdv2' && this.from_currency == 3 &&
+                    (this.currentPool == 'susdv2' && this.from_currency == 3 ||
+                        this.currentPool == 'sbtc' && this.from_currency == 2) &&
                     BN(this.maxSynthBalance).gt(0) && 
                     BN(this.maxSynthBalance).minus(BN(this.fromInput)).lt(BN(this.minAmount))
                 ) {
                     dx = BN(this.maxSynthBalance).times(1e18).toFixed(0,1)
                 }
-                var min_dy = this.toInput * (1-maxSlippage) * this.precisions[j];
+                var min_dy = BN(await currentContract.swap.methods.get_dy(i, j, dx).call())
+                var min_dy = min_dy.times(1-maxSlippage)
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
                 try {
@@ -498,6 +512,7 @@
                 let exchangeMethod = currentContract.swap.methods.exchange_underlying
                 if(this.swapwrapped || ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
                 try {
+                    await helpers.setTimeoutPromise(100)
                     await exchangeMethod(i, j, dx, min_dy)
                         .send({
                             from: currentContract.default_account,

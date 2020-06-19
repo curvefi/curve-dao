@@ -532,6 +532,19 @@ button.bn-onboard-custom, #derivation-select button, #account-select + button {
   }
 }
 
+.showmobiletable {
+  display: none;
+}
+
+@media only screen and (max-device-width: 950px) {
+  .showdesktop {
+    display: none;
+  }
+  .showmobiletable {
+    display: block;
+  }
+}
+
 .exchange {
     width: 80%;
     margin: 0 auto;

@@ -158,7 +158,7 @@
             return (BN(this.inputs[0]).times(1e8).times(1-state.mintFee/10000).minus(state.minersLockFee)).div(1e8).toFixed(8)
           },
           minOrderSize() {
-            return ((state.minersLockFee + state.mintFee / 10000) / 1e8).toFixed(8)
+            return ((state.minersLockFee + state.mintFee / 10000 + 1100) / 1e8).toFixed(8)
           },
           
         },

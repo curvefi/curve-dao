@@ -290,7 +290,7 @@
             setMaxBalanceCoin(i) {
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
                 if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
-                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance * this.rates[i]
+                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : BN(this.transferableBalance).times(this.rates[i]).toString()
                     Vue.set(this.inputs, i, maxbalance_susd)
                 }
             },
@@ -382,7 +382,7 @@
                             let precisions = 2
                             if(this.currentPool == 'sbtc' && i == 2) precisions = 18
                             let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance
-                            Vue.set(this.inputs, i, this.toFixed(this.transferableBalance / 1e18, precisions))
+                            Vue.set(this.inputs, i, BN(this.transferableBalance).div(1e18).toString())
                         }
 			        }
 			    }

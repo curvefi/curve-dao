@@ -482,6 +482,7 @@
 		pax: [],
 		tbtc: [],
 		ren: [],
+		sbtc: [],
 	})
 
 	export default {

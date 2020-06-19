@@ -74,13 +74,13 @@
 			    	let balance = BN(v[0]).times(BN(v[1])).div(1e36)
 
 			    	//renBTC
-			    	if(i == 6) balance = balance.times(BN(priceStore.state.btcPrice))
+			    	if([6,7].includes(i)) balance = balance.times(BN(priceStore.state.btcPrice))
 			    	total = total.plus(balance)
 			    })
 			    this.total = total.toFixed(0);
 			},
 			async dailyVolume() {
-				var pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc', 'ren']
+				var pools = ['compound', 'usdt', 'y', 'busd', 'susd', 'pax', 'tbtc', 'ren', 'sbtc']
 	            await volumeStore.getVolumes(pools);
 			}
 		}

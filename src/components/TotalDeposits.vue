@@ -153,10 +153,12 @@
 			let data = volumeStore.state.volumeData[1440]
 			let btcPrices = await helpers.retry(fetch(`https://api.coinpaprika.com/v1/tickers/btc-bitcoin/historical?start=1589587198&interval=1d&limit=5000`))
 			btcPrices = await btcPrices.json()
-			data.ren = data.ren.map(d => {
-				d.balances = d.balances.map(bal => bal * volumeStore.findClosestPrice(d.timestamp, btcPrices))
-				return d;
-			})
+			for(let btcPool of ['ren', 'sbtc']) {
+				data[btcPool] = data[btcPool].map(d => {
+					d.balances = d.balances.map(bal => bal * volumeStore.findClosestPrice(d.timestamp, btcPrices))
+					return d;
+				})
+			}
 			data = Object.keys(data).reduce((obj, key) => {
 				return {...obj, [key]: (new Array(Math.max(...Object.values(data).map(arr=>arr.length))-data[key].length).fill({})).concat(data[key])}
 			}, {})

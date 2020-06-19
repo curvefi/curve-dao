@@ -110,21 +110,18 @@
 	        		(You have {{(staked_balance / 1e18) | toFixed2}} staked)
 	        	</div> -->
 	      	</div>
-            <p v-show="['ren', 'sbtc'].includes(currentPool)">
-                <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
-            </p>
             <button id="remove-liquidity"
-	            :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
-	            @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
-        		Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
-        	</button>
-        	<button 
-        		id='remove-liquidity-unstake'
-        		v-show = "currentPool == 'susdv2' && staked_balance > 0 "
-        		:disabled = 'slippage < -0.03'
-        		@click='handle_remove_liquidity(true)'>
-        		Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
-        	</button>
+                :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
+                @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
+                Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
+            </button>
+            <button 
+                id='remove-liquidity-unstake'
+                v-show = "currentPool == 'susdv2' && staked_balance > 0 "
+                :disabled = 'slippage < -0.03'
+                @click='handle_remove_liquidity(true)'>
+                Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
+            </button>
             <button id='claim-snx'
                 @click='claim_SNX'
                 v-show="currentPool == 'susdv2' && pendingSNXRewards / 1e18 > 0.1"
@@ -137,10 +134,13 @@
             >
                 Unstake
             </button>
-        	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
+            <router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
-            <div id='mintr' v-show="currentPool == 'susdv2'">
+            <p v-show="['ren', 'sbtc'].includes(currentPool)">
+                <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
+            </p>
+            <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
             </div>
             <div class='info-message gentle-message' v-show='show_loading'>

@@ -128,7 +128,8 @@
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
-            <div id='mintr' v-show="currentPool == 'susdv2'">
+            {{currentPool}}
+            <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
             </div>
             <div class='info-message gentle-message' v-show='show_loading'>

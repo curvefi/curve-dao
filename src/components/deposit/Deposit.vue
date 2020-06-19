@@ -100,7 +100,10 @@
                 <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
-                <div id='mintr' v-show="currentPool == 'susdv2'">
+                <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
+                    <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
+                </p>
+                <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
 	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
 	            </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>

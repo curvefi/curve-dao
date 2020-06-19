@@ -523,7 +523,7 @@
                     return this.underlying_coins[i]
             },
             normalizeCurrency(i) {
-                if([7, 8].includes(i)) return i - 7;
+                if([7, 8, 9].includes(i)) return i - 7;
                 if(i > 3) return 3
                 return i;
             },

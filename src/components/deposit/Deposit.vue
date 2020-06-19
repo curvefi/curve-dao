@@ -203,7 +203,7 @@
         		await this.handle_sync_balances()
         		!this.max_balances && this.highlightAllInputs();
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
-        		//await this.calcSlippage()
+        		await this.calcSlippage()
         	}
         },
         computed: {
@@ -566,7 +566,7 @@
 				if(event) {
 					this.inputs[i] = event.target.value
 				}
-	            //await this.calcSlippage()
+	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            this.highlightInputs(i)
 

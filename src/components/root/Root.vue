@@ -491,14 +491,14 @@
 	                e.preventDefault();
 	                this.activePoolLink--;
 	            }
-	            if(e.code == 'ArrowDown' && this.activePoolLink < 5) {
+	            if(e.code == 'ArrowDown' && this.activePoolLink < 6) {
 	                e.preventDefault();
 	                this.activePoolLink++;
 	            }
 	            if(e.code.includes('Digit')) {
 	                e.preventDefault();
 	                var digit = e.code.slice(-1);
-	                if(digit > 5) return;
+	                if(digit > 6) return;
 	                this.activePoolLink = digit
 	            }
 	            if(e.code == 'Enter') {

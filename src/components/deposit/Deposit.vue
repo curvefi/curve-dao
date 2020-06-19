@@ -266,7 +266,7 @@
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
                 await this.handle_sync_balances();
-                //await this.calcSlippage()
+                await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
                 	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()

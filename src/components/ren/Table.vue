@@ -56,6 +56,10 @@
 			Swap completed
 		</div>
 
+		<div class='simple-error'>
+			Please don't reuse addresses for swapping or depositing BTC.
+		</div>
+
 		<table class='tui-table showdesktoptransactions'>
 			<thead>
 				<tr>

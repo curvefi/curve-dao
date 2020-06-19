@@ -489,8 +489,8 @@
                 ) {
                     dx = BN(this.maxSynthBalance).times(1e18).toFixed(0,1)
                 }
-                var min_dy = BN(await currentContract.swap.methods.get_dy(i, j, dx).call())
-                var min_dy = min_dy.times(1-maxSlippage)
+                var min_dy = BN(await currentContract.swap.methods.get_dy(i, j, BN(dx).toFixed(0,1)).call())
+                min_dy = min_dy.times(1-maxSlippage)
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
                 try {
@@ -513,7 +513,7 @@
                 if(this.swapwrapped || ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
                 try {
                     await helpers.setTimeoutPromise(100)
-                    await exchangeMethod(i, j, dx, min_dy)
+                    await exchangeMethod(i, j, dx, BN(min_dy).toFixed(0,1))
                         .send({
                             from: currentContract.default_account,
                             gas: this.swapwrapped ? 

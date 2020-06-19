@@ -281,7 +281,7 @@
             toFixed(num, precisions = 2, round = 4) {
                 if(+num == 0 && ['ren', 'sbtc'].includes(currentContract.currentContract)) return '0.00000000'
                 if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
-                let rounded = num.toFixed(precisions)
+                let rounded = (+num).toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
             maxBalanceCoin(i) {

@@ -301,11 +301,14 @@ export async function multiInitState(calls, contract, initContracts = false) {
         chunkArr(contractsDecoded, 2).map((v, i) => {
             var addr = v[0];
             let coin_abi = cERC20_abi
-            if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
-            contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             var underlying_addr = v[1];
             let underlying_abi = ERC20_abi
-            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i == 2) underlying_abi = synthERC20_abi
+            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i == 2) {
+                coin_abi = synthERC20_abi
+                underlying_abi = synthERC20_abi
+            }
+            if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
+            contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             contract.underlying_coins.push(new web3.eth.Contract(underlying_abi, underlying_addr));
         })
         window[contract.currentContract].coins = contract.coins

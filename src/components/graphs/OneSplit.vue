@@ -172,6 +172,9 @@
             <div class='info-message gentle-message' v-show='selldisabled'>
                 Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
             </div>
+            <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period
+            </div>
             <div class='info-message gentle-message' v-show='warningNoPool !== null'>
                 Swap not available. Please select {{warningNoPool}} in pool select
             </div>
@@ -887,7 +890,7 @@
             },
             async set_to_amount() {
                 this.updateTimer && clearIntervalAsync(this.updateTimer)
-                this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
+                //this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 this.distribution = null
                 let minAmount = 10000
                 if(this.swapwrapped) minAmount *= 50

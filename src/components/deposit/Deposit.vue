@@ -127,6 +127,9 @@
                         "Add all coins in a balanced proportion" checkbox?
                     </p>
                 </div>
+                <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period
+                </div>
                 <div class='simple-error pulse' v-show='depositingZeroWarning && !max_balances'>
                     You're depositing 0 coins.
                     <p>

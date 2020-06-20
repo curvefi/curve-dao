@@ -63,8 +63,11 @@
   			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
         </p>
         <p>
-			 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
-			</p>
+		 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
+		</p>
+        <p>
+            <a href='https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb'>Curve pool registry</a>
+        </p>
 
         <h3>How do I provide liquidity to Curve?</h3>
 

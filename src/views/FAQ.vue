@@ -44,6 +44,9 @@
         <p>
             <a href="https://github.com/pengiundev/curve-vue">Frontend</a>
         </p>
+        <p>
+            <a href='https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb'>Curve pool registry</a>
+        </p>
 
         <h3>How do I trade on Curve?</h3>
         <p>Before trading, you’ll have to approve Curve to interact with

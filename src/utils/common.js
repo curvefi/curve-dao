@@ -283,6 +283,10 @@ export async function multiInitState(calls, contract, initContracts = false) {
         contract.curveStakedBalance = decoded[1]
         decoded = decoded.slice(2);
     }
+    if(initContracts && contract.currentContract == 'sbtc') {
+        contract.curveStakedBalance = decoded[0]
+        decoded = decoded.slice(1)
+    }
     if(initContracts && ['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {
         contract.initial_A = +decoded[0];
         contract.initial_A_time = +decoded[1];

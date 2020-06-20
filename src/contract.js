@@ -1,7 +1,7 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
 import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, 
-	sCurveRewards_abi, sCurveRewards_address, synthetixExchanger_address, synthetixExchanger_ABI,
+	sCurveRewards_abi, sCurveRewards_address, sbtcCurveRewards_abi, sbtcCurveRewards_address, synthetixExchanger_address, synthetixExchanger_ABI,
 	multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
@@ -459,6 +459,10 @@ export async function init(contract, refresh = false) {
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(contract.currentContract == 'sbtc') {
+
+    	let curveRewards = new state.web3.eth.Contract(sbtcCurveRewards_abi, sbtcCurveRewards_address)
+		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {

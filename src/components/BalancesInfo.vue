@@ -142,7 +142,7 @@
           </li>
       </ul>
     </fieldset>
-    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
+    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && ['susdv2', 'sbtc'].includes(currentPool)">
       <legend>Staked share: ( {{(totalStake / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
@@ -213,7 +213,7 @@
         return helpers.formatNumber(number, dec)
       },
       async updateShares() {
-        if(!(this.usdShare1 > 0 || (this.currentPool == 'susdv2' && this.usdStake1) > 0)) return;
+        if(!(this.usdShare1 > 0 || (['susdv2', 'sbtc'].includes(this.currentPool) && this.usdStake1) > 0)) return;
         let pool = this.currentPool
         pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool  
         let req = await fetch(`${window.domain}/raw-stats/${pool}-1m.json`)
@@ -242,7 +242,10 @@
           this.realShare += +this.l_info[i] * price
           this.realStake += +this.staked_info[i] * price
         }
-        if(this.isBTC) this.realShare *= this.btcPrice
+        if(this.isBTC) {
+          this.realShare *= this.btcPrice
+          this.realStake *= this.btcPrice
+        }
       },
     },
     async created() {

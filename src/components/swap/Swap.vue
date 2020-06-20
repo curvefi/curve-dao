@@ -17,7 +17,7 @@
                                 <span class='tooltip'>
                                     <img src='@/assets/clock-regular.svg' class='icon small'>
                                     <span class='tooltiptext'>
-                                        Cannot transfer during waiting period
+                                        Cannot transfer during waiting period. {{ susdWaitingPeriodTime }} secs left.
                                     </span>
                                 </span>
                             </span>
@@ -151,7 +151,7 @@
                     <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
                 </p>
                 <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ susdWaitingPeriodTime }} secs left.
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
                     Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
@@ -189,6 +189,7 @@
             maxBalance: -1,
             maxSynthBalance: -1,
             susdWaitingPeriod: false,
+            susdWaitingPeriodTime: 0,
             maxBalanceText: 0,
             maxSynthText: 0,
             promise: helpers.makeCancelable(Promise.resolve()),
@@ -408,10 +409,13 @@
                 let balanceCalls = [[this.coins[i]._address, this.coins[i].methods.balanceOf(this.default_account).encodeABI()]]
                 if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     balanceCalls.push([this.coins[i]._address, this.coins[i].methods.transferableSynths(this.default_account).encodeABI()])
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     balanceCalls.push([
                         currentContract.snxExchanger._address, 
                         currentContract.snxExchanger.methods
-                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, currencyKey)
                         .encodeABI()
                     ])
                 }
@@ -423,6 +427,7 @@
                 if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     this.maxSynthBalance = cBN(amounts[1]).div(1e18).toFixed()
                     this.susdWaitingPeriod = (+amounts[2] != 0)
+                    this.susdWaitingPeriodTime = +amounts[2]
                     console.log(this.maxSynthBalance, "MAX SYNTH BALANCE", this.susdWaitingPeriod, "SUSD WAITING PERIOD")
                     highlight_red = this.fromInput > this.maxSynthBalance
                     if(this.susdWaitingPeriod) highlight_red = true

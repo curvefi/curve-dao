@@ -30,7 +30,7 @@
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
                                             <span class='tooltiptext normalFont'>
-                                                Cannot transfer during waiting period
+                                                Cannot transfer during waiting period. {{ susdWaitingPeriodTime }} secs left.
                                             </span>
                                         </span>
                                     </span>
@@ -128,7 +128,7 @@
                     </p>
                 </div>
                 <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ susdWaitingPeriodTime }} secs left.
                 </div>
                 <div class='simple-error pulse' v-show='depositingZeroWarning && !max_balances'>
                     You're depositing 0 coins.
@@ -168,6 +168,7 @@
     		wallet_balances: [],
             transferableBalance: null,
             susdWaitingPeriod: false,
+            susdWaitingPeriodTime: 0,
     		balances: [],
     		inputs: [],
     		amounts: [],
@@ -353,10 +354,13 @@
 			    }
                 if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') {
                     let idx = this.currentPool == 'susdv2' ? 3 : 2
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     calls.push([this.coins[idx]._address, this.coins[idx].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                     calls.push([currentContract.snxExchanger._address, 
                         currentContract.snxExchanger.methods
-                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, currencyKey)
                         .encodeABI()])
                 }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
@@ -371,6 +375,7 @@
                 if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') {
                     this.transferableBalance = decoded[decoded.length - 2]
                     this.susdWaitingPeriod = (+decoded[decoded.length - 1] != 0)
+                    this.susdWaitingPeriodTime = +decoded[decoded.length -2]
                 }
 			    if (this.max_balances) {
 			        this.disabled = true;
@@ -421,10 +426,13 @@
                 let endOffset = 1
                 calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
                 if(this.currentPool == 'susdv2') {
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     calls.push([
                             currentContract.snxExchanger._address, 
                             currentContract.snxExchanger.methods
-                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, currencyKey)
                             .encodeABI()
                         ])
                     endOffset = 2

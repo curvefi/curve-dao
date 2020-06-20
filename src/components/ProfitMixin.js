@@ -2,7 +2,7 @@ import * as common from '../utils/common.js'
 import { getters, contract as currentContract, allCurrencies } from '../contract'
 import { makeCancelable, interpolate } from '../utils/helpers'
 
-import allabis, { sCurveRewards_address } from '../allabis'
+import allabis from '../allabis'
 
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
@@ -94,14 +94,14 @@ export default {
 	    async calcAvailable() {
 	    	let calls = [
 	    		[this.CURVE_TOKEN, '0x70a08231000000000000000000000000' + this.account.slice(2)],
-	    		[sCurveRewards_address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
+	    		[currentContract.curveRewards._address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
 	    	]
 	    	let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 	    	let [tokenBalance, stakedBalance] = aggcalls[1].map(hex => +currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 	    	let totalStake = 0
 		    if(this.currentPool == 'susdv2') {
 		    	stakedBalance = await currentContract.web3.eth.call({
-			        to: sCurveRewards_address,
+			        to: currentContract.curveRewards._address,
 			        data: '0x70a08231000000000000000000000000' + this.account.slice(2),
 			    });
 

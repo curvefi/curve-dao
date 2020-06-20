@@ -1,6 +1,6 @@
 import * as common from '../utils/common.js'
 import { getters, contract as currentContract } from '../contract'
-import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../allabis'
+import allabis from '../allabis'
 
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
@@ -60,7 +60,7 @@ export default {
 			let snxPrice = await request.json();
 			this.snxPrice = snxPrice.quotes.USD.price;
 
-			let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+			let curveRewards = currentContract.curveRewards
 			let calls = [
 				[curveRewards._address, curveRewards.methods.earned(this.account).encodeABI()],
 				[curveRewards._address, curveRewards.methods.balanceOf(this.account).encodeABI()],

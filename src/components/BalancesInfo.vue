@@ -142,7 +142,7 @@
           </li>
       </ul>
     </fieldset>
-    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
+    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && ['susdv2', 'sbtc'].includes(currentPool)">
       <legend>Staked share: ( {{(totalStake / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>

@@ -150,7 +150,7 @@
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../contract'
-    import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../allabis'
+    import allabis from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
@@ -347,7 +347,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-		    	if(this.currentPool == 'susdv2') calls.push([sCurveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		    	if(this.currentPool == 'susdv2') calls.push([currentContract.curveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))

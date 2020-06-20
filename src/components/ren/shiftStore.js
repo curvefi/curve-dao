@@ -879,6 +879,8 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		BN(data.max_burn_amount).toFixed(0, 1),
 	]
 
+	console.log(state.default_account, "DEFAULT ACCOUNT")
+
 	if(contract.currentContract == 'ren') args = args.filter((_, i) => i != 1)
 
 	let tx = contract.adapterContract.methods.removeLiquidityImbalanceThenBurn(

@@ -68,8 +68,19 @@
         or <a href="https://docs.iearn.finance/curve">Ytokens</a>
         assets for lending while market making, as the
         liquidity pool - this ensures that assets are always being put to
-        work. You will need to acquire cTokens or YTokens if you want to
-        provide liquidity (you can read the instuctions in each pool's FAQ).</p>
+        work.</p>
+
+        <p>
+            You can deposit plain stablecoins - DAI/USDC/USDT/TUSD/BUSD/sUSD 
+            which will get converted underneath to cTokens for compound pool or yTokens for 
+            <router-link to='/pax'>pax</router-link>, <router-link to='/y'>y</router-link>, <router-link to='/busd'>busd</router-link> pools
+            or you can click the "Deposit wrapped" option to
+            deposit cTokens or yTokens if you have them.
+        </p>
+
+        <p>
+            You can also deposit Bitcoin ERC20s - renBTC, WBTC, sBTC in the <router-link to='/ren'>ren</router-link> and <router-link to='sbtc'>pools</router-link>
+        </p>
 
         <h3>What's "Use maximum amount of coins available"?</h3>
         <p>This means using all USDC and DAI in your wallet. This way is

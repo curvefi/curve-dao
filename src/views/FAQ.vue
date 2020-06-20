@@ -72,14 +72,18 @@
         <p>Before providing liquidity, you’ll have to approve Curve to
         interact with your cDAI or cUSDC balances.</p>
 
-        <p>Visit the <a href="/deposit.html">Curve deposit page</a>, and your available balances should
+        <p>Visit the <router-link to="deposit">Curve deposit page</router-link>, and your available balances should
         appear. If you <b>add all coins in a balanced proportion</b>, you will
-        provide cTokens at the current exchange Curve rate; this requires
-        you to have both assets in your wallet. You can uncheck this feature
+        provide coins at the current exchange Curve rate; this requires
+        you to have all assets in your wallet. You can uncheck this feature
         to supply one side of the market, or a different ratio of assets,
         and Curve will automatically exchange them into the proper quantity
         (with the same low slippage & fees of the Curve exchange) -
         magic!</p>
+
+        <p>
+            You can deposit plain stablecoins DAI/USDC/USDT/TUSD/BUSD/sUSD or their cTokens and yTokens by clicking "Deposit wrapped"
+        </p>
 
         <h3>What's "Use maximum amount of coins available"?</h3>
         <p>This means using all USDC and DAI in your wallet. This way is
@@ -92,7 +96,7 @@
         </p>
 
         <h3>How to withdraw liquidity I provided?</h3>
-        <p>Go to <a href="/withdraw.html">the withdraw page</a>. If you want
+        <p>Go to <router-link to="withdraw">the withdraw page</router-link>. If you want
         to withdraw some percentage of your liquidity (the preferred way),
         type that percentage in the top field.
         You can, however, withdraw in a form of individual coins (USDC,

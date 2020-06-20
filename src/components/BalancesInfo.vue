@@ -242,7 +242,10 @@
           this.realShare += +this.l_info[i] * price
           this.realStake += +this.staked_info[i] * price
         }
-        if(this.isBTC) this.realShare *= this.btcPrice
+        if(this.isBTC) {
+          this.realShare *= this.btcPrice
+          this.realStake *= this.btcPrice
+        }
       },
     },
     async created() {

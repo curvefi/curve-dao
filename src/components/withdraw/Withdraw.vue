@@ -4,7 +4,7 @@
             <legend>
             	Share of liquidity (%)
         		<input id='showstaked' type='checkbox' name='showstaked' v-model = 'showstaked'>
-        		<label for='showstaked' v-show="currentPool == 'susdv2'"> Show staked </label>
+        		<label for='showstaked' v-show="['susdv2', 'sbtc'].includes(currentPool)"> Show staked </label>
             </legend>
             <ul>
                 <li>
@@ -117,7 +117,7 @@
             </button>
             <button 
                 id='remove-liquidity-unstake'
-                v-show = "currentPool == 'susdv2' && staked_balance > 0 "
+                v-show = "['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0 "
                 :disabled = 'slippage < -0.03'
                 @click='handle_remove_liquidity(true)'>
                 Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
@@ -266,7 +266,7 @@
             },
         },
         mounted() {
-        	if(this.currentPool == 'susdv2') {
+        	if(['susdv2', 'sbtc'].includes(this.currentPool)) {
         		this.showstaked = true
         	}
         	this.$watch(() => this.showstaked, this.handle_change_share)
@@ -282,9 +282,10 @@
             	}
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-                if(this.currentPool == 'susdv2') {
+                if(['susdv2', 'sbtc'].includes(this.currentPool)) {
                     let curveRewards = currentContract.curveRewards
-                    this.pendingSNXRewards = await curveRewards.methods.earned(this.default_account).call()
+                    this.pendingSNXRewards = await curveRewards.methods.earned('0xa1b38945846e1869b66ec19c196ba28506743dc0').call()
+                    console.log(this.pendingSNXRewards, "PENDING SNX REWARDS")
                 }
 
                 await common.update_fee_info();
@@ -377,7 +378,8 @@
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
-				if(['susdv2', 'sbtc'].includes(this.currentPool)) this.staked_balance = BN(decoded[decoded.length-2])
+                console.log(decoded[decoded.length-2])
+                if(['susdv2', 'sbtc'].includes(this.currentPool)) this.staked_balance = BN(decoded[decoded.length-2])
                 else this.staked_balance = BN(0)
 				this.token_supply = +decoded[decoded.length-1]
 			},
@@ -538,11 +540,11 @@
 			        }
                     token_amount = BN(token_amount).times(BN(1).plus(this.calcFee))
 			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
-                    if((this.token_balance.lt(BN(token_amount)) || unstake) && this.currentPool == 'susdv2')
+                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
                         await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
                     if(unstake_only) return;
 			        let nonZeroInputs = this.inputs.filter(Number).length
-			        if(this.withdrawc || this.currentPool == 'susdv2') {
+			        if(this.withdrawc || ['susdv2', 'sbtc'].includes(this.currentPool)) {
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                         try {
                             this.waitingMessage = 'Please confirm withdrawal transaction'
@@ -599,7 +601,7 @@
                     if(this.showstaked) balance = balance.plus(this.staked_balance)
                     var amount = BN(this.share).div(BN(100)).times(balance)
 
-                    if((this.token_balance.lt(amount) || unstake) && this.currentPool == 'susdv2')
+                    if((this.token_balance.lt(amount) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
                         await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
                     if(unstake_only) return;
                     amount = amount.toFixed(0,1)

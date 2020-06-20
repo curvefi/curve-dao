@@ -18,7 +18,7 @@
             generates income for liquidity providers.
 
             <div>
-                <router-link to='/integrators'>Integrations</router-link>
+                <router-link to='/integrations'>Integrations</router-link>
             </div>
 
             <p>

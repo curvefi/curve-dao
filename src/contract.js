@@ -152,10 +152,10 @@ export const gas = {
 			imbalance: x => 1000000,
 		},
 		iearn: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2 | 0,
 		},
 		busd: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2 | 0,
 		},
 		susd: {
 			imbalance: x => 1000000,
@@ -164,7 +164,7 @@ export const gas = {
 			imbalance: x => 600000,
 		},
 		pax: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2 | 0,
 		},
 		tbtc: {
 			imbalance: x => 600000,
@@ -191,13 +191,13 @@ export const gas = {
 			withdrawImbalance: x => (97226.5*x + 671880)*1.5 | 0,
 		},
 		iearn: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
 		},
 		busd: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
@@ -209,7 +209,7 @@ export const gas = {
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		pax: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,

@@ -205,8 +205,14 @@
 
 			this.chart.addSeries({
 				type: 'line',
-				name: 'Total USD Deposits',
+				name: `Total USD Deposits`,
 				data: line,
+			})
+
+			this.chart.update({
+				title: {
+					text: `Total USD Deposits ${helpers.formatNumber(line[line.length-1][1], 0)}$`
+				},
 			})
 		
 		}

@@ -9,7 +9,28 @@
 
                 <fieldset class='item'>
                     <legend>From:</legend>
-                    <div class='maxbalance' @click='set_max_balance'>Max: <span>{{maxBalanceText}}</span> </div>
+                    <div class='maxbalance' @click='set_max_balance'>
+                    	Max: 
+                    	<span 
+                            v-show="currentPool == 'sbtc' && from_currency == 2"
+                        >
+                            {{maxSynthText}}/
+                        </span>
+                    	<span>{{maxBalanceText}}</span> 
+                    	<span v-show='susdWaitingPeriod' class='susd-waiting-period'>
+                            <span class='tooltip'>
+                                <img src='@/assets/clock-regular.svg' class='icon small'>
+                                <span class='tooltiptext'>
+                                    Cannot transfer during waiting period
+                                </span>
+                            </span>
+                        </span>
+                        <span v-show="currentPool == 'sbtc' && from_currency == 2" class='tooltip'> [?]
+                            <span class='tooltiptext long'>
+                                Max transferrable amount is {{ maxSynthText }}. You can free the remaining balance by settling.
+                            </span>
+                        </span>
+                    </div>
                     <ul>
                         <li>
                             <input type="text" id="from_currency" :disabled='disabled' name="from_currency" value='0.00'
@@ -93,7 +114,7 @@
             <p class='simple-error' v-show='lessThanMinOrder && from_currency == 1'>
             	Minimum burn order size is {{ (minOrderSize / 1e8 + 0.00000547).toFixed(8) }}
             </p>
-            <div class='input address'>
+            <div class='input address' v-show='this.from_currency == 0 && [1,2].includes(this.to_currency) || [1,2].includes(this.from_currency) && this.to_currency == 0'>
 				<label for='address' v-show='[1,2].includes(this.from_currency) && this.to_currency == 0'>BTC withdrawal address</label>
 				<label for='address' v-show='this.from_currency == 0 && [1,2].includes(this.to_currency)'>ETH address</label>
 				
@@ -111,6 +132,10 @@
 	                </label>
 	            </li>
 	        </ul>
+        </div>
+
+        <div class='simple-error pulse' v-show="susdWaitingPeriod">
+            Cannot transfer sBTC during waiting period
         </div>
 
 		<button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
@@ -179,6 +204,8 @@
 
 
 			maxBalance: 0,
+			maxSynthBalance: -1,
+            susdWaitingPeriod: false,
 			disabled: false,
 			fromInput: '0.001',
 			from_currency: 0,
@@ -202,6 +229,9 @@
 			maxBalanceText() {
 				if(this.from_currency == 0) return 'N/A'
 				return BN(this.maxBalance).div(this.fromPrecisions).toFixed(8)
+			},
+			maxSynthText() {
+				return this.toFixed(BN(this.maxSynthBalance).div(1e18))
 			},
 			exchangeRate() {
 				if(this.from_currency == 1) return this.amountAfterWBTC / this.fromInput
@@ -263,6 +293,9 @@
             toPrecisions() {
             	return allabis[contract.currentContract].coin_precisions[this.to_currency]
             },
+            currentPool() {
+            	return getters.currentPool()
+            },
 		},
 		watch: {
 			from_currency(val, oldval) {
@@ -312,12 +345,24 @@
 				this.from_cur_handler()
 			},
 
-			set_max_balance() {
+			toFixed(num) {
+                if(num == '' || num == undefined || num == 0) return '0.00'
+                if(!BN.isBigNumber(num)) num = +num
+                if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) return num.toFixed(8)
+                return num.toFixed(2)
+            },
+
+			async set_max_balance() {
 				if(this.from_currency == 0) {
 					this.fromInput = 0
 					return;
 				}
-				this.fromInput = BN(this.maxBalance).div(this.fromPrecisions).toFixed(8)
+				let maxBalance = BN(this.maxBalance).div(this.fromPrecisions).toFixed(8)
+				if(this.currentPool == 'sbtc' && this.from_currency == 2) {
+					maxBalance = BN(this.maxSynthBalance).div(1e18).toString()
+				}
+
+				this.fromInput = maxBalance
 				this.set_to_amount()
 			},
 
@@ -356,7 +401,6 @@
 				try {
 					let result = await promise
 					result = result[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
-					console.log(result, "THE RESULT")
 					if(this.from_currency == 0) {
 						let [dy_original, dy] = result.map(v=>v / this.toPrecisions)
 						this.toInput = dy
@@ -403,8 +447,30 @@
                 await this.set_to_amount();
             },
 
-			async setMaxBalance() {
-				let balance = await contract.coins[this.from_currency].methods.balanceOf(contract.default_account).call()
+            async setMaxBalance() {
+            	if(this.from_currency == 0) return;
+            	let calls = [
+            		[contract.coins[this.from_currency]._address, contract.coins[this.from_currency].methods.balanceOf(contract.default_account).encodeABI()],
+            	]
+
+            	if(this.currentPool == 'sbtc' && this.from_currency == 2) {
+            		calls.push(
+	            			[contract.coins[this.from_currency]._address, contract.coins[this.from_currency].methods.transferableSynths(contract.default_account).encodeABI()],
+		            		[contract.snxExchanger._address, contract.snxExchanger.methods
+		                        .maxSecsLeftInWaitingPeriod(contract.default_account, "0x7342544300000000000000000000000000000000000000000000000000000000").encodeABI()],
+                    )
+            	}
+
+
+            	let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+            	let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
+				let balance = +decoded[0]
+				if(this.currentPool == 'sbtc' && this.from_currency == 2) {
+					this.maxSynthBalance = +decoded[1]
+					this.susdWaitingPeriod = +decoded[2]
+                    this.susdWaitingPeriod = +this.susdWaitingPeriod > 0
+					if(this.susdWaitingPeriod) balance = 0
+				}
 				this.maxBalance = contract.default_account ? balance : 0
 				//console.log(this.maxBalance)
 			},
@@ -452,7 +518,6 @@
 	                }
 
 	                let min_dy = BN(this.toInputOriginal).times(this.toPrecisions).times(1-(maxSlippage / 100)).toFixed(0,1)
-	                console.log(contract.swap.methods.exchange, "SWAP ADDRESS")
 	                await contract.swap.methods.exchange(i, j, dx, min_dy).send({
 	                		from: contract.default_account,
 	                		gas: contractGas.swap[contract.currentContract].exchange(i, j)

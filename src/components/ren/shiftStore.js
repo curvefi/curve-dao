@@ -130,7 +130,7 @@ export async function loadTransactions() {
 	}
 	state.transactions = Object.values(items).filter(t=>t.state).sort((a, b) => b.timestamp - a.timestamp)
 	let transactions = state.transactions.filter(t => !t.removed)
-	checkForFailed(transactions)
+	await checkForFailed(transactions)
 	//send all txs so case is handled when user goes to submit 
 	let mints = transactions.filter(t => [0,3].includes(t.type) && ![14,15].includes(t.state)).map(t=>sendMint(t))
 	console.log(mints, "MINTS")
@@ -144,6 +144,7 @@ export async function loadTransactions() {
 	}
 	for(let transaction of transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
 		let receipt = await contract.web3.eth.getTransactionReceipt(transaction.ethTxHash)
+		if(!receipt) continue
 		transaction.ethStartBlock = +receipt.blockNumber
 		transaction.confirmations = currentBlock - transaction.ethStartBlock + 1
 		transaction.state = 30 + transaction.confirmations
@@ -152,7 +153,7 @@ export async function loadTransactions() {
 	web3.eth.subscribe('newBlockHeaders')
 		.on('data', block => {
 			console.log("NEW BLOCK")
-			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && t.state != 65)) {
+			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && ![65, 66].includes(t.state != 65))) {
 				console.log(transaction, "TRANSACTION")
 				if(transaction.state >= 62 || transaction.confirmations >= 30 || transaction.state == 30) continue;
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
@@ -682,13 +683,35 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
 	}
 	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
+
+	let args = [
+			params.contractCalls[0].contractParams[0].value,
+			transaction.newMinExchangeRate,
+			params.contractCalls[0].contractParams[1].value,
+			params.contractCalls[0].contractParams[2].value,
+			params.contractCalls[0].contractParams[3].value,
+			utxoAmount,
+			renResponse.autogen.nhash,
+			signature,
+	]
+
+	if(contract.currentContract == 'ren')
+		args = [
+			params.contractCalls[0].contractParams[0].value,
+			transaction.newMinExchangeRate,
+			params.contractCalls[0].contractParams[1].value,
+			params.contractCalls[0].contractParams[2].value,
+			params.contractCalls[0].contractParams[3].value,
+			utxoAmount,
+			renResponse.autogen.nhash,
+			signature,
+		]
 	let txhash = await new Promise((resolve, reject) => {
 		return contract.adapterContract.methods.mintThenSwap(
 			params.contractCalls[0].contractParams[0].value,
 			transaction.newMinExchangeRate,
 			params.contractCalls[0].contractParams[1].value,
 			params.contractCalls[0].contractParams[2].value,
-			params.contractCalls[0].contractParams[3].value,
 			utxoAmount,
 			renResponse.autogen.nhash,
 			signature,
@@ -871,11 +894,17 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 export async function removeLiquidityOneCoinThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.token_amounts, undefined, adapterAddress)
 
-	let tx = contract.adapterContract.methods.removeLiquidityOneCoinThenBurn(
+	let args = [
 		RenJS.utils.BTC.addressToHex(data.address),
 		BN(data.token_amounts).toFixed(0,1),
 		BN(data.min_amount).toFixed(0, 1),
 		0,
+	]
+
+	if(contract.currentContract == 'ren') args = args.slice(0, -1)
+
+	let tx = contract.adapterContract.methods.removeLiquidityOneCoinThenBurn(
+		...args
 	).send({
 		from: state.default_account,
 		gas: 600001,
@@ -935,8 +964,8 @@ export async function burn(burn, address, renBTCAmount, burnType) {
 
 async function checkForFailed(transactions) {
 	transactions = transactions.filter(t => t.ethTxHash)
-	let receipts = await Promise.all(transactions.map(t => contract.web3.getTransactionReceipt(t.ethTxHash)))
-	receipts = receipts.filter(receipt => receipt.blockNumber !== null)
+	let receipts = await Promise.all(transactions.map(t => contract.web3.eth.getTransactionReceipt(t.ethTxHash)))
+	receipts = receipts.filter(receipt => receipt && receipt.blockNumber !== null)
 	for(let receipt of receipts) {
 		if(receipt.status === false) {
 			txFailed(receipt.transactionHash)
@@ -951,7 +980,7 @@ async function txFailed(txhash) {
 }
 
 export async function resubmit(transaction) {
-	if(transaction.type == 0) mintThenSwap(trasaction)
+	if(transaction.type == 0) mintThenSwap(transaction)
 	if(transaction.type == 3) mintThenDeposit(transaction)
 	if(transaction.type == 1 && transaction.burnType == 1) removeLiquidityThenBurn(transaction)
 	if(transaction.type == 1 && transaction.burnType == 2) removeLiquidityImbalanceThenBurn(transaction)
@@ -990,6 +1019,8 @@ export async function listenForReplacement(txhash) {
 export async function listenForBurn(id) {
 
 	let tx = state.transactions.find(t => t.id == id)
+	if(tx.state == 66) return;
+	console.log(tx.state, "TX STATE")
 	console.log(tx.ethTxHash, "TX HASH")
 	let burn = await sdk.burnAndRelease({
 	 	sendToken: RenJS.Tokens.BTC.Eth2Btc,

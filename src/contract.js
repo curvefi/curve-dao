@@ -302,6 +302,7 @@ const state = Vue.observable({
 		sbtc: {
 			currentContract: 'sbtc',
 			adapterContract: null,
+			snxExchanger: null,
 			...initState(),
 		},
 	},
@@ -461,6 +462,9 @@ export async function init(contract, refresh = false) {
 		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     	
+    	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
+    }
+    if(contract.currentContract == 'sbtc') {
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {

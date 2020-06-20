@@ -342,7 +342,7 @@
                     calls.push([this.coins[3]._address, this.coins[3].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                     calls.push([currentContract.snxExchanger._address, 
                         currentContract.snxExchanger.methods
-                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7342544300000000000000000000000000000000000000000000000000000000")
                         .encodeABI()])
                 }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()

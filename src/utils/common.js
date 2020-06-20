@@ -300,13 +300,16 @@ export async function multiInitState(calls, contract, initContracts = false) {
         let contractsDecoded = decoded.slice(-allabis[contract.currentContract].N_COINS*2)
         chunkArr(contractsDecoded, 2).map((v, i) => {
             var addr = v[0];
+            var underlying_addr = v[1];
             let coin_abi = cERC20_abi
+            let underlying_abi = ERC20_abi
+            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i ==2 ) {
+                underlying_abi = synthERC20_abi
+                coin_abi = synthERC20_abi
+            }
             if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
             if(!contract.coins) contract.coins = []
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
-            var underlying_addr = v[1];
-            let underlying_abi = ERC20_abi
-            if(contract.currentContract == 'susdv2' && i == 3) underlying_abi = synthERC20_abi
             contract.underlying_coins.push(new web3.eth.Contract(underlying_abi, underlying_addr));
         })
         window[contract.currentContract].coins = contract.coins

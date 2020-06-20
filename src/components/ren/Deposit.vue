@@ -12,7 +12,23 @@
                                     :src='getTokenIcon(currency)'>
     	                        <span>{{currency | capitalize}} </span>
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show="['wbtc', 'sbtc'].includes(currency)">
+                                    <span v-show="currentPool == 'sbtc' && i == 2">
+                                        {{transferableBalanceText}}/
+                                    </span>
                                     <span>Max: {{ maxBalanceCoin(i) }} </span>
+                                    <span v-show='i == 2 && susdWaitingPeriod'>
+                                        <span class='tooltip'>
+                                            <img src='@/assets/clock-regular.svg' class='icon small'>
+                                            <span class='tooltiptext normalFont'>
+                                                Cannot transfer during waiting period
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span v-show="currentPool == 'sbtc' && i == 2" class='tooltip'> [?]
+                                        <span class='tooltiptext long normalFont'>
+                                            Max transferable balance is {{ transferableBalanceText }}. You can free the remaining balance by settling.
+                                        </span>
+                                    </span>
                                 </span>
                             </span>
                         </label>
@@ -103,6 +119,8 @@
     		max_balances: false,
     		inf_approval: true,
     		wallet_balances: [],
+            transferableBalance: null,
+            susdWaitingPeriod: null,
     		balances: [],
     		inputs: [],
     		amounts: [],
@@ -175,7 +193,9 @@
           toPrecisions() {
             return allabis[currentContract.currentContract].coin_precisions[this.to_currency]
           },
-          
+          transferableBalanceText() {
+            return this.toFixed((this.transferableBalance / 1e18))
+          },
         },
         mounted() {
             this.$emit('loaded')
@@ -217,6 +237,10 @@
             },
             setMaxBalanceCoin(i) {
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
+                if(this.currentPool == 'sbtc' && i == 2) {
+                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : BN(this.transferableBalance).times(this.rates[i]).toString()
+                    Vue.set(this.inputs, i, maxbalance_susd)
+                }
             },
         	inputsFormat(i) {
         		if(this.inputs[i]) {
@@ -260,10 +284,22 @@
     	           calls.push([coin._address, coin.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     	           calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
                 }
+                if(this.currentPool == 'sbtc') {
+                    calls.push([this.coins[2]._address, this.coins[2].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                    calls.push([currentContract.snxExchanger._address, 
+                        currentContract.snxExchanger.methods
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                        .encodeABI()])
+                }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
-                console.log(decoded, "DECODED")
-                helpers.chunkArr(decoded, 2).map((v, i) => {
+                let endOffset = 0
+                if(this.currentPool == 'sbtc') {
+                    this.transferableBalance = decoded[decoded.length-2]
+                    this.susdWaitingPeriod = +(decoded[decoded.length-1] != 0)
+                    endOffset = 2
+                }
+                helpers.chunkArr(decoded.slice(0, decoded.length-endOffset), 2).map((v, i) => {
                     Vue.set(this.wallet_balances, i+1, v[0])
                     if(!currentContract.default_account) Vue.set(this.wallet_balances, i+1, 0)
                     Vue.set(this.balances, i+1, +v[1])
@@ -289,21 +325,35 @@
                 this.ethPrice = promises[0]
                 this.gasPrice = promises[1]
 				//this.show_loading = true
-				let calls = this.coins.slice(1).map(coin => 
-				        [coin._address, coin.methods.balanceOf(currentContract.default_account).encodeABI()]
+				let calls = this.coins.slice(1).map((coin, i) => {
+                            if(this.currentPool == 'sbtc' && i == 1)
+                                return [coin._address, coin.methods.transferableSynths(currentContract.default_account).encodeABI()]
+				            return [coin._address, coin.methods.balanceOf(currentContract.default_account).encodeABI()]
+                        }
                     )
 				calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
-				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                let endOffset = 1
+                if(this.currentPool == 'sbtc') {
+                    calls.push([
+                        currentContract.snxExchanger._address, 
+                            currentContract.snxExchanger.methods
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .encodeABI()
+                        ]
+                    )
+                    endOffset = 2
+                }
+ 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
-                console.log(decoded, "DECODED")
-                decoded.slice(0, -1).forEach((balance, i) => {
+                decoded.slice(0, decoded.length-endOffset).forEach((balance, i) => {
                     balance = BN(balance)
-                    let precisions = allabis[currentContract.currentContract].coin_precisions[i]
-                    let maxDiff = (BN(balance).div(precisions)).minus(this.inputs[i])
+                    if(this.currentPool == 'sbtc' && i+1 == 2 && decoded[decoded.length-1] != 0) bal = BN(0)
+                    let precisions = allabis[currentContract.currentContract].coin_precisions[i+1]
+                    let maxDiff = (BN(balance).div(precisions)).minus(this.inputs[i+1])
                     if(balance.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                         Vue.set(this.amounts, i+1, BN(balance).toFixed(0,1))
                     }
-                    else Vue.set(this.amounts, i+1, BN(this.inputs[i]).times(precisions).toFixed(0,1))
+                    else Vue.set(this.amounts, i+1, BN(this.inputs[i+1]).times(precisions).toFixed(0,1))
                 })
                 Vue.set(this.amounts, 0, BN(this.amountAfterBTC).times(1e8).toFixed(0,1))
 				let total_supply = +decoded[decoded.length-1];
@@ -311,16 +361,15 @@
                 var token_amount = 0;
                 if(total_supply > 0) {
                     let token_amounts = this.amounts
-                    console.log(token_amounts, "TOKEN AMOUNTS")
                     token_amount = await currentContract.swap.methods.calc_token_amount(token_amounts, true).call();
                     token_amount = BN(token_amount).times(BN(1).minus(BN(this.calcFee)))
                     token_amount = BN(token_amount).times(0.99).toFixed(0,1);
                 }
-                console.log(this.amounts, "AMOUNTS TO CALC ON", token_amount, "TOKEN AMOUNT")
 				this.estimateGas = contractGas.deposit[this.currentPool] / 2
-		        
-                for(let i = 1; i < currentContract.N_COINS; i++)
+		      
+                for(let i = 1; i < currentContract.N_COINS; i++) {
                     await common.approveAmount(this.coins[i], BN(this.amounts[i]), currentContract.default_account, allabis[currentContract.currentContract].adapterAddress)
+                }
 	
 			    let receipt;
 			    let minted = 0;
@@ -351,7 +400,9 @@
                     return;
                 }
 				let value = this.inputs[i]
-				if (value > this.wallet_balances[i] * this.rates[i])
+                let balance = this.wallet_balances[i]
+                if(this.currentPool == 'sbtc' && i == 2) balance = this.transferableBalance
+				if (value > balance * this.rates[i])
 	                Vue.set(this.bgColors, i, 'red');
 	            else
 	                Vue.set(this.bgColors, i, 'blue');

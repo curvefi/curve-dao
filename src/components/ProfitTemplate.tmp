@@ -28,7 +28,7 @@
             	<span :class="{'loading line': available == -1}">
             		<span v-show='available != -1'> {{toFixed(showAvailable)}} </span>
             	</span>
-                <span v-if = "currentPool == 'susdv2'">
+                <span v-if = "['susdv2', 'sbtc'].includes(currentPool)">
                     (<span :class="{'loading line': profitTotalStake === null}"></span>
                     <span v-show='+showStakedBalance >= 0'>{{toFixed(+showStakedBalance >= 0 && showStakedBalance)}} </span> staked)
                 </span>

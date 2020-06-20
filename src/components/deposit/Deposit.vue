@@ -30,7 +30,7 @@
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
                                             <span class='tooltiptext normalFont'>
-                                                Cannot transfer during waiting period. {{ susdWaitingPeriodTime }} secs left.
+                                                Cannot transfer during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                                             </span>
                                         </span>
                                     </span>

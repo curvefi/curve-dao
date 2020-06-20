@@ -126,7 +126,8 @@
                 @click='claim_SNX'
                 v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards / 1e18 > 0.1"
             >
-                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
+                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX +
+                <span v-show="currentPool == 'sbtc'">{{(pendingRENRewards / 1e18).toFixed(2)}} REN</span>
             </button>
             <button id='unstake-snx'
                 @click='handle_remove_liquidity(true, true)'
@@ -161,7 +162,7 @@
 	import Vue from 'vue'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
-    import allabis from '../../allabis'
+    import allabis, { balancer_ABI, balancer_address } from '../../allabis'
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
@@ -197,6 +198,7 @@
     		donate_dust: true,
     		showstaked: false,
             pendingSNXRewards: 0,
+            pendingRENRewards: 0,
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
@@ -282,10 +284,25 @@
             	}
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
-                if(['susdv2', 'sbtc'].includes(this.currentPool)) {
-                    let curveRewards = currentContract.curveRewards
-                    this.pendingSNXRewards = await curveRewards.methods.earned('0xa1b38945846e1869b66ec19c196ba28506743dc0').call()
+                let curveRewards = currentContract.curveRewards
+                if(['susdv2'].includes(this.currentPool)) {
+                    this.pendingSNXRewards = await curveRewards.methods.earned(this.default_account).call()
                     console.log(this.pendingSNXRewards, "PENDING SNX REWARDS")
+                }
+                if(['sbtc'].includes(this.currentPool)) {
+                    let balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
+                    let calls = [
+                        [curveRewards._address, curveRewards.methods.earned(this.default_account).encodeABI()],
+                        [balancerPool._address, balancerPool.methods.totalSupply().encodeABI()],
+                        [balancerPool._address, balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()],
+                        [balancerPool._address, balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()],
+                    ]
+                    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+
+                    this.pendingSNXRewards = decoded[0] * decoded[2] / decoded[1]
+                    this.pendingRENRewards = decoded[0] * decoded[3] / decoded[1]
+
                 }
 
                 await common.update_fee_info();

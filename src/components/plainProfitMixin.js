@@ -45,8 +45,8 @@ export default {
 	methods: {
 
 		async getPrices() {
-			if(currentContract.currentContract == 'susdv2') this.getSNXRewards()
-			if(['tbtc', 'ren'].includes(currentContract.currentContract)) this.getBTCPrice()
+			if(['susdv2', 'sbtc'].includes(currentContract.currentContract)) this.getSNXRewards()
+			if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) this.getBTCPrice()
 		},
 
 		async getBTCPrice() {

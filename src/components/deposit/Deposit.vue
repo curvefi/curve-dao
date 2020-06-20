@@ -92,12 +92,12 @@
                 </button>
                 <button 
                 	id='add-liquidity-stake' 
-                	v-show="currentPool == 'susdv2'" 
+                	v-show="['susdv2', 'sbtc'].includes(currentPool)" 
                 	:disabled = 'slippage < -0.03 || depositingZeroWarning'
                 	@click = 'justDeposit = false; deposit_stake()'>
                 	Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
                 </button>
-                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>
+                <button id='stakeunstaked' v-show="totalShare > 0 && ['susdv2', 'sbtc'].includes(currentPool)" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
                 <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
@@ -536,12 +536,13 @@
 				}
 				this.waitingMessage = ''
 				if(!stake ) this.show_loading = false
-				if(stake && this.currentPool == 'susdv2') {
+				if(stake && ['susdv2', 'sbtc'].includes(this.currentPool)) {
                     console.warn(receipt.events)
                     try {
     					minted = BN(
     						Object.values(receipt.events).filter(event => {
-    							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+    							return (event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+                                            || event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
     									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
     									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
     						})[0].raw.data)

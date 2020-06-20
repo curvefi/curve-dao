@@ -111,7 +111,7 @@
 	        	</div> -->
 	      	</div>
             <button id="remove-liquidity"
-                :disabled="currentPool == 'susdv2' && slippage < -0.03 && !warninglow || show_nobalance == true"
+                :disabled="['susdv2', 'sbtc'].includes(currentPool) && slippage < -0.03 && !warninglow || show_nobalance == true"
                 @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
                 Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
             </button>
@@ -124,17 +124,17 @@
             </button>
             <button id='claim-snx'
                 @click='claim_SNX'
-                v-show="currentPool == 'susdv2' && pendingSNXRewards / 1e18 > 0.1"
+                v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards / 1e18 > 0.1"
             >
                 Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
             </button>
             <button id='unstake-snx'
                 @click='handle_remove_liquidity(true, true)'
-                v-show="currentPool == 'susdv2' && staked_balance > 0"
+                v-show="['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0"
             >
                 Unstake
             </button>
-            <router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
+            <router-link v-show="['susdv2', 'sbtc'].includes(currentPool) && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
             <p v-show="['ren', 'sbtc'].includes(currentPool)">
@@ -362,7 +362,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-		    	if(this.currentPool == 'susdv2') calls.push([currentContract.curveRewards._address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		    	if(['susdv2', 'sbtc'].includes(this.currentPool)) calls.push([currentContract.curveRewards._address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -377,7 +377,7 @@
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
-				if(this.currentPool == 'susdv2') this.staked_balance = BN(decoded[decoded.length-2])
+				if(['susdv2', 'sbtc'].includes(this.currentPool)) this.staked_balance = BN(decoded[decoded.length-2])
                 else this.staked_balance = BN(0)
 				this.token_supply = +decoded[decoded.length-1]
 			},

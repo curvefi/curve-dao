@@ -150,11 +150,11 @@ export function init_menu() {
 
 export async function ensure_stake_allowance(amount) {
     var default_account = currentContract.default_account;
-    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, currentContract.sCurveRewards._address).call());
+    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, currentContract.curveRewards._address).call());
     if(allowance.lt(amount)) {
         if(allowance.gt(0))
-            await approve(currentContract.swap_token, 0, default_account, currentContract.sCurveRewards._address)
-        await approve(currentContract.swap_token, amount, default_account, currentContract.sCurveRewards._address)
+            await approve(currentContract.swap_token, 0, default_account, currentContract.curveRewards._address)
+        await approve(currentContract.swap_token, amount, default_account, currentContract.curveRewards._address)
     }
 }
 

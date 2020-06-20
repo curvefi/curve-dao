@@ -20,6 +20,10 @@
             <div>
                 <router-link to='/integrators'>Integrations</router-link>
             </div>
+
+            <p>
+                <a href='https://medium.com/@crypto.tutorials/curve-fi-how-does-it-work-b673a8fe16cc'>Getting started tutorial</a>
+            </p>
         </p>
 
         <h3>Has Curve been audited?</h3>

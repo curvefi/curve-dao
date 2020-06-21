@@ -251,7 +251,7 @@
                 if(this.loadingAction == 3) return;
                 this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
-        		this.waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
+        		this.waitingMessage = `Please approve staking ${this.toFixed(tokens.div(BN(1e18)))} of your sCurve tokens`
 				await common.ensure_stake_allowance(tokens);
 				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
 				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({

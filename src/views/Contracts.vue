@@ -5,13 +5,13 @@
 	            <fieldset>
 	            	<legend>Curve Pool Registry</legend>
 	                	<a href = "https://etherscan.io/address/0x7002B727Ef8F5571Cb5F9D70D13DBEEb4dFAe9d1">
-	                		<img class='icon' :src="publicPath + 'curveIcons/registryCrv.png'"> <span class='text'>Curve Registry address</span>
+	                		<img class='icon' :src="publicPath + 'curveIcons/curve-registry.svg'"> <span class='text'>Curve Registry address</span>
 	                	</a>
 	                	<a href = "https://etherscan.io/address/0xc1DB00a8E5Ef7bfa476395cdbcc98235477cDE4E">
-	                		<img class='icon' :src="publicPath + 'curveIcons/registryCrv.png'"> <span class='text'>Curve calc address</span>
+	                		<img class='icon' :src="publicPath + 'curveIcons/curve-registry.svg'"> <span class='text'>Curve calc address</span>
 	                	</a>
 	                	<a href = "https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb">
-	                		<img class='icon' :src="publicPath + 'curveIcons/registryCrv.png'"> 
+	                		<img class='icon' :src="publicPath + 'curveIcons/curve-registry.svg'"> 
 	                		<span class='text'>Curve Registry docs</span>
 	                	</a>
 	            </fieldset>

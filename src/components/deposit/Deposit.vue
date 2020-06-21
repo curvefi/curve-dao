@@ -108,7 +108,7 @@
 	            </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
-                	{{waitingMessage}} <span class='loading line'></span>
+                	<span v-html='waitingMessage'></span> <span class='loading line'></span>
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
 	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
@@ -496,7 +496,11 @@
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`)
+				    }).once('transactionHash', hash => 
+                        this.waitingMessage = 
+                        `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a> 
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`)
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -521,7 +525,9 @@
 						gas: gas
 					})
 					.once('transactionHash', hash => {
-						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`
+						this.waitingMessage = `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a>
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`
 						console.warn(hash, 'tx hash')
 					})
 					try {

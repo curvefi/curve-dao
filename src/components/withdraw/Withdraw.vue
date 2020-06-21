@@ -124,10 +124,10 @@
             </button>
             <button id='claim-snx'
                 @click='claim_SNX'
-                v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards / 1e18 > 0.1"
+                v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards > 0"
             >
-                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX +
-                <span v-show="currentPool == 'sbtc'">{{(pendingRENRewards / 1e18).toFixed(2)}} REN</span>
+                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
+                <span v-show="currentPool == 'sbtc'"> + {{(pendingRENRewards / 1e18).toFixed(2)}} REN</span>
             </button>
             <button id='unstake-snx'
                 @click='handle_remove_liquidity(true, true)'
@@ -294,9 +294,9 @@
                     this.balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
                     let calls = [
                         [curveRewards._address, curveRewards.methods.earned(this.default_account).encodeABI()],
-                        [balancerPool._address, balancerPool.methods.totalSupply().encodeABI()],
-                        [balancerPool._address, balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()],
-                        [balancerPool._address, balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.totalSupply().encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()],
                     ]
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -473,6 +473,13 @@
 				return min_amounts;
 			},
             async claim_SNX() {
+                this.show_loading = true
+                this.waitingMessage = `Claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
+                if(this.currentPool == 'sbtc')
+                    this.waitingMessage += ` and ${(this.pendingRENRewards / 1e18).toFixed(2)} REN`
+                
+                let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
+
                 await new Promise((resolve, reject) => {
                     currentContract.curveRewards.methods.getReward()
                         .send({
@@ -483,6 +490,16 @@
                         .on('receipt', () => this.pendingSNXRewards = 0)
                         .catch(err => reject(err))
                 })
+
+                if(this.currentPool == 'sbtc') {
+
+                    await this.balancerPool.methods.exitPool(earned, ['0', '0'])
+                        .send({
+                            from: currentContract.default_account,
+                            gas: 600000,
+                        })
+                }
+
             },
 			async unstake(amount, exit = false, unstake_only = false) {
                 if(unstake_only)
@@ -646,7 +663,11 @@
 			        		.send({
 			        			from: currentContract.default_account,
 			        			gas: contractGas.depositzap[this.currentPool].withdraw,
-			        		}).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
+			        		}).once('transactionHash', hash => 
+                                this.waitingMessage = `Waiting for withdrawal 
+                                <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                to confirm: no further action needed`
+                            )
 			        }
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} tokens for withdrawal`
@@ -658,7 +679,11 @@
                             await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
     			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
-                            .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
+                            .once('transactionHash', hash => 
+                                this.waitingMessage = `Waiting for withdrawal 
+                                <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                to confirm: no further action needed`
+                            );
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -682,7 +707,11 @@
                             }
                             await helpers.setTimeoutPromise(100)
     			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
-                            .once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed');
+                            .once('transactionHash', hash => 
+                                this.waitingMessage = `Waiting for withdrawal 
+                                <a href='https://etherscan.io/tx/${hash}'>transaction</a>
+                                to confirm: no further action needed`
+                            );
                         }
                         catch(err) {
                             this.waitingMessage = ''

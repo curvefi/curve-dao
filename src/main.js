@@ -30,7 +30,7 @@ process.env.NODE_ENV == 'production' && Sentry.init({
   dsn: 'https://5494f535e0244513a301f2912f5d899f@sentry.io/4169463',
   integrations: [
     new CaptureConsole({
-      levels: ['warn', 'error', 'debug', 'assert']
+      levels: ['error', 'debug', 'assert']
     }),
     new VueIntegration({Vue, attachProps: true})
   ],

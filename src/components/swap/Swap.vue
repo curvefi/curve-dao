@@ -497,7 +497,11 @@
                 ) {
                     dx = BN(this.maxSynthBalance).times(1e18).toFixed(0,1)
                 }
-                var min_dy = BN(await currentContract.swap.methods.get_dy(i, j, BN(dx).toFixed(0,1)).call())
+                let min_dy_method = 'get_dy_underlying'
+                if(this.swapwrapped || ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) {
+                    min_dy_method = 'get_dy'
+                }
+                var min_dy = BN(await currentContract.swap.methods[min_dy_method](i, j, BN(dx).toFixed(0,1)).call())
                 min_dy = min_dy.times(1-maxSlippage)
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`

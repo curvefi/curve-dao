@@ -37,6 +37,11 @@
 			DepositNative,
 		},
 
+		created() {
+			this.$watch(() => currentContract.currentContract, (val, oldval) => {
+				if(oldval == 'ren' && val == 'sbtc') this.swapbtc = false
+			})
+		},
 
 		data: () => ({
 			loading: false,

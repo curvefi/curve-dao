@@ -92,12 +92,12 @@
                 </button>
                 <button 
                 	id='add-liquidity-stake' 
-                	v-show="currentPool == 'susdv2'" 
+                	v-show="['susdv2', 'sbtc'].includes(currentPool)" 
                 	:disabled = 'slippage < -0.03 || depositingZeroWarning'
                 	@click = 'justDeposit = false; deposit_stake()'>
                 	Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
                 </button>
-                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>
+                <button id='stakeunstaked' v-show="totalShare > 0 && ['susdv2', 'sbtc'].includes(currentPool)" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
                 <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
@@ -108,7 +108,7 @@
 	            </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
-                	{{waitingMessage}} <span class='loading line'></span>
+                	<span v-html='waitingMessage'></span> <span class='loading line'></span>
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
 	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
@@ -251,7 +251,7 @@
                 if(this.loadingAction == 3) return;
                 this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
-        		this.waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
+        		this.waitingMessage = `Please approve staking ${this.toFixed(tokens.div(BN(1e18)))} of your sCurve tokens`
 				await common.ensure_stake_allowance(tokens);
 				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
 				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
@@ -496,7 +496,11 @@
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`)
+				    }).once('transactionHash', hash => 
+                        this.waitingMessage = 
+                        `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a> 
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`)
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -521,7 +525,9 @@
 						gas: gas
 					})
 					.once('transactionHash', hash => {
-						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`
+						this.waitingMessage = `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a>
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`
 						console.warn(hash, 'tx hash')
 					})
 					try {
@@ -536,12 +542,13 @@
 				}
 				this.waitingMessage = ''
 				if(!stake ) this.show_loading = false
-				if(stake && this.currentPool == 'susdv2') {
+				if(stake && ['susdv2', 'sbtc'].includes(this.currentPool)) {
                     console.warn(receipt.events)
                     try {
     					minted = BN(
     						Object.values(receipt.events).filter(event => {
-    							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+    							return (event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+                                            || event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
     									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
     									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
     						})[0].raw.data)

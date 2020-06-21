@@ -1,7 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, 
-	sCurveRewards_abi, sCurveRewards_address, sbtcCurveRewards_abi, sbtcCurveRewards_address, synthetixExchanger_address, synthetixExchanger_ABI,
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, synthetixExchanger_address, synthetixExchanger_ABI,
 	multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
@@ -301,6 +300,7 @@ const state = Vue.observable({
 		sbtc: {
 			currentContract: 'sbtc',
 			snxExchanger: null,
+			curveRewards: null,
 			...initState(),
 		},
 	},
@@ -453,15 +453,15 @@ export async function init(contract, refresh = false) {
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
-		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		contract.curveRewards = new state.web3.eth.Contract(allabis.susdv2.sCurveRewards_abi, allabis.susdv2.sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     	
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(contract.currentContract == 'sbtc') {
 
-    	let curveRewards = new state.web3.eth.Contract(sbtcCurveRewards_abi, sbtcCurveRewards_address)
-		calls.push([curveRewards._address, curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+    	contract.curveRewards = new state.web3.eth.Contract(allabis.sbtc.sCurveRewards_abi, allabis.sbtc.sCurveRewards_address)
+		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
@@ -481,6 +481,7 @@ export async function init(contract, refresh = false) {
     window[contract.currentContract].swap = contract.swap
     window[contract.currentContract].swap_token = contract.swap_token
     window[contract.currentContract].deposit_zap = contract.deposit_zap
+    window[contract.currentContract].rewards = contract.curveRewards
     contract.coins = []
     contract.underlying_coins = []
     if(window.location.href.includes('withdraw_old')) 

@@ -47,7 +47,7 @@
 	import TotalBalances from './TotalBalances.vue'
 
     import { getters, contract as currentContract, allCurrencies } from '../../contract'
-    import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi, sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
+    import contracts, { infura_url, ERC20_abi, cERC20_abi, yERC20_abi } from '../../allabis'
 
     import * as helpers from '../../utils/helpers'
 
@@ -260,7 +260,7 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
-			    let curveRewards = new currentContract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+			    let curveRewards = new currentContract.curveRewards
 				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]

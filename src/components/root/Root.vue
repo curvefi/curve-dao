@@ -338,7 +338,7 @@
 	import Vue from 'vue'
 	import TotalBalances from './TotalBalances.vue'
 	import BasicTrade from '../graphs/BasicTrade.vue'
-	import allabis, { ERC20_abi, sCurveRewards_abi, sCurveRewards_address, sbtcRewards_ABI, sbtcRewards_address, } from '../../allabis'
+	import allabis, { ERC20_abi, } from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 	import * as priceStore from '@/components/common/priceStore'
 
@@ -423,8 +423,8 @@
 		},
 		methods: {
 			async getCurveRewards() {
-				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
-				let sbtcRewards = new contract.web3.eth.Contract(sbtcRewards_ABI, sbtcRewards_address)
+				let curveRewards = new contract.web3.eth.Contract(allabis.susdv2.sCurveRewards_abi, allabis.susdv2.sCurveRewards_address)
+				let sbtcRewards = new contract.web3.eth.Contract(allabis.sbtc.sCurveRewards_abi, allabis.sbtc.sCurveRewards_address)
 
 				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
 				let sbtcCurve = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
@@ -471,7 +471,7 @@
 						//get_virtual_price
 						[allabis[k].swap_address, "0xbb7b8b80"]
 					]})
-				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
+				calls.push([allabis.susdv2.sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				//this.balances = []

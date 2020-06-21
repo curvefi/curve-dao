@@ -210,7 +210,7 @@
             maxBalance: -1,
             maxSynthBalance: -1,
             susdWaitingPeriod: false,
-            susdWaitingTime: 0,
+            susdWaitingPeriodTime: 0,
             snxExchanger: null,
             from_currency: 0,
             to_currency: 1,

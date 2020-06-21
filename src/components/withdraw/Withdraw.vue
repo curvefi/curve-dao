@@ -611,7 +611,7 @@
                             return this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                         })
                         let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
-                        this.waitingMessage = `Please approve ${this.toFixed(token_amount / 1e18)} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed(token_amount / 1e18)} Curve LP tokens for withdrawal`
                         try {
                             this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(token_amount)
@@ -641,7 +641,7 @@
                     if(unstake_only) return;
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {
-                        this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} Curve LP tokens for withdrawal`
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
                         let min_amount;
@@ -670,7 +670,7 @@
                             )
 			        }
 			        else if(this.to_currency == 10) {
-                        this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} Curve LP tokens for withdrawal`
                         try {
                             this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)

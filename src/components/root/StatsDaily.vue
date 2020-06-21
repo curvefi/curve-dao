@@ -214,7 +214,7 @@
 					})
 
 					this.volumeChart.addSeries({
-						type: 'column',
+						type: 'line',
 						name: 'Trading Volume',
 						data: volumeSeries,
 						color: '#0b0a57',

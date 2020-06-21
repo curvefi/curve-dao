@@ -101,7 +101,12 @@
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
                 <p class='info-message gentle-message' v-show="lpCrvReceived > 0">
-                    You'll receive min {{ lpCrvReceived && +lpCrvReceived.toFixed(2) }} Curve LP tokens
+                    You'll receive min {{ lpCrvReceivedText }} Curve {{currentPool}} LP tokens
+                    
+                    <span class='curvelpusd'> 
+                        1 Curve {{currentPool}} LP token = {{ (1 * virtual_price).toFixed(6) }} 
+                        {{ !['ren', 'sbtc'].includes(currentPool) ? 'USD' : 'BTC' }} 
+                    </span>
                 </p>
                 <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
@@ -244,6 +249,12 @@
           },
           transferableBalanceText() {
             return this.toFixed((this.transferableBalance / 1e18))
+          },
+          virtual_price() {
+            return currentContract.virtual_price
+          },
+          lpCrvReceivedText() {
+            return this.toFixed(this.lpCrvReceived)
           },
         },
         mounted() {
@@ -670,5 +681,9 @@
     }
     .currency_label .token-icon {
         margin-right: 0.6em;
+    }
+    .curvelpusd {
+        display: inline-block;
+        padding-top: 1em;
     }
 </style>

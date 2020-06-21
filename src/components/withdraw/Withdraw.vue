@@ -199,6 +199,7 @@
     		showstaked: false,
             pendingSNXRewards: 0,
             pendingRENRewards: 0,
+            balancerPool: null,
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
@@ -290,7 +291,7 @@
                     console.log(this.pendingSNXRewards, "PENDING SNX REWARDS")
                 }
                 if(['sbtc'].includes(this.currentPool)) {
-                    let balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
+                    this.balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
                     let calls = [
                         [curveRewards._address, curveRewards.methods.earned(this.default_account).encodeABI()],
                         [balancerPool._address, balancerPool.methods.totalSupply().encodeABI()],
@@ -486,11 +487,11 @@
 			async unstake(amount, exit = false, unstake_only = false) {
                 if(unstake_only)
                     this.waitingMessage = `
-                        Unstaking ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr
+                        Unstaking ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr
                     `
                 else 
                     this.waitingMessage = `
-                    Need to unstake ${amount.div(BN(1e18)).toFixed(0,1)} tokens from Mintr for withdrawal.
+                    Need to unstake ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr for withdrawal.
                     <br>
                     A bit more tokens are needed to unstake to ensure that withdrawal is successful.
                     You'll see them in your unstaked balance afterwards.
@@ -593,7 +594,7 @@
                             return this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                         })
                         let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
-                        this.waitingMessage = `Please approve ${token_amount / 1e18} tokens for withdrawal`
+                        this.waitingMessage = `Please approve ${this.toFixed(token_amount / 1e18)} tokens for withdrawal`
                         try {
                             this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(token_amount)

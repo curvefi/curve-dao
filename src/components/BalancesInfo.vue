@@ -259,7 +259,7 @@
         stats = await stats.json()
         for(let [key, value] of Object.entries(volumeStore.state.volumes)) {
           if(volumeStore.state.volumes[key][0] == -1) {
-            let volume = key == 'ren' ? stats.volume.ren2 : stats.volume[key]
+            let volume = key == 'ren' ? stats.volume.ren2 : key == 'sbtc' ? stats.volume.rens : stats.volume[key]
             Vue.set(volumeStore.state.volumes[key], 0,  volume || 0)
             if(['tbtc', 'ren', 'sbtc'].includes(key)) {
               Vue.set(volumeStore.state.volumes[key], 0,  volume * this.btcPrice || 0)

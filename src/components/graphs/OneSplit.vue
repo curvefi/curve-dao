@@ -173,7 +173,7 @@
                 Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
             </div>
             <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period {{ susdWaitingPeriodTime }} secs left
+                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left
             </div>
             <div class='info-message gentle-message' v-show='warningNoPool !== null'>
                 Swap not available. Please select {{warningNoPool}} in pool select

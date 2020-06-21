@@ -128,7 +128,7 @@
                     </p>
                 </div>
                 <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ susdWaitingPeriodTime }} secs left.
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                 </div>
                 <div class='simple-error pulse' v-show='depositingZeroWarning && !max_balances'>
                     You're depositing 0 coins.

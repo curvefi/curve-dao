@@ -151,7 +151,7 @@
                     <span v-show='swapwrapped'>{{Object.values(currencies)[from_currency]}}</span>. <span>Swap is not available.</span>
                 </p>
                 <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ susdWaitingPeriodTime }} secs left.
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
                     Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$

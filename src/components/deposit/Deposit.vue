@@ -100,6 +100,9 @@
                 <button id='stakeunstaked' v-show="totalShare > 0 && ['susdv2', 'sbtc'].includes(currentPool)" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
+                <p class='info-message gentle-message' v-show="lpCrvReceived > 0">
+                    You'll receive min {{ lpCrvReceived && +lpCrvReceived.toFixed(2) }} Curve LP tokens
+                </p>
                 <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
                 </p>
@@ -177,6 +180,7 @@
     		coins: [],
     		rates: [],
     		swap_address: currentContract.swap_address,
+            lpCrvReceived: null,
     		show_loading: false,
     		waitingMessage: '',
     		estimateGas: 0,
@@ -270,6 +274,7 @@
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
                 await this.handle_sync_balances();
+                await this.getLPCrvReceived()
                 await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
                 	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
@@ -580,10 +585,15 @@
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
 			},
+            async getLPCrvReceived() {
+                this.lpCrvReceived = (await currentContract.swap.methods
+                    .calc_token_amount(this.inputs.map((v, i) => BN(v).div(currentContract.c_rates[i]).toFixed(0,1)), true).call() / 1e18) * 0.99
+            },
 			async change_currency(i, setInputs = true, event) {
 				if(event) {
 					this.inputs[i] = event.target.value
 				}
+                this.getLPCrvReceived()
 	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            this.highlightInputs(i)

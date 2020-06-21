@@ -56,6 +56,13 @@
                  <li v-show="currentPool == 'sbtc'" :class="{'loading line': earnedSNX === null}">
                     <b>Paid REN LP rewards:</b> <span v-show='paidRewardsREN !== null'> {{showRewardsREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
                 </li>
+
+                <li>
+                    <b>Total profit:</b> 
+                    <span> 
+                        {{ toFixed(+showProfit + +showEarnedSNX + +showEarnedREN + +showRewardsSNX + +showRewardsREN) }} {{showinUSD ? 'USD' : 'REN' }}
+                    </span>
+                </li>
             </ul>
         </ul>
     </fieldset>

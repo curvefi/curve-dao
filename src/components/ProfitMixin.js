@@ -365,7 +365,7 @@ export default {
 		        // exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
 		    }
 			if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
-		    return exchangeRate | 0;
+		    return exchangeRate || 0;
 		},
 
 		async calculateAmount(cTokens, block, type) {

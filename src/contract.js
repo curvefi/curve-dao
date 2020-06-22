@@ -178,26 +178,26 @@ export const gas = {
 	depositzap: {
 		compound: {
 			deposit: x => (172664*x + 471691)*2.5 | 0,
-			withdraw: 2000000,
+			withdraw: 2000000 / 1.5,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (181733*x + 506125)*1.5 | 0,
 		},
 		usdt: {
 			//use periodic fit here?
 			deposit: x => (93795.5*x + 608935)*1.5 | 0,
-			withdraw: 2000000,
+			withdraw: 2000000 / 1.5,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (97226.5*x + 671880)*1.5 | 0,
 		},
 		iearn: {
 			deposit: x => (225377*x + 522674)*2 | 0,
-			withdraw: 3500000,
+			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
 		},
 		busd: {
 			deposit: x => (225377*x + 522674)*2 | 0,
-			withdraw: 3500000,
+			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
 		},
@@ -209,7 +209,7 @@ export const gas = {
 		},
 		pax: {
 			deposit: x => (225377*x + 522674)*2 | 0,
-			withdraw: 3500000,
+			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
 		},

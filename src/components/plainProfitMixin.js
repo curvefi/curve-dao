@@ -36,22 +36,22 @@ export default {
 
 		showEarnedSNX() {
 			if(this.showinUSD) return (+this.earnedSNX * this.snxPrice).toFixed(2)
-			return +this.earnedSNX.toFixed(2)
+			return (+this.earnedSNX).toFixed(2)
 		},
 
 		showEarnedREN() {
 			if(this.showinUSD) return (+this.earnedREN * this.renPrice).toFixed(2)
-			return +this.earnedREN.toFixed(2)
+			return (+this.earnedREN).toFixed(2)
 		},
 
 		showRewardsSNX() {
 			if(this.showinUSD) return (+this.paidRewardsSNX * this.snxPrice).toFixed(3)
-			return +this.paidRewardsSNX.toFixed(2)
+			return (+this.paidRewardsSNX).toFixed(2)
 		},
 
 		showRewardsREN() {
 			if(this.showinUSD) return (+this.paidRewardsREN * this.renPrice).toFixed(3)
-			return +this.paidRewardsREN.toFixed(2)
+			return (+this.paidRewardsREN).toFixed(2)
 		},
 	},
 

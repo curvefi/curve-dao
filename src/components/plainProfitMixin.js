@@ -16,6 +16,8 @@ export default {
 		paidRewardsSNX: null,
 		paidRewardsREN: null,
 		profitTotalStake: null,
+		weeklyEstimateSNX: null,
+		weeklyEstimateREN: null,
 		snxPrice: null,
 		renPrice: null,
 		btcPrices: [],
@@ -53,6 +55,16 @@ export default {
 			if(this.showinUSD) return (+this.paidRewardsREN * this.renPrice).toFixed(3)
 			return (+this.paidRewardsREN).toFixed(2)
 		},
+
+		showWeeklySNX() {
+			if(this.showinUSD) return (+this.weeklyEstimateSNX * this.snxPrice).toFixed(3)
+			return (+this.weeklyEstimateSNX).toFixed(2)
+		},
+
+		showWeeklyREN() {
+			if(this.showinUSD) return (+this.weeklyEstimateREN * this.snxPrice).toFixed(3)
+			return (+this.weeklyEstimateREN).toFixed(2)
+		},
 	},
 
 	methods: {
@@ -82,6 +94,7 @@ export default {
 				[curveRewards._address, curveRewards.methods.earned(this.account).encodeABI()],
 				[curveRewards._address, curveRewards.methods.balanceOf(this.account).encodeABI()],
 				[curveRewards._address, curveRewards.methods.userRewardPerTokenPaid(this.account).encodeABI()],
+				[curveRewards._address, curveRewards.methods.rewardPerToken().encodeABI()],
 			]
 			if(currentContract.currentContract == 'sbtc') {
                 let balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
@@ -111,10 +124,13 @@ export default {
 				})
 				let rewards = rewardLogs.map(log=>currentContract.web3.eth.abi.decodeParameter('uint256', log.data) / 1e18).reduce((a, b) => a + b, 0)
 				this.paidRewardsSNX = rewards
+				this.weeklyEstimateSNX = +decoded[3] * currentContract.curveStakedBalance  / 1e36
 			}
 			if(currentContract.currentContract == 'sbtc') {
-				this.earnedSNX = decoded[0] * decoded[4] / decoded[3] / 1e18
-				this.earnedREN = decoded[0] * decoded[5] / decoded[3] / 1e18
+				this.earnedSNX = decoded[0] * decoded[5] / decoded[4] / 1e18
+				this.earnedREN = decoded[0] * decoded[6] / decoded[4] / 1e18
+				this.weeklyEstimateSNX = +decoded[3] * currentContract.curveStakedBalance * decoded[5] / decoded[4] / 1e36
+				this.weeklyEstimateREN = +decoded[3] * currentContract.curveStakedBalance * decoded[6] / decoded[4] / 1e36
 
 				let rewardLogs = await currentContract.web3.eth.getPastLogs({
 					fromBlock: '0x9d010d',

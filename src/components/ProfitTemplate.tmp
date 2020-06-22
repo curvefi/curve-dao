@@ -56,6 +56,15 @@
                  <li v-show="currentPool == 'sbtc'" :class="{'loading line': earnedSNX === null}">
                     <b>Paid REN LP rewards:</b> <span v-show='paidRewardsREN !== null'> {{showRewardsREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
                 </li>
+                <li :class="{'loading line': weeklyEstimateSNX === null}" v-show='showStakedBalance > 0'>
+                    <b>Estimated weekly SNX LP rewards:</b> <span v-show='weeklyEstimateSNX !== null'> {{showWeeklySNX}} {{showinUSD ? 'USD' : 'SNX'}}</span>
+                </li>
+                <li v-show="currentPool == 'sbtc' && showStakedBalance > 0" :class="{'loading line': weeklyEstimateREN === null}">
+                    <b>Estimated weekly REN LP rewards:</b> <span v-show='weeklyEstimateREN !== null'> {{showWeeklyREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
+                </li>
+                <li v-show = 'showStakedBalance > 0'>
+                    <b>Esimated total weekly LP rewards:</b> <span> {{ (+showWeeklySNX + +showWeeklyREN).toFixed(2) }} {{showinUSD ? 'USD' : ''}}</span>
+                </li>
 
                 <li>
                     <b>Total profit:</b> 

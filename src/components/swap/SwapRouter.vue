@@ -47,6 +47,9 @@
 
 		created() {
 			if(this.$route.path.includes('native')) this.swapbtc = true
+			this.$watch(() => currentContract.currentContract, (val, oldval) => {
+				if(['ren', 'sbtc'].includes(oldval) && !['ren', 'sbtc'].includes(val)) this.swapbtc = false
+			})
 		},
 
 		watch: {
@@ -69,7 +72,6 @@
 			},
 			swapbtc: {
 				get() {
-					return true
 					return currentContract.swapbtc
 				},
 				set(val) {

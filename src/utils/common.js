@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js'
 window.BN = BigNumber
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
-import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, sCurveRewards_address } from '../allabis'
+import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi } from '../allabis'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -150,11 +150,11 @@ export function init_menu() {
 
 export async function ensure_stake_allowance(amount) {
     var default_account = currentContract.default_account;
-    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, sCurveRewards_address).call());
+    let allowance = cBN(await currentContract.swap_token.methods.allowance(default_account, currentContract.curveRewards._address).call());
     if(allowance.lt(amount)) {
         if(allowance.gt(0))
-            await approve(currentContract.swap_token, 0, default_account, sCurveRewards_address)
-        await approve(currentContract.swap_token, amount, default_account, sCurveRewards_address)
+            await approve(currentContract.swap_token, 0, default_account, currentContract.curveRewards._address)
+        await approve(currentContract.swap_token, amount, default_account, currentContract.curveRewards._address)
     }
 }
 
@@ -283,6 +283,10 @@ export async function multiInitState(calls, contract, initContracts = false) {
         contract.curveStakedBalance = decoded[1]
         decoded = decoded.slice(2);
     }
+    if(initContracts && contract.currentContract == 'sbtc') {
+        contract.curveStakedBalance = decoded[0]
+        decoded = decoded.slice(1);
+    }
     if(initContracts && ['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {
         contract.initial_A = +decoded[0];
         contract.initial_A_time = +decoded[1];
@@ -302,13 +306,13 @@ export async function multiInitState(calls, contract, initContracts = false) {
             var addr = v[0];
             var underlying_addr = v[1];
             let coin_abi = cERC20_abi
+            var underlying_addr = v[1];
             let underlying_abi = ERC20_abi
-            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i ==2 ) {
-                underlying_abi = synthERC20_abi
+            if(contract.currentContract == 'susdv2' && i == 3 || contract.currentContract == 'sbtc' && i == 2) {
                 coin_abi = synthERC20_abi
+                underlying_abi = synthERC20_abi
             }
             if(['iearn', 'busd', 'susd', 'pax'].includes(contract.currentContract)) coin_abi = yERC20_abi
-            if(!contract.coins) contract.coins = []
             contract.coins.push(new web3.eth.Contract(coin_abi, addr));
             contract.underlying_coins.push(new web3.eth.Contract(underlying_abi, underlying_addr));
         })

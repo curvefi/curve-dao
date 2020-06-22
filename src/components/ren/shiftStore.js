@@ -15,7 +15,7 @@ const sdk = new RenSDK('mainnet', {
 })
 let Box
 import BN from 'bignumber.js'
-import { getters, allCurrencies, contract } from '../../contract'
+import { getters, allCurrencies, contract, gas } from '../../contract'
 import allabis, { ERC20_abi } from '../../allabis'
 import * as common from '../../utils/common'
 import * as helpers from '../../utils/helpers'
@@ -72,6 +72,14 @@ let adapterAddress = allabis[contract.currentContract].adapterAddress
 
 let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
+
+let renSwap = new contract.web3.eth.Contract(allabis.ren.swap_abi, allabis.ren.swap_address)
+let sbtcSwap = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
+
+let swaps = {
+	ren: renSwap,
+	sbtc: sbtcSwap,
+}
 
 state.address = state.default_account =  contract.default_account
 state.sdk = sdk
@@ -420,7 +428,7 @@ export async function mint(data) {
 	transaction.fromAddress = contract.default_account;
 	transaction.fromInput = data.fromInput;
 	transaction.toInput = data.toInput;
-	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).toFixed(0,1)
+	transaction.minExchangeRate = BN(data.toInput).times(1e8).div(data.amountAfterBTC).minus(1).toFixed(0,1)
 	transaction.newMinExchangeRate = BN(transaction.minExchangeRate).times(BN((10000-data.slippage)/10000)).minus(1).toFixed(0,1)
 	transaction.secret = '0x' + helpers.randomBytes(32)
 	transaction.secretHash = contract.web3.utils.keccak256(transaction.secret)
@@ -473,7 +481,7 @@ function initSwapMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || adapterAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -519,7 +527,7 @@ function initDepositMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || adapterAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -561,6 +569,7 @@ function initDepositMint(transaction) {
 
 export async function initMint(transaction) {
 	let transfer;
+	console.log(transaction.type, transaction, "INIT MINT")
 	if(transaction.type == 0) transfer = initSwapMint(transaction)
 	if(transaction.type == 3) transfer = initDepositMint(transaction)
 	upsertTx(transfer)
@@ -569,6 +578,8 @@ export async function initMint(transaction) {
 }
 
 export async function sendMint(transfer) {
+
+	console.log(transfer, "SEND MINT")
 
 	let transaction = state.transactions.find(t => t.id == transfer.id)
 	//transaction is ready to be sent to eth network
@@ -612,6 +623,7 @@ export async function sendMint(transfer) {
 			})
 			.on('deposit', deposit => {
 				console.log('DEPOSIT SUBMITTED', deposit)
+				console.log(transfer, "THE TRANSFER")
 				if(deposit.utxo) {
 					let confirmations = deposit.utxo.confirmations
 					if(transaction.state == 2) {
@@ -672,9 +684,11 @@ export async function receiveRen(transaction) {
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
 	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
-	let get_dy = BN(await contract.swap.methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
+	let get_dy = BN(await swaps[transaction.pool].methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
-	console.log(exchangeRateNow, "EXCHANGE RATE NOW")
+	if(BN(transaction.amount).times(1e8).minus(utxoAmount).gt(10)) {
+		transaction.newMinExchangeRate = BN(transaction.minExchangeRate).minus(1).toFixed(0,1)
+	}
 	//rates changed, ask user if they still want to swap
 		//handle the case where they only want to mint
 	if(exchangeRateNow.lt(BN(transaction.newMinExchangeRate)) && !swapNow && !receiveRen) {
@@ -686,7 +700,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	}
 	if(receiveRen) {
 		//make the rate impossibly high so the check for exchange always fails
-		transaction.newMinExchangeRate = BN(10000).toFixed(0,1)
+		transaction.newMinExchangeRate = BN(1000000000000).toFixed(0,1)
 	}
 	//set new min exchange rate when user clicks on "exchange rates expired, want to swap again? and not popup automatically on that case"
 
@@ -721,7 +735,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			...args
 		).send({
 			from: state.default_account,
-			gas: 400001,
+			gas: gas.adapter[contract.currentContract].mintThenSwap,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -772,7 +786,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	console.log(renAmount, "REN AMOUNT")
 	//transaction.amounts[0] = renAmount.toFixed(0,1)
 	console.log(transaction.amounts, "AMOUNTS TO CALC FROM")
-	let calc_token_amount = await contract.swap.methods.calc_token_amount(actualAmounts, true).call()
+	let calc_token_amount = await swaps[transaction.pool].methods.calc_token_amount(actualAmounts, true).call()
 	transaction.renCRVmin = (calc_token_amount / 1e18).toFixed(2);
 	console.log(calc_token_amount, "CALC TOKEN AMOUNT")
 	if(+calc_token_amount  < +transaction.new_min_amount && !depositNow && !receiveRen) {
@@ -794,6 +808,14 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	if(params.contractCalls[0].sendTo.toLowerCase() == renAdapter._address.toLowerCase())
 		adapterContract = renAdapter
 
+	console.log(params.contractCalls[0].contractParams[0].value,
+			utxoAmount,
+			params.contractCalls[0].contractParams[1].value,
+			params.contractCalls[0].contractParams[2].value,
+			transaction.new_min_amount,
+			renResponse.autogen.nhash,
+			signature, "PARAMS")
+
 	let txhash = await new Promise((resolve, reject) => {
 		return adapterContract.methods.mintThenDeposit(
 			params.contractCalls[0].contractParams[0].value,
@@ -805,7 +827,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			signature,
 		).send({
 			from: state.default_account,
-			gas: 600001,
+			gas: gas.adapter[contract.currentContract].mintThenDeposit,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -836,6 +858,7 @@ export async function burnSwap(data) {
 	await common.approveAmount(contract.coins[data.from_currency], 
 		BN(data.fromInput).times(precisions), 
 		state.default_account, adapterAddress, data.inf_approval)
+    await helpers.setTimeoutPromise(100)
 
 
 	let args = [
@@ -851,13 +874,15 @@ export async function burnSwap(data) {
 			...args
 		).send({
 			from: state.default_account,
-			gas: 600001,
+			gas: gas.adapter[contract.currentContract].swapThenBurn,
 		})
 	burn(tx, data.address, null, 0, data)
 }
 
 export async function removeLiquidityThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+
+    await helpers.setTimeoutPromise(100)
 
 	let args = [
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -872,7 +897,7 @@ export async function removeLiquidityThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gas: 600001,
+		gas: gas.adapter[contract.currentContract].removeLiquidityThenBurn,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 1, data)
@@ -881,6 +906,7 @@ export async function removeLiquidityThenBurn(data) {
 
 export async function removeLiquidityImbalanceThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.max_burn_amount, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let args = [
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -897,7 +923,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gas: 1100001,
+		gas: gas.adapter[contract.currentContract].removeLiquidityImbalanceThenBurn,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 2, data)
@@ -905,6 +931,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 
 export async function removeLiquidityOneCoinThenBurn(data) {
 	await common.ensure_allowance_zap_out(data.token_amounts, undefined, adapterAddress)
+    await helpers.setTimeoutPromise(100)
 
 	let args = [
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -919,7 +946,7 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gas: 600001,
+		gas: gas.adapter[contract.currentContract].removeLiquidityOneCoinThenBurn,
 	})
 
 	burn(tx, data.address, data.renBTCAmount, 3, data)
@@ -935,6 +962,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 			let transaction = state.transactions.find(t => t.id == id)
 			listenForBurn(transaction.id)
 			let startBlockNumber = receipt.blockNumber
+			if(transaction.confirmations > 0) return;
 			transaction.confirmations = 1
 			transaction.state = 31;
 			transaction.ethStartBlock = startBlockNumber

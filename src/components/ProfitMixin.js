@@ -2,7 +2,7 @@ import * as common from '../utils/common.js'
 import { getters, contract as currentContract, allCurrencies } from '../contract'
 import { makeCancelable, interpolate } from '../utils/helpers'
 
-import allabis, { sCurveRewards_address } from '../allabis'
+import allabis from '../allabis'
 
 import BigNumber from 'bignumber.js'
 var cBN = (val) => new BigNumber(val);
@@ -53,17 +53,21 @@ export default {
 				if(subdomain == 'susdv2') subdomain = 'susd'
 				if(subdomain == 'ren') subdomain = 'ren2'
 				if(subdomain == 'sbtc') subdomain = 'rens'
-				if(['ren', 'sbtc'].includes(subdomain)) {
+				if(['ren', 'rens'].includes(subdomain)) {
 					await this.getBTCPrice()
 				}
-	        	let res = await fetch(`${window.domain}/raw-stats/${subdomain}-1440m.json`);
-	        	res = await res.json();
-	        	this.priceData = res
+	        	let reqs = await Promise.all([
+	        		fetch(`${window.domain}/raw-stats/${subdomain}-1440m.json`),
+	        		fetch(`${window.domain}/raw-stats/${subdomain}-5m.json`),
+        		]);
+	        	let res = await Promise.all(reqs.map(req => req.json()));
+	        	this.priceData = res[0]
+	        	this.priceData5m = res[1]
 	        	for(let [i, symbol] of Object.values(allCurrencies[this.currentPool]).entries()) {
 	        		this.ADDRESSES[symbol] = allabis[this.currentPool].coins[i]
 	        	}
 			    let [available, availableUSD, stakedBalanceUSD, stakedBalance] = await this.getAvailableAmount()
-			    if(this.currentPool == 'susdv2') {
+			    if(['susdv2', 'sbtc'].includes(this.currentPool)) {
 			    	this.getStakedBalance = stakedBalance
 			    	this.getStakedBalanceUSD = stakedBalanceUSD
 			    }
@@ -83,7 +87,8 @@ export default {
 
 	    async getAvailableAmount() {
 	    	if(!this.$route.params.address) {
-	    		if(!['tbtc', 'ren'].includes(this.currentPool)) this.btcPrice = 1
+	    		if(!['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) this.btcPrice = 1
+	    		console.log(currentContract.curveStakedBalance, currentContract.virtual_price, this.btcPrice)
 	    		return [currentContract.totalShare * 100, currentContract.usdShare * this.btcPrice || 0,
     				currentContract.curveStakedBalance * currentContract.virtual_price * this.btcPrice / 1e18, currentContract.totalStake * 100]
 	    	}
@@ -94,14 +99,14 @@ export default {
 	    async calcAvailable() {
 	    	let calls = [
 	    		[this.CURVE_TOKEN, '0x70a08231000000000000000000000000' + this.account.slice(2)],
-	    		[sCurveRewards_address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
+	    		[currentContract.curveRewards._address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
 	    	]
 	    	let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 	    	let [tokenBalance, stakedBalance] = aggcalls[1].map(hex => +currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 	    	let totalStake = 0
-		    if(this.currentPool == 'susdv2') {
+		    if(['susdv2', 'sbtc'].includes(this.currentPool)) {
 		    	stakedBalance = await currentContract.web3.eth.call({
-			        to: sCurveRewards_address,
+			        to: currentContract.curveRewards._address,
 			        data: '0x70a08231000000000000000000000000' + this.account.slice(2),
 			    });
 
@@ -120,7 +125,7 @@ export default {
 	    	let usdShare = tokenBalance * currentContract.virtual_price / 1e18
 	    	let usdStake = stakedBalance * currentContract.virtual_price / 1e18
 
-	    	if(['tbtc', 'ren'].includes(this.currentPool)) {
+	    	if(['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) {
 	    		usdShare *= this.btcPrice
 	    		usdStake *= this.btcPrice
 	    	}
@@ -236,13 +241,22 @@ export default {
 				}
 			}
 		},
-		async interpolatePoint(timestamp) {
+		async interpolatePoint(timestamp, priceData) {
 			let point = {};
-			if(timestamp > this.priceData[this.priceData.length-1].timestamp) point = this.priceData[this.priceData.length-1]
-			let prev = this.priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
-			let next = this.priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
-			if(prev === undefined) prev = this.priceData[0]
-			if(next === undefined) next = this.priceData[this.priceData.length-1]
+			if(priceData && timestamp > priceData[priceData.length-1].timestamp) {
+				return {
+					...priceData[priceData.length-1],
+					btcPrice: this.btcPrice,
+				}
+			}
+			if(!priceData) priceData = this.priceData
+			if(timestamp > priceData[priceData.length-1].timestamp) {
+				return this.interpolatePoint(timestamp, this.priceData5m)
+			}
+			let prev = priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
+			let next = priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
+			if(prev === undefined) prev = priceData[0]
+			if(next === undefined) next = priceData[this.priceData.length-1]
 			if(prev.timestamp == next.timestamp) point = next;
 
 			if(Object.keys(point).length === 0 && point.constructor === Object) {
@@ -259,7 +273,7 @@ export default {
 				point.rates = prev.rates.map((r, i) => interpolator(r, next.rates[i]))
 				point.supply = interpolator(prev.supply, next.supply);
 			}
-			if(['tbtc', 'ren'].includes(this.currentPool)) {
+			if(['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) {
 				point.btcPrice = this.btcPrice
 				// //instead of this better to make a request to coinpaprika but which API allows querying 
 				// try {
@@ -364,7 +378,7 @@ export default {
 		        // exchangeRate = exchangeRate + (exchangeRatePast.exchangeRate)
 		    }
 			if(exchangeRate.exchangeRate) exchangeRate = exchangeRate.exchangeRate
-		    return exchangeRate | 0;
+		    return exchangeRate || 0;
 		},
 
 		async calculateAmount(cTokens, block, type) {
@@ -405,6 +419,7 @@ export default {
 
 		    let depositUsdSum = 0;
 		    this.depositsUSD = 0;
+		    let allDepositsUSD = 0
 
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'dversion') == this.version 
@@ -414,10 +429,11 @@ export default {
 		        let block = +localStorage.getItem(this.currentPool + 'lastDepositBlock')
 		        fromBlock = '0x'+parseInt(block+1).toString(16)
 		        depositUsdSum += +localStorage.getItem(this.currentPool + 'lastDeposits')
-		        this.depositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
-		        if(this.currentPool == 'ren') this.depositsUSD = depositUsdSum / 100 * this.btcPrice
+		        this.depositsUSD = allDepositsUSD = +localStorage.getItem(this.currentPool + 'lastDepositsUSD')
+		        if(['ren', 'sbtc'].includes(this.currentPool)) {
+		        	this.depositsUSD = this.depositsUSD * this.btcPrice
+		        }
 		    }
-
 		    const poolTokensReceivings = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
 		        toBlock: 'latest',
@@ -449,10 +465,13 @@ export default {
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)
-	            if(addliquidity.length == 0 && transfer[0].topics[1] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
+	            if(addliquidity.length == 0 && ["0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92",
+	             "0x00000000000000000000000013c1542a468319688b89e323fe9a3be3a90ebb27"].includes(transfer[0].topics[1])) continue;
 	            let depositsUSD = transferTokens * poolInfoPoint.virtual_price / 1e36
-	            if(['tbtc', 'ren'].includes(this.currentPool)) depositsUSD *= poolInfoPoint.btcPrice
-	            this.depositsUSD += depositsUSD
+	        	allDepositsUSD += depositsUSD
+	            if(['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) this.depositsUSD += depositsUSD * poolInfoPoint.btcPrice
+	            else
+	            	this.depositsUSD += depositsUSD
 	            console.log(transferTokens)
 		        if(addliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParameters, addliquidity[0].data))[0]
@@ -473,9 +492,10 @@ export default {
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dlastAddress', default_account)
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDeposits', depositUsdSum);
-		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositsUSD', this.depositsUSD);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastDepositsUSD', allDepositsUSD);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'dversion', this.version);
 		    return depositUsdSum;
+
 		},
 
 		async getWithdrawals(address) {
@@ -483,6 +503,7 @@ export default {
 		    default_account = default_account.substr(2).toLowerCase();
 		    let withdrawals = 0;
 		    this.withdrawalsUSD = 0;
+		    let allWithdrawalsUSD = 0
 		    let fromBlock = this.fromBlock;
 		    if(localStorage.getItem(this.currentPool + 'wversion') == this.version 
 		    	&& localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
@@ -492,8 +513,8 @@ export default {
 			        let block = +localStorage.getItem(this.currentPool + 'lastWithdrawalBlock')
 			        fromBlock = '0x'+parseInt(block+1).toString(16)
 			        withdrawals += +localStorage.getItem(this.currentPool + 'lastWithdrawals')
-			        this.withdrawalsUSD = +localStorage.getItem(this.currentPool + 'lastWithdrawalsUSD')
-			        if(this.currentPool == 'ren') this.withdrawalsUSD = withdrawals / 100 * this.btcPrice
+			        this.withdrawalsUSD = allWithdrawalsUSD = +localStorage.getItem(this.currentPool + 'lastWithdrawalsUSD')
+			        if(['ren', 'sbtc'].includes(this.currentPool)) this.withdrawalsUSD = this.withdrawalsUSD * this.btcPrice
 		    }
 		    const logs = await currentContract.web3.eth.getPastLogs({
 		        fromBlock: fromBlock,
@@ -529,10 +550,13 @@ export default {
             	if(removeliquidity.length == 0 && 
             		removeliquidityImbalance.length == 0 && 
             		removeliquidityOne.length == 0 && 
-            		transfer[0].topics[2] == "0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92") continue;
+            		["0x000000000000000000000000dcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92", 
+            			"0x00000000000000000000000013c1542a468319688b89e323fe9a3be3a90ebb27"].includes(transfer[0].topics[2])) continue;
             	let withdrawalsUSD = transferTokens * poolInfoPoint.virtual_price / 1e36
-            	if(['tbtc', 'ren'].includes(this.currentPool)) withdrawalsUSD *= poolInfoPoint.btcPrice
-	            this.withdrawalsUSD += withdrawalsUSD
+            	allWithdrawalsUSD += withdrawalsUSD
+            	if(['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) this.withdrawalsUSD += withdrawalsUSD * poolInfoPoint.btcPrice
+	            else
+	            	this.withdrawalsUSD += withdrawalsUSD
 		        if(removeliquidity.length) {
 		            let cTokens = (currentContract.web3.eth.abi.decodeParameters(this.decodeParametersWithdrawal, removeliquidity[0].data))[0]
 		        	console.log(removeliquidity)
@@ -576,7 +600,7 @@ export default {
 		    }
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalBlock', lastBlock);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawals', withdrawals);
-		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalsUSD', this.withdrawalsUSD);
+		    !this.cancel && localStorage.setItem(this.currentPool + 'lastWithdrawalsUSD', allWithdrawalsUSD);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wlastAddress', default_account);
 		    !this.cancel && localStorage.setItem(this.currentPool + 'wversion', this.version);
 		    console.log("WITHDRAWALS", withdrawals)

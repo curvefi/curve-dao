@@ -2,7 +2,7 @@
 	<div class="window white">
 	        <fieldset class='poolsdialog donations'>
 	            <legend>Integrations</legend>
-	            <div>
+	            <div :class="{selected: activeLink == 0}">
 	                <a href='https://1inch.exchange/'>
 	                	<div class='index'>0.</div>
 	                	<div class='icon-container'>
@@ -16,7 +16,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 1}">
 	                <a href='https://paraswap.io'>
 	                	<div class='index'>1.</div>
 	                	<div class='icon-container'>
@@ -30,7 +30,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 2}">
 	                <a href='https://swap.totle.com/'>
 	                	<div class='index'>2.</div>
 	                	<div class='icon-container'>
@@ -47,7 +47,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 3}">
 	                <a href='https://dex.ag'>
 	                	<div class='index'>3.</div>
 	                	<div class='icon-container'>
@@ -61,7 +61,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 4}">
 	                <a href='https://debank.com/projects/curve'>
 	                	<div class='index'>4.</div>
 	                	<div class='icon-container'>
@@ -75,7 +75,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 5}">
 	                <a href='https://docs.instadapp.io/connectors/curve'>
 	                	<div class='index'>5.</div>
 	                	<div class='icon-container'>
@@ -89,7 +89,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 6}">
 	                <a href='https://www.coingecko.com/en/exchanges/curve'>
 	                	<div class='index'>6.</div>
 	                	<div class='icon-container'>
@@ -103,7 +103,7 @@
 	                </div>
 	            </div>
 	            </div>
-				<div>
+				<div :class="{selected: activeLink == 7}">
 	                <a href='https://www.zapper.fi/dashboard'>
 	                	<div class='index'>7.</div>
 	                	<div class='icon-container'>
@@ -117,7 +117,7 @@
 	                </div>
 	            </div>
 	            </div>
-	            <div>
+	            <div :class="{selected: activeLink == 8}">
 	                <a href='https://zerion.io/'>
 	                	<div class='index'>8.</div>
 	                	<div class='icon-container'>
@@ -132,7 +132,7 @@
 	            </div>
 	            </div>
 
-	            <div>
+	            <div :class="{selected: activeLink == 9}">
 	                <a href='https://pools.fyi/'>
 	                	<div class='index'>9.</div>
 	                	<div class='icon-container'>
@@ -147,7 +147,7 @@
 	            	</div>
 	            </div>
 
-	            <div>
+	            <div :class="{selected: activeLink == 10}">
 	                <a href='https://spells.fyi/'>
 	                	<div class='index'>10.</div>
 	                	<div class='icon-container'>
@@ -162,6 +162,21 @@
 	            	</div>
 	            </div>
 
+	            <div :class="{selected: activeLink == 11}">
+	                <a href='https://dydx.exchange/'>
+	                	<div class='index'>11.</div>
+	                	<div class='icon-container'>
+	                		<img class='dydx icon' :src="publicPath + 'icons/integrations/dydx.svg'" alt="dydx exchange">
+					</div>
+            		<span class='text'>dydx exchange</span></a>
+
+	                <div class='descriptionscontainer'>
+	                	<div class='descriptions'>
+		                	dYdX allows trading BTC Perpetual with up to 10x leverage
+		                </div>
+		            </div>
+	            </div>
+
 	        </fieldset>
 	    </div>
 </template>
@@ -169,28 +184,65 @@
 <script>
 	export default {
 		metaInfo: {
-	      title: 'Curve.fi :: Donate',
+	      title: 'Curve.fi :: Integrations',
 	      meta: [
-	        {'property': 'og:title', 'content': 'curve.fi/donate'},
-	        {'property': 'og:url', 'content': 'https://curve.fi/donate'},
+	        {'property': 'og:title', 'content': 'curve.fi/integrations'},
+	        {'property': 'og:url', 'content': 'https://curve.fi/integrations'},
 	        {'property': 'og:type', 'content': 'website'},
 	        {'property': 'og:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
 	        {'property': 'og:image', 'content': '/curve.png'},
 	        {'name': 'twitter:card', 'content': 'summary_large_image'},
-	        {'name': 'twitter:title', 'content': 'curve.fi/donate'},
+	        {'name': 'twitter:title', 'content': 'curve.fi/integrations'},
 	        {'name': 'twitter:site', 'content': '@CurveFinance'},
 	        {'name': 'twitter:creator', 'content': '@CurveFinance'},
 	        {'name': 'twitter:description', 'content': 'Curve is an exchange liquidity pool on Ethereum designed for extremely efficient stablecoin trading'},
-	        {'name': 'twitter:url', 'content': 'https://curve.fi/donate'},
-	        {'name': 'twitter:image', 'content': '/curve.png/donate'},
+	        {'name': 'twitter:url', 'content': 'https://curve.fi/integrations'},
+	        {'name': 'twitter:image', 'content': '/curve.png'},
 	      ]
 	    },
+
+	    data: () => ({
+	    	activeLink: -1,
+	    	keydownListener: null,
+	    }),
 
 	    computed: {
 	    	publicPath() {
 	    		return process.env.BASE_URL
 	    	},
-	    }
+	    },
+
+	    mounted() {
+	    	this.keydownListener = document.addEventListener('keydown', this.handle_navigating)
+	    },
+
+	    beforeDestroy() {
+			document.removeEventListener('keydown', this.handle_navigating);
+	    },
+
+	    methods: {
+	    	handle_navigating(e) {
+				if(this.activeLink == -1) return this.activeLink = 0
+	            if(e.code == 'ArrowUp' && this.activeLink != 0) {
+	                e.preventDefault();
+	                this.activeLink--;
+	            }
+	            if(e.code == 'ArrowDown' && this.activeLink < 11) {
+	                e.preventDefault();
+	                this.activeLink++;
+	            }
+	            if(e.code.includes('Digit')) {
+	                e.preventDefault();
+	                var digit = e.code.slice(-1);
+	                if(digit > 5) return;
+	                this.activeLink = digit
+	            }
+	            if(e.code == 'Enter') {
+	                e.preventDefault();
+	                window.open(document.querySelector('.poolsdialog .selected a').href, '_blank')
+	            }
+			},
+	    },
 	}
 </script>
 
@@ -237,6 +289,11 @@
 
 	fieldset > div > a .text {
 		flex: 3;
+	}
+
+	.dydx.icon {
+		filter: brightness(0) saturate(100%);
+		transform: scale(1.5);
 	}
 
 </style>

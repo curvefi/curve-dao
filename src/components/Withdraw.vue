@@ -42,7 +42,7 @@
                     @input='handle_change_amounts(i)'
                     @focus='handle_change_amounts(i)'>
                 </li>
-                <li v-show = "!['susd','susdv2','tbtc','ren'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2','tbtc','ren','sbtc'].includes(currentPool)">
                     <input id="withdrawc" type="checkbox" name="withdrawc" v-model='withdrawc'>
                     <label for="withdrawc">Withdraw wrapped</label>
                 </li>
@@ -128,7 +128,8 @@
         	<router-link v-show="currentPool == 'susdv2' && oldBalance > 0" class='button' to='/susd/withdraw' id='withdrawold'>Withdraw old</router-link>
             <button @click='migrateUSDT' v-show="currentPool == 'usdt'">Migrate to PAX</button>
             <button id="remove-liquidity" @click='handle_remove_liquidity' v-show="currentPool == 'susd'">Withdraw old</button>
-            <div id='mintr' v-show="currentPool == 'susdv2'">
+            {{currentPool}}
+            <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
                 <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
             </div>
             <div class='info-message gentle-message' v-show='show_loading'>
@@ -149,7 +150,7 @@
 	import Vue from 'vue'
     import * as common from '../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../contract'
-    import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../allabis'
+    import allabis from '../allabis'
     const compound = allabis.compound
     import * as helpers from '../utils/helpers'
 
@@ -346,7 +347,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-		    	if(this.currentPool == 'susdv2') calls.push([sCurveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		    	if(this.currentPool == 'susdv2') calls.push([currentContract.curveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))

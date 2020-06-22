@@ -52,6 +52,7 @@ export default {
     showinUSD: true,
 		BN: '',
 		priceData: '',
+    priceData5m: '',
 		ADDRESSES: {},
 		CURVE: '',
 		CURVE_TOKEN: '',
@@ -77,7 +78,7 @@ export default {
         return (this.available / 100)
       },
       showStakedBalance() {
-      if(this.currentPool != 'susdv2') return 0
+      if(!['susdv2', 'sbtc'].includes(this.currentPool)) return 0
       if(this.showinUSD) return this.getStakedBalanceUSD;
         return (this.getStakedBalance / 100); 
       },
@@ -92,7 +93,7 @@ export default {
         toFixed(num, precisions = 2, round = 4) {
             if(num == 0) return 0
             if(num == '' || num === null || num === undefined) return ''
-            if(precisions == 2 && ['tbtc', 'ren'].includes(this.currentPool)) precisions = 8
+            if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(this.currentPool)) precisions = 8
             if(this.showinUSD) precisions = 2
             let rounded = helpers.formatNumber(num, precisions)
             return rounded

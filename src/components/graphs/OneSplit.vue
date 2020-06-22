@@ -30,17 +30,17 @@
                     <legend>From:</legend>
                     <div class='maxbalance' :class="{'loading line': maxBalance == -1}" @click='set_max_balance'>
                         Max: 
-                        <span v-show='maxSynthBalance  != -1 && from_currency == 5'> {{ maxSynthBalanceText }} / </span>
+                        <span v-show='maxSynthBalance  != -1 && [5,9].includes(from_currency)'> {{ maxSynthBalanceText }} / </span>
                         <span v-show = 'maxBalance != -1'>{{maxBalanceText}}</span>
                         <span v-show='susdWaitingPeriod' class='susd-waiting-period'>
                             <span class='tooltip'>
                                 <img src='@/assets/clock-regular.svg' class='icon small'>
                                 <span class='tooltiptext'>
-                                    Cannot transfer during waiting period
+                                    Cannot transfer during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                                 </span>
                             </span>
                         </span>
-                        <span v-show="from_currency == 5" class='tooltip'> [?]
+                        <span v-show="[5,9].includes(from_currency)" class='tooltip'> [?]
                             <span class='tooltiptext'>
                                 Max transferrable amount is {{ maxSynthBalanceText }}. You can free the remaining balance by settling.
                             </span>
@@ -172,6 +172,9 @@
             <div class='info-message gentle-message' v-show='selldisabled'>
                 Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
             </div>
+            <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left
+            </div>
             <div class='info-message gentle-message' v-show='warningNoPool !== null'>
                 Swap not available. Please select {{warningNoPool}} in pool select
             </div>
@@ -199,17 +202,21 @@
     const worker = new Worker();
     const calcWorker = Comlink.wrap(worker);
 
+    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
+
     export default {
         data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc'],
             maxBalance: -1,
             maxSynthBalance: -1,
             susdWaitingPeriod: false,
+            susdWaitingPeriodTime: 0,
             snxExchanger: null,
             from_currency: 0,
             to_currency: 1,
             fromInput: '1.00',
             toInput: '0.00',
+            updateTimer: null,
             disabled: true,
             bgColor: '#505070',
             fromBgColor: 'blue',
@@ -304,7 +311,7 @@
                 return this.toFixed(this.maxSynthBalance / this.precisions(this.from_currency))
             },
             notEnoughBalanceSynth() {
-                return this.from_currency == 5 && BN(this.fromInput).gt(BN(this.maxSynthBalance).div(this.precisions(this.from_currency)))
+                return [5,9].includes(this.from_currency) && BN(this.fromInput).gt(BN(this.maxSynthBalance).div(this.precisions(this.from_currency)))
             },
             actualFromValue() {
                 if(!this.swapwrapped) return;
@@ -493,7 +500,7 @@
             toFixed(num) {
                 if(num == '' || num == undefined || num == 0) return '0.00'
                 if(!BN.isBigNumber(num)) num = +num
-                if([7, 8].includes(this.from_currency)) return num.toFixed(8)
+                if([7, 8, 9].includes(this.from_currency)) return num.toFixed(8)
                 return num.toFixed(2)
             },
             handleError(err) {
@@ -520,7 +527,7 @@
                     return this.underlying_coins[i]
             },
             normalizeCurrency(i) {
-                if([7, 8].includes(i)) return i - 7;
+                if([7, 8, 9].includes(i)) return i - 7;
                 if(i > 3) return 3
                 return i;
             },
@@ -624,7 +631,8 @@
                 }
                 else {
                     let exchangeMethod = bestContract.swap.methods.exchange_underlying
-                    if(this.swapwrapped || this.bestPoolText == 'susd' || this.bestPoolText == 'ren') exchangeMethod = bestContract.swap.methods.exchange
+                    if(this.swapwrapped || ['susd', 'ren', 'sbtc'].includes(this.bestPoolText)) 
+                        exchangeMethod = bestContract.swap.methods.exchange
                     i = this.normalizeCurrency(i)
                     j = this.normalizeCurrency(j)
                     try {
@@ -655,12 +663,15 @@
                 let coinAddress = this.getCoins(i)._address
                 let balanceCalls = [
                     [coinAddress, this.getCoins(i).methods.balanceOf(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()]]
-                if(i == 5) {
+                if([5, 9].includes(i)) {
                     balanceCalls.push([coinAddress, 
                         this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     balanceCalls.push([this.snxExchanger._address, 
                         this.snxExchanger.methods
-                            .maxSecsLeftInWaitingPeriod(contract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .maxSecsLeftInWaitingPeriod(contract.default_account, currencyKey)
                             .encodeABI()
                     ])
                 }
@@ -669,9 +680,10 @@
                 let amounts = balances.map(balance => contract.default_account ? balance : 0)
                 this.maxBalance = amounts[0]
                 let highlight_red = this.fromInput > balances[0] / this.precisions(this.from_currency)
-                if(i == 5) {
+                if([5, 9].includes(i)) {
                     this.maxSynthBalance = amounts[1]
                     this.susdWaitingPeriod = (+amounts[2] != 0)
+                    this.susdWaitingPeriodTime = +amounts[2]
                     highlight_red = this.fromInput > this.maxSynthBalance / this.precisions(this.from_currency)
                     if(this.susdWaitingPeriod) highlight_red = true
                 }   
@@ -882,6 +894,8 @@
                 return [txPricePool, txPrice1split]
             },
             async set_to_amount() {
+                this.updateTimer && clearIntervalAsync(this.updateTimer)
+                //this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 this.distribution = null
                 let minAmount = 10000
                 if(this.swapwrapped) minAmount *= 50
@@ -940,7 +954,9 @@
                         else this.distribution = null
                         this.bestPool = pools.indexOf(pool)
                     }
-                    let address = this.swap[this.bestPool]._address
+                    let bestPool = this.bestPool
+                    if(bestPool > 0) bestPool +=1
+                    let address = this.swap[bestPool]._address
                     if (BN(await this.getCoins(this.from_currency).methods.allowance(contract.default_account || '0x0000000000000000000000000000000000000000', address).call()).gt(contract.max_allowance.div(BN(2))))
                         this.inf_approval = true;
                     else
@@ -967,8 +983,8 @@
             },
             async set_max_balance() {
                 let balance
-                if(this.from_currency == 5) {
-                    balance = await this.getCoins(this.from_currency).methods.trnasferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').call();
+                if([5,9].includes(this.from_currency)) {
+                    balance = await this.getCoins(this.from_currency).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').call();
                     if(this.susdWaitingPeriod) balance = 0
                 }
                 else

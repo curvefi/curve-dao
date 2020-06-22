@@ -37,6 +37,9 @@
                             :style = "{backgroundColor: fromBgColor}"
                             @input='set_to_amount'
                             v-model='fromInput'>
+                            <p class='actualvalue' v-show="['sbtc', 'ren'].includes(currentPool)">
+                                ≈ {{ actualFromValue }}$
+                            </p>
                         </li>
                         <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'from_cur_'+i" name="from_cur" :value='i' v-model='from_currency'>
@@ -71,6 +74,9 @@
 <!--                             <p class='actualvalue' v-show='swapwrapped'>
                                 ≈ {{actualToValue}} {{Object.keys(currencies)[this.to_currency] | capitalize}}
                             </p> -->
+                            <p class='actualvalue' v-show="['ren', 'sbtc'].includes(currentPool)">
+                                ≈ {{ actualToValue }}$
+                            </p>
                         </li>
                         <li class='coins' v-for='(currency, i) in Object.keys(currencies)'>
                             <input type="radio" :id="'to_cur_'+i" name="to_cur" :value='i' v-model='to_currency'>
@@ -159,6 +165,7 @@
 	import Table from './Table.vue'
 	import * as store from './shiftStore'
 	import { state } from './shiftState'
+    import * as priceStore from '../common/priceStore'
 
 	
 	const txObject = () => ({
@@ -210,6 +217,7 @@
 			fromInput: '0.001',
 			from_currency: 0,
 			to_currency: 1,
+            btcPrice: null,
 			get_dy_original: '',
 			fromBgColor: '',
 			bgColor: '',
@@ -247,12 +255,12 @@
             	return (BN(this.toInputOriginal).times(1e8).times(1-state.burnFee/10000).minus(state.minersReleaseFee)).div(1e8).toFixed(8)
             },
             minOrderSize() {
-            	return state.minersReleaseFee + state.burnFee / 10000
+            	return state.minersReleaseFee + state.burnFee / 10000 + 1100
             },
             lessThanMinOrder() {
             	if([1,2].includes(this.from_currency) && [1,2].includes(this.to_currency)) return false
-            	if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
-            	if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true	
+                if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
+                if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true 
             },
         	toInputFormat() {
         		if(!this.toInput || typeof this.toInput == 'string') return '0.00'
@@ -269,6 +277,12 @@
         		}
         		else return {}
         	},
+            actualFromValue() {
+                return (this.fromInput * this.btcPrice).toFixed(2)
+            },
+            actualToValue() {
+                return (this.toInput * this.btcPrice).toFixed(2)
+            },
         	publicPath() {
                 return process.env.BASE_URL
             },
@@ -336,11 +350,12 @@
 		},
 		methods: {
 			async mounted() {
-				//when used in OneSplit component
-				// if(contract.currentContract != 'ren') {
-				// 	contract.swap = contract.contracts.ren.swap
-				// 	contract.coins = contract.contracts.ren.coins
-				// }
+                this.btcPrice = await priceStore.getBTCPrice()
+                //when used in OneSplit component
+                // if(contract.currentContract != 'ren') {
+                //  contract.swap = contract.contracts.ren.swap
+                //  contract.coins = contract.contracts.ren.coins
+                // }
 				if([1,2].includes(this.from_currency)) this.address = contract.default_account
 				this.from_cur_handler()
 			},
@@ -598,4 +613,9 @@
 		width: 80%;
 		max-width: 700px;
 	}
+    .actualvalue {
+        margin: 0.5em 0 0 0;
+        text-align: right;
+        font-size: 0.9em;
+    }
 </style>

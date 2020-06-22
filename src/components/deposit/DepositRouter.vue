@@ -37,10 +37,22 @@
 			DepositNative,
 		},
 
+		created() {
+			this.$watch(() => currentContract.currentContract, (val, oldval) => {
+				if(['ren', 'sbtc'].includes(oldval) && !['ren', 'sbtc'].includes(val)) this.swapbtc = false
+			})
+		},
 
 		data: () => ({
 			loading: false,
 		}),
+
+		created() {
+			if(this.$route.path.includes('native')) this.swapbtc = true
+			this.$watch(() => currentContract.currentContract, (val, oldval) => {
+				if(oldval == 'ren' && val == 'sbtc') this.swapbtc = false
+			})
+		},
 
 		watch: {
 			swapbtc(val) {
@@ -62,7 +74,6 @@
 			},
 			swapbtc: {
 				get() {
-					return true
 					return currentContract.swapbtc
 				},
 				set(val) {

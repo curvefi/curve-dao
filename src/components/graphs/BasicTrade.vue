@@ -6,19 +6,28 @@
 				<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 					This is a beta version. Please test with small amounts and use with caution.
 				</div>
-				<div class='swapBTC-container info-message gentle-message'>
-			        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
-			        <label for='swapbtc'>
-			        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
-			        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
-			        		( {{hasIncomplete}} incomplete transactions)
-			        	</span>
-			        </label>
-			    	<span v-show='loading' class='loading line'></span>
-			    </div>
+				<div class='swapBTC-wrapper'>
+					<div class='swapBTC-container info-message gentle-message'>
+				        <router-link to='/ren/native'>
+				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> ren pool
+				        	<span v-show='hasIncomplete > 0'>
+				        		( {{hasIncomplete}} incomplete transactions)
+				        	</span>
+				        </router-link>
+
+				    	<span v-show='loading' class='loading line'></span>
+				    </div>
+					<div class='swapBTC-container info-message gentle-message second'>
+				        <router-link to='/sbtc/native'>
+				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> sbtc pool
+				        	<span v-show='hasIncomplete > 0'>
+				        		( {{hasIncomplete}} incomplete transactions)
+				        	</span>
+				        </router-link>
+				    </div>
+				</div>
 			</div>
-			<swap-native v-if='swapbtc' @loaded='loaded'></swap-native>
-			<one-split v-if='!swapbtc || (swapbtc && !loaded)'/>
+			<one-split />
 		</fieldset>
 	</div>
 </template>
@@ -51,21 +60,13 @@
 			hasIncomplete() {
 				return shiftState.hasIncomplete()
 			},
-			swapbtc: {
-				get() {
-					return contract.swapbtc
-				},
-				set(val) {
-					contract.swapbtc = val
-				},
-			},
 			publicPath() {
                 return process.env.BASE_URL
             },
 		},
 		async created() {
 			this.unwatch = this.$watch(()=>contract.initializedContracts, async (val) => {
-				Promise.all(['compound','usdt','iearn','busd','susdv2','pax','ren'].map(p=>{
+				Promise.all(['compound','usdt','iearn','busd','susdv2','pax','ren','sbtc'].map(p=>{
 					return init(contract.contracts[p])
 				}))
 				this.unwatch()
@@ -103,5 +104,20 @@
 	.aligncontainer {
 		margin: 0 auto;
 		width: 80%;
+	}
+	.swapBTC-container.info-message {
+		margin: 0;
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
+	.swapBTC-container a {
+		color: white;
+	}
+	.swapBTC-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+	}
+	.swapBTC-container.second {
+		margin-left: 1em;
 	}
 </style>

@@ -41,6 +41,12 @@
             If one of the stablecoins in the pool goes significantly down below the peg of 1.0 and never returns to the peg, it'll effectively mean that pool liquidity providers hold almost all their liquidity in that currency.
         </p>
 
+        <h3>Staking risks</h3>
+
+        <p>
+            When staking you use multiple smart contract products each of which has its own risks
+        </p>
+
     </div>
 </template>
 

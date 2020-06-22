@@ -12,20 +12,25 @@
                                     :src='getTokenIcon(currency)'>
                                 <span v-show='depositc'>{{currencies[currency]}}
     	                        	<span v-show="!(currency == 'usdt' && currentPool == 'usdt' || currency == 'pax') 
-    	                        					&& !['susdv2', 'tbtc', 'ren'].includes(currentPool)"> 
+    	                        					&& !['susdv2', 'tbtc', 'ren', 'sbtc'].includes(currentPool)"> 
     	                        		(in {{currency | capitalize}}) 
     	                        	</span>
     	                        </span>
     	                        <span v-show='!depositc'>{{currency | capitalize}}
     	                        </span>
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
-                                    Max: <span v-show="currentPool == 'susdv2' && i == 3">{{transferableBalanceText}}/</span>
+                                    Max: 
+                                    <span 
+                                        v-show="currentPool == 'susdv2' && i == 3 || currentPool == 'sbtc' && i == 2"
+                                    >
+                                        {{transferableBalanceText}}/
+                                    </span>
                                     <span>{{ maxBalanceCoin(i) }} </span>
                                     <span v-show="i == 3 && susdWaitingPeriod">
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
                                             <span class='tooltiptext normalFont'>
-                                                Cannot transfer during waiting period
+                                                Cannot transfer during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                                             </span>
                                         </span>
                                     </span>
@@ -69,7 +74,7 @@
                     	</span>
                     </label>
                 </li>
-                <li v-show = "!['susd','susdv2','tbtc','ren'].includes(currentPool)">
+                <li v-show = "!['susd','susdv2','tbtc','ren','sbtc'].includes(currentPool)">
                     <input id="depositc" type="checkbox" name="inf-approval" checked v-model='depositc'>
                     <label for="depositc">Deposit wrapped</label>
                 </li>
@@ -87,20 +92,31 @@
                 </button>
                 <button 
                 	id='add-liquidity-stake' 
-                	v-show="currentPool == 'susdv2'" 
+                	v-show="['susdv2', 'sbtc'].includes(currentPool)" 
                 	:disabled = 'slippage < -0.03 || depositingZeroWarning'
                 	@click = 'justDeposit = false; deposit_stake()'>
                 	Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
                 </button>
-                <button id='stakeunstaked' v-show="totalShare > 0 && currentPool == 'susdv2'" @click='stakeTokens()'>
+                <button id='stakeunstaked' v-show="totalShare > 0 && ['susdv2', 'sbtc'].includes(currentPool)" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
                 </button>
-                <div id='mintr' v-show="currentPool == 'susdv2'">
+                <p class='info-message gentle-message' v-show="lpCrvReceived > 0">
+                    You'll receive min {{ lpCrvReceivedText }} Curve {{currentPool}} LP tokens
+                    
+                    <span class='curvelpusd'> 
+                        1 Curve {{currentPool}} LP token = {{ (1 * virtual_price).toFixed(6) }} 
+                        {{ !['ren', 'sbtc'].includes(currentPool) ? 'USD' : 'BTC' }} 
+                    </span>
+                </p>
+                <p class='trade-buttons' v-show="['ren', 'sbtc'].includes(currentPool)">
+                    <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
+                </p>
+                <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
 	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
 	            </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
-                	{{waitingMessage}} <span class='loading line'></span>
+                	<span v-html='waitingMessage'></span> <span class='loading line'></span>
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
 	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
@@ -118,6 +134,9 @@
                         Maybe you forgot to uncheck the first 
                         "Add all coins in a balanced proportion" checkbox?
                     </p>
+                </div>
+                <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                 </div>
                 <div class='simple-error pulse' v-show='depositingZeroWarning && !max_balances'>
                     You're depositing 0 coins.
@@ -157,6 +176,7 @@
     		wallet_balances: [],
             transferableBalance: null,
             susdWaitingPeriod: false,
+            susdWaitingPeriodTime: 0,
     		balances: [],
     		inputs: [],
     		amounts: [],
@@ -165,6 +185,7 @@
     		coins: [],
     		rates: [],
     		swap_address: currentContract.swap_address,
+            lpCrvReceived: null,
     		show_loading: false,
     		waitingMessage: '',
     		estimateGas: 0,
@@ -195,13 +216,13 @@
         		await this.handle_sync_balances()
         		!this.max_balances && this.highlightAllInputs();
         		//await Promise.all([...Array(currentContract.N_COINS).keys()].map(i=>this.change_currency(i, false)))
-        		//await this.calcSlippage()
+        		await this.calcSlippage()
         	}
         },
         computed: {
           ...getters,
           minAmount() {
-          	if(['tbtc', 'ren'].includes(currentContract.currentContract)) return 1e-8
+          	if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return 1e-8
           	return 0.01
           },
           calcFee() {
@@ -224,10 +245,16 @@
             return this.inputs.filter(v=>+v==0).length == this.N_COINS && !this.disabledButtons
           },
           isPlain() {
-            return ['susdv2', 'tbtc', 'ren'].includes(this.currentPool)
+            return ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)
           },
           transferableBalanceText() {
-            return (this.transferableBalance / 1e18).toFixed(2)
+            return this.toFixed((this.transferableBalance / 1e18))
+          },
+          virtual_price() {
+            return currentContract.virtual_price
+          },
+          lpCrvReceivedText() {
+            return this.toFixed(this.lpCrvReceived)
           },
         },
         mounted() {
@@ -239,7 +266,7 @@
                 if(this.loadingAction == 3) return;
                 this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
-        		this.waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(2,1)} of your sCurve tokens`
+        		this.waitingMessage = `Please approve staking ${this.toFixed(tokens.div(BN(1e18)))} of your sCurve tokens`
 				await common.ensure_stake_allowance(tokens);
 				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
 				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
@@ -258,7 +285,8 @@
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
                 await this.handle_sync_balances();
-                //await this.calcSlippage()
+                await this.getLPCrvReceived()
+                await this.calcSlippage()
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=>[this.coins[i]._address, 
                 	this.coins[i].methods.allowance(currentContract.default_account || '0x0000000000000000000000000000000000000000', this.swap_address).encodeABI()])
                 let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
@@ -271,8 +299,9 @@
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
+                if(+num == 0 && ['ren', 'sbtc'].includes(currentContract.currentContract)) return '0.00000000'
                 if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
-                let rounded = num.toFixed(precisions)
+                let rounded = (+num).toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
             },
             maxBalanceCoin(i) {
@@ -280,8 +309,8 @@
             },
             setMaxBalanceCoin(i) {
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
-                if(this.currentPool == 'susdv2' && i == 3) {
-                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance * this.rates[i]
+                if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
+                    let maxbalance_susd = this.susdWaitingPeriod ? 0 : BN(this.transferableBalance).times(this.rates[i]).toString()
                     Vue.set(this.inputs, i, maxbalance_susd)
                 }
             },
@@ -295,6 +324,7 @@
             	if(val) {
                     this.coins = currentContract.coins
                     if(this.currentPool == 'susdv2') Vue.set(this.coins, 3, currentContract.underlying_coins[3])
+                    if(this.currentPool == 'sbtc') Vue.set(this.coins, 2, currentContract.underlying_coins[2])
 	            	this.rates = currentContract.c_rates
 	            	this.swap_address = currentContract.swap_address
         		}
@@ -338,25 +368,30 @@
 			    	calls.push([this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 			    	calls.push([currentContract.swap._address, currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-                if(this.currentPool == 'susdv2') {
-                    calls.push([this.coins[3]._address, this.coins[3].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+                if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') {
+                    let idx = this.currentPool == 'susdv2' ? 3 : 2
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
+                    calls.push([this.coins[idx]._address, this.coins[idx].methods.transferableSynths(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                     calls.push([currentContract.snxExchanger._address, 
                         currentContract.snxExchanger.methods
-                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7342544300000000000000000000000000000000000000000000000000000000")
+                        .maxSecsLeftInWaitingPeriod(currentContract.default_account, currencyKey)
                         .encodeABI()])
                 }
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
                 let balances = decoded
-                if(this.currentPool == 'susdv2') balances = decoded.slice(0, -2)
+                if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') balances = decoded.slice(0, -2)
 			    helpers.chunkArr(balances, 2).map((v, i) => {
 			    	Vue.set(this.wallet_balances, i, v[0])
 			    	if(!currentContract.default_account) Vue.set(this.wallet_balances, i, 0)
 			    	Vue.set(this.balances, i, +v[1])
 			    })
-                if(this.currentPool == 'susdv2') {
+                if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') {
                     this.transferableBalance = decoded[decoded.length - 2]
                     this.susdWaitingPeriod = (+decoded[decoded.length - 1] != 0)
+                    this.susdWaitingPeriodTime = +decoded[decoded.length -2]
                 }
 			    if (this.max_balances) {
 			        this.disabled = true;
@@ -366,10 +401,12 @@
 			            var val = amount
 			            var val = this.toFixed(amount);
 			            if(val == 0) val = '0.00'
-			            Vue.set(this.inputs, i, val)
-                        if(this.currentPool == 'susdv2' && i == 3) {
+			            Vue.set(this.inputs, i, this.toFixed(val))
+                        if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
+                            let precisions = 2
+                            if(this.currentPool == 'sbtc' && i == 2) precisions = 18
                             let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance
-                            Vue.set(this.inputs, i, (this.transferableBalance / 1e18).toFixed(2))
+                            Vue.set(this.inputs, i, BN(this.transferableBalance).div(1e18).toString())
                         }
 			        }
 			    }
@@ -397,18 +434,21 @@
                 this.gasPrice = promises[1]
 				this.show_loading = true
                 let calls = [...Array(currentContract.N_COINS).keys()].map(i=> {
-                          if(this.currentPool == 'susdv2' && i == 3)
-                            return [this.coins[3]._address, this.coins[3].methods.transferableSynths(currentContract.default_account).encodeABI()]
+                          if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2)
+                            return [this.coins[i]._address, this.coins[i].methods.transferableSynths(currentContract.default_account).encodeABI()]
                           return [this.coins[i]._address, this.coins[i].methods.balanceOf(currentContract.default_account).encodeABI()]
                         }
                     )
                 let endOffset = 1
                 calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
                 if(this.currentPool == 'susdv2') {
+                    let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
+                    if(this.currentPool == 'sbtc') 
+                        currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     calls.push([
                             currentContract.snxExchanger._address, 
                             currentContract.snxExchanger.methods
-                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, "0x7355534400000000000000000000000000000000000000000000000000000000")
+                            .maxSecsLeftInWaitingPeriod(currentContract.default_account, currencyKey)
                             .encodeABI()
                         ])
                     endOffset = 2
@@ -418,12 +458,13 @@
                 decoded.slice(0, decoded.length-endOffset).forEach((balance, i) => {
                     let abi = allabis[currentContract.currentContract]
                     let precisions = this.depositc ? abi.wrapped_precisions[i] : abi.coin_precisions[i]
-                    let bal = balance
+                    let bal = BN(balance)
                     if(this.depositc) bal = BN(bal).times(currentContract.c_rates[i])
                     else bal = BN(bal).div(precisions)
-                    if(this.currentPool == 'susdv2' && i == 3 && +decoded[decoded.length - 1] != 0) bal = 0
+                    if((this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2)
+                        && +decoded[decoded.length - 1] != 0) bal = BN(0)
                     let maxDiff = BN(bal).minus(BN(this.inputs[i]))
-                    if(bal.gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
+                    if(BN(bal).gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                         if(!this.depositc) balance = BN(balance).div(precisions).div(currentContract.c_rates[i])
                         Vue.set(this.amounts, i, BN(balance).toFixed(0,1))
                     }
@@ -438,8 +479,9 @@
                     let abi = allabis[currentContract.currentContract]
                     let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
                     let balance = this.wallet_balances[i]
-                    if(this.currentPool == 'susdv2' && i == 3) balance = this.transferableBalance
-                    if(this.currentPool == 'susdv2' && i == 3 && +decoded[decoded.length - 1] != 0) balance = 0
+                    if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) balance = this.transferableBalance
+                    if((this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2)
+                        && +decoded[decoded.length - 1] != 0) balance = 0
                     if(BN(balance).gt(0) && maxDiff.lt(0) && maxDiff.lt(BN(this.minAmount))) return BN(balance).toFixed(0, 1)
                     return BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                 })
@@ -466,10 +508,15 @@
 			    let minted = 0;
 			    if(this.depositc) {
                     this.waitingMessage = 'Please confirm deposit transaction'
+                    await helpers.setTimeoutPromise(100)
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
 				        gas: contractGas.deposit[this.currentPool],
-				    }).once('transactionHash', () => this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`)
+				    }).once('transactionHash', hash => 
+                        this.waitingMessage = 
+                        `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a> 
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`)
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -488,12 +535,15 @@
 			    		currentContract.coins.map(c=>c._address), 'coins', currentContract.underlying_coins.map(uc=>uc._address), 'underlying_coins',
 			    		currentContract.virtual_price, 'virtual_price', token_amount, 'token_amount', Date.now())
                     this.waitingMessage = 'Please confirm deposit transaction'
+                    await helpers.setTimeoutPromise(100)
 					let add_liquidity = currentContract.deposit_zap.methods.add_liquidity(amounts, token_amount).send({
 						from: currentContract.default_account,
 						gas: gas
 					})
 					.once('transactionHash', hash => {
-						this.waitingMessage = `Waiting for deposit transaction to confirm ${stake ? 'before staking' : 'no further action required'}`
+						this.waitingMessage = `Waiting for deposit 
+                            <a href='http://etherscan.io/tx/${hash}'>transaction</a>
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`
 						console.warn(hash, 'tx hash')
 					})
 					try {
@@ -508,15 +558,17 @@
 				}
 				this.waitingMessage = ''
 				if(!stake ) this.show_loading = false
-				if(stake && this.currentPool == 'susdv2') {
+				if(stake && ['susdv2', 'sbtc'].includes(this.currentPool)) {
                     console.warn(receipt.events)
                     try {
     					minted = BN(
     						Object.values(receipt.events).filter(event => {
-    							return event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+    							return (event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+                                            || event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
     									&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
     									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
     						})[0].raw.data)
+                        await helpers.setTimeoutPromise(100)
     					await this.stakeTokens(minted)
                     }
                     catch(err) {
@@ -538,17 +590,22 @@
 			highlightInputs(i) {
 				let value = this.inputs[i]
                 let balance = this.wallet_balances[i]
-                if(this.currentPool == 'susdv2' && i == 3) balance = this.transferableBalance
+                if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) balance = this.transferableBalance
 				if (value > balance * this.rates[i])
 	                Vue.set(this.bgColors, i, 'red');
 	            else
 	                Vue.set(this.bgColors, i, 'blue');
 			},
+            async getLPCrvReceived() {
+                this.lpCrvReceived = (await currentContract.swap.methods
+                    .calc_token_amount(this.inputs.map((v, i) => BN(v).div(currentContract.c_rates[i]).toFixed(0,1)), true).call() / 1e18) * 0.99
+            },
 			async change_currency(i, setInputs = true, event) {
 				if(event) {
 					this.inputs[i] = event.target.value
 				}
-	            //await this.calcSlippage()
+                this.getLPCrvReceived()
+	            await this.calcSlippage()
 	            var value = this.inputs[i]
 	            this.highlightInputs(i)
 
@@ -624,5 +681,9 @@
     }
     .currency_label .token-icon {
         margin-right: 0.6em;
+    }
+    .curvelpusd {
+        display: inline-block;
+        padding-top: 1em;
     }
 </style>

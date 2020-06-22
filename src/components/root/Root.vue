@@ -207,14 +207,14 @@
 			                    		<div>Total APY: {{apy[4]}}%</div>
 			                    	</span>
 	                    		</span> 
-	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}</span>
-	                    		<span :class="{'loading line': snxRewards === null}">% (+{{snxRewards | toFixed2}}%
+	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}%</span>
+	                    		<div :class="{'loading line': snxRewards === null}">(+{{snxRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX
 		                                <span class='tooltiptext'>
 		                                    SNX LP reward annualized
 		                                </span>
 		                            </span>)
-	                    		</span>
+	                    		</div>
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.susd && volumes.susd[0] < 0}">
@@ -292,18 +292,27 @@
 	                <router-link to = '/sbtc'>
 	                	<span class='index'>6.</span>  
 	                    <span class='pooltext'>sbtc</span>
-	                    <span class='pools'>[renBTC, wBTC, sBTC]</span>  
+	                    <span class='pools'>[renBTC, wBTC, sBTC]</span>
 	                    <span class='apr'>
-	                    	<span class='tooltip'>APY:
-	                    		<span class='tooltiptext long'>
-		                    		<div>Pool APY + Lending APY (annualized)</div>
-		                    		<div>Daily APY: {{daily_apy[8]}}%</div>
-		                    		<div>Weekly APY: {{weekly_apy[8]}}%</div>
-		                    		<div>Monthly APY: {{monthly_apy[8]}}%</div>
-		                    		<div>Total APY: {{apy[8]}}%</div>
-		                    	</span>
-	                    	</span> 
-	                    	<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}</span>%
+	                    	<span>
+	                    		<span class='tooltip'>APY:
+	                    			<span class='tooltiptext long'>
+			                    		<div>Pool APY + Lending APY (annualized)</div>
+			                    		<div>Daily APY: {{daily_apy[8]}}%</div>
+			                    		<div>Weekly APY: {{weekly_apy[8]}}%</div>
+			                    		<div>Monthly APY: {{+monthly_apy[8] == 0 ? 'N/A' : monthly_apy[8]}}%</div>
+			                    		<div>Total APY: {{apy[8]}}%</div>
+			                    	</span>
+	                    		</span> 
+	                    		<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}%</span>
+	                    		<div :class="{'loading line': sbtcRewards === null}">(+{{sbtcRewards | toFixed2}}%
+	                    			<span class='tooltip'>SNX/REN
+		                                <span class='tooltiptext'>
+		                                    SNX/REN LP reward annualized
+		                                </span>
+		                            </span>)
+	                    		</div>
+	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.sbtc && volumes.sbtc[0] < 0}">
 	                    	<span v-show='volumes.sbtc && volumes.sbtc[0] >= 0'>${{(volumes.sbtc && volumes.sbtc[0] | 0) | formatNumber(0)}}</span>
@@ -329,7 +338,7 @@
 	import Vue from 'vue'
 	import TotalBalances from './TotalBalances.vue'
 	import BasicTrade from '../graphs/BasicTrade.vue'
-	import allabis, { ERC20_abi, sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
+	import allabis, { ERC20_abi, } from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 	import * as priceStore from '@/components/common/priceStore'
 
@@ -374,6 +383,7 @@
 				sbtc: -1,
 			},
 			snxRewards: null,
+			sbtcRewards: null,
 			btcPrice: null,
 		}),
 		async created() {
@@ -413,20 +423,43 @@
 		},
 		methods: {
 			async getCurveRewards() {
-				let curveRewards = new contract.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+				let curveRewards = new contract.web3.eth.Contract(allabis.susdv2.sCurveRewards_abi, allabis.susdv2.sCurveRewards_address)
+				let sbtcRewards = new contract.web3.eth.Contract(allabis.sbtc.sCurveRewards_abi, allabis.sbtc.sCurveRewards_address)
+
 				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
+				let sbtcCurve = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
+
 				let calls = [
 					[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
 					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
 					[curveRewards._address, curveRewards.methods.DURATION().encodeABI()],
 					[curveRewards._address, curveRewards.methods.rewardRate().encodeABI()],
+
+					[sbtcRewards._address, sbtcRewards.methods.totalSupply().encodeABI()],
+					[sbtcCurve._address, sbtcCurve.methods.get_virtual_price().encodeABI()],
 				]
+
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
 				let decoded = aggcalls[1].map(hex => contract.web3.eth.abi.decodeParameter('uint256', hex))
-				let request = await fetch('https://api.coinpaprika.com/v1/tickers/hav-havven')
-				let snxPrice = await request.json();
+				let requests = await Promise.all([
+					fetch('https://api.coinpaprika.com/v1/tickers/hav-havven'), 
+					fetch('https://api.coinpaprika.com/v1/tickers/ren-republic-protocol'),
+					fetch('https://api.coinpaprika.com/v1/tickers/btc-bitcoin'),
+				])
+				let prices = await Promise.all(requests.map(request => request.json()))
+				let snxPrice = prices[0];
+				let renPrice = prices[1];
+				let btcPrice = prices[2];
 				snxPrice = snxPrice.quotes.USD.price;
+				renPrice = renPrice.quotes.USD.price;
+				btcPrice = btcPrice.quotes.USD.price;
+
 				this.snxRewards = 365 * (decoded[2] * decoded[3] / 1e18)/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
+
+				this.sbtcRewards = (10000 * snxPrice + 25000 * renPrice) / 7 * 365 / (btcPrice * decoded[4] * decoded[5] / 1e36) * 100
+
+
+				console.log(this.sbtcRewards, "SBTC REWARDS")
 			},
 			async getBalances() {
 				if(!contract.default_account) return;
@@ -438,7 +471,7 @@
 						//get_virtual_price
 						[allabis[k].swap_address, "0xbb7b8b80"]
 					]})
-				calls.push([sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
+				calls.push([allabis.susdv2.sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				//this.balances = []
@@ -458,14 +491,14 @@
 	                e.preventDefault();
 	                this.activePoolLink--;
 	            }
-	            if(e.code == 'ArrowDown' && this.activePoolLink < 5) {
+	            if(e.code == 'ArrowDown' && this.activePoolLink < 6) {
 	                e.preventDefault();
 	                this.activePoolLink++;
 	            }
 	            if(e.code.includes('Digit')) {
 	                e.preventDefault();
 	                var digit = e.code.slice(-1);
-	                if(digit > 5) return;
+	                if(digit > 6) return;
 	                this.activePoolLink = digit
 	            }
 	            if(e.code == 'Enter') {
@@ -547,13 +580,13 @@
 		flex: 0.1;
 	}
 	.pooltext {
-		flex: 0.5;
+		flex: 0.4;
 	}
 	.pools {
-		flex: 1.7;
+		flex: 1.6;
 	}
 	.apr {
-		flex: 0.62;
+		flex: 0.8;
 	}
 	.volume {
 		flex: 0.8;

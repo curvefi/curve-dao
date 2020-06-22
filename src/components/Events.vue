@@ -37,7 +37,7 @@
 
 				<button @click="selectPoolsHandler" id='select'>Select</button>
 
-				<table class="tui-table" v-if='displayedEvent == 0'>
+				<table class="tui-table showdesktop" v-if='displayedEvent == 0'>
 				    <thead>
 				        <tr>
 				        	<th>Time</th>
@@ -58,7 +58,12 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			<span class='tooltip'>
+				        				{{ event.timestamp && formatTime(event.timestamp) }}
+				        				<span class='tooltiptext'>
+				        					{{ event.timestamp && formatDateTime(event.timestamp) }}
+				        				</span>
+				        			</span>
 				        		</a>
 				        	</td>
 				        	<td>
@@ -105,7 +110,73 @@
 				    </tbody>
 				</table>
 
-				<table class="tui-table" v-if='displayedEvent == 1'>
+				<div class='showmobiletable' v-if='displayedEvent == 0'>
+					<div v-for='event in paginatedExchanges' class='eventmobile'>
+			        		<div>
+			        			Time:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        				{{ event.timestamp && formatDateTime(event.timestamp) }}
+			        			</a>
+			        		</div>
+			        		<div>
+			        			Block #:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        			{{ event.blockNumber }}
+			        			</a>
+			        		</div>
+			            	<div>
+			            		Swap:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            		{{ event.fromCurrency }}➔{{ event.toCurrency }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		tokens sold:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            		{{ isBTC(event) ? event.soldAmount.toFixed(8) : event.soldAmount.toFixed(2) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		tokens bought:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            		{{ isBTC(event) ? event.boughtAmount.toFixed(8) : event.boughtAmount.toFixed(2) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		Pool:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            		{{ getPool(event) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		Event:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            		{{ event.event }}
+			            		</a>
+			            	</div>
+	            	 	<!-- <td>
+			            	<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+	            	 			{{ event.virtual_price}}
+	            	 		</a>
+	            	 	</td> -->
+	            	 		<div>
+	            	 			Yield:
+
+	            	 			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+	            	 			{{ (event.yield * 10000).toFixed(4) }} bps
+	            	 			</a>
+	            	 		</div>
+			       	</div>
+				</div>
+
+				<table class="tui-table showdesktop" v-if='displayedEvent == 1'>
 				    <thead>
 				        <tr>
 				        	<th>Time</th>
@@ -124,7 +195,12 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			<span class='tooltip'>
+				        				{{ event.timestamp && formatTime(event.timestamp) }}
+				        				<span class='tooltiptext'>
+				        					{{ event.timestamp && formatDateTime(event.timestamp) }}
+				        				</span>
+				        			</span>
 				        		</a>
 				        	</td>
 				        	<td>
@@ -168,7 +244,65 @@
 				    </tbody>
 				</table>
 
-				<table class="tui-table" v-if='displayedEvent == 2'>
+				<div class='showmobiletable' v-if='displayedEvent == 1'>
+					<div v-for='event in paginatedExchanges' class='eventmobile'>
+			        		<div>
+			        			Time:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        			{{ event.timestamp && formatDateTime(event.timestamp) }}
+			        			</a>
+			        		</div>
+			        		<div>
+			        			Block #:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        			{{ event.blockNumber }}
+			        			</a>
+			        		</div>
+			            	<div>
+			            		Provider:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ formatAddress(event.returnValues.provider) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		tokens amounts:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			<div class='tooltip'>
+				            			{{ isBTC(event) ? totalAmount(event).toFixed(8) : totalAmount(event).toFixed(2) }}
+				            			<div class='tooltiptext'>
+						            		<div v-for = 'currAmount in showAmounts(event)'>
+						            			{{ currAmount }}
+						            		</div>
+					            		</div>
+				            		</div>
+			            		</a>
+
+			            		<div v-for = 'currAmount in showAmounts(event)'>
+			            			{{ currAmount }}
+			            		</div>
+			            	</div>
+			            	<div>
+			            		Pool:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ getPool(event) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		Token supply:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ event.returnValues.token_supply ? (event.returnValues.token_supply / 1e18).toFixed(2) : 'N/A' }}
+			            		</a>
+			            	</div>
+			       	</div>
+				</div>
+
+				<table class="tui-table showdesktop" v-if='displayedEvent == 2'>
 				    <thead>
 				        <tr>
 				        	<th>Time</th>
@@ -188,7 +322,7 @@
 				        <tr v-for='event in paginatedExchanges'>
 				        	<td>
 				        		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
-				        			{{ formatDate(event.timestamp) }}
+				        			{{ event.timestamp && formatTime(event.timestamp) }}
 				        		</a>
 				        	</td>
 				        	<td>
@@ -237,6 +371,73 @@
 				    </tbody>
 				</table>
 
+				<div class='showmobiletable' v-if='displayedEvent == 2'>
+					<div v-for='event in paginatedExchanges' class='eventmobile'>
+			        		<div>
+			        			Time:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        			{{ event.timestamp && formatDateTime(event.timestamp) }}
+			        			</a>
+			        		</div>
+			        		<div>
+			        			Block #:
+
+			        			<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			        			{{ event.blockNumber }}
+			        			</a>
+			        		</div>
+			            	<div>
+			            		Provider:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ formatAddress(event.returnValues.provider) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		tokens amounts:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			<div class='tooltip'>
+				            			{{ isBTC(event) ? totalAmount(event).toFixed(8) : totalAmount(event).toFixed(2) }}
+				            			<div class='tooltiptext'>
+						            		<div v-for = 'currAmount in showAmounts(event)'>
+						            			{{ currAmount }}
+						            		</div>
+					            		</div>
+				            		</div>
+			            		</a>
+
+			            		<div class='tooltiptext'>
+				            		<div v-for = 'currAmount in showAmounts(event)'>
+				            			{{ currAmount }}
+				            		</div>
+			            		</div>
+			            	</div>
+			            	<div>
+			            		Pool:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ getPool(event) }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		Event:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+				            		{{ event.event }}
+			            		</a>
+			            	</div>
+			            	<div>
+			            		Token supply:
+
+			            		<a :href="`https://etherscan.io/tx/${event.transactionHash}`">
+			            			{{ event.returnValues.token_supply ? (event.returnValues.token_supply / 1e18).toFixed(2) : 'N/A' }}
+			            		</a>
+			            	</div>
+			       	</div>
+				</div>
+
 
 				<div>
 					<button id='loadmore' @click='loadMore' v-show='page == pages && exchanges.length > perPage'>Load more</button>
@@ -245,17 +446,21 @@
 					<button @click='page > 0 && page--'>Prev</button>
 					Page: {{page}} (of {{pages}})
 					<button @click='page < pages && page++'>Next</button>
-					<label for='gotopage'> Go to: </label>
-					<input id='gotopage' type='text' v-model='gotopage'>
-					<button @click='goTo'>Go</button>
-					<label for='perpage'>Per page:</label>
-					<select class='tvision' v-model='perPage' id='perpage'>
-						<option value='10'>10</option>
-						<option value='20'>20</option>
-						<option value='50'>50</option>
-						<option value='100'>100</option>
-						<option value='300'>300</option>
-					</select>
+					<div>
+						<label for='gotopage'> Go to: </label>
+						<input id='gotopage' type='text' v-model='gotopage'>
+						<button @click='goTo'>Go</button>
+					</div>
+					<div>
+						<label for='perpage'>Per page:</label>
+						<select class='tvision' v-model='perPage' id='perpage'>
+							<option value='10'>10</option>
+							<option value='20'>20</option>
+							<option value='50'>50</option>
+							<option value='100'>100</option>
+							<option value='300'>300</option>
+						</select>
+					</div>
 				</div>
 			</div>
 		</fieldset>
@@ -277,6 +482,7 @@
 		pax: [],
 		tbtc: [],
 		ren: [],
+		sbtc: [],
 	})
 
 	export default {
@@ -338,6 +544,7 @@
 					pax: '0x3f1915775e0c9a38a57a7bb7f1f9005f486fb904e1f84aa215364d567319a58d',
 					tbtc: '0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
 					ren: '0x26f55a85081d24974e85c6c00045d0f0453991e95873f52bff0d21af4079a768',
+					sbtc: '0x423f6495a08fc652425cf4ed0d1f9e37e571d9b9529b1c1c23cce780b2e7df0d',
 				}
 			},
 			removeLiquidityTopics() {
@@ -374,6 +581,12 @@
 					ren: [
 						'0x7c363854ccf79623411f8995b362bce5eddff18c927edc6f5dbbb5e05819a82c',
 						'0x2b5508378d7e19e0d5fa338419034731416c4f5b219a10379956f764317fd47e',
+						'0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
+					],
+
+					sbtc: [
+						'0xa49d4cf02656aebf8c771f5a8585638a2a15ee6c97cf7205d4208ed7c1df252d',
+						'0x173599dbf9c6ca6f7c3b590df07ae98a45d74ff54065505141e7de6c46a624c2',
 						'0x9e96dd3b997a2a257eec4df9bb6eaf626e206df5f543bd963682d143300be310',
 					],
 				}
@@ -867,8 +1080,11 @@
 				else
 					this.page = 0
 			},
-			formatDate(date) {
-				return helpers.formatDateToHuman(date).split(' ')[1]
+			formatDateTime(timestamp) {
+				return helpers.formatDateToHuman(timestamp)
+			},
+			formatTime(timestamp) {
+				return helpers.formatDateToHuman(timestamp).split(' ')[1]
 			},
 
 		}
@@ -890,7 +1106,7 @@
 		margin-left: 0;
 	}
 	label {
-		margin-left: 1em;
+		margin-right: 1em;
 	}
 	table {
 		width: 100%;
@@ -917,8 +1133,14 @@
 		font-weight: normal;
 	}
 	#pages {
-		text-align: center;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
 		margin-top: 1em;
+	}
+	#pages > div {
+		margin-top: 0.3em;
 	}
 	#pages button {
 		margin-left: 0;
@@ -951,4 +1173,19 @@
 		margin-left: 0;
 	}
 
+	.eventmobile:first-child {
+		margin-top: 1em;
+	}
+
+	.eventmobile {
+		margin-bottom: 1em;
+		border: 6px double white;
+		padding: 0.6em;
+
+	}
+
+	#poollist {
+		display: flex;
+		flex-wrap: wrap;
+	}
 </style>

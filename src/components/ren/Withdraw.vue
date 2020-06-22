@@ -4,7 +4,7 @@
             <legend>
             	Share of liquidity (%)
         		<input id='showstaked' type='checkbox' name='showstaked' v-model = 'showstaked'>
-        		<label for='showstaked' v-show="currentPool == 'susdv2'"> Show staked </label>
+        		<label for='showstaked' v-show="currentPool == 'sbtc'"> Show staked </label>
             </legend>
             <ul>
                 <li>
@@ -27,7 +27,7 @@
                             :class="{'token-icon': true, [currency+'-icon']: true, 'y': withdrawc, [currentPool]: true}" 
                             :src="getTokenIcon(i == 0 ? 'btc' : currency)">
                         <span v-show='withdrawc'>{{currencies[currency]}}
-	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && currentPool != 'susdv2'">(in {{currency | capitalize}})</span>
+	                    	<span v-show="!(currency == 'usdt' && currentPool == 'usdt') && !['susdv2','ren','sbtc'].includes(currentPool)">(in {{currency | capitalize}})</span>
                     	</span>
                     	<span v-show="!withdrawc && !['susdv2', 'tbtc', 'ren'].includes(currentPool)">{{currency | capitalize}}</span>
                         <span v-show="!withdrawc && ['susdv2', 'tbtc', 'ren'].includes(currentPool)">{{currencies[currency]}}</span>
@@ -127,6 +127,26 @@
                 @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
                 Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
             </button>            
+            <button 
+                id='remove-liquidity-unstake'
+                v-show = "['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0 "
+                :disabled = 'slippage < -0.03 || !btcAddress || amountAfterBTC < 0'
+                @click='handle_remove_liquidity(true)'>
+                Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
+            </button>
+            <button id='claim-snx'
+                @click='claim_SNX'
+                v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards > 0"
+            >
+                Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
+                <span v-show="currentPool == 'sbtc'"> + {{(pendingRENRewards / 1e18).toFixed(2)}} REN</span>
+            </button>
+            <button id='unstake-snx'
+                @click='handle_remove_liquidity(true, true)'
+                v-show="['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0"
+            >
+                Unstake
+            </button>
             <div class='info-message gentle-message' v-show='show_loading'>
                 <span v-html='waitingMessage'></span> <span class='loading line'></span>
             </div>
@@ -148,7 +168,7 @@
 	import Vue from 'vue'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
-    import allabis, { sCurveRewards_abi, sCurveRewards_address } from '../../allabis'
+    import allabis, { adapterAddress, balancer_ABI,  balancer_address } from '../../allabis'
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
@@ -191,6 +211,9 @@
     		withdrawc: false,
     		donate_dust: true,
     		showstaked: false,
+            pendingSNXRewards: 0,
+            pendingRENRewards: 0,
+            balancerPool: null,
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
@@ -292,9 +315,26 @@
             		this.withdrawc = true;
             		this.to_currency = null
             	}
+                if(this.currentPool == 'sbtc') this.showstaked = true
             	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
 
+                let curveRewards = currentContract.curveRewards
+                if(['sbtc'].includes(this.currentPool)) {
+                    this.balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
+                    let calls = [
+                        [curveRewards._address, curveRewards.methods.earned(this.default_account).encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.totalSupply().encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()],
+                    ]
+                    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
+                    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
+
+                    this.pendingSNXRewards = decoded[0] * decoded[2] / decoded[1]
+                    this.pendingRENRewards = decoded[0] * decoded[3] / decoded[1]
+
+                }
 
                 await common.update_fee_info();
                 await this.update_balances();
@@ -369,7 +409,7 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
 			    	calls.push([currentContract.swap._address ,currentContract.swap.methods.balances(i).encodeABI()])
 			    }
-		    	if(this.currentPool == 'susdv2') calls.push([sCurveRewards_address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+		    	if(['susdv2', 'sbtc'].includes(this.currentPool)) calls.push([currentContract.curveRewards._address, currentContract.curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
 				calls.push([currentContract.swap_token._address ,currentContract.swap_token.methods.totalSupply().encodeABI()])
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -384,7 +424,7 @@
 					Vue.set(this.balances, i, +v)
 			        if(!currentContract.default_account) Vue.set(this.balances, i, 0)
 				})
-				if(this.currentPool == 'susdv2') this.staked_balance = BN(decoded[decoded.length-2])
+				if(['susdv2', 'sbtc'].includes(this.currentPool)) this.staked_balance = BN(decoded[decoded.length-2])
                 else this.staked_balance = BN(0)
 				this.token_supply = +decoded[decoded.length-1]
 			},
@@ -453,11 +493,74 @@
 				}
 				return min_amounts;
 			},
+            async claim_SNX() {
+                this.show_loading = true
+                this.waitingMessage = `Claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
+                if(this.currentPool == 'sbtc')
+                    this.waitingMessage += ` and ${(this.pendingRENRewards / 1e18).toFixed(2)} REN`
+                
+                let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
+
+                await new Promise((resolve, reject) => {
+                    currentContract.curveRewards.methods.getReward()
+                        .send({
+                            from: currentContract.default_account,
+                            gas: 200000,
+                        })
+                        .once('transactionHash', resolve)
+                        .on('receipt', () => this.pendingSNXRewards = 0)
+                        .catch(err => reject(err))
+                })
+
+                if(this.currentPool == 'sbtc') {
+
+                    await this.balancerPool.methods.exitPool(earned, ['0', '0'])
+                        .send({
+                            from: currentContract.default_account,
+                            gas: 600000,
+                        })
+                }
+
+            },
+            async unstake(amount, exit = false, unstake_only = false) {
+                if(unstake_only)
+                    this.waitingMessage = `
+                        Unstaking ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr
+                    `
+                else 
+                    this.waitingMessage = `
+                    Need to unstake ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr for withdrawal.
+                    <br>
+                    A bit more tokens are needed to unstake to ensure that withdrawal is successful.
+                    You'll see them in your unstaked balance afterwards.
+                        
+                `;
+
+                try {
+                    await new Promise((resolve, reject) => {
+                        currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
+                            .send({
+                                from: currentContract.default_account,
+                                gas: 125000,
+                            })
+                            .once('transactionHash', resolve)
+                            .catch(err => reject(err))
+                    })
+                    if(exit) {
+                        this.claim_SNX()
+                    }
+                }
+                catch(err) {
+                    this.waitingMessage = ''
+                    this.show_loading = false;
+                    throw err
+                }
+            },
             setLoadingAction(val) {
                 this.loadingAction = val;
                 setTimeout(() => this.loadingAction = false, 500)
             },
-			async handle_remove_liquidity(unstake = false) {
+			async handle_remove_liquidity(unstake = false, unstake_only = false) {
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)
@@ -493,6 +596,9 @@
 			        }
                     token_amount = BN(token_amount).times(BN(1).plus(this.calcFee))
 			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
+                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
+                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if(unstake_only) return;
 			        let nonZeroInputs = this.inputs.filter(Number).length
 		        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                     this.estimateGas = gas / 2;
@@ -517,6 +623,10 @@
                     let balance = BN(this.token_balance)
                     if(this.share == 100) balance = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
                     var amount = BN(this.share).div(BN(100)).times(balance)
+
+                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
+                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if(unstake_only) return;
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
@@ -586,6 +696,7 @@
                 if(this.to_currency == null && this.withdrawc == false && this.share == '---') this.to_currency = 10
                 if(this.share != '---' && this.to_currency != null && this.to_currency != 10) this.showWithdrawSlippage = true
 				let token_balance = this.showstaked ? this.token_balance.plus(this.staked_balance) : this.token_balance
+                console.log(token_balance, "TOKEN BALANCE")
 	        	currentContract.showSlippage = false;
         		currentContract.slippage = 0;
         		if(this.to_currency !== null && this.to_currency < 10) {

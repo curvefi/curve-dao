@@ -1,7 +1,6 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
-import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, 
-	sCurveRewards_abi, sCurveRewards_address, synthetixExchanger_address, synthetixExchanger_ABI,
+import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, synthetixExchanger_address, synthetixExchanger_ABI,
 	multicall_abi, multicall_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
@@ -113,7 +112,7 @@ export const gas = {
 		},
 		susdv2: {
 			exchange: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
-			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 200000,
+			exchange_underlying: (i, j) => (i == 3 || j == 3) ? 1000000 : 300000,
 		},
 		pax: {
 			exchange: (i, j) => 800000,
@@ -146,16 +145,16 @@ export const gas = {
 	},
 	withdraw: {
 		compound: {
-			imbalance: x => 1000000,
+			imbalance: x => 1500000,
 		},
 		usdt: {
-			imbalance: x => 1000000,
+			imbalance: x => 1500000,
 		},
 		iearn: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		busd: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		susd: {
 			imbalance: x => 1000000,
@@ -164,7 +163,7 @@ export const gas = {
 			imbalance: x => 600000,
 		},
 		pax: {
-			imbalance: x => (12642*x + 474068)*1.5 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		tbtc: {
 			imbalance: x => 600000,
@@ -179,25 +178,25 @@ export const gas = {
 	depositzap: {
 		compound: {
 			deposit: x => (172664*x + 471691)*2.5 | 0,
-			withdraw: 2000000 / 2,
+			withdraw: 2000000 / 1.5,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (181733*x + 506125)*1.5 | 0,
 		},
 		usdt: {
 			//use periodic fit here?
 			deposit: x => (93795.5*x + 608935)*1.5 | 0,
-			withdraw: 2000000 / 2,
+			withdraw: 2000000 / 1.5,
 			withdrawShare: 1000000,
 			withdrawImbalance: x => (97226.5*x + 671880)*1.5 | 0,
 		},
 		iearn: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
 		},
 		busd: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
@@ -209,7 +208,7 @@ export const gas = {
 			withdrawImbalance: x => (181733*x + 506125)*2.5 | 0,
 		},
 		pax: {
-			deposit: x => (225377*x + 522674)*1.5 | 0,
+			deposit: x => (225377*x + 522674)*2 | 0,
 			withdraw: 3500000 / 2,
 			withdrawShare: 3000000,
 			withdrawImbalance: x => (276069*x + 516861)*2.5 | 0,
@@ -234,6 +233,24 @@ export const gas = {
 			withdraw: 350000,
 			withdrawShare: 350000,
 			withdrawImbalance: x => 800000,
+		},
+	},
+	adapter: {
+		ren: {
+			mintThenSwap: 400001,
+			mintThenDeposit: 600001,
+			swapThenBurn: 400001,
+			removeLiquidityThenBurn: 400001,
+			removeLiquidityImbalanceThenBurn: 600001,
+			removeLiquidityOneCoinThenBurn: 400001,
+		},
+		sbtc: {
+			mintThenSwap: 700001,
+			mintThenDeposit: 700001,
+			swapThenBurn: 700001,
+			removeLiquidityThenBurn: 700001,
+			removeLiquidityImbalanceThenBurn: 700001,
+			removeLiquidityOneCoinThenBurn: 700001,
 		},
 	}
 }
@@ -301,8 +318,7 @@ const state = Vue.observable({
 		},
 		sbtc: {
 			currentContract: 'sbtc',
-			adapterContract: null,
-			snxExchanger: null,
+
 			...initState(),
 		},
 	},
@@ -459,12 +475,16 @@ export async function init(contract, refresh = false) {
     	let default_account = state.default_account || '0x0000000000000000000000000000000000000000'
     	calls.push([allabis.susd.token_address, '0x70a08231000000000000000000000000'+default_account.slice(2)])
 
-		contract.curveRewards = new state.web3.eth.Contract(sCurveRewards_abi, sCurveRewards_address)
+		contract.curveRewards = new state.web3.eth.Contract(allabis.susdv2.sCurveRewards_abi, allabis.susdv2.sCurveRewards_address)
 		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
     	
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(contract.currentContract == 'sbtc') {
+
+    	contract.curveRewards = new state.web3.eth.Contract(allabis.sbtc.sCurveRewards_abi, allabis.sbtc.sCurveRewards_address)
+		calls.push([contract.curveRewards._address, contract.curveRewards.methods.balanceOf(state.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+
     	contract.snxExchanger = new state.web3.eth.Contract(synthetixExchanger_ABI, synthetixExchanger_address)
     }
     if(['tbtc', 'ren', 'sbtc'].includes(contract.currentContract)) {
@@ -483,6 +503,7 @@ export async function init(contract, refresh = false) {
     window[contract.currentContract].swap = contract.swap
     window[contract.currentContract].swap_token = contract.swap_token
     window[contract.currentContract].deposit_zap = contract.deposit_zap
+    window[contract.currentContract].rewards = contract.curveRewards
     contract.coins = []
     contract.underlying_coins = []
     if(window.location.href.includes('withdraw_old')) 

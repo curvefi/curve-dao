@@ -20,7 +20,7 @@
             <li>
             	<b>Withdrawals:</b> 
             	<span :class="{'loading line': withdrawals == -1}">
-            		<span v-show='withdrawals != -1'> {{toFixed(showWithdrawals)}} </span>
+            		<span v-show='withdrawals != -1'> {{showWithdrawals > 0 ? toFixed(showWithdrawals) : 0}} </span>
             	</span>
             </li>
             <li>
@@ -28,7 +28,7 @@
             	<span :class="{'loading line': available == -1}">
             		<span v-show='available != -1'> {{toFixed(showAvailable)}} </span>
             	</span>
-                <span v-if = "currentPool == 'susdv2'">
+                <span v-if = "['susdv2', 'sbtc'].includes(currentPool)">
                     (<span :class="{'loading line': profitTotalStake === null}"></span>
                     <span v-show='+showStakedBalance >= 0'>{{toFixed(+showStakedBalance >= 0 && showStakedBalance)}} </span> staked)
                 </span>
@@ -40,15 +40,39 @@
             	</span>
             </li>
             <br>
-            <ul v-if="currentPool == 'susdv2'" class='snxrewards'>
+            <ul v-if="['susdv2', 'sbtc'].includes(currentPool)" class='snxrewards'>
 
                 <a href='https://blog.synthetix.io/new-curve-pool-launch/' class='tooltip'>[?]</a>
 
-                <li :class="{'loading line': earned === null}">
-                    <b>Pending SNX LP rewards:</b> <span v-show='earned !== null'> {{showEarned}} {{showinUSD ? 'USD' : 'SNX'}}</span>
+                <li :class="{'loading line': earnedSNX === null}">
+                    <b>Pending SNX LP rewards:</b> <span v-show='earnedSNX !== null'> {{showEarnedSNX}} {{showinUSD ? 'USD' : 'SNX'}}</span>
                 </li>
-                <li :class="{'loading line': earned === null}">
-                    <b>Paid SNX LP rewards:</b> <span v-show='paidRewards !== null'> {{showRewards}} {{showinUSD ? 'USD' : 'SNX'}}</span>
+                <li v-show="currentPool == 'sbtc'" :class="{'loading line': earnedREN === null}">
+                    <b>Pending REN LP rewards:</b> <span v-show='earnedREN !== null'> {{showEarnedREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
+                </li>
+                <li :class="{'loading line': earnedSNX === null}">
+                    <b>Paid SNX LP rewards:</b> <span v-show='paidRewardsSNX !== null'> {{showRewardsSNX}} {{showinUSD ? 'USD' : 'SNX'}}</span>
+                </li>
+                 <li v-show="currentPool == 'sbtc'" :class="{'loading line': earnedSNX === null}">
+                    <b>Paid REN LP rewards:</b> <span v-show='paidRewardsREN !== null'> {{showRewardsREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
+                </li>
+                <li :class="{'loading line': weeklyEstimateSNX === null}" v-show='showStakedBalance > 0'>
+                    <b>Estimated weekly SNX LP rewards:</b> <span v-show='weeklyEstimateSNX !== null'> {{showWeeklySNX}} {{showinUSD ? 'USD' : 'SNX'}}</span>
+                </li>
+                <li v-show="currentPool == 'sbtc' && showStakedBalance > 0" :class="{'loading line': weeklyEstimateREN === null}">
+                    <b>Estimated weekly REN LP rewards:</b> <span v-show='weeklyEstimateREN !== null'> {{showWeeklyREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
+                </li>
+                <li v-show = 'showStakedBalance > 0'>
+                    <b>Esimated total weekly LP rewards:</b> <span> {{ (+showWeeklySNX + +showWeeklyREN).toFixed(2) }} {{showinUSD ? 'USD' : ''}}</span>
+                </li>
+
+                <li>
+                    <b>Total profit:</b> 
+                    <span :class="{'loading line': available == -1}"> 
+                        <span v-show='available != -1'>
+                            {{ toFixed(+showProfit + +showEarnedSNX + +showEarnedREN + +showRewardsSNX + +showRewardsREN) }} {{showinUSD ? 'USD' : '' }}
+                        </span>
+                    </span>
                 </li>
             </ul>
         </ul>

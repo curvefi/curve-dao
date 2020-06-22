@@ -23,6 +23,10 @@
             <div>
                 <router-link to='/integrations'>Integrations</router-link>
             </div>
+
+            <p>
+                <a href='https://medium.com/@crypto.tutorials/curve-fi-how-does-it-work-b673a8fe16cc'>Getting started tutorial</a>
+            </p>
         </p>
 
         <h3>Has Curve been audited?</h3>
@@ -59,8 +63,11 @@
   			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
         </p>
         <p>
-			 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
-			</p>
+		 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
+		</p>
+        <p>
+            <a href='https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb'>Curve pool registry</a>
+        </p>
 
         <h3>How do I provide liquidity to Curve?</h3>
 
@@ -68,8 +75,19 @@
         or <a href="https://docs.iearn.finance/curve">Ytokens</a>
         assets for lending while market making, as the
         liquidity pool - this ensures that assets are always being put to
-        work. You will need to acquire cTokens or YTokens if you want to
-        provide liquidity (you can read the instuctions in each pool's FAQ).</p>
+        work.</p>
+
+        <p>
+            You can deposit plain stablecoins - DAI/USDC/USDT/TUSD/BUSD/sUSD 
+            which will get converted underneath to cTokens for compound pool or yTokens for 
+            <router-link to='/pax'>pax</router-link>, <router-link to='/y'>y</router-link>, <router-link to='/busd'>busd</router-link> pools
+            or you can click the "Deposit wrapped" option to
+            deposit cTokens or yTokens if you have them.
+        </p>
+
+        <p>
+            You can also deposit Bitcoin ERC20s - renBTC, WBTC, sBTC in the <router-link to='/ren'>ren</router-link> and <router-link to='sbtc'>pools</router-link>
+        </p>
 
         <h3>What's "Use maximum amount of coins available"?</h3>
         <p>This means using all USDC and DAI in your wallet. This way is

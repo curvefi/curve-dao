@@ -16,7 +16,7 @@
             <span :class="{'loading line': totalBalances === null}"> {{toFixed(totalBalances)}}</span>
           </li>
           <li v-show="['ren', 'sbtc'].includes(currentPool)">
-            <b>{{totalCurrencies(currencies)}}:</b>
+            <b>USD total:</b>
             <span :class="{'loading line': totalBalances === null}"> {{(totalBalances * btcPrice) | formatNumber(2)}}$ </span>
           </li>
       </ul>
@@ -123,6 +123,10 @@
             <b>{{currency | capitalize}}:</b> 
             <span> {{l_info && toFixed(l_info[i])}}</span></li>
           <li>
+            <b>{{totalCurrencies(currencies)}}:</b> 
+            <span :class="{'loading line': totalUserBalances === null}"> {{toFixed(totalUserBalances)}}</span>
+          </li>
+          <li>
             <b>USD balance:</b> 
 
             <span>
@@ -138,12 +142,16 @@
           </li>
       </ul>
     </fieldset>
-    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && currentPool == 'susdv2' ">
+    <fieldset id="lp-info-container" v-show="totalStake > 0 && initializedContracts && ['susdv2', 'sbtc'].includes(currentPool)">
       <legend>Staked share: ( {{(totalStake / totalSupply * 100).toFixed(3)}}% of pool)</legend>
       <ul id='stakelp-info'>
           <li v-for='(currency, i) in Object.keys(currencies)'>
             <b>{{currency | capitalize}}:</b> 
             <span> {{staked_info && toFixed(staked_info[i])}}</span></li>
+          <li>
+            <b>{{totalCurrencies(currencies)}}:</b> 
+            <span :class="{'loading line': totalStakedBalances === null}"> {{toFixed(totalStakedBalances)}}</span>
+          </li>
           <li>
             <b>USD balance:</b> 
 
@@ -205,7 +213,7 @@
         return helpers.formatNumber(number, dec)
       },
       async updateShares() {
-        if(!(this.usdShare1 > 0 || (this.currentPool == 'susdv2' && this.usdStake1) > 0)) return;
+        if(!(this.usdShare1 > 0 || (['susdv2', 'sbtc'].includes(this.currentPool) && this.usdStake1) > 0)) return;
         let pool = this.currentPool
         pool = pool == 'iearn' ? 'y' : pool == 'susdv2' ? 'susd' : pool == 'ren' ? 'ren2' : pool == 'sbtc' ? 'rens' : pool  
         let req = await fetch(`${window.domain}/raw-stats/${pool}-1m.json`)
@@ -234,7 +242,10 @@
           this.realShare += +this.l_info[i] * price
           this.realStake += +this.staked_info[i] * price
         }
-        if(this.isBTC) this.realShare *= this.btcPrice
+        if(this.isBTC) {
+          this.realShare *= this.btcPrice
+          this.realStake *= this.btcPrice
+        }
       },
     },
     async created() {
@@ -248,7 +259,7 @@
         stats = await stats.json()
         for(let [key, value] of Object.entries(volumeStore.state.volumes)) {
           if(volumeStore.state.volumes[key][0] == -1) {
-            let volume = key == 'ren' ? stats.volume.ren2 : stats.volume[key]
+            let volume = key == 'ren' ? stats.volume.ren2 : key == 'sbtc' ? stats.volume.rens : stats.volume[key]
             Vue.set(volumeStore.state.volumes[key], 0,  volume || 0)
             if(['tbtc', 'ren', 'sbtc'].includes(key)) {
               Vue.set(volumeStore.state.volumes[key], 0,  volume * this.btcPrice || 0)
@@ -285,6 +296,12 @@
       },
       totalBalances() {
         return this.bal_info && this.bal_info.reduce((a, b) => a + b, 0) || null
+      },
+      totalUserBalances() {
+        return this.l_info && this.l_info.reduce((a, b) => a + b, 0) || null
+      },
+      totalStakedBalances() {
+        return this.staked_info && this.staked_info.reduce((a, b) => a + b, 0) || null
       },
       usdShare1() {
         let share = (this.usdShare || getters.usdShare())

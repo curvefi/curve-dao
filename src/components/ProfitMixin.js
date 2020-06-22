@@ -245,7 +245,7 @@ export default {
 			let point = {};
 			if(priceData && timestamp > priceData[priceData.length-1].timestamp) {
 				return {
-					virtual_price: priceData[priceData.length-1].virtual_price,
+					...priceData[priceData.length-1],
 					btcPrice: this.btcPrice,
 				}
 			}

@@ -71,9 +71,14 @@
 					<td class='shifttype'>
 						{{ transaction.fromInput }}
 						<span v-show='[0, 3].includes(transaction.type)' class='tooltip'>
-							BTC->wBTC
+							<span v-show='transaction.type == 0'>
+								BTC->{{ transaction.to_currency == 1 ? 'wBTC' : 'sBTC' }}
+							</span>
+							<span v-show='transaction.type == 3'>
+								BTC->{{ transaction.pool == 'ren' ? 'renCRV' : 'sbtcCRV' }}
+							</span>
 							<span class='tooltiptext' v-show='transaction.type == 0'>
-								Swap BTC->wBTC
+								Swap BTC->{{ transaction.to_currency == 1 ? 'wBTC' : 'sBTC' }}
 							</span>
 							<span class='tooltiptext' v-show='transaction.type == 3'>
 								Deposit BTC
@@ -81,9 +86,9 @@
 						</span>
 						<span v-show='transaction.type == 1'>
 							<span v-show='transaction.burnType == 0' class='tooltip'>
-								wBTC->BTC
+								{{ transaction.from_currency == 1 ? 'wBTC' : 'sBTC' }}->BTC
 								<span class='tooltiptext'>
-									Swap wBTC->BTC
+									Swap {{ transaction.from_currency == 1 ? 'wBTC' : 'sBTC' }}->BTC
 								</span>
 							</span>
 							<span v-show='transaction.burnType == 1' class='tooltip'>

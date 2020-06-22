@@ -33,6 +33,7 @@ const txObject = () => ({
 	from_currency: '',
 	fromInput: 0,
 	to_currency: '',
+	pool: '',
 	toInput: 0,
 	minExchangeRate: 0,
 	newMinExchangeRate: 0,
@@ -68,6 +69,9 @@ const txObject = () => ({
 })
 
 let adapterAddress = allabis[contract.currentContract].adapterAddress
+
+let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
 
 state.address = state.default_account =  contract.default_account
 state.sdk = sdk
@@ -411,6 +415,7 @@ export async function mint(data) {
 	transaction.mintType = 0
 	transaction.amount = data.from_currency == 0 ? data.amountAfterBTC : data.fromInput;
 	transaction.to_currency = data.to_currency
+	transaction.pool = contract.currentContract
 	transaction.address = data.address;
 	transaction.fromAddress = contract.default_account;
 	transaction.fromInput = data.fromInput;
@@ -494,6 +499,7 @@ export async function deposit(data) {
 	transaction.mintType = 1
 	transaction.amount = data.btcAmount
 	transaction.fromInput = data.btcAmount
+	transaction.pool = contract.currentContract
 	transaction.address = data.address
 	transaction.fromAddress = contract.default_account;
 	transaction.amounts = data.amounts.map(amount => BN(amount).toFixed(0,1))
@@ -695,26 +701,24 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 	]
 
-	if(contract.currentContract == 'ren')
+	let adapterContract = sbtcAdapter
+
+	console.log(params.contractCalls[0].sendTo, "SEND TO")
+	if(params.contractCalls[0].sendTo.toLowerCase() == renAdapter._address.toLowerCase()) {
+		adapterContract = renAdapter
 		args = [
 			params.contractCalls[0].contractParams[0].value,
 			transaction.newMinExchangeRate,
 			params.contractCalls[0].contractParams[1].value,
 			params.contractCalls[0].contractParams[2].value,
-			params.contractCalls[0].contractParams[3].value,
 			utxoAmount,
 			renResponse.autogen.nhash,
 			signature,
 		]
+	}
 	let txhash = await new Promise((resolve, reject) => {
-		return contract.adapterContract.methods.mintThenSwap(
-			params.contractCalls[0].contractParams[0].value,
-			transaction.newMinExchangeRate,
-			params.contractCalls[0].contractParams[1].value,
-			params.contractCalls[0].contractParams[2].value,
-			utxoAmount,
-			renResponse.autogen.nhash,
-			signature,
+		return adapterContract.methods.mintThenSwap(
+			...args
 		).send({
 			from: state.default_account,
 			gas: 400001,
@@ -784,8 +788,14 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		//make the new_min_mint_amount parameter in contract 0 so it always fails and mints renBTC
 		transaction.new_min_amount = 0
 	}
+
+	let adapterContract = sbtcAdapter
+
+	if(params.contractCalls[0].sendTo.toLowerCase() == renAdapter._address.toLowerCase())
+		adapterContract = renAdapter
+
 	let txhash = await new Promise((resolve, reject) => {
-		return contract.adapterContract.methods.mintThenDeposit(
+		return adapterContract.methods.mintThenDeposit(
 			params.contractCalls[0].contractParams[0].value,
 			utxoAmount,
 			params.contractCalls[0].contractParams[1].value,
@@ -843,7 +853,7 @@ export async function burnSwap(data) {
 			from: state.default_account,
 			gas: 600001,
 		})
-	burn(tx, data.address, null, 0)
+	burn(tx, data.address, null, 0, data)
 }
 
 export async function removeLiquidityThenBurn(data) {
@@ -865,7 +875,7 @@ export async function removeLiquidityThenBurn(data) {
 		gas: 600001,
 	})
 
-	burn(tx, data.address, data.renBTCAmount, 1)
+	burn(tx, data.address, data.renBTCAmount, 1, data)
 }
 
 
@@ -890,7 +900,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		gas: 1100001,
 	})
 
-	burn(tx, data.address, data.renBTCAmount, 2)
+	burn(tx, data.address, data.renBTCAmount, 2, data)
 }
 
 export async function removeLiquidityOneCoinThenBurn(data) {
@@ -912,11 +922,11 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		gas: 600001,
 	})
 
-	burn(tx, data.address, data.renBTCAmount, 3)
+	burn(tx, data.address, data.renBTCAmount, 3, data)
 }
 
 
-export async function burn(burn, address, renBTCAmount, burnType) {
+export async function burn(burn, address, renBTCAmount, burnType, data) {
 	let id = helpers.generateID();
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
@@ -953,8 +963,10 @@ export async function burn(burn, address, renBTCAmount, burnType) {
 		fromInput: renBTCAmount,
 		fromAddress: contract.default_account,
 		timestamp: Date.now(),
+		pool: contract.currentContract,
 		type: 1,
 		burnType: burnType,
+		from_currency: data.from_currency,
 		gatewayAddress: address,
 		confirmations: 'Started',
 		state: 30,

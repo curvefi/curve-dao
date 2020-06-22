@@ -52,6 +52,7 @@ export default {
     showinUSD: true,
 		BN: '',
 		priceData: '',
+    priceData5m: '',
 		ADDRESSES: {},
 		CURVE: '',
 		CURVE_TOKEN: '',

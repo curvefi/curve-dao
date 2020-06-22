@@ -20,7 +20,7 @@
             <li>
             	<b>Withdrawals:</b> 
             	<span :class="{'loading line': withdrawals == -1}">
-            		<span v-show='withdrawals != -1'> {{toFixed(showWithdrawals)}} </span>
+            		<span v-show='withdrawals != -1'> {{showWithdrawals > 0 ? toFixed(showWithdrawals) : 0}} </span>
             	</span>
             </li>
             <li>

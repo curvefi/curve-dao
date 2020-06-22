@@ -39,7 +39,7 @@
 
 		created() {
 			this.$watch(() => currentContract.currentContract, (val, oldval) => {
-				if(oldval == 'ren' && val == 'sbtc') this.swapbtc = false
+				if(['ren', 'sbtc'].includes(oldval) && !['ren', 'sbtc'].includes(val)) this.swapbtc = false
 			})
 		},
 

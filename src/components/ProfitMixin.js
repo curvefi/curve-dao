@@ -462,7 +462,6 @@ export default {
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
 	            let poolInfoPoint = await this.interpolatePoint(timestamp)
-	            console.log(poolInfoPoint, "POOL INFO POINT")
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)

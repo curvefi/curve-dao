@@ -242,10 +242,16 @@ export default {
 			}
 		},
 		async interpolatePoint(timestamp, priceData) {
-			if(!priceData) priceData = this.priceData
 			let point = {};
+			if(priceData && timestamp > priceData[priceData.length-1].timestamp) {
+				return {
+					virtual_price: priceData[priceData.length-1].virtual_price,
+					btcPrice: this.btcPrice,
+				}
+			}
+			if(!priceData) priceData = this.priceData
 			if(timestamp > priceData[priceData.length-1].timestamp) {
-				return interpolatePoint(timestamp, this.priceData5m)
+				return this.interpolatePoint(timestamp, this.priceData5m)
 			}
 			let prev = priceData.find(p=>timestamp - p.timestamp > 0 && p.virtual_price > 0)
 			let next = priceData.find(p=>p.timestamp - timestamp > 0 && p.virtual_price > 0)
@@ -456,6 +462,7 @@ export default {
 		        let removeliquidityImbalance = receipt.logs.filter(log=>log.topics[0] == this.removeliquidityImbalanceTopic)
 		        console.log(addliquidity)
 	            let poolInfoPoint = await this.interpolatePoint(timestamp)
+	            console.log(poolInfoPoint, "POOL INFO POINT")
 	            let transfer = receipt.logs.filter(log=>log.address == this.CURVE_TOKEN && log.topics[0] == this.TRANSFER_TOPIC && log.topics[2] == '0x000000000000000000000000' + default_account)
 	            let transferTokens = +transfer[0].data
 	            console.log(transferTokens / 1e18, poolInfoPoint.virtual_price, transferTokens * poolInfoPoint.virtual_price / 1e36)

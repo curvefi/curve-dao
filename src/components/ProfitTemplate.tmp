@@ -59,8 +59,10 @@
 
                 <li>
                     <b>Total profit:</b> 
-                    <span> 
-                        {{ toFixed(+showProfit + +showEarnedSNX + +showEarnedREN + +showRewardsSNX + +showRewardsREN) }} {{showinUSD ? 'USD' : 'REN' }}
+                    <span :class="{'loading line': available == -1}"> 
+                        <span v-show='available != -1'>
+                            {{ toFixed(+showProfit + +showEarnedSNX + +showEarnedREN + +showRewardsSNX + +showRewardsREN) }} {{showinUSD ? 'USD' : 'REN' }}
+                        </span>
                     </span>
                 </li>
             </ul>

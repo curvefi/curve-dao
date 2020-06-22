@@ -145,16 +145,16 @@ export const gas = {
 	},
 	withdraw: {
 		compound: {
-			imbalance: x => 1000000,
+			imbalance: x => 1500000,
 		},
 		usdt: {
-			imbalance: x => 1000000,
+			imbalance: x => 1500000,
 		},
 		iearn: {
-			imbalance: x => (12642*x + 474068)*2 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		busd: {
-			imbalance: x => (12642*x + 474068)*2 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		susd: {
 			imbalance: x => 1000000,
@@ -163,7 +163,7 @@ export const gas = {
 			imbalance: x => 600000,
 		},
 		pax: {
-			imbalance: x => (12642*x + 474068)*2 | 0,
+			imbalance: x => (12642*x + 474068)*2.5 | 0,
 		},
 		tbtc: {
 			imbalance: x => 600000,

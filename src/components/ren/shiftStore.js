@@ -474,7 +474,7 @@ function initSwapMint(transaction) {
         },
     ]
 
-    if(contract.currentContract == 'ren') contractParams = contractParams.filter((_, i) => i != 2)
+    if(transaction.pool == 'ren') contractParams = contractParams.filter((_, i) => i != 2)
 
 	let transfer = {
 	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.

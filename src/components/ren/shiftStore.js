@@ -735,7 +735,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			...args
 		).send({
 			from: state.default_account,
-			gas: gas.adapter[contract.currentContract].mintThenSwap,
+			gas: gas.adapter[transaction.pool].mintThenSwap,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {
@@ -827,7 +827,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			signature,
 		).send({
 			from: state.default_account,
-			gas: gas.adapter[contract.currentContract].mintThenDeposit,
+			gas: gas.adapter[transaction.pool].mintThenDeposit,
 		})
 		.once('transactionHash', resolve)
 		.once('receipt', () => {

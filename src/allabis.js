@@ -9551,5 +9551,6 @@ export let balancer_ABI = [{"inputs":[],"payable":false,"stateMutability":"nonpa
 
 export let balancer_address = '0x330416C863f2acCE7aF9C9314B422d24c672534a'
 
+export let CHI_address = '0x0000000000004946c0e9F43F4Dee607b0eF1fA1c'
 
 export default {compound, usdt, iearn, y: iearn, busd, susd, susdv2, pax, tbtc, ren, sbtc,}

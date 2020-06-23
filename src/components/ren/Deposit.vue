@@ -71,6 +71,9 @@
             <p style="text-align: center" v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
+
+            <approve-chi></approve-chi>
+
             <p style="text-align: center">
                 <button id="add-liquidity" :disabled='amountAfterBTC < 0' @click='handle_add_liquidity()'>
                 		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
@@ -106,11 +109,13 @@
     import * as store from './shiftStore'
     import { state } from './shiftState'
 
+    import ApproveCHI from './ApproveCHI.vue'
 
     export default {
     	components: {
     		Slippage,
             'tx-table': Table,
+            'approve-chi': ApproveCHI,
     	},
     	data: () => ({
     		disabled: false,

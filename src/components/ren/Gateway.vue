@@ -148,7 +148,9 @@
             Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
         </div>
 
-		<button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
+        <approve-chi></approve-chi>
+
+        <button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
 		<tx-table></tx-table>
 
@@ -171,6 +173,7 @@
 	import { state } from './shiftState'
     import * as priceStore from '../common/priceStore'
 
+    import ApproveCHI from './ApproveCHI.vue'
 	
 	const txObject = () => ({
 		id: '',
@@ -201,6 +204,7 @@
 	export default {
 		components: {
 			'tx-table': Table,
+            'approve-chi': ApproveCHI,
 		},
 		data: () => ({
 			toInput: '0.00',

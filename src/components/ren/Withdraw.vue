@@ -112,16 +112,23 @@
             <label for='address'>BTC withdrawal address</label>
             <input id='address' type='text' v-model='btcAddress' placeholder='Address'>
         </div>
+        
+        
+        <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
+            You don't have any available amount to withdraw
+            <!-- <div v-show="currentPool == 'susdv2'">
+                (You have {{(staked_balance / 1e18) | toFixed2}} staked)
+            </div> -->
+        </div>
+        
+        <approve-chi></approve-chi>
+
         <div id='withdraw_buttons'>
-            <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
-                You don't have any available amount to withdraw
-                <!-- <div v-show="currentPool == 'susdv2'">
-                    (You have {{(staked_balance / 1e18) | toFixed2}} staked)
-                </div> -->
-            </div>
             <p v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
+            
+
             <button id="remove-liquidity"
                 :disabled = "!btcAddress || amountAfterBTC < 0"
                 @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
@@ -180,10 +187,13 @@
     import * as store from './shiftStore'
     import { state } from './shiftState'
 
+    import ApproveCHI from './ApproveCHI.vue'
+
     export default {
     	components: {
     		Slippage,
             'tx-table': Table,
+            'approve-chi': ApproveCHI,
     	},
     	data: () => ({
     		share: '100.00',

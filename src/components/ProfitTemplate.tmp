@@ -62,7 +62,7 @@
                 <li v-show="currentPool == 'sbtc' && showStakedBalance > 0" :class="{'loading line': weeklyEstimateREN === null}">
                     <b>Estimated weekly REN LP rewards:</b> <span v-show='weeklyEstimateREN !== null'> {{showWeeklyREN}} {{showinUSD ? 'USD' : 'REN'}}</span>
                 </li>
-                <li v-show = 'showStakedBalance > 0'>
+                <li v-show = "currentPool == 'sbtc' && showStakedBalance > 0">
                     <b>Esimated total weekly LP rewards:</b> <span> {{ (+showWeeklySNX + +showWeeklyREN).toFixed(2) }} {{showinUSD ? 'USD' : ''}}</span>
                 </li>
 

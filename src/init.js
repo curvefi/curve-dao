@@ -86,6 +86,7 @@ const wallets = [
   { walletName: "opera" },
   { walletName: "operaTouch" },
   { walletName: "unilogin" },
+  { walletName: "imToken", rpcUrl: "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b" },
 ]
 
 if(window.web3 && window.web3.currentProvider.isTrust) {

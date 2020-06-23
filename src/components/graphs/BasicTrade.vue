@@ -10,9 +10,9 @@
 					<div class='swapBTC-container info-message gentle-message'>
 				        <router-link to='/ren/native'>
 				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> ren pool
-				        	<span v-show='hasIncomplete > 0'>
+				        	<div v-show='hasIncomplete > 0'>
 				        		( {{hasIncomplete}} incomplete transactions)
-				        	</span>
+				        	</div>
 				        </router-link>
 
 				    	<span v-show='loading' class='loading line'></span>
@@ -20,9 +20,9 @@
 					<div class='swapBTC-container info-message gentle-message second'>
 				        <router-link to='/sbtc/native'>
 				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> sbtc pool
-				        	<span v-show='hasIncomplete > 0'>
+				        	<div v-show='hasIncomplete > 0'>
 				        		( {{hasIncomplete}} incomplete transactions)
-				        	</span>
+				        	</div>
 				        </router-link>
 				    </div>
 				</div>
@@ -114,10 +114,10 @@
 		color: white;
 	}
 	.swapBTC-wrapper {
-		display: flex;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: minmax(30px, 210px) minmax(30px, 210px);
+		grid-gap: 1em;
 	}
-	.swapBTC-container.second {
-		margin-left: 1em;
+	.swapBTC-container {
 	}
 </style>

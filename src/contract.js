@@ -245,12 +245,12 @@ export const gas = {
 			removeLiquidityOneCoinThenBurn: 400001,
 		},
 		sbtc: {
-			mintThenSwap: 700001,
-			mintThenDeposit: 700001,
-			swapThenBurn: 700001,
-			removeLiquidityThenBurn: 700001,
-			removeLiquidityImbalanceThenBurn: 700001,
-			removeLiquidityOneCoinThenBurn: 700001,
+			mintThenSwap: 1100001,
+			mintThenDeposit: 1100001,
+			swapThenBurn: 1100001,
+			removeLiquidityThenBurn: 1100001,
+			removeLiquidityImbalanceThenBurn: 1100001,
+			removeLiquidityOneCoinThenBurn: 1100001,
 		},
 	}
 }

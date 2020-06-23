@@ -224,7 +224,7 @@ Sum of balances is the liquidity of the pool.
 
 ## Getting data from json files
 
-URL: https://curve.fi/raw-stats/{ **compound, usdt, y, busd, susd** }-{ **1, 5, 10, 30, 1440** }m.json
+URL: https://curve.fi/raw-stats/{ **compound, usdt, y, busd, susd, pax, ren2, rens** }-{ **1, 5, 10, 30, 1440** }m.json
 for example https://curve.fi/raw-stats/compound-5m.json
 
 You can get historical data for a pool's state - virtual_price, rates, prices, volumes
@@ -280,3 +280,33 @@ Sum of balances is the liquidity of the pool.
 
 
 You can get the average USD value of tokens by multiplying them with virtual_price
+
+To get balances in underlying tokens i.e DAI/USDC/USDT/TUSD/BUDS/sUSD or renBTC/WBTC/sBTC you'd need to multiply `balances` * `rates`
+and divide by coin precision * 1e18
+
+For example for y pool(with corresponding precisions 1e18,1e6,1e6,1e18)
+
+```
+"balances": [
+  5.441087739682752e+23,
+  3654224272877,
+  3581888313242,
+  2.987406680137162e+24
+],
+"rates": [
+  1018057440565402500,
+  1156077092373270800,
+  1024755437988100600,
+  1014147947003410400
+],
+```
+
+```
+balances.map((coin_balance, i) => coin_balance / precisions[i] * obj.rates[i] / 1e18)
+```
+
+Result [DAI, USDC, USDT, TUSD]
+
+```
+[553933.9858153213, 4224564.972267471, 3670559.5272607645, 3029672.351525377]
+```

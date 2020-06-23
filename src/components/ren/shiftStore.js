@@ -684,7 +684,7 @@ export async function receiveRen(transaction) {
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
 	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
-	let get_dy = BN(await swaps[transaction.pool].methods.get_dy(0, 1, exchangeAmount.toFixed(0, 1)).call())
+	let get_dy = BN(await swaps[transaction.pool].methods.get_dy(0, transaction.to_currency, exchangeAmount.toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
 	if(BN(transaction.amount).times(1e8).minus(utxoAmount).gt(10)) {
 		transaction.newMinExchangeRate = BN(transaction.minExchangeRate).minus(1).toFixed(0,1)

@@ -144,6 +144,10 @@
             Cannot transfer sBTC during waiting period
         </div>
 
+        <div class='info-message gentle-message' v-show='estimateGas'>
+            Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+        </div>
+
 		<button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
 		<tx-table></tx-table>
@@ -218,6 +222,9 @@
 			from_currency: 0,
 			to_currency: 1,
             btcPrice: null,
+            ethPrice: null,
+            gasPrice: null,
+            estimateGas: null,
 			get_dy_original: '',
 			fromBgColor: '',
 			bgColor: '',
@@ -491,6 +498,12 @@
 			},
 
 			async submit() {
+                let promises = await Promise.all([helpers.getETHPrice(), contract.web3.eth.getGasPrice()])
+                this.ethPrice = promises[0]
+                this.gasPrice = promises[1]
+
+                this.estimateGas = contract.currentContract == 'ren' ? 300000 : 400000
+
 				let maxSlippage = this.maxSlippage;
                 if(this.maxInputSlippage) maxSlippage = this.maxInputSlippage;
 				if(this.from_currency == 0 && [1,2].includes(this.to_currency)) {

@@ -622,10 +622,11 @@
 			    else {
                     let balance = BN(this.token_balance)
                     if(this.share == 100) balance = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
+                    if(this.showstaked) balance = balance.plus(this.staked_balance)
                     var amount = BN(this.share).div(BN(100)).times(balance)
 
-                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
-                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if((this.token_balance.lt(BN(amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
+                        await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
                     if(unstake_only) return;
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {

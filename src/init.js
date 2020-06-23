@@ -86,10 +86,15 @@ const wallets = [
   { walletName: "opera" },
   { walletName: "operaTouch" },
   { walletName: "unilogin" },
+  { walletName: "imToken", rpcUrl: "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b" },
 ]
 
 if(window.web3 && window.web3.currentProvider.isTrust) {
   wallets.find(wallet => wallet.walletName == 'trust').preferred = true
+}
+
+if(window.web3 && window.web3.currentProvider.isImToken) {
+  wallets.find(wallet => wallet.walletName == 'imToken').preferred = true
 }
 
 export const onboard = Onboard({

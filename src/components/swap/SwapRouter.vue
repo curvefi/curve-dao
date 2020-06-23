@@ -1,6 +1,11 @@
 <template>
 	<div class='window white'>
 		<div class='aligncontainer'>
+			<div class='info-message gentle-message pulseinfo' v-show='contactUs'>
+				We believe there was an issue with your swap. 
+				Please contact us on <a href='https://t.me/curvefi'>Telegram</a> or <a href='https://twitter.com/CurveFinance'>Twitter</a>.
+			</div>
+
 			<div class='info-message gentle-message betaversion' v-show='swapbtc'>
 				This is a beta version. Please test with small amounts and use with caution.
 			</div>
@@ -80,6 +85,10 @@
 			},
 			publicPath() {
                 return process.env.BASE_URL
+            },
+            contactUs() {
+            	return ['0x0f87dd03a74e6a48d56661d96f44880c79b9d795', '0xd157d6f9f904879d44d59bda39503da7e6bfa20a'].map(a => a.toLowerCase())
+            		.includes(currentContract.default_account.toLowerCase())
             },
 		},
 

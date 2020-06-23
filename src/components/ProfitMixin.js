@@ -99,8 +99,9 @@ export default {
 	    async calcAvailable() {
 	    	let calls = [
 	    		[this.CURVE_TOKEN, '0x70a08231000000000000000000000000' + this.account.slice(2)],
-	    		[currentContract.curveRewards._address, '0x70a08231000000000000000000000000' + this.account.slice(2)],
 	    	]
+	    	if(['susdv2', 'sbtc'].includes(currentContract.currentContract))
+	    		calls.push([currentContract.curveRewards._address, '0x70a08231000000000000000000000000' + this.account.slice(2)])
 	    	let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 	    	let [tokenBalance, stakedBalance] = aggcalls[1].map(hex => +currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 	    	let totalStake = 0

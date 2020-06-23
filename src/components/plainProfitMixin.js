@@ -18,8 +18,10 @@ export default {
 		profitTotalStake: null,
 		weeklyEstimateSNX: null,
 		weeklyEstimateREN: null,
+		weeklyEstimateBPT: null,
 		snxPrice: null,
 		renPrice: null,
+		BPTPrice: null,
 		btcPrices: [],
 	}),
 
@@ -65,6 +67,11 @@ export default {
 			if(this.showinUSD) return (+this.weeklyEstimateREN * this.snxPrice).toFixed(3)
 			return (+this.weeklyEstimateREN).toFixed(2)
 		},
+
+		showWeeklyBPT() {
+			if(this.showinUSD) return (+this.weeklyEstimateBPT * this.BPTPrice).toFixed(2)
+			return (+this.weeklyEstimateBPT).toFixed(4)
+		},
 	},
 
 	methods: {
@@ -94,7 +101,7 @@ export default {
 				[curveRewards._address, curveRewards.methods.earned(this.account).encodeABI()],
 				[curveRewards._address, curveRewards.methods.balanceOf(this.account).encodeABI()],
 				[curveRewards._address, curveRewards.methods.userRewardPerTokenPaid(this.account).encodeABI()],
-				[curveRewards._address, curveRewards.methods.rewardPerToken().encodeABI()],
+				[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
 			]
 			if(currentContract.currentContract == 'sbtc') {
                 let balancerPool = new currentContract.web3.eth.Contract(balancer_ABI, balancer_address)
@@ -124,13 +131,15 @@ export default {
 				})
 				let rewards = rewardLogs.map(log=>currentContract.web3.eth.abi.decodeParameter('uint256', log.data) / 1e18).reduce((a, b) => a + b, 0)
 				this.paidRewardsSNX = rewards
-				this.weeklyEstimateSNX = +decoded[3] * currentContract.curveStakedBalance  / 1e36
+				this.weeklyEstimateSNX = 48000 * currentContract.curveStakedBalance  / decoded[3]
 			}
 			if(currentContract.currentContract == 'sbtc') {
 				this.earnedSNX = decoded[0] * decoded[5] / decoded[4] / 1e18
 				this.earnedREN = decoded[0] * decoded[6] / decoded[4] / 1e18
-				this.weeklyEstimateSNX = +decoded[3] * currentContract.curveStakedBalance * decoded[5] / decoded[4] / 1e36
-				this.weeklyEstimateREN = +decoded[3] * currentContract.curveStakedBalance * decoded[6] / decoded[4] / 1e36
+				let SNXBPT = decoded[5] / decoded[4]
+				let RENBPT = decoded[6] / decoded[4]
+				this.BPTPrice = (decoded[5] / decoded[4]) * this.snxPrice + (decoded[6] / decoded[4]) * this.renPrice
+				this.weeklyEstimateBPT = 10 / decoded[3] * (currentContract.curveStakedBalance)
 
 				let rewardLogs = await currentContract.web3.eth.getPastLogs({
 					fromBlock: '0x9d010d',

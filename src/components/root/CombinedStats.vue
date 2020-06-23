@@ -26,7 +26,7 @@
 			      :tokenSupply = 'totalTokenSupplies[i]'
 			      :tokenBalance = 'totalTokenBalances[i]'
 			      :usdShare = 'usdShares[i]'
-			      :staked_info = "currency == 'susdv2' && staked_infos"
+			      :staked_info = "['susdv2', 'sbtc'].includes(currency) && staked_infos"
 			      :totalStake = 'totalStake'
 			      :usdStake = 'usdStake'
 			      :virtual_price = 'virtual_prices[i]'
@@ -260,12 +260,13 @@
 
 			async update_fee_info(version = 'new') {
 			    let calls = await this.update_rates();
-			    let curveRewards = new currentContract.curveRewards
-				calls.push([curveRewards._address, curveRewards.methods.balanceOf(currentContract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
+				calls.push([contracts.susdv2.sCurveRewards_address, '0x70a08231000000000000000000000000' + (currentContract.default_account || '0x0000000000000000000000000000000000000000').slice(2)])
+				calls.push([contracts.sbtc.sCurveRewards_address, '0x70a08231000000000000000000000000' + (currentContract.default_account || '0x0000000000000000000000000000000000000000').slice(2)])
 			    let aggcalls = await currentContract.multicall.methods.aggregate(calls).call();
 			    let block = aggcalls[0]
 			    let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
-			    let curveStakedBalance = decoded[decoded.length-1]
+			    let curveStakedBalance = decoded[decoded.length-2]
+			    let sbtcCurveStakedBalance = decoded[decoded.length-1]
 			    decoded = decoded.slice(0, decoded.length-1)
 			    let i = 0;
 			    this.bal_infos['usdt'] = []
@@ -404,6 +405,18 @@
 				            }
 				        }
 				        this.usdStake = curveStakedBalance * decoded[ind+8] / 1e36
+				    }
+
+				    if(key == 'sbtc') {
+		            	this.totalStake = 0;
+				        if(sbtcCurveStakedBalance > 0) {
+				            for (let i=0; i < contracts[key].N_COINS; i++) {
+				                var val = this.bal_infos[key][i] * sbtcCurveStakedBalance / (+decoded[ind+15]);
+				                Vue.set(this.staked_infos, i, val)
+				                this.totalStake += val;
+				            }
+				        }
+				        this.usdStake = sbtcCurveStakedBalance * decoded[ind+8] / 1e36
 				    }
 
 	            	i++;

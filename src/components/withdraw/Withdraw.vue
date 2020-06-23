@@ -655,14 +655,14 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
-                        let args = [amount, this.to_currency, BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1)]
+                        let args = [BN(amount).toFixed(0,1), this.to_currency, BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1)]
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) args.push(this.donate_dust)
-                        await helpers.setTimeoutPromise(100)                            
+                        await helpers.setTimeoutPromise(100)
 			        	await inOneCoin.methods
 			        		.remove_liquidity_one_coin(...args)
 			        		.send({
 			        			from: currentContract.default_account,
-			        			gas: contractGas.depositzap[this.currentPool].withdraw,
+			        			gas: contractGas.depositzap[this.currentPool].withdraw | 0,
 			        		}).once('transactionHash', hash => 
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>

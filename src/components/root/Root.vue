@@ -540,6 +540,9 @@
 
 <style scoped>
 	@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
+		#app .tradeview {
+ 	 		width: 90%;
+		}
 		.poolsdialog.poolsdialog > div a {
 			display: block;
 		  text-align: center;

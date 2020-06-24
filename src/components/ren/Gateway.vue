@@ -528,7 +528,7 @@
 						address: this.address,
 						fromInput: this.fromInput,
 						from_currency: this.from_currency,
-						toInputOriginal: this.toInputOriginal,
+						toInputOriginal: BN(this.toInputOriginal).times(this.toPrecisions),
 						inf_approval: this.inf_approval,
 					})
 				}

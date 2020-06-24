@@ -145,7 +145,7 @@ async function init(init = true, name, walletlink = false) {
   window.web3provider = web3;*/
   try {
     state.contract.initializedContracts = false;
-    let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet') || window.web3.currentProvider.isTrust && 'Trust');
+    let userSelectedWallet = await onboard.walletSelect(localStorage.getItem('selectedWallet'));
     if(userSelectedWallet) await onboard.walletCheck();
     else window.web3 = new Web3(infura_url)
     state.contract.web3 = window.web3

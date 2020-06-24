@@ -39,9 +39,9 @@
 				if(currentContract.currentContract != 'sbtc') return;
 				this.chi = new web3.eth.Contract(ERC20_abi, CHI_address)
 				let calls = [
-					[CHI_address, chi.methods.balanceOf(allabis.sbtc.adapterAddress).encodeABI()],
-					[CHI_address, chi.methods.balanceOf(currentContract.default_account).encodeABI()],
-					[CHI_address, chi.methods.allowance(currentContract.default_account, allabis.sbtc.adapterAddress).encodeABI()]
+					[CHI_address, this.chi.methods.balanceOf(allabis.sbtc.adapterAddress).encodeABI()],
+					[CHI_address, this.chi.methods.balanceOf(currentContract.default_account).encodeABI()],
+					[CHI_address, this.chi.methods.allowance(currentContract.default_account, allabis.sbtc.adapterAddress).encodeABI()]
 				]
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))

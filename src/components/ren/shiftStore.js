@@ -68,8 +68,6 @@ const txObject = () => ({
 
 })
 
-let adapterAddress = allabis[contract.currentContract].adapterAddress
-
 let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
 
@@ -481,7 +479,7 @@ function initSwapMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: params && params.contractCalls[0].sendTo || adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -496,6 +494,8 @@ function initSwapMint(transaction) {
 	    // Web3 provider for submitting mint to Ethereum
 	    web3Provider: web3.currentProvider,
 	}
+
+	console.log(transfer.sendTo, "SEND TO")
 
 	return transfer
 }
@@ -527,7 +527,7 @@ function initDepositMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: params && params.contractCalls[0].sendTo || adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -857,7 +857,7 @@ export async function burnSwap(data) {
 
 	await common.approveAmount(contract.coins[data.from_currency], 
 		BN(data.fromInput).times(precisions), 
-		state.default_account, adapterAddress, data.inf_approval)
+		state.default_account, contract.adapterContract._address, data.inf_approval)
     await helpers.setTimeoutPromise(100)
 
 
@@ -880,7 +880,7 @@ export async function burnSwap(data) {
 }
 
 export async function removeLiquidityThenBurn(data) {
-	await common.ensure_allowance_zap_out(data.amount, undefined, adapterAddress)
+	await common.ensure_allowance_zap_out(data.amount, undefined, contract.adapterContract._address)
 
     await helpers.setTimeoutPromise(100)
 
@@ -905,7 +905,7 @@ export async function removeLiquidityThenBurn(data) {
 
 
 export async function removeLiquidityImbalanceThenBurn(data) {
-	await common.ensure_allowance_zap_out(data.max_burn_amount, undefined, adapterAddress)
+	await common.ensure_allowance_zap_out(data.max_burn_amount, undefined, contract.adapterContract._address)
     await helpers.setTimeoutPromise(100)
 
 	let args = [
@@ -930,7 +930,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 }
 
 export async function removeLiquidityOneCoinThenBurn(data) {
-	await common.ensure_allowance_zap_out(data.token_amounts, undefined, adapterAddress)
+	await common.ensure_allowance_zap_out(data.token_amounts, undefined, contract.adapterContract._address)
     await helpers.setTimeoutPromise(100)
 
 	let args = [

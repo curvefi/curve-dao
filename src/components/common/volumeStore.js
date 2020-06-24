@@ -61,7 +61,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(pools.includes('tbtc') || pools.includes('ren')) jsons = jsons.slice(0, -1)
 	for(let [i, data] of jsons.entries()) {
 		let pool = pools[i]
-		if(['tbtc', 'ren'].includes(pool)) {
+		if(['tbtc', 'ren', 'sbtc'].includes(pool)) {
 			data = data.map(d => {
 				d.volume = Object.fromEntries(Object.entries(d.volume).map(([k, v]) => [k, v.map(vol => vol * findClosestPrice(d.timestamp, btcPrices))]))
 				return d;

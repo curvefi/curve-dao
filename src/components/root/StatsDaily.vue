@@ -16,10 +16,9 @@
 
 		<div class='window white' v-for='(currency, i) in Object.keys(pools)'>
 			<p class='text-center'>
-		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd' && !['tbtc', 'ren'].includes(currency)">
+		      	<router-link :to="currency == 'susd' ? 'susdv2' : currency" v-show="currency != 'susd'">
 		      		curve.fi/{{currency == 'iearn' ? 'y' : currency == 'susd' ? 'susdv2' : currency}}
 		      	</router-link>
-		      	<span v-show="['tbtc', 'ren'].includes(currency)">{{currency}}</span>
 		      	<a href='https://iearn.finance/pool' v-show="currency == 'susd'">susd</a>
 	      	</p>
 			<daily-chart 
@@ -72,6 +71,7 @@
 				pax: 'pax',
 				tbtc: 'tbtc',
 				ren: 'ren',
+				sbtc: 'sbtc',
 			},
 			chartdata: {
 				title: {

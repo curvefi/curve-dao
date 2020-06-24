@@ -7,7 +7,7 @@
     		<span :class="{'loading line': !volume}">
     			<span v-show='volume && volume[0] != -1'> {{ (volume && volume[0] || 0) | formatNumber(0) }}$</span>	
     		</span>
-    		<div v-show="['tbtc', 'ren'].includes(pool)">
+    		<div v-show="['tbtc', 'ren', 'sbtc'].includes(pool)">
 	    		<span>Daily BTC trading volume:</span>
 	    		<span>
 	    			<span v-show='volume && volume[1] != -1'> {{ (volume && volume[1] || 0) | formatNumber(8) }} BTC </span>
@@ -83,7 +83,7 @@
 		            {
 		            	id: 'apyAxis',
 		            	opposite: false,
-		            	type: ((self) => self.pool == 'ren' ? 'linear' : 'logarithmic')(this),
+		            	type: 'logarithmic',
 	        			title: {
 	        				text: 'Daily APY [%]',
 	        				style: {
@@ -150,7 +150,7 @@
 		                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	if(this.series.name === 'Trading Volume') {
 		                		let val = this.y.toFixed(2)
-		                		if(['tbtc', 'ren'].includes(self.pool)) val = this.y.toFixed(8)
+		                		if(['tbtc', 'ren', 'sbtc'].includes(self.pool)) val = this.y.toFixed(8)
 		                		return `<span style="color:${this.color}">●</span> ${this.series.name} : <b>${val}</b><br/>`
 		                	}
 		                }
@@ -165,7 +165,7 @@
 		},
 		computed: {
 			volumeData() {
-				if(['tbtc', 'ren'].includes(this.pool)) return helpers.formatNumber(this.volume, 8)
+				if(['tbtc', 'ren', 'sbtc'].includes(this.pool)) return helpers.formatNumber(this.volume, 8)
 				return helpers.formatNumber(this.volume, 0)
 			}
 		},
@@ -226,7 +226,7 @@
 
 		        let lendingrates;
 		        let lendingAxis = 'apyAxis'
-		        if(!['susdv2', 'tbtc', 'ren'].includes(this.pool))    	
+		        if(!['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.pool))    	
 	    			lendingrates = await volumeStore.getLendingAPY(this.pool, false, 1440)
 		        else {
 		        	lendingrates = volumeSeries.map(data => [data[0], 0])

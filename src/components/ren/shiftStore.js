@@ -522,6 +522,12 @@ export async function deposit(data) {
 function initDepositMint(transaction) {
 	var { id, amount, amounts, min_amount, nonce, address, params } = transaction
 
+	let amountsLen = transaction.pool == 'ren' ? 2 : 3
+
+	console.log("INIT DEPOSIT MINT")
+
+	console.log(amountsLen)
+
 	let transfer = {
 	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
@@ -545,8 +551,8 @@ function initDepositMint(transaction) {
             },
 	        {
                 name: "amounts",
-                type: `uint256[${amounts.length}]`,
-                value: amounts,
+                type: `uint256[2]`,
+                value: amounts.slice(0,2),
             },
             {
                 name: "min_mint_amount",
@@ -563,6 +569,8 @@ function initDepositMint(transaction) {
 	    // Web3 provider for submitting mint to Ethereum
 	    web3Provider: web3.currentProvider,
 	}
+
+	console.log(transfer.sendTo, "DEPOSIT SEND TO")
 
 	return transfer
 }

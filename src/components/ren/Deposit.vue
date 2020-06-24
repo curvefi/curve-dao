@@ -348,6 +348,7 @@
                     )
                     endOffset = 2
                 }
+                if(currentContract.currentContract == 'ren') this.amounts = this.amounts.slice(0,2)
  				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex=>currentContract.web3.eth.abi.decodeParameter('uint256',hex))
                 decoded.slice(0, decoded.length-endOffset).forEach((balance, i) => {

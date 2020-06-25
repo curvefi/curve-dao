@@ -464,6 +464,10 @@
                     if((this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2)
                         && +decoded[decoded.length - 1] != 0) bal = BN(0)
                     let maxDiff = BN(bal).minus(BN(this.inputs[i]))
+                    if(!this.inputs[i]) {
+                        Vue.set(this.amounts, i, 0)
+                        return;
+                    }
                     if(BN(bal).gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                         if(!this.depositc) balance = BN(balance).div(precisions).div(currentContract.c_rates[i])
                         Vue.set(this.amounts, i, BN(balance).toFixed(0,1))
@@ -472,10 +476,12 @@
                         Vue.set(this.amounts, i, BN(this.inputs[i]).div(currentContract.c_rates[i]).toFixed(0,1))
                     }
                 })
+                this.amounts = this.amounts.map(v => v || 0)
 				let total_supply = +decoded[decoded.length-1];
 				this.waitingMessage = 'Please approve spending your coins'
 			    let nonZeroInputs = this.inputs.filter(Number).length
                 let amounts = this.inputs.map((v, i)=>{
+                    if(!v) return 0
                     let abi = allabis[currentContract.currentContract]
                     let maxDiff = (BN(this.wallet_balances[i]).div(abi.coin_precisions[i])).minus(v)
                     let balance = this.wallet_balances[i]

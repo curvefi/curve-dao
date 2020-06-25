@@ -555,6 +555,10 @@
 			    for (let i = 0; i < currentContract.N_COINS; i++) {
                     let maxDiff = BN(this.calc_balances[i]).minus(BN(this.inputs[i]))
 			    	let useMax = this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0
+                    if(!this.inputs[i]) {
+                        Vue.set(this.amounts, i, 0)
+                        return;
+                    }
                     if(useMax) {
 			    		Vue.set(this.amounts, i, BN(this.calc_balances[i]).div(currentContract.c_rates[i]).toFixed(0,1))
 			    	}

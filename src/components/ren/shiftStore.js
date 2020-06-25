@@ -731,7 +731,6 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	console.log(params.contractCalls[0].sendTo, "SEND TO")
 	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase()]
 		.includes(params.contractCalls[0].sendTo.toLowerCase())) {
-		adapterContract = renAdapter
 		args = [
 			params.contractCalls[0].contractParams[0].value,
 			transaction.newMinExchangeRate,

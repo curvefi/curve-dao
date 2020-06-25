@@ -15,7 +15,7 @@
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
 
-		<div class='window white'>
+		<div class='window white' v-show='totalDeposits > 0'>
 			<highcharts :options="mypiechartdata" ref='mypiecharts'></highcharts>
 		</div>
 	</div>
@@ -200,7 +200,7 @@
 			                formatter: (function(self) {
 			                	return function(point) { 
 			                		return `<b>${this.key}</b>: 
-			                		${self.balances[this.key == 'susd' ? 'susdv2' : this.key].toFixed(0)}$
+			                		${helpers.formatNumber(self.balances[this.key == 'susd' ? 'susdv2' : this.key],0)}$
 			                		(${this.percentage.toFixed(2)}%)`
 			                	}
 			                })(this),
@@ -231,6 +231,7 @@
 				ren: -1,
 				sbtc: -1,
 			},
+			totalDeposits: 0,
 		}
 		},
 
@@ -254,7 +255,7 @@
 		},
 
 		created() {
-			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
+			this.$watch(() => contract.multicall && contract.default_account, (val, oldval) => {
 				if(val) this.showBalances()
 			}, {
 				immediate: true,
@@ -345,6 +346,7 @@
 				y: poolPercentages[i],
 			}))
 
+
 			let highest = poolPercentages.map(data=>data.y).indexOf(Math.max(...poolPercentages.map(data => data.y)))
 			poolPercentages[highest].sliced = true;
 			poolPercentages[highest].selected = true;
@@ -395,24 +397,25 @@
 
 				let deposits = Object.fromEntries(Object.entries(this.balances).map(([k, v]) => [k, v > 0 ? v : 0]))
 				console.log(deposits)
-				let totalDeposits = Object.values(deposits).reduce((a, b) => a + b, 0)
-				console.log(totalDeposits)
+				this.totalDeposits = Object.values(deposits).reduce((a, b) => a + b, 0)
+				if(this.totalDeposits > 0) {
+					let depositPercentages = Object.keys(deposits).map((pool, i) => ({
+						name: pool == 'susdv2' ? 'susd' : pool,
+						y: deposits[pool] / this.totalDeposits,
+					}))
 
-				let depositPercentages = Object.keys(deposits).map((pool, i) => ({
-					name: pool == 'susdv2' ? 'susd' : pool,
-					y: deposits[pool] / totalDeposits,
-				}))
+					console.log(depositPercentages, "DEPOSIT PERCENTAGES")
 
-				console.log(depositPercentages, "DEPOSIT PERCENTAGES")
+					let highest = depositPercentages.map(data=>data.y).indexOf(Math.max(...depositPercentages.map(data => data.y)))
+					console.log(highest, "HIGHEST")
+					depositPercentages[highest].sliced = true;
+					depositPercentages[highest].selected = true;
 
-				let highest = depositPercentages.map(data=>data.y).indexOf(Math.max(...depositPercentages.map(data => data.y)))
-				depositPercentages[highest].sliced = true;
-				depositPercentages[highest].selected = true;
-
-				this.mypiechart.addSeries({
-					name: 'My pool %',
-					data: depositPercentages,
-				}, true, false)
+					this.mypiechart.addSeries({
+						name: 'My pool %',
+						data: depositPercentages,
+					}, true, false)
+				}
 
 				this.mypiechart.hideLoading()
 

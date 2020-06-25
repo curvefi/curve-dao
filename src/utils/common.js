@@ -410,6 +410,7 @@ export async function handle_migrate_new(page) {
 
 export async function calc_slippage(values, deposit, zap_values, to_currency) {
     //var real_values = [...$("[id^=currency_]")].map((x,i) => +($(x).val()));
+    values = values.map(v => v || 0)
     let slippage = 0;
     var real_values = Array(currentContract.N_COINS).fill(0)
     let calls = [

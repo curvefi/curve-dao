@@ -602,8 +602,9 @@
 	                Vue.set(this.bgColors, i, 'blue');
 			},
             async getLPCrvReceived() {
+                let inputs = this.inputs.map(v => v || 0)
                 this.lpCrvReceived = (await currentContract.swap.methods
-                    .calc_token_amount(this.inputs.map((v, i) => BN(v).div(currentContract.c_rates[i]).toFixed(0,1)), true).call() / 1e18) * 0.99
+                    .calc_token_amount(inputs.map((v, i) => BN(v).div(currentContract.c_rates[i]).toFixed(0,1)), true).call() / 1e18) * 0.99
             },
 			async change_currency(i, setInputs = true, event) {
 				if(event) {

@@ -68,8 +68,13 @@ const txObject = () => ({
 
 })
 
+let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.oldAdapterAddress)
 let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+
+let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.oldAdapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
+
+let adapters = [oldrenAdapter, renAdapter, oldsbtcAdapter, sbtcAdapter]
 
 let renSwap = new contract.web3.eth.Contract(allabis.ren.swap_abi, allabis.ren.swap_address)
 let sbtcSwap = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
@@ -721,10 +726,11 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 	]
 
-	let adapterContract = sbtcAdapter
+	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
 	console.log(params.contractCalls[0].sendTo, "SEND TO")
-	if(params.contractCalls[0].sendTo.toLowerCase() == renAdapter._address.toLowerCase()) {
+	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase()]
+		.includes(params.contractCalls[0].sendTo.toLowerCase())) {
 		adapterContract = renAdapter
 		args = [
 			params.contractCalls[0].contractParams[0].value,
@@ -809,10 +815,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		transaction.new_min_amount = 0
 	}
 
-	let adapterContract = sbtcAdapter
-
-	if(params.contractCalls[0].sendTo.toLowerCase() == renAdapter._address.toLowerCase())
-		adapterContract = renAdapter
+	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
 	console.log(params.contractCalls[0].contractParams[0].value,
 			utxoAmount,

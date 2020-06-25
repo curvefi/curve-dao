@@ -8,7 +8,7 @@
 	        <label for='swapbtc'>
 	        	Deposit <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
 	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
-	        		( {{hasIncomplete}} incomplete transactions)
+	        		( {{hasIncomplete}} incomplete tx)
 	        	</span>
 	        </label>
 	    	<span v-show='loading' class='loading line'></span>
@@ -46,13 +46,6 @@
 		data: () => ({
 			loading: false,
 		}),
-
-		created() {
-			if(this.$route.path.includes('native')) this.swapbtc = true
-			this.$watch(() => currentContract.currentContract, (val, oldval) => {
-				if(oldval == 'ren' && val == 'sbtc') this.swapbtc = false
-			})
-		},
 
 		watch: {
 			swapbtc(val) {

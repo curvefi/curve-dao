@@ -14,7 +14,7 @@
 		        <label for='swapbtc'>
 		        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
 		        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
-		        		( {{hasIncomplete}} incomplete transactions)
+		        		( {{hasIncomplete}} incomplete tx)
 		        	</span>
 		        </label>
 		    	<span v-show='loading' class='loading line'></span>

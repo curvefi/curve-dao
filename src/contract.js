@@ -1,7 +1,7 @@
 import Vue from "vue";
 import * as BN from 'bignumber.js'
 import allabis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi, synthetixExchanger_address, synthetixExchanger_ABI,
-	multicall_abi, multicall_address } from './allabis'
+	multicall_abi, multicall_address, CHI_address } from './allabis'
 import web3Init from './init'
 import { chunkArr } from './utils/helpers'
 import * as common from './utils/common.js'
@@ -393,6 +393,8 @@ const state = Vue.observable({
 	curveRewards: null,
 	snxExchanger: null,
 
+	chi: null,
+
 })
 
 export let contract = state
@@ -450,6 +452,9 @@ export async function init(contract, refresh = false) {
         console.error(err);
         this.error = 'There was an error connecting. Please refresh page';
     }
+
+	if(['ren', 'sbtc'].includes(contract.currentContract))
+		state.chi = state.chi || new web3.eth.Contract(ERC20_abi, CHI_address)
 
     let calls  = [
     	//get_virtual_price

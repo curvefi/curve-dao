@@ -28,20 +28,19 @@
 
 		async created() {
 			this.$watch(()=>currentContract.initializedContracts, val => {
-				console.log("HERERERE")
                 if(val) this.mounted();
-                console.timeEnd('initswap')
+            }, {
+            	immediate: true
             })
 		},
 
 		methods: {
 			async mounted() {
-				if(currentContract.currentContract != 'sbtc') return;
-				this.chi = new web3.eth.Contract(ERC20_abi, CHI_address)
+				if(!['ren','sbtc'].includes(currentContract.currentContract)) return;
 				let calls = [
-					[CHI_address, this.chi.methods.balanceOf(allabis.sbtc.adapterAddress).encodeABI()],
-					[CHI_address, this.chi.methods.balanceOf(currentContract.default_account).encodeABI()],
-					[CHI_address, this.chi.methods.allowance(currentContract.default_account, allabis.sbtc.adapterAddress).encodeABI()]
+					[CHI_address, currentContract.chi.methods.balanceOf(allabis.sbtc.adapterAddress).encodeABI()],
+					[CHI_address, currentContract.chi.methods.balanceOf(currentContract.default_account).encodeABI()],
+					[CHI_address, currentContract.chi.methods.allowance(currentContract.default_account, allabis.sbtc.adapterAddress).encodeABI()]
 				]
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -53,16 +52,16 @@
 					return;
 				}
 
-                if (BN(chiAllowance).gt(maxAllowance))
+                if (BN(chiAllowance).gt(currentContract.max_allowance))
                     this.showCHIbutton = false;
                 else
                     this.showCHIbutton = true;
 			},
 
 			async approveCHI() {
-				console.log("APPROVE CHI")
-				await common.approveAmount(this.chi, currentContract.max_allowance, 
+				await common.approveAmount(currentContract.chi, currentContract.max_allowance, 
 											currentContract.default_account, allabis.sbtc.adapterAddress, true)
+				this.showCHIbutton = false
 			},
 		}
 	}

@@ -14,10 +14,16 @@
 		<div class='window white'>
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
+
+		<div class='window white'>
+			<highcharts :options="mypiechartdata" ref='mypiecharts'></highcharts>
+		</div>
 	</div>
 </template>
 
 <script>
+	import Vue from 'vue'
+
 	import Highcharts from 'highcharts'
 	import HC_exporting from 'highcharts/modules/exporting';
 	import HC_exporting_data from 'highcharts/modules/export-data';
@@ -38,12 +44,15 @@
 	import allabis from '../allabis'
 	import * as helpers from '../utils/helpers'
 
+	import { contract } from '../contract'
+
 	export default {
 		components: {
 			highcharts: Chart,
 		},
-		data: () => ({
-			chartdata: {
+		data() {
+			return {
+				chartdata: {
 				chart: {
 					panning: true,
 					zoomType: 'x',
@@ -152,7 +161,54 @@
 			            cursor: 'pointer',
 			            dataLabels: {
 			                enabled: true,
-			                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+			                formatter: (function(self) {
+			                	return function(point) { 
+			                		return `<b>${this.key}</b>: 
+			                		${helpers.formatNumber(self.allPools[this.key], 0)}$
+			                		(${this.percentage.toFixed(2)}%)`
+			                	}
+			                })(this),
+			            }
+			        }
+			    },
+			    series: [],
+			},
+			mypiechartdata: {
+				chart: {
+			        plotBackgroundColor: null,
+			        plotBorderWidth: null,
+			        plotShadow: false,
+			        type: 'pie'
+			    },
+			    title: {
+			        text: 'My USD % holdings'
+			    },
+			    tooltip: {
+			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+			    },
+			    accessibility: {
+			        point: {
+			            valueSuffix: '%'
+			        }
+			    },
+			    plotOptions: {
+			        pie: {
+			            allowPointSelect: true,
+			            cursor: 'pointer',
+			            dataLabels: {
+			                enabled: true,
+			                formatter: (function(self) {
+			                	return function(point) { 
+			                		return `<b>${this.key}</b>: 
+			                		${self.balances[this.key == 'susd' ? 'susdv2' : this.key].toFixed(0)}$
+			                		(${this.percentage.toFixed(2)}%)`
+			                	}
+			                })(this),
+			                filter: {
+			                    property: 'percentage',
+			                    operator: '>',
+			                    value: 0
+			                },
 			            }
 			        }
 			    },
@@ -160,9 +216,23 @@
 			},
 			chart: null,
 			piechart: null,
+			mypiechart: null,
 			showbars: true,
 			showline: true,
-		}),
+			allPools: null,
+			balances: {
+				compound: -1,
+				usdt: -1,
+				y: -1,
+				busd: -1,
+				susdv2: -1,
+				pax: -1,
+				tbtc: -1,
+				ren: -1,
+				sbtc: -1,
+			},
+		}
+		},
 
 		watch: {
 			showbars(val) {
@@ -180,14 +250,24 @@
 				let toggle = 'show'
 				if(!val) toggle = 'hide'
 				this.chart.series[this.chart.series.length - 2][toggle]()
-			}
+			},
+		},
+
+		created() {
+			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
+				if(val) this.showBalances()
+			}, {
+				immediate: true,
+			})
 		},
 
 		async mounted() {
 			this.chart = this.$refs.highcharts.chart;
 			this.piechart = this.$refs.piecharts.chart;
+			this.mypiechart = this.$refs.mypiecharts.chart;
 			this.chart.showLoading()
 			this.piechart.showLoading()
+			this.mypiechart.showLoading()
 			let pools = Object.keys(allabis).filter(pool => pool != 'susd' && pool != 'y' && pool != 'tbtc')
 			await volumeStore.fetchVolumeData(pools, false, 1440)
 			let data = volumeStore.state.volumeData[1440]
@@ -249,6 +329,11 @@
 				data: line,
 			})
 
+			console.log(Object.entries(volumes), "VOLUMES")
+
+			this.allPools = Object.fromEntries(Object.entries(volumes).filter(([p, v]) => p != 'tbtc')
+									.map(([p, v]) => [p, volumes[p][volumes[p].length-1][1]]))
+
 			let latestDeposits = Object.keys(volumes).filter(p => p != 'tbtc').map(p => volumes[p][volumes[p].length-1][1])
 
 			let poolHoldings = latestDeposits.reduce((a, b) => a + b, 0)
@@ -276,8 +361,63 @@
 					text: `Total USD Deposits ${helpers.formatNumber(line[line.length-1][1], 0)}$`
 				},
 			})
+
+
+
 		
-		}
+		},
+
+		methods: {
+			async showBalances() {
+				let pools = ['compound','usdt','y','busd','susdv2','pax','ren', 'sbtc']
+				if(!contract.default_account) return;
+				contract.contracts.compound = contract;
+				let calls = pools.flatMap(k => {
+					return [
+						//balanceOf(address)
+						[allabis[k].token_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)],
+						//get_virtual_price
+						[allabis[k].swap_address, "0xbb7b8b80"]
+					]})
+				calls.push([allabis.susdv2.sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
+				calls.push([allabis.sbtc.sCurveRewards_address, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)])
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				//this.balances = []
+				helpers.chunkArr(decoded, 2).slice(0,pools.length).map((v, i) => {
+					let key = pools[i]
+					Vue.set(this.balances, key, +v[0] * (+v[1]) / 1e36);
+					if(['tbtc', 'ren', 'sbtc'].includes(key)) Vue.set(this.balances, key, this.balances[key] * this.btcPrice)
+				})
+				let len = decoded.length
+				Vue.set(this.balances, 'susdv2', this.balances.susdv2 + (+decoded[len-2] * decoded[9]) / 1e36)
+				Vue.set(this.balances, 'sbtc', this.balances.sbtc + ((+decoded[len-1] * decoded[15]) / 1e36) * this.btcPrice)
+
+				let deposits = Object.fromEntries(Object.entries(this.balances).map(([k, v]) => [k, v > 0 ? v : 0]))
+				console.log(deposits)
+				let totalDeposits = Object.values(deposits).reduce((a, b) => a + b, 0)
+				console.log(totalDeposits)
+
+				let depositPercentages = Object.keys(deposits).map((pool, i) => ({
+					name: pool == 'susdv2' ? 'susd' : pool,
+					y: deposits[pool] / totalDeposits,
+				}))
+
+				console.log(depositPercentages, "DEPOSIT PERCENTAGES")
+
+				let highest = depositPercentages.map(data=>data.y).indexOf(Math.max(...depositPercentages.map(data => data.y)))
+				depositPercentages[highest].sliced = true;
+				depositPercentages[highest].selected = true;
+
+				this.mypiechart.addSeries({
+					name: 'My pool %',
+					data: depositPercentages,
+				}, true, false)
+
+				this.mypiechart.hideLoading()
+
+			},
+		},
 	}
 </script>
 

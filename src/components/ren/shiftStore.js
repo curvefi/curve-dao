@@ -526,8 +526,6 @@ function initDepositMint(transaction) {
 
 	console.log("INIT DEPOSIT MINT")
 
-	console.log(amountsLen)
-
 	let transfer = {
 	    // Send BTC from the Bitcoin blockchain to the Ethereum blockchain.
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
@@ -551,8 +549,8 @@ function initDepositMint(transaction) {
             },
 	        {
                 name: "amounts",
-                type: `uint256[2]`,
-                value: amounts.slice(0,2),
+                type: `uint256[${amountsLen}]`,
+                value: amounts,
             },
             {
                 name: "min_mint_amount",

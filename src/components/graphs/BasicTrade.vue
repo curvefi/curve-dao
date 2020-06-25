@@ -16,7 +16,7 @@
 				        <router-link to='/ren/native'>
 				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> ren pool
 				        	<div v-show='hasIncomplete > 0'>
-				        		( {{hasIncomplete}} incomplete transactions)
+				        		( {{hasIncomplete}} incomplete tx)
 				        	</div>
 				        </router-link>
 
@@ -26,7 +26,7 @@
 				        <router-link to='/sbtc/native'>
 				        	Swap <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'> sbtc pool
 				        	<div v-show='hasIncomplete > 0'>
-				        		( {{hasIncomplete}} incomplete transactions)
+				        		( {{hasIncomplete}} incomplete tx)
 				        	</div>
 				        </router-link>
 				    </div>

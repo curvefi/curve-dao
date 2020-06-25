@@ -256,6 +256,7 @@
 
 		created() {
 			this.$watch(() => contract.multicall && contract.default_account, (val, oldval) => {
+				if(val && val.toLowerCase() == oldval && oldval.toLowerCase()) return;
 				if(val) this.showBalances()
 			}, {
 				immediate: true,
@@ -330,8 +331,6 @@
 				data: line,
 			})
 
-			console.log(Object.entries(volumes), "VOLUMES")
-
 			this.allPools = Object.fromEntries(Object.entries(volumes).filter(([p, v]) => p != 'tbtc')
 									.map(([p, v]) => [p, volumes[p][volumes[p].length-1][1]]))
 
@@ -396,7 +395,6 @@
 				Vue.set(this.balances, 'sbtc', this.balances.sbtc + ((+decoded[len-1] * decoded[15]) / 1e36) * this.btcPrice)
 
 				let deposits = Object.fromEntries(Object.entries(this.balances).map(([k, v]) => [k, v > 0 ? v : 0]))
-				console.log(deposits)
 				this.totalDeposits = Object.values(deposits).reduce((a, b) => a + b, 0)
 				if(this.totalDeposits > 0) {
 					let depositPercentages = Object.keys(deposits).map((pool, i) => ({
@@ -404,10 +402,7 @@
 						y: deposits[pool] / this.totalDeposits,
 					}))
 
-					console.log(depositPercentages, "DEPOSIT PERCENTAGES")
-
 					let highest = depositPercentages.map(data=>data.y).indexOf(Math.max(...depositPercentages.map(data => data.y)))
-					console.log(highest, "HIGHEST")
 					depositPercentages[highest].sliced = true;
 					depositPercentages[highest].selected = true;
 

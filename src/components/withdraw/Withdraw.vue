@@ -563,6 +563,7 @@
 			    	}
 			    }
 			    var txhash;
+                this.amounts = this.amounts.map(amount => amount || 0)
 			    if (this.share == '---') {
 			    	var token_amount;
 			        try {
@@ -606,10 +607,13 @@
 			    	}
 			        else {
 			        	let inputs = this.inputs;
+                        inputs = inputs.map(v => v || 0)
 			        	let amounts = this.inputs.map((v, i) => {
+                            if(!v) v = 0
                             let maxDiff = BN(this.calc_balances[i]).minus(BN(v))
                             return this.calc_balances[i] > 0 && maxDiff.lte(BN(this.minAmount)) && maxDiff > 0 ? this.calc_balances[i].times(currentContract.coin_precisions[i]).toFixed(0, 1) : BN(v).times(currentContract.coin_precisions[i]).toFixed(0, 1)
                         })
+                        amounts = amounts.map(amount => amount || 0)
                         let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${this.toFixed(token_amount / 1e18)} Curve LP tokens for withdrawal`
                         try {

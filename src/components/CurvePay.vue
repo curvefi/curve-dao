@@ -102,7 +102,7 @@
 					payAmount = this.maxAmount.div(BN(this.virtual_prices[index]))
 				}
 				let allowance = await this.contracts[index].methods.allowance(contract.default_account, this.to).call()
-				await this.contracts[index].methods.transfer(this.to, payAmount)
+				await this.contracts[index].methods.transfer(this.to, BN(payAmount).toFixed(0,1))
 						.send({
 							from: contract.default_account,
 							gas: 100000,

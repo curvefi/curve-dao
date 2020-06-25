@@ -26,28 +26,6 @@ subscriptionStore.init();
 Vue.config.productionTip = false
 
 //adding Sentry as soon as possible
-process.env.NODE_ENV == 'production' && Sentry.init({ 
-  dsn: 'https://5494f535e0244513a301f2912f5d899f@sentry.io/4169463',
-  ignoreErrors: [
-    /.*ObjectMultiplex.*/,
-    /.*Invalid JSON RPC.*/,
-    /.*MaxListenersExceededWarning.*/,
-    /.*Heads up!.*/,
-    /.*invalid number value.*/,
-    /.*Out of Gas.*/,
-    /.*invalid address.*/,
-    /.*property '_address' of undefined.*/,
-    /.*TypeError: Cannot read property 'chart' of undefined.*/,
-    /.*Cannot read property '0' of undefined.*/
-  ],
-  integrations: [
-    new CaptureConsole({
-      levels: ['error', 'debug', 'assert']
-    }),
-    new VueIntegration({Vue, attachProps: true})
-  ],
-});
-
 
 new Vue({
   router,

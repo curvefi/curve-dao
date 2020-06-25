@@ -358,20 +358,45 @@ fieldset:nth-child(1) .maxbalance:hover {
   margin-right: 1em;
 }
 
-#custom_slippage_input {
+#custom_slippage_input, #custom_gas_input {
   width: 2.5em;
 }
 
-#max_slippage {
-  margin-bottom: 10px;
+#max_slippage span:first-of-type {
+  padding-left: 0;
 }
 
 #max_slippage span {
   padding-left: 4px;
 }
 
-#custom_slippage_input {
+#gas_price {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+#gas_price > div {
+  display: inline;
+}
+
+#max_slippage label, #gas_price label {
   margin-left: 0.5em;
+}
+label[for='gasstandard'] {
+  color: grey;
+}
+label[for='gasfast'] {
+  color: green;
+}
+label[for='gasinstant'] {
+  color: purple;
+}
+
+#custom_slippage_input, #custom_gas_input {
+  margin-left: 0.5em;
+}
+
+.exchange label[for='inf-approval'] {
+  margin-left: -2px;
 }
 
 .exchange-rate {

@@ -106,9 +106,27 @@
                     <input id="slippage1" type="radio" name="slippage" checked value='0.01' @click='maxSlippage = 1; customSlippageDisabled = true'>
                     <label for="slippage1">1%</label>
 
-                    <input id="custom_slippage" type="radio" name="slippage" value='-' @click='customippageDisabled = false'>
+                    <input id="custom_slippage" type="radio" name="slippage" value='-' @click='customSlippageDisabled = false'>
                     <label for="custom_slippage" @click='customSlippageDisabled = false'>
                         <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
+                    </label>
+                </div>
+                <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+                    <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+                    <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
+
+                    <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+                    <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
+
+                    <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+                    <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
+
+                    <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
+                    <label for="custom_gas" @click='customGasDisabled = false'>
+                        <input type="text" id="custom_gas_input" 
+                            :disabled='customGasDisabled'
+                            name="custom_gas_input"
+                            v-model='customGasInput'>
                     </label>
                 </div>
                 <ul>
@@ -154,7 +172,7 @@
                     Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
-                    Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+                    Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
                 </div>
 
             </div>
@@ -200,6 +218,8 @@
             maxSlippage: 1,
             maxInputSlippage: '',
             customSlippageDisabled: true,
+            customGasDisabled: true,
+            customGasInput: null,
             swapwrapped: false,
             coins: [],
             c_rates: [],
@@ -210,8 +230,9 @@
             ethPrice: 0,
             icontype: '',
             loadingAction: false,
+            gasPriceInfo: {},
         }),
-        created() {
+        async created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
                 if(!val || !oldval) return;
                 if(val.toLowerCase() != oldval.toLowerCase()) this.mounted();
@@ -281,14 +302,27 @@
             publicPath() {
                 return process.env.BASE_URL
             },
+            gasPriceMedium() {
+                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            },
+            gasPriceWei() {
+                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+                return BN(gasPrice * 1e9).toFixed(0,1)
+            },
         },
         mounted() {
             if(currentContract.initializedContracts) this.mounted();
         },
-        methods: {        
+        methods: { 
             async mounted() {
                 console.log(currentContract.default_account)
-                this.btcPrice = await priceStore.getBTCPrice()
+                if(['ren', 'sbtc'].includes(currentContract.currentContract)) this.btcPrice = await priceStore.getBTCPrice()
                 if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) this.fromInput = '0.0001'
                 this.c_rates = currentContract.c_rates
                 this.coins = currentContract.underlying_coins
@@ -297,6 +331,21 @@
                 }
                 this.disabled = false;
                 this.from_cur_handler()
+
+                try {
+                    let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                    gasPriceInfo = await gasPriceInfo.json()
+                    this.gasPriceInfo = gasPriceInfo.estimates
+                }
+                catch(err) {
+                    let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                    this.gasPriceInfo = {
+                        medium: gasPrice,
+                        fast: gasPrice + 2,
+                        fastest: gasPrice + 4,
+                    } 
+                }
+                this.gasPrice = this.gasPriceInfo.fast
             },
             getTokenIcon(token) {
                 return helpers.getTokenIcon(token, this.swapwrapped, this.currentPool)
@@ -472,9 +521,9 @@
                 if(this.loadingAction) return;
                 this.setLoadingAction();
 
-                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
+                
                 this.show_loading = true;
                 var i = this.from_currency
                 var j = this.to_currency;
@@ -528,6 +577,7 @@
                     await exchangeMethod(i, j, dx, BN(min_dy).toFixed(0,1))
                         .send({
                             from: currentContract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: this.swapwrapped ? 
                                     contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         })
@@ -545,7 +595,6 @@
                 }
                 this.waitingMessage = ''
                 this.show_loading = false;
-                this.gasPrice = 0;
                 this.estimateGas = 0;
                 await common.update_fee_info();
                 this.from_cur_handler();

@@ -103,6 +103,26 @@
                 <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
             </label>
         </div>
+
+        <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+            <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
+
+            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+            <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
+
+            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+            <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
+
+            <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
+            <label for="custom_gas" @click='customGasDisabled = false'>
+                <input type="text" id="custom_gas_input" 
+                    :disabled='customGasDisabled'
+                    name="custom_gas_input"
+                    v-model='customGasInput'>
+            </label>
+        </div>
+
         <div id='withdraw_buttons'>
             <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
 	        	You don't have any available amount to withdraw
@@ -148,7 +168,7 @@
                 <span v-html='waitingMessage'></span> <span class='loading line'></span>
             </div>
             <div class='info-message gentle-message' v-show='estimateGas'>
-                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+                Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
             </div>
             <div class='simple-error' v-show='warninglow'>
                 You're withdrawing too little amount in one coin
@@ -209,24 +229,43 @@
             customSlippageDisabled: true,
             estimateGas: 0,
             gasPrice: 0,
+            gasPriceInfo: null,
+            customGasDisabled: true,
+            customGasInput: null,
             ethPrice: 0,
             loadingAction: false,
             warninglow: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
-        created() {
+        async created() {
+
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
-            	if(!val || !oldval) return;
-            	if(val.toLowerCase() == oldval.toLowerCase()) return;
+                if(!val || !oldval) return;
+                if(val.toLowerCase() == oldval.toLowerCase()) return;
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.initializedContracts, val => {
                 if(val) this.mounted();
             })
             this.$watch(()=>currentContract.currentContract, (val, oldval) => {
-            	this.setInputStyles(false, val, oldval)
+                this.setInputStyles(false, val, oldval)
                 if(currentContract.initializedContracts) this.mounted();
             })
+
+            try {
+                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                gasPriceInfo = await gasPriceInfo.json()
+                this.gasPriceInfo = gasPriceInfo.estimates
+            }
+            catch(err) {
+                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                this.gasPriceInfo = {
+                    medium: gasPrice,
+                    fast: gasPrice + 2,
+                    fastest: gasPrice + 4,
+                } 
+            }
+            this.gasPrice = this.gasPriceInfo.fast
         },
         watch: {
         	to_currency(val) {
@@ -266,6 +305,19 @@
             calcFee() {
                 let N_COINS = allabis[currentContract.currentContract].N_COINS
                 return this.fee * N_COINS / (4 * (N_COINS -1))
+            },
+            gasPriceMedium() {
+                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            },
+            gasPriceWei() {
+                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+                return BN(gasPrice * 1e9).toFixed(0,1)
             },
         },
         mounted() {
@@ -484,6 +536,7 @@
                     currentContract.curveRewards.methods.getReward()
                         .send({
                             from: currentContract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: 200000,
                         })
                         .once('transactionHash', resolve)
@@ -496,9 +549,12 @@
                     await this.balancerPool.methods.exitPool(earned, ['0', '0'])
                         .send({
                             from: currentContract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: 600000,
                         })
                 }
+
+                this.show_loading = false
 
             },
 			async unstake(amount, exit = false, unstake_only = false) {
@@ -520,7 +576,8 @@
     					currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
     						.send({
     							from: currentContract.default_account,
-    							gas: 125000,
+    							gasPrice: this.gasPriceWei,
+                                gas: 125000,
     						})
     						.once('transactionHash', resolve)
                             .catch(err => reject(err))
@@ -543,9 +600,8 @@
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)
-                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
                 this.estimateGas = 0;
                 this.show_loading = true;
                 let inOneCoin = currentContract.deposit_zap
@@ -592,6 +648,7 @@
                                 this.estimateGas = await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount)
                                                     .estimateGas({
                                                         from: currentContract.default_account,
+                                                        gasPrice: this.gasPriceWei,
                                                         gas: gas,
                                                     })
                             }
@@ -600,7 +657,9 @@
                             }
                             await helpers.setTimeoutPromise(100)
     			        	await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount).send({
-    				        	from: currentContract.default_account, gas: gas
+    				        	from: currentContract.default_account, 
+                                gasPrice: this.gasPriceWei,
+                                gas: gas,
     				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
                         }
                         catch(err) {
@@ -626,7 +685,9 @@
                             this.waitingMessage = 'Please confirm withdrawal transaction'
                             await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity_imbalance(amounts, token_amount).send({
-    				        	from: currentContract.default_account, gas: gas
+    				        	from: currentContract.default_account, 
+                                gasPrice: this.gasPriceWei,
+                                gas: gas,
     				        }).once('transactionHash', () => {
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
@@ -670,7 +731,8 @@
 			        		.remove_liquidity_one_coin(...args)
 			        		.send({
 			        			from: currentContract.default_account,
-			        			gas: contractGas.depositzap[this.currentPool].withdraw | 0,
+			        			gasPrice: this.gasPriceWei,
+                                gas: contractGas.depositzap[this.currentPool].withdraw | 0,
 			        		}).once('transactionHash', hash => 
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -686,7 +748,11 @@
                             let min_amounts = await this.getMinAmounts();
                             await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
-    			        	.send({from: currentContract.default_account, gas: contractGas.depositzap[this.currentPool].withdrawShare})
+    			        	.send({
+                                from: currentContract.default_account, 
+                                gasPrice: this.gasPriceWei,
+                                gas: contractGas.depositzap[this.currentPool].withdrawShare,
+                            })
                             .once('transactionHash', hash => 
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -707,6 +773,7 @@
                                 this.estimateGas = await currentContract.swap.methods.remove_liquidity(amount, min_amounts)
                                                     .estimateGas({
                                                         from: currentContract.default_account,
+                                                        gasPrice: this.gasPriceWei,
                                                         gas: 600000,
                                                     })
                             }
@@ -714,7 +781,11 @@
                                 this.estimateGas = 600000
                             }
                             await helpers.setTimeoutPromise(100)
-    			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({from: currentContract.default_account, gas: 600000})
+    			        	await currentContract.swap.methods.remove_liquidity(amount, min_amounts).send({
+                                from: currentContract.default_account, 
+                                gasPrice: this.gasPriceWei,
+                                gas: 600000,
+                            })
                             .once('transactionHash', hash => 
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -837,7 +908,7 @@
                 await helpers.setTimeoutPromise(100)
                 let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
                     from: currentContract.default_account,
-                    gas: gas
+                    gas: gas,
                 })
                 .once('transactionHash', hash => {
                     this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`

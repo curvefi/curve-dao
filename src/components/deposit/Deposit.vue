@@ -465,8 +465,7 @@
                         && +decoded[decoded.length - 1] != 0) bal = BN(0)
                     let maxDiff = BN(bal).minus(BN(this.inputs[i]))
                     if(!this.inputs[i]) {
-                        Vue.set(this.amounts, i, 0)
-                        return;
+                        return Vue.set(this.amounts, i, 0)
                     }
                     if(BN(bal).gt(0) && maxDiff.lt(0) && BN(maxDiff).lt(BN(this.minAmount))) {
                         if(!this.depositc) balance = BN(balance).div(precisions).div(currentContract.c_rates[i])

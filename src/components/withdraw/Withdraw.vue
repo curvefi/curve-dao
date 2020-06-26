@@ -473,7 +473,7 @@
 				await common.update_fee_info();
 				let min_amounts = []
 				for(let i = 0; i < currentContract.N_COINS; i++) {
-			    	min_amounts[i] = (BN(1).div(BN(this.getMaxSlippage))).times(this.share/100).times(BN(this.balances[i]))
+			    	min_amounts[i] = BN(0.98).times(this.share/100).times(BN(this.balances[i]))
 					if(!this.withdrawc) {
 						min_amounts[i] = min_amounts[i]
 										.times(allabis[currentContract.currentContract].coin_precisions[i])
@@ -565,7 +565,7 @@
 			async handle_remove_liquidity(unstake = false, unstake_only = false) {
                 await common.update_fee_info();
                 await this.update_balances();
-                
+
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)

@@ -156,6 +156,7 @@
 
 <script>
 	import Vue from 'vue'
+    import { notify } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas } from '../../contract'
     import allabis from '../../allabis'
@@ -290,6 +291,9 @@
                     gasPrice: this.gasPriceWei,
 					gas: 200000,
 				})
+                .once('transactionHash', hash => {
+                    notify.hash(hash)
+                })
 				currentContract.totalShare = 0
 				this.waitingMessage = ''
 				this.show_loading = false;
@@ -535,11 +539,13 @@
 				        from: currentContract.default_account,
                         gasPrice: this.gasPriceWei,
 				        gas: contractGas.deposit[this.currentPool],
-				    }).once('transactionHash', hash => 
+				    }).once('transactionHash', hash => {
+                        notify.hash(hash)
                         this.waitingMessage = 
                         `Waiting for deposit 
                             <a href='http://etherscan.io/tx/${hash}'>transaction</a> 
-                            to confirm ${stake ? 'before staking' : 'no further action required'}`)
+                            to confirm ${stake ? 'before staking' : 'no further action required'}`
+                    })
 				    try {
 				    	receipt = await add_liquidity
 				    }
@@ -565,6 +571,7 @@
 						gas: gas,
 					})
 					.once('transactionHash', hash => {
+                        notify.hash(hash)
 						this.waitingMessage = `Waiting for deposit 
                             <a href='http://etherscan.io/tx/${hash}'>transaction</a>
                             to confirm ${stake ? 'before staking' : 'no further action required'}`

@@ -175,6 +175,7 @@
 
 <script>
 	import Vue from 'vue'
+    import { notify } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { adapterAddress, balancer_ABI,  balancer_address } from '../../allabis'
@@ -528,7 +529,10 @@
                             gasPrice: this.gasPriceWei,
                             gas: 200000,
                         })
-                        .once('transactionHash', resolve)
+                        .once('transactionHash', hash => {
+                            notify.hash(hash)
+                            resolve()
+                        })
                         .on('receipt', () => this.pendingSNXRewards = 0)
                         .catch(err => reject(err))
                 })
@@ -540,6 +544,9 @@
                             from: currentContract.default_account,
                             gasPrice: this.gasPriceWei,
                             gas: 600000,
+                        })
+                        .once('transactionHash', hash => {
+                            notify.hash(hash)
                         })
                 }
 
@@ -566,7 +573,10 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: 125000,
                             })
-                            .once('transactionHash', resolve)
+                            .once('transactionHash', hash => {
+                                notify.hash(hash)
+                                resolve()
+                            })
                             .catch(err => reject(err))
                     })
                     if(exit) {

@@ -12,6 +12,7 @@
     "@sentry/browser": "^5.15.0",
     "@sentry/integrations": "^5.15.0",
     "bignumber.js": "^9.0.0",
+    "bnc-notify": "^1.2.2",
     "bnc-onboard": "https://github.com/pengiundev/onboard",
     "break_infinity.js": "^1.1.0",
     "comlink": "^4.2.0",

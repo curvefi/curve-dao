@@ -17,6 +17,7 @@ const sdk = new RenSDK('mainnet', {
 })
 let Box
 import BN from 'bignumber.js'
+import { notify } from '../../init'
 import { getters, allCurrencies, contract, gas } from '../../contract'
 import allabis, { ERC20_abi } from '../../allabis'
 import * as common from '../../utils/common'
@@ -751,7 +752,10 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			gasPrice: gasPriceStore.state.gasPriceWei,
 			gas: gas.adapter[transaction.pool].mintThenSwap,
 		})
-		.once('transactionHash', resolve)
+		.once('transactionHash', hash => {
+			notify.hash(hash)
+			resolve()
+		})
 		.once('receipt', () => {
 			//this.transactions = this.transactions.filter(t => t.id != id)
 			transaction.state = 14
@@ -841,7 +845,10 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			gasPrice: gasPriceStore.state.gasPriceWei,
 			gas: gas.adapter[transaction.pool].mintThenDeposit,
 		})
-		.once('transactionHash', resolve)
+		.once('transactionHash', hash => {
+			notify.hash(hash)
+			resolve()
+		})
 		.once('receipt', () => {
 			//this.transactions = this.transactions.filter(t => t.id != id)
 			transaction.state = 14
@@ -973,7 +980,10 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 	let id = helpers.generateID();
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
-		.once('transactionHash', resolve)
+		.once('transactionHash', hash => {
+			notify.hash(hash)
+			resolve()
+		})
 		.once('receipt', receipt => {
 			let transaction = state.transactions.find(t => t.id == id)
 			listenForBurn(transaction.id)

@@ -33,7 +33,7 @@
 
 	export default {
 		data: () => ({
-			
+			gasPriceInterval: null,
 		}),
 
 		computed: {
@@ -69,26 +69,34 @@
 		},
 
 		async created() {
-			try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                state.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                state.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            state.gasPrice = state.gasPriceInfo.fast
+            this.getGasPrice()
+            this.gasPriceInterval && clearInterval(this.gasPriceInterval)
+            this.gasPriceInterval = setInterval(() => this.getGasPrice(), 3000)
 			this.$watch(() => state.gasPrice, val => {
 				state.gasPriceWei = BN(val).times(1e9).toFixed(0,1)
 			}, {
 				immediate: true,
 			})
 		},
+
+        methods: {
+            async getGasPrice() {
+                try {
+                    let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                    gasPriceInfo = await gasPriceInfo.json()
+                    state.gasPriceInfo = gasPriceInfo.estimates
+                }
+                catch(err) {
+                    let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                    state.gasPriceInfo = {
+                        medium: gasPrice,
+                        fast: gasPrice + 2,
+                        fastest: gasPrice + 4,
+                    } 
+                }
+                state.gasPrice = state.gasPriceInfo.fast
+            }
+        },
 
 	}
 </script>

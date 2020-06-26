@@ -26,6 +26,8 @@ import * as subscriptionStore from '../common/subscriptionStore'
 import EventBus from '../graphs/EventBus'
 import { state } from './shiftState'
 
+import * as errorStore from '../common/errorStore'
+
 const txObject = () => ({
 	id: '',
 	timestamp: null,
@@ -744,30 +746,36 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 		]
 	}
-	let txhash = await new Promise((resolve, reject) => {
-		return adapterContract.methods.mintThenSwap(
-			...args
-		).send({
-			from: state.default_account,
-			gasPrice: gasPriceStore.state.gasPriceWei,
-			gas: gas.adapter[transaction.pool].mintThenSwap,
+	let txhash
+	try {
+		txhash = await new Promise((resolve, reject) => {
+			return adapterContract.methods.mintThenSwap(
+				...args
+			).send({
+				from: state.default_account,
+				gasPrice: gasPriceStore.state.gasPriceWei,
+				gas: gas.adapter[transaction.pool].mintThenSwap,
+			})
+			.once('transactionHash', hash => {
+				notify.hash(hash)
+				resolve()
+			})
+			.once('receipt', () => {
+				//this.transactions = this.transactions.filter(t => t.id != id)
+				transaction.state = 14
+				transaction.ethTxHash = receipt.transactionHash
+				upsertTx(transaction)
+			})
+			.on('error', err => {
+				transaction.state = 16;
+				upsertTx(transaction)
+			})
+			.catch(err => reject(err))
 		})
-		.once('transactionHash', hash => {
-			notify.hash(hash)
-			resolve()
-		})
-		.once('receipt', () => {
-			//this.transactions = this.transactions.filter(t => t.id != id)
-			transaction.state = 14
-			transaction.ethTxHash = receipt.transactionHash
-			upsertTx(transaction)
-		})
-		.on('error', err => {
-			transaction.state = 16;
-			upsertTx(transaction)
-		})
-		.catch(err => reject(err))
-	})
+	}
+	catch(err) {
+		errorStore.handleError(err)
+	}
 
 	subscriptionStore.removeTxNotification(transaction.btcTxHash)
 
@@ -831,36 +839,42 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			renResponse.autogen.nhash,
 			signature, "PARAMS")
 
-	let txhash = await new Promise((resolve, reject) => {
-		return adapterContract.methods.mintThenDeposit(
-			params.contractCalls[0].contractParams[0].value,
-			utxoAmount,
-			params.contractCalls[0].contractParams[1].value,
-			params.contractCalls[0].contractParams[2].value,
-			transaction.new_min_amount,
-			renResponse.autogen.nhash,
-			signature,
-		).send({
-			from: state.default_account,
-			gasPrice: gasPriceStore.state.gasPriceWei,
-			gas: gas.adapter[transaction.pool].mintThenDeposit,
+	let txhash
+	try {
+		txhash = await new Promise((resolve, reject) => {
+			return adapterContract.methods.mintThenDeposit(
+				params.contractCalls[0].contractParams[0].value,
+				utxoAmount,
+				params.contractCalls[0].contractParams[1].value,
+				params.contractCalls[0].contractParams[2].value,
+				transaction.new_min_amount,
+				renResponse.autogen.nhash,
+				signature,
+			).send({
+				from: state.default_account,
+				gasPrice: gasPriceStore.state.gasPriceWei,
+				gas: gas.adapter[transaction.pool].mintThenDeposit,
+			})
+			.once('transactionHash', hash => {
+				notify.hash(hash)
+				resolve()
+			})
+			.once('receipt', () => {
+				//this.transactions = this.transactions.filter(t => t.id != id)
+				transaction.state = 14
+				transaction.ethTxHash = receipt.transactionHash
+				upsertTx(transaction)
+			})
+			.on('error', err => {
+				transaction.state = 16;
+				upsertTx(transaction)
+			})
+			.catch(err => reject(err))
 		})
-		.once('transactionHash', hash => {
-			notify.hash(hash)
-			resolve()
-		})
-		.once('receipt', () => {
-			//this.transactions = this.transactions.filter(t => t.id != id)
-			transaction.state = 14
-			transaction.ethTxHash = receipt.transactionHash
-			upsertTx(transaction)
-		})
-		.on('error', err => {
-			transaction.state = 16;
-			upsertTx(transaction)
-		})
-		.catch(err => reject(err))
-	})
+	}
+	catch(err) {
+		errorStore.handleError(err)
+	}
 
 	subscriptionStore.removeTxNotification(transaction.btcTxHash)
 
@@ -1007,9 +1021,13 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 			// 	})
 		})
 		.on('error', (err, receipt) => {
+			errorStore.handleError(err)
 			txFailed(receipt.transactionHash)
 		})
-		.catch(err => reject(err))
+		.catch(err => {
+			errorStore.handleError(err)
+			reject(err)
+		})
 	})
 	listenForReplacement(txhash)
 	state.transactions.unshift({

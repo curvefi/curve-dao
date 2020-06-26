@@ -174,6 +174,8 @@
     import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import * as errorStore from '../common/errorStore'
+
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
 
@@ -568,6 +570,7 @@
                 }
                 catch(err) {
                     console.error(err)
+                    errorStore.handleError(err)
                     this.waitingMessage = '';
                     this.show_loading = '';
                     throw err;

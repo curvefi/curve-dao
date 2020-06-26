@@ -166,6 +166,8 @@
     import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import * as errorStore from '../common/errorStore'
+
     import BN from 'bignumber.js'
 
     import Slippage from '../common/Slippage.vue'
@@ -286,14 +288,20 @@
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
                 this.estimateGas = 125000
-				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
-					from: currentContract.default_account,
-                    gasPrice: this.gasPriceWei,
-					gas: 200000,
-				})
-                .once('transactionHash', hash => {
-                    notify.hash(hash)
-                })
+				try {
+                    await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
+    					from: currentContract.default_account,
+                        gasPrice: this.gasPriceWei,
+    					gas: 200000,
+    				})
+                    .once('transactionHash', hash => {
+                        notify.hash(hash)
+                    })
+                }
+                catch(err) {
+                    console.error(err)
+                    errorStore.handleError(err)
+                }
 				currentContract.totalShare = 0
 				this.waitingMessage = ''
 				this.show_loading = false;
@@ -550,6 +558,8 @@
 				    	receipt = await add_liquidity
 				    }
 				    catch(err) {
+                        console.error(err)
+                        errorStore.handleError(err)
 				    	if(err.code == -32603) {
 				    		await common.setTimeout(300)
 				    		receipt = await add_liquidity
@@ -581,6 +591,8 @@
 				    	receipt = await add_liquidity
 				    }
 				    catch(err) {
+                        console.error(err)
+                        errorStore.handleError(err)
 				    	if(err.code == -32603) {
 				    		await common.setTimeout(300)
 				    		receipt = await add_liquidity

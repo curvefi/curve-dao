@@ -1,27 +1,33 @@
 <template>
-	<div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
-        <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='gasPrice = gasPriceMedium'>
-        <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
+    <div>
+        <p class='simple-error pulse' v-show='errorMessage'>
+            {{errorMessage}}
+        </p>
+    	<div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='gasPrice = gasPriceMedium'>
+            <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
 
-        <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='gasPrice = gasPriceFast'>
-        <label for="gasfast">{{Math.round(gasPriceFast)}} Fast</label>
+            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='gasPrice = gasPriceFast'>
+            <label for="gasfast">{{Math.round(gasPriceFast)}} Fast</label>
 
-        <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
-        <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
+            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
+            <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
 
-        <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = ''">
-        <label for="custom_gas" @click="gasPrice = ''">
-            <input type="text" id="custom_gas_input" 
-                :disabled='customGasDisabled'
-                name="custom_gas_input"
-                :value = 'customGasPriceInput'
-               	@input='gasPrice = $event.target.value'>
-        </label>
+            <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = ''">
+            <label for="custom_gas" @click="gasPrice = ''">
+                <input type="text" id="custom_gas_input" 
+                    :disabled='customGasDisabled'
+                    name="custom_gas_input"
+                    :value = 'customGasPriceInput'
+                   	@input='gasPrice = $event.target.value'>
+            </label>
+        </div>
     </div>
 </template>
 
 <script>
 	import { state } from './gasPriceStore'
+    import { state as errorState } from './errorStore'
 
 	import BN from 'bignumber.js'
 
@@ -56,6 +62,10 @@
             	if(this.customGasDisabled) return ''
             	return this.gasPrice
             },
+            errorMessage() {
+                setTimeout(() => errorState.txError = null, 2200)
+                return errorState.txError
+            },
 		},
 
 		async created() {
@@ -82,3 +92,10 @@
 
 	}
 </script>
+
+<style scoped>
+    .pulse {
+        animation: pulse 1s 3;
+        margin-bottom: 8px;
+    }
+</style>

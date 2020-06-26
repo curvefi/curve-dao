@@ -173,6 +173,8 @@
     import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import * as errorStore from '../common/errorStore'
+
     import BN from 'bignumber.js'
 
     import Slippage from '../common/Slippage.vue'
@@ -510,13 +512,17 @@
                             resolve()
                         })
                         .on('receipt', () => this.pendingSNXRewards = 0)
-                        .catch(err => reject(err))
+                        .catch(err => {
+                            errorStore.handleError(err)
+                            reject(err)
+                        })
                 })
 
                 if(this.currentPool == 'sbtc') {
                     this.estimateGas = 300000
 
-                    await this.balancerPool.methods.exitPool(earned, ['0', '0'])
+                    try {
+                        await this.balancerPool.methods.exitPool(earned, ['0', '0'])
                         .send({
                             from: currentContract.default_account,
                             gasPrice: this.gasPriceWei,
@@ -525,6 +531,11 @@
                         .once('transactionHash', hash => {
                             notify.hash(hash)
                         })
+                    }
+                    catch(err) {
+                        console.log(err)
+                        errorStore.handleError(err)
+                    }
                 }
 
                 this.show_loading = false
@@ -563,6 +574,8 @@
                     }
                 }
                 catch(err) {
+                    console.log(err)
+                    errorStore.handleError(err)
                     this.waitingMessage = ''
                     this.show_loading = false;
                     throw err
@@ -663,6 +676,8 @@
                             })
                         }
                         catch(err) {
+                            console.error(err)
+                            errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false
                             throw err;
@@ -694,6 +709,8 @@
                             })
                         }
                         catch(err) {
+                            console.error(err)
+                            errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false;
                             throw err;
@@ -728,7 +745,8 @@
                         let args = [BN(amount).toFixed(0,1), this.to_currency, BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1)]
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) args.push(this.donate_dust)
                         await helpers.setTimeoutPromise(100)
-			        	await inOneCoin.methods
+			        	try {
+                            await inOneCoin.methods
 			        		.remove_liquidity_one_coin(...args)
 			        		.send({
 			        			from: currentContract.default_account,
@@ -740,6 +758,11 @@
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
                             })
+                        }
+                        catch(err) {
+                            console.error(err)
+                            errorStore.handleError(err)
+                        }
 			        }
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} Curve LP tokens for withdrawal`
@@ -763,6 +786,8 @@
                             });
                         }
                         catch(err) {
+                            console.error(err)
+                            errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false
                             throw err;
@@ -797,6 +822,8 @@
                             });
                         }
                         catch(err) {
+                            console.error(err)
+                            errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false
                             throw err;
@@ -910,14 +937,20 @@
                 let nonZeroInputs = amounts.filter(Number).length
                 let gas = contractGas.depositzap.pax.deposit(nonZeroInputs) | 0
                 await helpers.setTimeoutPromise(100)
-                let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
-                    from: currentContract.default_account,
-                    gas: gas,
-                })
-                .once('transactionHash', hash => {
-                    notify.hash(hash)
-                    this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
-                })
+                try {
+                    let add_liquidity = pax_deposit_zap.methods.add_liquidity(amounts, token_amount).send({
+                        from: currentContract.default_account,
+                        gas: gas,
+                    })
+                    .once('transactionHash', hash => {
+                        notify.hash(hash)
+                        this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
+                    })
+                }
+                catch(err) {
+                    console.error(err)
+                    errorStore.handleError(err)
+                }
             }
         },
 

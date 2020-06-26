@@ -178,6 +178,8 @@
     import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import * as errorStore from '../common/errorStore'
+
     import ApproveCHI from './ApproveCHI.vue'
 	
 	const txObject = () => ({
@@ -562,7 +564,8 @@
 	                }
 
 	                let min_dy = BN(this.toInputOriginal).times(this.toPrecisions).times(1-(maxSlippage / 100)).toFixed(0,1)
-	                await contract.swap.methods.exchange(i, j, dx, min_dy).send({
+	                try {
+                        await contract.swap.methods.exchange(i, j, dx, min_dy).send({
 	                		from: contract.default_account,
                             gasPrice: this.gasPriceWei,
 	                		gas: contractGas.swap[contract.currentContract].exchange(i, j),
@@ -570,6 +573,11 @@
                         .once('transactionHash', hash => {
                             notify.hash(hash)
                         })
+                    }
+                    catch(err) {
+                        console.error(err)
+                        errorStore.handleError(err)
+                    }
 				}
 			}
 		}

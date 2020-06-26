@@ -190,6 +190,8 @@
     import * as store from './shiftStore'
     import { state } from './shiftState'
 
+    import * as errorStore from '../common/errorStore'
+
     import ApproveCHI from './ApproveCHI.vue'
 
     export default {
@@ -534,12 +536,16 @@
                             resolve()
                         })
                         .on('receipt', () => this.pendingSNXRewards = 0)
-                        .catch(err => reject(err))
+                        .catch(err => {
+                            errorStore.handleError(err)
+                            reject(err)
+                        })
                 })
 
                 if(this.currentPool == 'sbtc') {
 
-                    await this.balancerPool.methods.exitPool(earned, ['0', '0'])
+                    try {
+                        await this.balancerPool.methods.exitPool(earned, ['0', '0'])
                         .send({
                             from: currentContract.default_account,
                             gasPrice: this.gasPriceWei,
@@ -548,6 +554,11 @@
                         .once('transactionHash', hash => {
                             notify.hash(hash)
                         })
+                    }
+                    catch(err) {
+                        console.error(err)
+                        errorStore.handleError(err)
+                    }
                 }
 
             },
@@ -584,6 +595,8 @@
                     }
                 }
                 catch(err) {
+                    console.error(err)
+                    errorStore.handleError(err)
                     this.waitingMessage = ''
                     this.show_loading = false;
                     throw err

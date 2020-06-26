@@ -199,6 +199,8 @@
     import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import * as errorStore from '../common/errorStore'
+
     import BN from 'bignumber.js'
 
     import * as Comlink from 'comlink'
@@ -644,6 +646,7 @@
                     }
                     catch(err) {
                         this.handleError(err)
+                        errorStore.handleError(err)
                     }
                 }
                 else {
@@ -667,6 +670,7 @@
                     }
                     catch(err) {
                         this.handleError(err)
+                        errorStore.handleError(err)
                     }
                     this.waitingMessage = ''
                     this.show_loading = false;

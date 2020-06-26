@@ -73,7 +73,17 @@
 						  units: [
 						    ['day', [1]]
 						  ]
-						}
+						},
+						point: {
+							events: {
+								click: (function(self) {
+									return function() {
+										let index = this.dataGroup ? this.dataGroup.start : this.index
+										console.log(this, index, "INDEX")
+									}
+								})(this)
+							}
+						},
 					},
 					column: {
 						stacking: 'normal',

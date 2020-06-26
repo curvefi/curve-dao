@@ -158,7 +158,7 @@
                 <span v-html='waitingMessage'></span> <span class='loading line'></span>
             </div>
             <div class='info-message gentle-message' v-show='estimateGas'>
-                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+                Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
             </div>
             <div class='simple-error' v-show='warninglow'>
                 You're withdrawing too little amount in one coin
@@ -233,6 +233,9 @@
             customSlippageDisabled: true,
             estimateGas: 0,
             gasPrice: 0,
+            gasPriceInfo: null,
+            customGasDisabled: true,
+            customGasInput: null,
             ethPrice: 0,
             loadingAction: false,
             warninglow: false,
@@ -312,12 +315,40 @@
             minOrderSize() {
                 return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8 + 0.00000547).toFixed(8)
             },
+            gasPriceMedium() {
+                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            },
+            gasPriceWei() {
+                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+                return BN(gasPrice * 1e9).toFixed(0,1)
+            },
         },
-        mounted() {
+        async mounted() {
             this.$emit('loaded')
         	this.$watch(() => this.showstaked, this.handle_change_share)
         	this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
+
+            try {
+                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                gasPriceInfo = await gasPriceInfo.json()
+                this.gasPriceInfo = gasPriceInfo.estimates
+            }
+            catch(err) {
+                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                this.gasPriceInfo = {
+                    medium: gasPrice,
+                    fast: gasPrice + 2,
+                    fastest: gasPrice + 4,
+                } 
+            }
+            this.gasPrice = this.gasPriceInfo.fast
         },
         methods: {
             async mounted() {
@@ -515,6 +546,7 @@
                     currentContract.curveRewards.methods.getReward()
                         .send({
                             from: currentContract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: 200000,
                         })
                         .once('transactionHash', resolve)
@@ -527,6 +559,7 @@
                     await this.balancerPool.methods.exitPool(earned, ['0', '0'])
                         .send({
                             from: currentContract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: 600000,
                         })
                 }
@@ -551,6 +584,7 @@
                         currentContract.curveRewards.methods.withdraw(amount.toFixed(0,1))
                             .send({
                                 from: currentContract.default_account,
+                                gasPrice: this.gasPriceWei,
                                 gas: 125000,
                             })
                             .once('transactionHash', resolve)
@@ -574,9 +608,8 @@
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)
-                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
                 this.estimateGas = 0;
                 //this.show_loading = true;
                 let inOneCoin = currentContract.deposit_zap
@@ -621,6 +654,7 @@
                             amounts: this.amounts,
                             renBTCAmount: this.inputs[0],
                             max_burn_amount: token_amount,
+                            gasPrice: this.gasPriceWei,
                         })
                     }
                     catch(err) {
@@ -661,6 +695,7 @@
                                 token_amounts: amount,
                                 renBTCAmount: this.inputs[0],
                                 min_amount: BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1),
+                                gasPrice: this.gasPriceWei,
                             })
 			        }
 			        else {
@@ -674,7 +709,8 @@
                                     coinDestination: currentContract.default_account,
                                     amount: amount, 
                                     renBTCAmount: this.inputs[0],
-                                    min_amounts: min_amounts
+                                    min_amounts: min_amounts,
+                                    gasPrice: this.gasPriceWei,
                                 })
                         }
                         catch(err) {

@@ -68,6 +68,26 @@
                 </li>
             </ul>
 
+            <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+                <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+                <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
+
+                <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+                <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
+
+                <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+                <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
+
+                <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
+                <label for="custom_gas" @click='customGasDisabled = false'>
+                    <input type="text" id="custom_gas_input" 
+                        :disabled='customGasDisabled'
+                        name="custom_gas_input"
+                        v-model='customGasInput'>
+                </label>
+            </div>
+
+
             <p style="text-align: center" v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
@@ -82,7 +102,7 @@
                 	{{waitingMessage}} <span class='loading line'></span>
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
-	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
 	            </div>
                 <Slippage/>
             </p>
@@ -138,13 +158,16 @@
     		waitingMessage: '',
     		estimateGas: 0,
     		gasPrice: 0,
+            gasPriceInfo: null,
+            customGasDisabled: true,
+            customGasInput: null,
     		ethPrice: 0,
             justDeposit: false,
             loadingAction: false,
             errorStaking: false,
     		slippagePromise: helpers.makeCancelable(Promise.resolve()),
     	}),
-        created() {
+        async created() {
             this.$watch(()=>currentContract.default_account, (val, oldval) => {
             	if(!val || !oldval) return;
             	if(val.toLowerCase() == oldval.toLowerCase()) return;
@@ -157,6 +180,21 @@
             	this.setInputStyles(false, val, oldval)
             	if(currentContract.initializedContracts) this.mounted();
             })
+
+            try {
+                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                gasPriceInfo = await gasPriceInfo.json()
+                this.gasPriceInfo = gasPriceInfo.estimates
+            }
+            catch(err) {
+                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                this.gasPriceInfo = {
+                    medium: gasPrice,
+                    fast: gasPrice + 2,
+                    fastest: gasPrice + 4,
+                } 
+            }
+            this.gasPrice = this.gasPriceInfo.fast
         },
         watch: {
             
@@ -200,6 +238,19 @@
           },
           transferableBalanceText() {
             return this.toFixed((this.transferableBalance / 1e18))
+          },
+          gasPriceMedium() {
+            return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+          },
+          gasPriceFast() {
+            return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+          },
+          gasPriceFastest() {
+            return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+          },
+          gasPriceWei() {
+            let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+            return BN(gasPrice * 1e9).toFixed(0,1)
           },
         },
         mounted() {
@@ -326,9 +377,8 @@
                 let actionType = stake == false ? 1 : 2;
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)
-                let promises = await Promise.all([helpers.getETHPrice(), currentContract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
 				//this.show_loading = true
 				let calls = this.coins.slice(1).map((coin, i) => {
                             if(this.currentPool == 'sbtc' && i == 1)
@@ -381,7 +431,7 @@
 			    let minted = 0;
                 //this.waitingMessage = 'Please confirm deposit transaction'
                 console.log(this.amounts, "THE AMOUNTS")
-		    	let add_liquidity = store.deposit({ btcAmount: this.inputs[0], amounts: this.amounts, min_amount: token_amount })
+		    	let add_liquidity = store.deposit({ btcAmount: this.inputs[0], amounts: this.amounts, min_amount: token_amount, gasPrice: this.gasPriceWei, })
 			    try {
 			    	receipt = await add_liquidity
 			    }

@@ -132,6 +132,24 @@
                         <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
                     </label>
             </div>
+            <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+                    <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+                    <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
+
+                    <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+                    <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
+
+                    <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+                    <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
+
+                    <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
+                    <label for="custom_gas" @click='customGasDisabled = false'>
+                        <input type="text" id="custom_gas_input" 
+                            :disabled='customGasDisabled'
+                            name="custom_gas_input"
+                            v-model='customGasInput'>
+                    </label>
+                </div>
             <ul>
                 <li v-show='bestPool !== null'>
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
@@ -246,6 +264,9 @@
             waitingMessage: '',
             ethPrice: 0,
             gasPrice: 0,
+            gasPriceInfo: null,
+            customGasDisabled: true,
+            customGasInput: null,
             estimateGas: 0,
             loadingAction: false,
         }),
@@ -422,6 +443,19 @@
                 else
                     return this.exchangeRate
             },
+            gasPriceMedium() {
+                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            },
+            gasPriceWei() {
+                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+                return BN(gasPrice * 1e9).toFixed(0,1)
+            },
         },
         watch: {
             from_currency(val, oldval) {
@@ -463,6 +497,21 @@
                 this.mounted();
                 unwatch()
             })
+
+            try {
+                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                gasPriceInfo = await gasPriceInfo.json()
+                this.gasPriceInfo = gasPriceInfo.estimates
+            }
+            catch(err) {
+                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                this.gasPriceInfo = {
+                    medium: gasPrice,
+                    fast: gasPrice + 2,
+                    fastest: gasPrice + 4,
+                } 
+            }
+            this.gasPrice = this.gasPriceInfo.fast
         },
         mounted() {
             contract.web3 && contract.multicall && this.mounted()
@@ -472,9 +521,8 @@
                 await this.setup();
                 this.disabled = false;
                 this.from_cur_handler()
-                let promises = await Promise.all([helpers.getETHPrice(), contract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
             },
             swapInputs() {
                 //look no temp variable! :D
@@ -617,7 +665,8 @@
                             this.usedFlags,
                         ).send({
                             from: contract.default_account,
-                            gas: 4000000
+                            gasPrice: this.gasPriceWei,
+                            gas: 4000000,
                         })
                         .once('transactionHash', hash => {
                             this.waitingMessage = `Waiting for swap 
@@ -638,6 +687,7 @@
                     try {
                         await exchangeMethod(i, j, amount, min_dy).send({
                             from: contract.default_account,
+                            gasPrice: this.gasPriceWei,
                             gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),
                         })
                         .once('transactionHash', hash => {
@@ -888,9 +938,9 @@
                 let txPricePool = 0
                 if(pool != '1split') {
                     let poolgas = contractGas.swap[pool].exchange_underlying(i, j) / 2
-                    txPricePool = poolgas * this.gasPrice / 1e18 * this.ethPrice
+                    txPricePool = poolgas * this.gasPrice / 1e9 * this.ethPrice
                 }
-                let txPrice1split = onesplitGas * this.gasPrice / 1e18 * this.ethPrice
+                let txPrice1split = onesplitGas * this.gasPrice / 1e9 * this.ethPrice
                 return [txPricePool, txPrice1split]
             },
             async set_to_amount() {

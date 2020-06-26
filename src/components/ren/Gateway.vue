@@ -114,6 +114,24 @@
                     <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
                 </label>
             </div>
+            <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+                <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+                <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
+
+                <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+                <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
+
+                <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+                <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
+
+                <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
+                <label for="custom_gas" @click='customGasDisabled = false'>
+                    <input type="text" id="custom_gas_input" 
+                        :disabled='customGasDisabled'
+                        name="custom_gas_input"
+                        v-model='customGasInput'>
+                </label>
+            </div>
             <p class='simple-error' v-show='lessThanMinOrder && from_currency == 0'>
             	Minimum mint order size is {{ (minOrderSize / 1e8).toFixed(8) }} 
             </p>
@@ -145,7 +163,7 @@
         </div>
 
         <div class='info-message gentle-message' v-show='estimateGas'>
-            Estimated tx cost: {{ (estimateGas * gasPrice / 1e18 * ethPrice).toFixed(2) }}$
+            Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
         </div>
 
         <approve-chi></approve-chi>
@@ -228,6 +246,9 @@
             btcPrice: null,
             ethPrice: null,
             gasPrice: null,
+            gasPriceInfo: {},
+            customGasDisabled: true,
+            customGasInput: null,
             estimateGas: null,
 			get_dy_original: '',
 			fromBgColor: '',
@@ -321,6 +342,19 @@
             currentPool() {
             	return getters.currentPool()
             },
+            gasPriceMedium() {
+                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            },
+            gasPriceWei() {
+                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
+                return BN(gasPrice * 1e9).toFixed(0,1)
+            },
 		},
 		watch: {
 			from_currency(val, oldval) {
@@ -369,6 +403,21 @@
                 // }
 				if([1,2].includes(this.from_currency)) this.address = contract.default_account
 				this.from_cur_handler()
+
+                try {
+                    let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                    gasPriceInfo = await gasPriceInfo.json()
+                    this.gasPriceInfo = gasPriceInfo.estimates
+                }
+                catch(err) {
+                    let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                    this.gasPriceInfo = {
+                        medium: gasPrice,
+                        fast: gasPrice + 2,
+                        fastest: gasPrice + 4,
+                    } 
+                }
+                this.gasPrice = this.gasPriceInfo.fast
 			},
 
 			toFixed(num) {
@@ -502,9 +551,8 @@
 			},
 
 			async submit() {
-                let promises = await Promise.all([helpers.getETHPrice(), contract.web3.eth.getGasPrice()])
+                let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.gasPrice = promises[1]
 
                 this.estimateGas = contract.currentContract == 'ren' ? 300000 : 400000
 
@@ -552,7 +600,8 @@
 	                let min_dy = BN(this.toInputOriginal).times(this.toPrecisions).times(1-(maxSlippage / 100)).toFixed(0,1)
 	                await contract.swap.methods.exchange(i, j, dx, min_dy).send({
 	                		from: contract.default_account,
-	                		gas: contractGas.swap[contract.currentContract].exchange(i, j)
+                            gasPrice: this.gasPriceWei,
+	                		gas: contractGas.swap[contract.currentContract].exchange(i, j),
 	                	})
 				}
 			}

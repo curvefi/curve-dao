@@ -7,10 +7,7 @@
 					We believe there was an issue with your swap. 
 					Please contact us on <a href='https://t.me/curvefi'>Telegram</a> or <a href='https://twitter.com/CurveFinance'>Twitter</a>.
 				</div>
-
-				<div class='info-message gentle-message betaversion' v-show='swapbtc'>
-					This is a beta version. Please test with small amounts and use with caution.
-				</div>
+				
 				<div class='swapBTC-wrapper'>
 					<div class='swapBTC-container info-message gentle-message'>
 				        <router-link to='/ren/native'>

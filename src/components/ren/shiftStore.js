@@ -905,6 +905,7 @@ export async function removeLiquidityThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
+		gasPrice: data.gasPrice,
 		gas: gas.adapter[contract.currentContract].removeLiquidityThenBurn,
 	})
 
@@ -931,6 +932,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
+		gasPrice: data.gasPrice,
 		gas: gas.adapter[contract.currentContract].removeLiquidityImbalanceThenBurn,
 	})
 
@@ -954,6 +956,7 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
+		gasPrice: data.gasPrice,
 		gas: gas.adapter[contract.currentContract].removeLiquidityOneCoinThenBurn,
 	})
 

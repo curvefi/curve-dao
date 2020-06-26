@@ -122,7 +122,7 @@
                 id='remove-liquidity-unstake'
                 v-show = "['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0 "
                 :disabled = 'slippage < -0.03'
-                @click='handle_remove_liquidity(true)'>
+                @click='handle_remove_liquidity(true, false, true)'>
                 Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
             </button>
             <button id='claim-snx'
@@ -562,7 +562,7 @@
                 this.loadingAction = val;
                 setTimeout(() => this.loadingAction = false, 500)
             },
-			async handle_remove_liquidity(unstake = false, unstake_only = false) {
+			async handle_remove_liquidity(unstake = false, unstake_only = false, exit = false) {
                 await common.update_fee_info();
                 await this.update_balances();
 
@@ -572,6 +572,24 @@
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
                 this.estimateGas = 0;
+                if(['susdv2', 'sbtc'].includes(this.currentPool)) {
+                    if(unstake_only) {
+                        this.estimateGas = 125000
+                        if(this.currentPool == 'sbtc') this.estimateGas += 300000
+                    }
+                    else {
+                        let nonZeroInputs = this.inputs.filter(Number).length
+                        if(this.share == '---') {
+                            this.estimateGas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
+                        }
+                        else if(this.to_currency !== null && this.to_currency < 10) {
+                            this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
+                        }
+                        else {
+                            this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
+                        }
+                    }
+                }
                 this.show_loading = true;
                 let inOneCoin = currentContract.deposit_zap
                 if(['tbtc','ren', 'sbtc'].includes(currentContract.currentContract)) inOneCoin = currentContract.swap

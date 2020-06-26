@@ -1,5 +1,8 @@
 <template>
 	<div class='CHIcontainer'>
+		<span v-show='!showCHIbutton'>
+			Using <img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
+		</span>
 		<span>
 		 	<button @click='approveCHI' v-show='showCHIbutton'>
 				Approve

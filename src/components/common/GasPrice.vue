@@ -1,0 +1,84 @@
+<template>
+	<div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+        <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='gasPrice = gasPriceMedium'>
+        <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
+
+        <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='gasPrice = gasPriceFast'>
+        <label for="gasfast">{{Math.round(gasPriceFast)}} Fast</label>
+
+        <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
+        <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
+
+        <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = ''">
+        <label for="custom_gas" @click="gasPrice = ''">
+            <input type="text" id="custom_gas_input" 
+                :disabled='customGasDisabled'
+                name="custom_gas_input"
+                :value = 'customGasPriceInput'
+               	@input='gasPrice = $event.target.value'>
+        </label>
+    </div>
+</template>
+
+<script>
+	import { state } from './gasPriceStore'
+
+	import BN from 'bignumber.js'
+
+	export default {
+		data: () => ({
+			
+		}),
+
+		computed: {
+			gasPriceMedium() {
+                return state.gasPriceInfo && state.gasPriceInfo.medium || 20
+            },
+            gasPriceFast() {
+                return state.gasPriceInfo && state.gasPriceInfo.fast || 25
+            },
+            gasPriceFastest() {
+                return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
+            },
+            customGasDisabled() {
+            	console.log(Object.values(state.gasPriceInfo))
+            	return Object.values(state.gasPriceInfo).includes(state.gasPrice)
+            },
+            gasPrice: {
+            	get() {
+            		return state.gasPrice
+            	},
+            	set(val) {
+            		state.gasPrice = val
+            	},
+            },
+            customGasPriceInput() {
+            	if(this.customGasDisabled) return ''
+            	return this.gasPrice
+            },
+		},
+
+		async created() {
+			try {
+                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                gasPriceInfo = await gasPriceInfo.json()
+                state.gasPriceInfo = gasPriceInfo.estimates
+            }
+            catch(err) {
+                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                state.gasPriceInfo = {
+                    medium: gasPrice,
+                    fast: gasPrice + 2,
+                    fastest: gasPrice + 4,
+                } 
+            }
+            state.gasPrice = state.gasPriceInfo.fast
+			this.$watch(() => state.gasPrice, val => {
+				state.gasPriceWei = BN(val).times(1e9).toFixed(0,1)
+			}, {
+				immediate: true,
+			})
+		},
+
+	}
+</script>

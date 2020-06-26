@@ -3,6 +3,8 @@ import RenSDK from '@renproject/ren'
 import BlocknativeSdk from 'bnc-sdk'
 import Web3 from 'web3'
 
+import * as gasPriceStore from '../common/gasPriceStore'
+
 let firebaseApp = null
 let firestore = null
 
@@ -746,6 +748,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			...args
 		).send({
 			from: state.default_account,
+			gasPrice: gasPriceStore.state.gasPriceWei,
 			gas: gas.adapter[transaction.pool].mintThenSwap,
 		})
 		.once('transactionHash', resolve)
@@ -835,6 +838,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			signature,
 		).send({
 			from: state.default_account,
+			gasPrice: gasPriceStore.state.gasPriceWei,
 			gas: gas.adapter[transaction.pool].mintThenDeposit,
 		})
 		.once('transactionHash', resolve)
@@ -882,6 +886,7 @@ export async function burnSwap(data) {
 			...args
 		).send({
 			from: state.default_account,
+			gasPrice: gasPriceStore.state.gasPriceWei,
 			gas: gas.adapter[contract.currentContract].swapThenBurn,
 		})
 	burn(tx, data.address, null, 0, data)
@@ -905,7 +910,7 @@ export async function removeLiquidityThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gasPrice: data.gasPrice,
+		gasPrice: gasPriceStore.state.gasPriceWei,
 		gas: gas.adapter[contract.currentContract].removeLiquidityThenBurn,
 	})
 
@@ -932,7 +937,7 @@ export async function removeLiquidityImbalanceThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gasPrice: data.gasPrice,
+		gasPrice: gasPriceStore.state.gasPriceWei,
 		gas: gas.adapter[contract.currentContract].removeLiquidityImbalanceThenBurn,
 	})
 
@@ -956,7 +961,7 @@ export async function removeLiquidityOneCoinThenBurn(data) {
 		...args
 	).send({
 		from: state.default_account,
-		gasPrice: data.gasPrice,
+		gasPrice: gasPriceStore.state.gasPriceWei,
 		gas: gas.adapter[contract.currentContract].removeLiquidityOneCoinThenBurn,
 	})
 

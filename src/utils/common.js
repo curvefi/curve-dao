@@ -4,6 +4,7 @@ window.BN = BigNumber
 import { contract as currentContract, infura_url } from '../contract.js'
 import { chunkArr } from './helpers'
 import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi } from '../allabis'
+import * as gasPriceStore from '../components/common/gasPriceStore'
 import Web3 from "web3";
 
 var cBN = (val) => new BigNumber(val);
@@ -14,7 +15,11 @@ export function approve(contract, amount, account, toContract) {
     if(!toContract) toContract = currentContract.swap_address
     return new Promise((resolve, reject) => {
                 contract.methods.approve(toContract, cBN(amount).toFixed(0,1))
-                .send({from: account, gas: 100000})
+                .send({
+                    from: account, 
+                    gasPrice: gasPriceStore.state.gasPriceWei,
+                    gas: 100000,
+                })
                 .once('transactionHash', function(hash) {resolve(true)})
                 .catch(err => reject(err));
             });
@@ -24,7 +29,11 @@ export function approve(contract, amount, account, toContract) {
 export function approve_to_migrate(amount, account) {
     return new Promise(resolve => {
                 currentContract.old_swap_token.methods.approve(currentContract.migration_address, amount)
-                .send({from: account, gas: 100000})
+                .send({
+                    from: account, 
+                    gasPrice: gasPriceStore.state.gasPriceWei,
+                    gas: 100000,
+                })
                 .once('transactionHash', function(hash) {resolve(true);});
             });
 }
@@ -401,7 +410,8 @@ export async function handle_migrate_new(page) {
     }
     await migration.methods.migrate().send({
         from: default_account,
-        gas: 1500000
+        gasPrice: gasPriceStore.state.gasPriceWei,
+        gas: 1500000,
     });
 
     await update_balances();

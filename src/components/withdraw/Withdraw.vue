@@ -104,24 +104,7 @@
             </label>
         </div>
 
-        <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
-            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
-            <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
-
-            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
-            <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
-
-            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
-            <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
-
-            <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
-            <label for="custom_gas" @click='customGasDisabled = false'>
-                <input type="text" id="custom_gas_input" 
-                    :disabled='customGasDisabled'
-                    name="custom_gas_input"
-                    v-model='customGasInput'>
-            </label>
-        </div>
+        <gas-price></gas-price>
 
         <div id='withdraw_buttons'>
             <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
@@ -186,13 +169,16 @@
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
     import BN from 'bignumber.js'
 
     import Slippage from '../common/Slippage.vue'
 
     export default {
     	components: {
-    		Slippage,
+    		Slippage, GasPrice,
     	},
     	data: () => ({
     		share: '100.00',
@@ -228,10 +214,6 @@
             maxInputSlippage: '',
             customSlippageDisabled: true,
             estimateGas: 0,
-            gasPrice: 0,
-            gasPriceInfo: null,
-            customGasDisabled: true,
-            customGasInput: null,
             ethPrice: 0,
             loadingAction: false,
             warninglow: false,
@@ -252,20 +234,6 @@
                 if(currentContract.initializedContracts) this.mounted();
             })
 
-            try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                this.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                this.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            this.gasPrice = this.gasPriceInfo.fast
         },
         watch: {
         	to_currency(val) {
@@ -306,18 +274,11 @@
                 let N_COINS = allabis[currentContract.currentContract].N_COINS
                 return this.fee * N_COINS / (4 * (N_COINS -1))
             },
-            gasPriceMedium() {
-                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
-            },
-            gasPriceFast() {
-                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
-            },
-            gasPriceFastest() {
-                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            gasPrice() {
+                return gasPriceStore.state.gasPrice
             },
             gasPriceWei() {
-                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
-                return BN(gasPrice * 1e9).toFixed(0,1)
+                return gasPriceStore.state.gasPriceWei
             },
         },
         mounted() {
@@ -529,7 +490,11 @@
                 this.waitingMessage = `Claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
                 if(this.currentPool == 'sbtc')
                     this.waitingMessage += ` and ${(this.pendingRENRewards / 1e18).toFixed(2)} REN`
-                
+
+                let promises = await Promise.all([helpers.getETHPrice()])
+                this.ethPrice = promises[0]
+                this.estimateGas = 200000
+
                 let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
 
                 await new Promise((resolve, reject) => {
@@ -545,6 +510,7 @@
                 })
 
                 if(this.currentPool == 'sbtc') {
+                    this.estimateGas = 300000
 
                     await this.balancerPool.methods.exitPool(earned, ['0', '0'])
                         .send({

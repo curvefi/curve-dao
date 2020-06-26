@@ -56,24 +56,7 @@
                 </ul>
             </fieldset>
             <ul>
-                <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
-                    <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
-                    <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
-
-                    <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
-                    <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
-
-                    <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
-                    <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
-
-                    <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
-                    <label for="custom_gas" @click='customGasDisabled = false'>
-                        <input type="text" id="custom_gas_input" 
-                            :disabled='customGasDisabled'
-                            name="custom_gas_input"
-                            v-model='customGasInput'>
-                    </label>
-                </div>
+                <gas-price></gas-price>
 
                 <li>
                     <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances_proportion' :disabled='disabledButtons' checked v-model='sync_balances'>
@@ -102,6 +85,7 @@
             <p style="text-align: center" v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
+
             <p style="text-align: center">
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"
@@ -178,13 +162,16 @@
     const compound = allabis.compound
     import * as helpers from '../../utils/helpers'
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
     import BN from 'bignumber.js'
 
     import Slippage from '../common/Slippage.vue'
 
     export default {
     	components: {
-    		Slippage,
+    		Slippage, GasPrice,
     	},
     	data: () => ({
     		disabled: true,
@@ -208,10 +195,6 @@
     		show_loading: false,
     		waitingMessage: '',
     		estimateGas: 0,
-    		gasPrice: 0,
-            gasPriceInfo: null,
-            customGasDisabled: true,
-            customGasInput: null,
     		ethPrice: 0,
             justDeposit: false,
             loadingAction: false,
@@ -233,20 +216,6 @@
                 if(currentContract.initializedContracts) this.mounted();
             })
 
-            try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                this.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                this.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            this.gasPrice = this.gasPriceInfo.fast
         },
         watch: {
         	async depositc(val, oldval) {
@@ -294,18 +263,11 @@
           lpCrvReceivedText() {
             return this.toFixed(this.lpCrvReceived)
           },
-          gasPriceMedium() {
-            return this.gasPriceInfo && this.gasPriceInfo.medium || 20
-          },
-          gasPriceFast() {
-            return this.gasPriceInfo && this.gasPriceInfo.fast || 25
-          },
-          gasPriceFastest() {
-            return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+          gasPrice() {
+            return gasPriceStore.state.gasPrice
           },
           gasPriceWei() {
-            let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
-            return BN(gasPrice * 1e9).toFixed(0,1)
+            return gasPriceStore.state.gasPriceWei
           },
         },
         mounted() {
@@ -320,6 +282,9 @@
         		this.waitingMessage = `Please approve staking ${this.toFixed(tokens.div(BN(1e18)))} of your sCurve tokens`
 				await common.ensure_stake_allowance(tokens);
 				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+                let promises = await Promise.all([helpers.getETHPrice()])
+                this.ethPrice = promises[0]
+                this.estimateGas = 125000
 				await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
 					from: currentContract.default_account,
                     gasPrice: this.gasPriceWei,

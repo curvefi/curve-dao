@@ -132,24 +132,7 @@
                         <input type="text" id="custom_slippage_input" :disabled='customSlippageDisabled' name="custom_slippage_input" v-model='maxInputSlippage'> %
                     </label>
             </div>
-            <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
-                    <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
-                    <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
-
-                    <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
-                    <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
-
-                    <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
-                    <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
-
-                    <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
-                    <label for="custom_gas" @click='customGasDisabled = false'>
-                        <input type="text" id="custom_gas_input" 
-                            :disabled='customGasDisabled'
-                            name="custom_gas_input"
-                            v-model='customGasInput'>
-                    </label>
-                </div>
+            <gas-price></gas-price>
             <ul>
                 <li v-show='bestPool !== null'>
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
@@ -212,6 +195,9 @@
     import * as helpers from '../../utils/helpers'
     import tradeStore from './tradeStore'
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
     import BN from 'bignumber.js'
 
     import * as Comlink from 'comlink'
@@ -223,6 +209,11 @@
     import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
 
     export default {
+
+        components: {
+            GasPrice,
+        },
+
         data: () => ({
             pools: ['compound', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc'],
             maxBalance: -1,
@@ -263,10 +254,6 @@
             show_loading: false,
             waitingMessage: '',
             ethPrice: 0,
-            gasPrice: 0,
-            gasPriceInfo: null,
-            customGasDisabled: true,
-            customGasInput: null,
             estimateGas: 0,
             loadingAction: false,
         }),
@@ -443,18 +430,11 @@
                 else
                     return this.exchangeRate
             },
-            gasPriceMedium() {
-                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
-            },
-            gasPriceFast() {
-                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
-            },
-            gasPriceFastest() {
-                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            gasPrice() {
+                return gasPriceStore.state.gasPrice
             },
             gasPriceWei() {
-                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
-                return BN(gasPrice * 1e9).toFixed(0,1)
+                return gasPriceStore.state.gasPriceWei
             },
         },
         watch: {
@@ -498,20 +478,6 @@
                 unwatch()
             })
 
-            try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                this.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                this.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            this.gasPrice = this.gasPriceInfo.fast
         },
         mounted() {
             contract.web3 && contract.multicall && this.mounted()

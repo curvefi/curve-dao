@@ -68,24 +68,7 @@
                 </li>
             </ul>
 
-            <div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
-                <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
-                <label for="gasstandard">{{Math.ceil(gasPriceMedium)}} Standard</label>
-
-                <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
-                <label for="gasfast">{{Math.ceil(gasPriceFast)}} Fast</label>
-
-                <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
-                <label for="gasinstant">{{Math.ceil(gasPriceFastest)}} Instant</label>
-
-                <input id="custom_gas" type="radio" name="gas" value='-' @click='customGasDisabled = false'>
-                <label for="custom_gas" @click='customGasDisabled = false'>
-                    <input type="text" id="custom_gas_input" 
-                        :disabled='customGasDisabled'
-                        name="custom_gas_input"
-                        v-model='customGasInput'>
-                </label>
-            </div>
+            <gas-price></gas-price>
 
 
             <p style="text-align: center" v-show="currentPool == 'ren'">
@@ -129,6 +112,9 @@
     import * as store from './shiftStore'
     import { state } from './shiftState'
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
     import ApproveCHI from './ApproveCHI.vue'
 
     export default {
@@ -136,6 +122,7 @@
     		Slippage,
             'tx-table': Table,
             'approve-chi': ApproveCHI,
+            GasPrice,
     	},
     	data: () => ({
     		disabled: false,
@@ -157,8 +144,6 @@
     		show_loading: false,
     		waitingMessage: '',
     		estimateGas: 0,
-    		gasPrice: 0,
-            gasPriceInfo: null,
             customGasDisabled: true,
             customGasInput: null,
     		ethPrice: 0,
@@ -181,20 +166,6 @@
             	if(currentContract.initializedContracts) this.mounted();
             })
 
-            try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                this.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                this.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            this.gasPrice = this.gasPriceInfo.fast
         },
         watch: {
             
@@ -239,18 +210,11 @@
           transferableBalanceText() {
             return this.toFixed((this.transferableBalance / 1e18))
           },
-          gasPriceMedium() {
-            return this.gasPriceInfo && this.gasPriceInfo.medium || 20
-          },
-          gasPriceFast() {
-            return this.gasPriceInfo && this.gasPriceInfo.fast || 25
-          },
-          gasPriceFastest() {
-            return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+          gasPrice() {
+            return gasPriceStore.state.gasPrice
           },
           gasPriceWei() {
-            let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
-            return BN(gasPrice * 1e9).toFixed(0,1)
+            return gasPriceStore.state.gasPriceWei
           },
         },
         mounted() {

@@ -123,6 +123,8 @@
         
         <approve-chi></approve-chi>
 
+        <gas-price></gas-price>
+
         <div id='withdraw_buttons'>
             <p v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
@@ -194,6 +196,7 @@
     		Slippage,
             'tx-table': Table,
             'approve-chi': ApproveCHI,
+            GasPrice,
     	},
     	data: () => ({
     		share: '100.00',
@@ -232,8 +235,6 @@
             maxInputSlippage: '',
             customSlippageDisabled: true,
             estimateGas: 0,
-            gasPrice: 0,
-            gasPriceInfo: null,
             customGasDisabled: true,
             customGasInput: null,
             ethPrice: 0,
@@ -315,18 +316,11 @@
             minOrderSize() {
                 return ((state.minersReleaseFee + state.burnFee / 10000) / 1e8 + 0.00000547).toFixed(8)
             },
-            gasPriceMedium() {
-                return this.gasPriceInfo && this.gasPriceInfo.medium || 20
-            },
-            gasPriceFast() {
-                return this.gasPriceInfo && this.gasPriceInfo.fast || 25
-            },
-            gasPriceFastest() {
-                return this.gasPriceInfo && this.gasPriceInfo.fastest || 30
+            gasPrice() {
+                return gasPriceStore.state.gasPrice
             },
             gasPriceWei() {
-                let gasPrice = this.customGasDisabled ? this.gasPrice : this.customGasInput
-                return BN(gasPrice * 1e9).toFixed(0,1)
+                return gasPriceStore.state.gasPriceWei
             },
         },
         async mounted() {
@@ -334,21 +328,6 @@
         	this.$watch(() => this.showstaked, this.handle_change_share)
         	this.setInputStyles(true)
             if(currentContract.initializedContracts) this.mounted();
-
-            try {
-                let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
-                gasPriceInfo = await gasPriceInfo.json()
-                this.gasPriceInfo = gasPriceInfo.estimates
-            }
-            catch(err) {
-                let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                this.gasPriceInfo = {
-                    medium: gasPrice,
-                    fast: gasPrice + 2,
-                    fastest: gasPrice + 4,
-                } 
-            }
-            this.gasPrice = this.gasPriceInfo.fast
         },
         methods: {
             async mounted() {

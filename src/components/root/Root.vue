@@ -487,7 +487,8 @@
 			},
 			handle_pool_change(e) {
 				if(document.querySelector('#from_currency') == document.activeElement 
-					|| document.querySelector('#custom_slippage_input') == document.activeElement) return;
+					|| document.querySelector('#custom_slippage_input') == document.activeElement
+					|| document.querySelector('#custom_gas_input') == document.activeElement) return;
 				if(this.activePoolLink == -1) return this.activePoolLink = 0
 	            if(e.code == 'ArrowUp' && this.activePoolLink != 0) {
 	                e.preventDefault();

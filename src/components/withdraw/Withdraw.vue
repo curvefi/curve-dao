@@ -563,6 +563,9 @@
                 setTimeout(() => this.loadingAction = false, 500)
             },
 			async handle_remove_liquidity(unstake = false, unstake_only = false) {
+                await common.update_fee_info();
+                await this.update_balances();
+                
                 let actionType = unstake == false ? 1 : 2
                 if(this.loadingAction == actionType) return;
                 this.setLoadingAction(actionType)

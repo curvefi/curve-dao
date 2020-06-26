@@ -6,6 +6,7 @@ import Authereum from "authereum";
 import BurnerConnectProvider from "@burner-wallet/burner-connect-provider";
 */
 import Onboard from 'bnc-onboard'
+import Notify from "bnc-notify"
 
 import * as common from './utils/common.js'
 import * as state from './contract.js'
@@ -41,7 +42,10 @@ import { multicall_address, multicall_abi } from './allabis'
   providerOptions // required
 });*/
 
-
+export const notify = Notify({
+  dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',
+  networkId: 1,
+})
 
 const wallets = [
   { walletName: "metamask" },

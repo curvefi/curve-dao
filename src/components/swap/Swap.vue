@@ -253,6 +253,17 @@
                 if(isNaN(val)) return '0.00';
                 this.maxSynthText = this.toFixed(val)
             },
+            triggerEstimateGas: {
+                handler: async function triggerEstimateGas() {
+                    let i = this.from_currency
+                    let j = this.to_currency
+                    let promises = await Promise.all([helpers.getETHPrice()])
+                    this.ethPrice = promises[0]
+                    this.estimateGas = this.swapwrapped ? 
+                                            contractGas.swap[this.currentPool].exchange(i, j) / 2 : contractGas.swap[this.currentPool].exchange_underlying(i, j) / 2
+                },
+                immediate: true
+            },
         },
         computed: {
             precisions() {
@@ -294,6 +305,10 @@
             },
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
+            },
+            triggerEstimateGas() {
+                console.log("TRIGGER ESTIMATE GAS")
+                return this.swapwrapped, this.from_currency, this.to_currency, Date.now()
             },
         },
         mounted() {
@@ -486,15 +501,11 @@
             async handle_trade() {
                 if(this.loadingAction) return;
                 this.setLoadingAction();
-
-                let promises = await Promise.all([helpers.getETHPrice()])
-                this.ethPrice = promises[0]
                 
                 this.show_loading = true;
                 var i = this.from_currency
                 var j = this.to_currency;
-                this.estimateGas = this.swapwrapped ? 
-                                        contractGas.swap[this.currentPool].exchange(i, j) / 2 : contractGas.swap[this.currentPool].exchange_underlying(i, j) / 2
+
                 var b = parseInt(await currentContract.swap.methods.balances(i).call()) / currentContract.c_rates[i];
                 let maxSlippage = this.maxSlippage / 100;
                 let currency = (Object.keys(this.currencies)[this.from_currency]).toUpperCase()

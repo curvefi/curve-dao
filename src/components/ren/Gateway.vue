@@ -161,6 +161,7 @@
 
 <script>
 	import Vue from 'vue'
+    import { notify } from '../../init'
 	import { getters, allCurrencies, contract, gas as contractGas } from '../../contract'
 	import RenSDK from '@renproject/ren'
 	import BN from 'bignumber.js'
@@ -566,6 +567,9 @@
                             gasPrice: this.gasPriceWei,
 	                		gas: contractGas.swap[contract.currentContract].exchange(i, j),
 	                	})
+                        .once('transactionHash', hash => {
+                            notify.hash(hash)
+                        })
 				}
 			}
 		}

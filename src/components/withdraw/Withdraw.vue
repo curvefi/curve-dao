@@ -163,6 +163,7 @@
 
 <script>
 	import Vue from 'vue'
+    import { notify } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { balancer_ABI, balancer_address } from '../../allabis'
@@ -504,7 +505,10 @@
                             gasPrice: this.gasPriceWei,
                             gas: 200000,
                         })
-                        .once('transactionHash', resolve)
+                        .once('transactionHash', hash => {
+                            notify.hash(hash)
+                            resolve()
+                        })
                         .on('receipt', () => this.pendingSNXRewards = 0)
                         .catch(err => reject(err))
                 })
@@ -517,6 +521,9 @@
                             from: currentContract.default_account,
                             gasPrice: this.gasPriceWei,
                             gas: 600000,
+                        })
+                        .once('transactionHash', hash => {
+                            notify.hash(hash)
                         })
                 }
 
@@ -545,7 +552,10 @@
     							gasPrice: this.gasPriceWei,
                                 gas: 125000,
     						})
-    						.once('transactionHash', resolve)
+    						.once('transactionHash', hash => {
+                                notify.hash(hash)
+                                resolve()
+                            })
                             .catch(err => reject(err))
     				})
                     if(exit) {
@@ -629,7 +639,10 @@
     				        	from: currentContract.default_account, 
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
-    				        }).once('transactionHash', () => this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed')
+    				        }).once('transactionHash', hash => {
+                                notify.hash(hash)
+                                this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
+                            })
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -657,7 +670,8 @@
     				        	from: currentContract.default_account, 
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
-    				        }).once('transactionHash', () => {
+    				        }).once('transactionHash', hash => {
+                                notify.hash(hash)
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
                         }
@@ -702,11 +716,12 @@
 			        			from: currentContract.default_account,
 			        			gasPrice: this.gasPriceWei,
                                 gas: contractGas.depositzap[this.currentPool].withdraw | 0,
-			        		}).once('transactionHash', hash => 
+			        		}).once('transactionHash', hash => {
+                                notify.hash(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
-                            )
+                            })
 			        }
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} Curve LP tokens for withdrawal`
@@ -722,11 +737,12 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: contractGas.depositzap[this.currentPool].withdrawShare,
                             })
-                            .once('transactionHash', hash => 
+                            .once('transactionHash', hash => {
+                                notify.hash(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
-                            );
+                            });
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -755,11 +771,12 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: 600000,
                             })
-                            .once('transactionHash', hash => 
+                            .once('transactionHash', hash => {
+                                notify.hash(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
-                            );
+                            });
                         }
                         catch(err) {
                             this.waitingMessage = ''
@@ -880,6 +897,7 @@
                     gas: gas,
                 })
                 .once('transactionHash', hash => {
+                    notify.hash(hash)
                     this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
                 })
             }

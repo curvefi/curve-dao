@@ -189,6 +189,7 @@
     import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi,
         synthetixExchanger_address, synthetixExchanger_ABI,
         onesplit_address, onesplit_abi } from '../../allabis'
+    import { notify } from '../../init'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -635,6 +636,7 @@
                             gas: 4000000,
                         })
                         .once('transactionHash', hash => {
+                            notify.hash(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                                     to confirm: no further action needed`
@@ -657,6 +659,7 @@
                             gas: this.swapwrapped ? contractGas.swap[pool].exchange(i, j) : contractGas.swap[pool].exchange_underlying(i, j),
                         })
                         .once('transactionHash', hash => {
+                            notify.hash(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                                     to confirm: no further action needed`

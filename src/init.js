@@ -45,6 +45,7 @@ import { multicall_address, multicall_abi } from './allabis'
 export const notify = Notify({
   dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',
   networkId: 1,
+  desktopPosition: 'topRight',
 })
 
 const wallets = [

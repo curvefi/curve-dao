@@ -147,6 +147,8 @@
 	                	return function() {
 	                		let value = Math.floor(this.y * 100) / 100 + '%';
 		                	if(this.series.name == 'Daily APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+	                		if(this.series.name == 'SNX APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+                			if(this.series.name == 'Total APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	if(this.series.name === 'Trading Volume') {
 		                		let val = this.y.toFixed(2)
@@ -182,6 +184,11 @@
 			loaded() {
 				this.loading = false;
 			},
+			findClosestPrice(timestamp, data) {
+				let price = data.find(([time, price]) => time / 1000 > timestamp)
+				if(price === undefined) return data[data.length-1][1]
+				return price[1]
+			},
 			async mounted() {
 				while(this.chart.series.length) {
 					this.chart.series[0].remove()
@@ -197,12 +204,48 @@
 		        	])
 		        }
 
+
 		        this.chart.addSeries({
 		        	name: 'Daily APY',
 		        	lineWidth: 2,
 		        	data: chartData,
 		        	color: '#0b0a57'
 		        }, false, false)
+		        if(this.pool == 'susdv2') {
+		        	let startTime = this.data[0].timestamp
+		        	let endTime = this.data[this.data.length - 1].timestamp
+		        	let SNXprices = await fetch(`https://api.coingecko.com/api/v3/coins/havven/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}`)
+		        	SNXprices = (await SNXprices.json()).prices
+		        	let SNXapys = []
+		        	for(let i = 1; i < this.data.length; i++) {
+		        		let timestamp = this.data[i].timestamp
+		        		let total_supply = this.data[i].supply
+		        		let virtual_price = this.data[i].virtual_price
+		        		let SNXprice = this.findClosestPrice(this.data[i].timestamp, SNXprices)
+		        		let reward = 64000
+		        		if(timestamp > 1590705735) reward = 48000
+		        		let SNXapy = 356 * reward / 7 * SNXprice / (0.98 * total_supply * virtual_price / 1e36) * 100
+		        		SNXapys.push([timestamp * 1000, SNXapy])
+		        	}
+
+		        	this.chart.addSeries({
+		        		name: 'SNX APY',
+		        		lineWidth: 2,
+		        		data: SNXapys,
+		        		color: '#f45b5b',
+		        	})
+
+		        	let totalAPYs = chartData.map(([timestamp, apy], i) => [timestamp, apy + SNXapys[i][1]])
+
+		        	this.chart.addSeries({
+		        		name: 'Total APY',
+		        		lineWidth: 2,
+		        		data: totalAPYs,
+		        		color: '#8085e9',
+		        	})
+		    	}
+
+
 
 		        if(['susd'].includes(this.pool)) {
 		        	this.chart.yAxis[0].update({
@@ -258,12 +301,24 @@
 
 		        }
 
+
 	    		this.chart.addSeries({
 	    			name: 'Lending APY',
 	    			data: lendingrates,
 	    			yAxis: lendingAxis,
+	    			color: '#7bb5ec',
 	    		})
 
+		        if(!['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.pool)) {
+		        	let totalAPYs = chartData.map(([timestamp, apy], i) => [timestamp, apy + lendingrates[i][1]])
+
+		        	this.chart.addSeries({
+		        		name: 'Total APY',
+		        		lineWidth: 2,
+		        		data: totalAPYs,
+		        		color: '#8085e9',
+		        	})
+		        }
 
 		        this.chart.redraw();
 		        this.chart.hideLoading();

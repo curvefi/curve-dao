@@ -175,7 +175,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify } from '../../init'
+    import { notify, notifyHandler } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { adapterAddress, balancer_ABI,  balancer_address } from '../../allabis'
@@ -532,7 +532,7 @@
                             gas: 200000,
                         })
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                             resolve()
                         })
                         .on('receipt', () => this.pendingSNXRewards = 0)
@@ -552,7 +552,7 @@
                             gas: 600000,
                         })
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                         })
                     }
                     catch(err) {
@@ -585,7 +585,7 @@
                                 gas: 125000,
                             })
                             .once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 resolve()
                             })
                             .catch(err => reject(err))

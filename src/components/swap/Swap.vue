@@ -165,7 +165,7 @@
 
 <script>
     import * as common from '../../utils/common.js'
-    import { notify } from '../../init'
+    import { notify, notifyHandler } from '../../init'
     import { getters, contract as currentContract, gas as contractGas} from '../../contract'
     import * as helpers from '../../utils/helpers'
     import allabis from '../../allabis'
@@ -562,7 +562,7 @@
                                     contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         })
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                                     to confirm: no further action needed`

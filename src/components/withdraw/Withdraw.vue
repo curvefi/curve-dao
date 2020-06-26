@@ -163,7 +163,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify } from '../../init'
+    import { notify, notifyHandler } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { balancer_ABI, balancer_address } from '../../allabis'
@@ -508,7 +508,7 @@
                             gas: 200000,
                         })
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                             resolve()
                         })
                         .on('receipt', () => this.pendingSNXRewards = 0)
@@ -529,7 +529,7 @@
                             gas: 600000,
                         })
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                         })
                     }
                     catch(err) {
@@ -564,7 +564,7 @@
                                 gas: 125000,
     						})
     						.once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 resolve()
                             })
                             .catch(err => reject(err))
@@ -671,7 +671,7 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
     				        }).once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
                         }
@@ -704,7 +704,7 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
     				        }).once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
                         }
@@ -753,7 +753,7 @@
 			        			gasPrice: this.gasPriceWei,
                                 gas: contractGas.depositzap[this.currentPool].withdraw | 0,
 			        		}).once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
@@ -779,7 +779,7 @@
                                 gas: contractGas.depositzap[this.currentPool].withdrawShare,
                             })
                             .once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
@@ -815,7 +815,7 @@
                                 gas: 600000,
                             })
                             .once('transactionHash', hash => {
-                                notify.hash(hash)
+                                notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
                                 to confirm: no further action needed`
@@ -943,7 +943,7 @@
                         gas: gas,
                     })
                     .once('transactionHash', hash => {
-                        notify.hash(hash)
+                        notifyHandler(hash)
                         this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
                     })
                 }

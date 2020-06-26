@@ -7,6 +7,9 @@ import allabis, { multicall_address, multicall_abi, ERC20_abi, cERC20_abi, yERC2
 import * as gasPriceStore from '../components/common/gasPriceStore'
 import Web3 from "web3";
 
+import * as errorStore from '../components/common/errorStore'
+import { notify, notifyHandler } from '../init'
+
 var cBN = (val) => new BigNumber(val);
 
 let requiresResetAllowance = ['0xdAC17F958D2ee523a2206206994597C13D831ec7']
@@ -20,8 +23,14 @@ export function approve(contract, amount, account, toContract) {
                     gasPrice: gasPriceStore.state.gasPriceWei,
                     gas: 100000,
                 })
-                .once('transactionHash', function(hash) {resolve(true)})
-                .catch(err => reject(err));
+                .once('transactionHash', function(hash) {
+                    notifyHandler(hash)
+                    resolve(true)
+                })
+                .catch(err => {
+                    errorStore.handleError(err)
+                    reject(err)
+                });
             });
 }
 
@@ -34,7 +43,14 @@ export function approve_to_migrate(amount, account) {
                     gasPrice: gasPriceStore.state.gasPriceWei,
                     gas: 100000,
                 })
-                .once('transactionHash', function(hash) {resolve(true);});
+                .once('transactionHash', function(hash) {
+                    notifyHandler(hash)
+                    resolve(true);
+                })
+                .catch(err => {
+                    errorStore.handleError(err)
+                    reject(err)
+                });
             });
 }
 
@@ -140,7 +156,13 @@ export async function ensure_token_allowance() {
         return new Promise(resolve => {
             currentContract.swap_token.methods.approve(currentContract.swap_address, cBN(currentContract.max_allowance).toFixed(0))
             .send({from: default_account})
-            .once('transactionHash', function(hash) {resolve(true);});
+            .once('transactionHash', function(hash) {
+                notifyHandler(hash)
+                resolve(true);
+            })
+            .catch(err => {
+                errorStore.handleError(err)
+            });
         })
     else
         return false;
@@ -412,6 +434,12 @@ export async function handle_migrate_new(page) {
         from: default_account,
         gasPrice: gasPriceStore.state.gasPriceWei,
         gas: 1500000,
+    })
+    .once('transactionHash', hash => {
+        notifyHandler(hash)
+    })
+    .catch(err => {
+        errorStore.handleError(err)
     });
 
     await update_balances();

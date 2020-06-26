@@ -17,7 +17,7 @@ const sdk = new RenSDK('mainnet', {
 })
 let Box
 import BN from 'bignumber.js'
-import { notify } from '../../init'
+import { notify, notifyHandler } from '../../init'
 import { getters, allCurrencies, contract, gas } from '../../contract'
 import allabis, { ERC20_abi } from '../../allabis'
 import * as common from '../../utils/common'
@@ -757,7 +757,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 				gas: gas.adapter[transaction.pool].mintThenSwap,
 			})
 			.once('transactionHash', hash => {
-				notify.hash(hash)
+				notifyHandler(hash)
 				resolve()
 			})
 			.once('receipt', () => {
@@ -856,7 +856,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 				gas: gas.adapter[transaction.pool].mintThenDeposit,
 			})
 			.once('transactionHash', hash => {
-				notify.hash(hash)
+				notifyHandler(hash)
 				resolve()
 			})
 			.once('receipt', () => {
@@ -995,7 +995,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
 		.once('transactionHash', hash => {
-			notify.hash(hash)
+			notifyHandler(hash)
 			resolve()
 		})
 		.once('receipt', receipt => {

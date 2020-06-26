@@ -161,7 +161,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify } from '../../init'
+    import { notify, notifyHandler } from '../../init'
 	import { getters, allCurrencies, contract, gas as contractGas } from '../../contract'
 	import RenSDK from '@renproject/ren'
 	import BN from 'bignumber.js'
@@ -571,7 +571,7 @@
 	                		gas: contractGas.swap[contract.currentContract].exchange(i, j),
 	                	})
                         .once('transactionHash', hash => {
-                            notify.hash(hash)
+                            notifyHandler(hash)
                         })
                     }
                     catch(err) {

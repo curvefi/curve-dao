@@ -152,7 +152,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify } from '../../init'
+    import { notify, notifyHandler } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas } from '../../contract'
     import allabis from '../../allabis'
@@ -291,7 +291,7 @@
     					gas: 200000,
     				})
                     .once('transactionHash', hash => {
-                        notify.hash(hash)
+                        notifyHandler(hash)
                     })
                 }
                 catch(err) {
@@ -544,7 +544,7 @@
                         gasPrice: this.gasPriceWei,
 				        gas: contractGas.deposit[this.currentPool],
 				    }).once('transactionHash', hash => {
-                        notify.hash(hash)
+                        notifyHandler(hash)
                         this.waitingMessage = 
                         `Waiting for deposit 
                             <a href='http://etherscan.io/tx/${hash}'>transaction</a> 
@@ -577,7 +577,7 @@
 						gas: gas,
 					})
 					.once('transactionHash', hash => {
-                        notify.hash(hash)
+                        notifyHandler(hash)
 						this.waitingMessage = `Waiting for deposit 
                             <a href='http://etherscan.io/tx/${hash}'>transaction</a>
                             to confirm ${stake ? 'before staking' : 'no further action required'}`

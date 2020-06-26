@@ -148,6 +148,7 @@
 	                		let value = Math.floor(this.y * 100) / 100 + '%';
 		                	if(this.series.name == 'Daily APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 	                		if(this.series.name == 'SNX APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+                			if(this.series.name == 'SNX+REN APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
                 			if(this.series.name == 'Total APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	if(this.series.name == 'Lending APY') return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
 		                	if(this.series.name === 'Trading Volume') {
@@ -230,6 +231,49 @@
 
 		        	this.chart.addSeries({
 		        		name: 'SNX APY',
+		        		lineWidth: 2,
+		        		data: SNXapys,
+		        		color: '#f45b5b',
+		        	})
+
+		        	let totalAPYs = chartData.map(([timestamp, apy], i) => [timestamp, apy + SNXapys[i][1]])
+
+		        	this.chart.addSeries({
+		        		name: 'Total APY',
+		        		lineWidth: 2,
+		        		data: totalAPYs,
+		        		color: '#8085e9',
+		        	})
+		    	}
+
+		    	if(this.pool == 'sbtc') {
+		        	let startTime = this.data[0].timestamp
+		        	let endTime = this.data[this.data.length - 1].timestamp
+		        	let pricereqs = await Promise.all([
+		        		fetch(`https://api.coingecko.com/api/v3/coins/havven/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}`),
+		        		fetch(`https://api.coingecko.com/api/v3/coins/republic-protocol/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}`),
+		        		fetch('https://api.coinpaprika.com/v1/tickers/btc-bitcoin'),
+		        		])
+		        	let prices = await Promise.all(pricereqs.map(req => req.json()))
+		        	console.log(prices, "PRICES")
+		        	let SNXprices = prices[0].prices
+		        	let RENprices = prices[1].prices
+		        	let btcPrice = prices[2].quotes.USD.price
+		        	let SNXapys = []
+		        	for(let i = 1; i < this.data.length; i++) {
+		        		let timestamp = this.data[i].timestamp
+		        		let total_supply = this.data[i].supply
+		        		let virtual_price = this.data[i].virtual_price
+		        		let SNXprice = this.findClosestPrice(this.data[i].timestamp, SNXprices)
+		        		let RENprice = this.findClosestPrice(this.data[i].timestamp, RENprices)
+		        		let SNXreward = 10000
+		        		let RENreward = 25000
+		        		let SNXapy = 356 * (10000 * SNXprice + 25000 * RENprice) / 7 * SNXprice / (0.98 * btcPrice * total_supply * virtual_price / 1e36) * 100
+		        		SNXapys.push([timestamp * 1000, SNXapy])
+		        	}
+
+		        	this.chart.addSeries({
+		        		name: 'SNX+REN APY',
 		        		lineWidth: 2,
 		        		data: SNXapys,
 		        		color: '#f45b5b',

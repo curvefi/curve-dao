@@ -109,8 +109,10 @@
                         fastest: gasPrice + 4,
                     } 
                 }
-                if(!this.gasPriceInterval)
+                if(!state.fetched) {
                     state.gasPrice = state.gasPriceInfo.fast
+                    state.fetched = true
+                }
             }
         },
 

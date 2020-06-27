@@ -73,7 +73,7 @@
 	            }
 	            if(e.code == 'Enter') {
 	                e.preventDefault();
-	                window.open(document.querySelector('.poolsdialog .selected a').href, '_blank')
+	                window.open(document.querySelector('.poolsdialog .selected a').href, '_blank', 'noopener,noreferrer')
 	            }
 			},
 	    },

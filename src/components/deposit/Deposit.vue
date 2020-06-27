@@ -82,7 +82,7 @@
                 </li>
             </ul>
 
-            <p style="text-align: center">
+            <p style="text-align: center" class='buttons'>
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"
                 	@click='justDeposit = true; handle_add_liquidity()' 

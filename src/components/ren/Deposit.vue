@@ -77,7 +77,7 @@
 
             <approve-chi></approve-chi>
 
-            <p style="text-align: center">
+            <p style="text-align: center" class='buttons'>
                 <button id="add-liquidity" :disabled='amountAfterBTC < 0' @click='handle_add_liquidity()'>
                 		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
                 </button>

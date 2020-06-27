@@ -421,6 +421,13 @@ label[for='gasinstant'] {
   #max_slippage > * {
     width: 100%;
   }
+  #max_slippage > label {
+    margin-left: 0;
+  }
+  #gas_price > label {
+    display: block;
+    margin-left: 0;
+  }
 }
 
 .simplebutton {
@@ -574,6 +581,12 @@ button.bn-onboard-custom, #derivation-select button, #account-select + button {
   }
   .showmobiletable {
     display: block;
+  }
+}
+
+@media only screen and (max-device-width: 500px) {
+  p.buttons button:nth-child(n+3), div.buttons button:nth-child(n+3) {
+    margin-top: 0.8em;
   }
 }
 

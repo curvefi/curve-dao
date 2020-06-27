@@ -106,7 +106,7 @@
 
         <gas-price></gas-price>
 
-        <div id='withdraw_buttons'>
+        <div id='withdraw_buttons' class='buttons'>
             <div class='info-message gentle-message' id='amount-warning' v-show = 'nobalance'>
 	        	You don't have any available amount to withdraw
 	        	<!-- <div v-show="currentPool == 'susdv2'">

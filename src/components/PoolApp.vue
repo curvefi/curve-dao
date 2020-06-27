@@ -183,6 +183,9 @@
     #hamburger:checked ~ a.showmobile {
       display: block;
     }
+    .blue.window.half-width, .info-message.window.half-width {
+      width: 90%;
+    }
   }
   h1 > img {
     height: 52.125px;

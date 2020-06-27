@@ -4,6 +4,9 @@
             {{errorMessage}}
         </p>
     	<div id='gas_price' v-show='gasPriceMedium'><span>Gas price:</span>
+            <!-- <input id="gasslow" type="radio" name="gas" :value='gasPriceSlow' @click='gasPrice = gasPriceSlow'>
+            <label for="gasslow">{{Math.round(gasPriceSlow)}} Slow</label> -->
+
             <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='gasPrice = gasPriceMedium'>
             <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
 
@@ -12,7 +15,6 @@
 
             <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
             <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
-
             <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = ''">
             <label for="custom_gas" @click="gasPrice = ''">
                 <input type="text" id="custom_gas_input" 
@@ -37,6 +39,9 @@
 		}),
 
 		computed: {
+            gasPriceSlow() {
+                return state.gasPriceInfo && state.gasPriceInfo.slow || 15
+            },
 			gasPriceMedium() {
                 return state.gasPriceInfo && state.gasPriceInfo.medium || 20
             },
@@ -89,6 +94,7 @@
                 catch(err) {
                     let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
                     state.gasPriceInfo = {
+                        slow: gasPrice -2,
                         medium: gasPrice,
                         fast: gasPrice + 2,
                         fastest: gasPrice + 4,
@@ -105,5 +111,16 @@
     .pulse {
         animation: pulse 1s 3;
         margin-bottom: 8px;
+    }
+    #custom_gas_wrapper {
+        margin-top: 0.4em;
+        margin-left: 6em;
+        display: block;
+    }
+    @media only screen and (max-device-width: 730px) {
+        #custom_gas_wrapper, #gas_price label {
+            margin-top: 0;
+            margin-left: 0;
+        }
     }
 </style>

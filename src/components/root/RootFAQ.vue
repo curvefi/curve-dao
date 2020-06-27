@@ -27,6 +27,14 @@
             <p>
                 <a href='https://medium.com/@crypto.tutorials/curve-fi-how-does-it-work-b673a8fe16cc'>Getting started tutorial</a>
             </p>
+
+            <p>
+                <a href='https://www.youtube.com/watch?v=fGxTwm-rf1s'>How to use Curve Y pool video</a>
+            </p>
+
+            <p>
+                <a href='https://www.youtube.com/watch?v=1SN7zKlb5pk'>How Curve.fi works</a>
+            </p>
         </p>
 
         <h3>Has Curve been audited?</h3>

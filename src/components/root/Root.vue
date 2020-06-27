@@ -208,7 +208,7 @@
 			                    	</span>
 	                    		</span> 
 	                    		<span :class="{'loading line': !daily_apy[4]}">{{daily_apy[4]}}%</span>
-	                    		<div :class="{'loading line': snxRewards === null}">(+{{snxRewards | toFixed2}}%
+	                    		<div :class="{'loading line': snxRewards === null, 'incentive-apr': true}">(+{{snxRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX
 		                                <span class='tooltiptext'>
 		                                    SNX LP reward annualized
@@ -305,7 +305,7 @@
 			                    	</span>
 	                    		</span> 
 	                    		<span :class="{'loading line': !daily_apy[8]}">{{daily_apy[8]}}%</span>
-	                    		<div :class="{'loading line': sbtcRewards === null}">(+{{sbtcRewards | toFixed2}}%
+	                    		<div :class="{'loading line': sbtcRewards === null, 'incentive-apr': true}">(+{{sbtcRewards | toFixed2}}%
 	                    			<span class='tooltip'>SNX/REN
 		                                <span class='tooltiptext'>
 		                                    SNX/REN LP reward annualized
@@ -541,6 +541,9 @@
 
 <style scoped>
 	@media only screen and (min-device-width : 320px) and (max-device-width : 730px) {
+		#app .tradeview {
+ 	 		width: 90%;
+		}
 		.poolsdialog.poolsdialog > div a {
 			display: block;
 		  text-align: center;
@@ -564,6 +567,9 @@
 		}
 		.pools {
 		  width: 100%;
+		}
+		.poolsdialog .incentive-apr {
+			text-align: center;
 		}
 	}
 	.poolsdialog > div a {

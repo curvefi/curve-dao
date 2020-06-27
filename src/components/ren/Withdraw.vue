@@ -125,7 +125,7 @@
 
         <gas-price></gas-price>
 
-        <div id='withdraw_buttons'>
+        <div id='withdraw_buttons' class='buttons'>
             <p v-show="currentPool == 'ren'">
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>

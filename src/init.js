@@ -51,7 +51,7 @@ export const notify = Notify({
 export function notifyHandler(hash) {
   let { emitter } = notify.hash(hash)
   emitter.on('all', transaction => ({
-      onclick: () => window.open(`https://etherscan.io/tx/${transaction.hash}`)
+      onclick: () => window.open(`https://etherscan.io/tx/${transaction.hash}`, '_blank', 'noopener, norefferer')
     })
   )
 }

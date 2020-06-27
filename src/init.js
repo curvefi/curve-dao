@@ -110,6 +110,10 @@ if(window.web3 && window.web3.currentProvider.isImToken) {
   wallets.find(wallet => wallet.walletName == 'imToken').preferred = true
 }
 
+if(window.web3 && window.web3.currentProvider.isStatus) {
+  wallets.find(wallet => wallet.walletName == 'status').preferred = true
+}
+
 export const onboard = Onboard({
   dappId: 'c68d8ec3-9b9a-4ba5-a3eb-6232eff79030',       // [String] The API key created by step one above
   networkId: 1,  // [Integer] The Ethereum network ID your Dapp uses.

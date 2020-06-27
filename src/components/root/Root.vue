@@ -465,17 +465,19 @@
 					fetch('https://api.coinpaprika.com/v1/tickers/ren-republic-protocol'),
 					fetch('https://api.coinpaprika.com/v1/tickers/btc-bitcoin'),
 					fetch('https://api.coingecko.com/api/v3/simple/price?ids=balancer&vs_currencies=usd'),
+					fetch('https://pushservice.curve.fi/getBalancerTVL'),
 				])
 				let prices = await Promise.all(requests.map(request => request.json()))
-				let [snxPrice, renPrice, btcPrice, balPrice] = prices;
+				let [snxPrice, renPrice, btcPrice, balPrice, balancerTVL] = prices;
 				snxPrice = snxPrice.quotes.USD.price;
 				renPrice = renPrice.quotes.USD.price;
 				btcPrice = btcPrice.quotes.USD.price;
 				balPrice = balPrice.balancer.usd;
+				balancerTVL = balancerTVL.TVL
 
 				//total factor 0.64
 
-				this.balRewards = (decoded[6] / 1e18 * snxPrice + decoded[7] / 1e18 * renPrice) * 0.64 / 99036405 * balPrice * 100
+				this.balRewards = (decoded[6] / 1e18 * snxPrice + decoded[7] / 1e18 * renPrice) * 0.64 / balancerTVL * balPrice * 100
 
 				this.snxRewards = 365 * (decoded[2] * decoded[3] / 1e18)/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
 

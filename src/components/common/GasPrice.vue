@@ -22,6 +22,7 @@
                     name="custom_gas_input"
                     :value = 'customGasPriceInput'
                    	@input='gasPrice = $event.target.value'>
+                <span v-show='customGasPriceInput == gasPriceSlow'> Slow</span>
             </label>
         </div>
     </div>
@@ -52,7 +53,6 @@
                 return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
             },
             customGasDisabled() {
-            	console.log(Object.values(state.gasPriceInfo))
             	return Object.values(state.gasPriceInfo).includes(state.gasPrice)
             },
             gasPrice: {
@@ -64,7 +64,7 @@
             	},
             },
             customGasPriceInput() {
-            	if(this.customGasDisabled) return ''
+            	if(this.customGasDisabled) return this.gasPriceSlow
             	return this.gasPrice
             },
             errorMessage() {
@@ -100,7 +100,7 @@
                         fastest: gasPrice + 4,
                     } 
                 }
-                state.gasPrice = state.gasPriceInfo.fast
+                if(!state.gasPrice) state.gasPrice = state.gasPriceInfo.fast
             }
         },
 

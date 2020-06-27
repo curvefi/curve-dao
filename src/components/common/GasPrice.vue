@@ -23,7 +23,7 @@
                     :value = 'customGasPriceInput'
                    	@input='gasPrice = $event.target.value'>
                 <span v-show='customGasPriceInput == gasPriceSlow'> Slow</span>
-                <span v-show='customGasPriceInput < gasPriceSlow' class='gastoolow'> 
+                <span v-show='customGasPriceInput && customGasPriceInput < gasPriceSlow' class='gastoolow'> 
                     <span class='tooltip'>
                         Low
                         <span class='tooltiptext'>
@@ -39,6 +39,8 @@
 <script>
 	import { state } from './gasPriceStore'
     import { state as errorState } from './errorStore'
+
+    import { retry } from '../../utils/helpers'
 
 	import BN from 'bignumber.js'
 
@@ -61,7 +63,7 @@
                 return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
             },
             customGasDisabled() {
-            	return (Object.values(state.gasPriceInfo).slice(0, -1)).includes(state.gasPrice)
+            	return state.gasPriceInfo && (Object.values(state.gasPriceInfo).slice(0, -1)).includes(state.gasPrice)
             },
             gasPrice: {
             	get() {
@@ -96,7 +98,7 @@
         methods: {
             async getGasPrice() {
                 try {
-                    let gasPriceInfo = await fetch('https://fees.upvest.co/estimate_eth_fees')
+                    let gasPriceInfo = await retry(fetch('https://fees.upvest.co/estimate_eth_fees'))
                     gasPriceInfo = await gasPriceInfo.json()
                     state.gasPriceInfo = gasPriceInfo.estimates
                 }

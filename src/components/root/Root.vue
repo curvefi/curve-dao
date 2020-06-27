@@ -312,6 +312,13 @@
 		                                </span>
 		                            </span>)
 	                    		</div>
+	                    		<div :class="{'loading line': balRewards === null, 'incentive-apr': true}">(+{{balRewards | toFixed2}}%
+	                    			<span class='tooltip'>BAL
+		                                <span class='tooltiptext'>
+		                                    BAL reward annualized
+		                                </span>
+		                            </span>)
+	                    		</div>
 	                    	</span>
 	                    </span>
 	                    <span class='volume'>Vol: <span :class="{'loading line': volumes.sbtc && volumes.sbtc[0] < 0}">
@@ -338,7 +345,7 @@
 	import Vue from 'vue'
 	import TotalBalances from './TotalBalances.vue'
 	import BasicTrade from '../graphs/BasicTrade.vue'
-	import allabis, { ERC20_abi, } from '../../allabis'
+	import allabis, { ERC20_abi, balancer_ABI, balancer_address, } from '../../allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 	import * as priceStore from '@/components/common/priceStore'
 
@@ -384,6 +391,7 @@
 			},
 			snxRewards: null,
 			sbtcRewards: null,
+			balRewards: null,
 			btcPrice: null,
 		}),
 		async created() {
@@ -429,6 +437,8 @@
 				let sCurve = new contract.web3.eth.Contract(allabis.susdv2.swap_abi, allabis.susdv2.swap_address)
 				let sbtcCurve = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
 
+				let balancerPool = new contract.web3.eth.Contract(balancer_ABI, balancer_address)
+
 				let calls = [
 					[curveRewards._address, curveRewards.methods.totalSupply().encodeABI()],
 					[sCurve._address, sCurve.methods.get_virtual_price().encodeABI()],
@@ -437,6 +447,15 @@
 
 					[sbtcRewards._address, sbtcRewards.methods.totalSupply().encodeABI()],
 					[sbtcCurve._address, sbtcCurve.methods.get_virtual_price().encodeABI()],
+
+					[	
+						balancerPool._address, 
+						balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()
+					],
+                    [
+                    	balancerPool._address,
+                    	balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()
+                	],
 				]
 
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call();
@@ -445,14 +464,18 @@
 					fetch('https://api.coinpaprika.com/v1/tickers/hav-havven'), 
 					fetch('https://api.coinpaprika.com/v1/tickers/ren-republic-protocol'),
 					fetch('https://api.coinpaprika.com/v1/tickers/btc-bitcoin'),
+					fetch('https://api.coingecko.com/api/v3/simple/price?ids=balancer&vs_currencies=usd'),
 				])
 				let prices = await Promise.all(requests.map(request => request.json()))
-				let snxPrice = prices[0];
-				let renPrice = prices[1];
-				let btcPrice = prices[2];
+				let [snxPrice, renPrice, btcPrice, balPrice] = prices;
 				snxPrice = snxPrice.quotes.USD.price;
 				renPrice = renPrice.quotes.USD.price;
 				btcPrice = btcPrice.quotes.USD.price;
+				balPrice = balPrice.balancer.usd;
+
+				//total factor 0.64
+
+				this.balRewards = (decoded[6] / 1e18 * snxPrice + decoded[7] / 1e18 * renPrice) * 0.64 / 99036405 * balPrice * 100
 
 				this.snxRewards = 365 * (decoded[2] * decoded[3] / 1e18)/7*snxPrice/((+decoded[0]) * (+decoded[1])/1e36) * 100
 

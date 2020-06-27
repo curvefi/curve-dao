@@ -15,14 +15,22 @@
 
             <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
             <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
-            <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = ''">
-            <label for="custom_gas" @click="gasPrice = ''">
+            <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = -1">
+            <label for="custom_gas" @click="gasPrice = -1">
                 <input type="text" id="custom_gas_input" 
                     :disabled='customGasDisabled'
                     name="custom_gas_input"
                     :value = 'customGasPriceInput'
                    	@input='gasPrice = $event.target.value'>
                 <span v-show='customGasPriceInput == gasPriceSlow'> Slow</span>
+                <span v-show='customGasPriceInput < gasPriceSlow' class='gastoolow'> 
+                    <span class='tooltip'>
+                        Low
+                        <span class='tooltiptext'>
+                            Too low gas price. Your transaction may be dropped.
+                        </span>
+                    </span>
+                </span>
             </label>
         </div>
     </div>
@@ -53,7 +61,7 @@
                 return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
             },
             customGasDisabled() {
-            	return Object.values(state.gasPriceInfo).includes(state.gasPrice)
+            	return (Object.values(state.gasPriceInfo).slice(0, -1)).includes(state.gasPrice)
             },
             gasPrice: {
             	get() {
@@ -64,6 +72,7 @@
             	},
             },
             customGasPriceInput() {
+                if(this.gasPrice == -1) return ''
             	if(this.customGasDisabled) return this.gasPriceSlow
             	return this.gasPrice
             },
@@ -100,7 +109,8 @@
                         fastest: gasPrice + 4,
                     } 
                 }
-                if(!state.gasPrice) state.gasPrice = state.gasPriceInfo.fast
+                if(!this.gasPriceInterval)
+                    state.gasPrice = state.gasPriceInfo.fast
             }
         },
 
@@ -116,6 +126,9 @@
         margin-top: 0.4em;
         margin-left: 6em;
         display: block;
+    }
+    .gastoolow {
+        color: darkred;
     }
     @media only screen and (max-device-width: 730px) {
         #custom_gas_wrapper, #gas_price label {

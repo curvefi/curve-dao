@@ -767,10 +767,16 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 				upsertTx(transaction)
 			})
 			.on('error', err => {
+				console.error(err)
+				errorStore.handleError(err)
 				transaction.state = 16;
 				upsertTx(transaction)
 			})
-			.catch(err => reject(err))
+			.catch(err => {
+				console.error(err)
+				errorStore.handleError(err)
+				reject(err)
+			})
 		})
 	}
 	catch(err) {

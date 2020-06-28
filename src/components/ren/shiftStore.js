@@ -758,7 +758,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			})
 			.once('transactionHash', hash => {
 				notifyHandler(hash)
-				resolve()
+				resolve(hash)
 			})
 			.once('receipt', () => {
 				//this.transactions = this.transactions.filter(t => t.id != id)
@@ -863,7 +863,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			})
 			.once('transactionHash', hash => {
 				notifyHandler(hash)
-				resolve()
+				resolve(hash)
 			})
 			.once('receipt', () => {
 				//this.transactions = this.transactions.filter(t => t.id != id)
@@ -1002,7 +1002,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 		await burn
 		.once('transactionHash', hash => {
 			notifyHandler(hash)
-			resolve()
+			resolve(hash)
 		})
 		.once('receipt', receipt => {
 			let transaction = state.transactions.find(t => t.id == id)

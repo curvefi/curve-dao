@@ -94,7 +94,7 @@
                     </ul>
                 </fieldset>
             </div>
-            <p class='exchange-rate' v-show='[1,2].includes(this.from_currency) && this.to_currency == 0'>Exchange rate (including fees and renVM fee): 
+            <p class='exchange-rate' v-show='!([1,2].includes(this.from_currency) && [1,2].includes(this.to_currency))'>Exchange rate (including fees and renVM fee): 
             	<span id="exchange-rate" v-show='!lessThanMinOrder'>{{ exchangeRate && exchangeRate.toFixed(4) }}</span>
             	<span v-show='lessThanMinOrder'>N/A</span>
             </p>

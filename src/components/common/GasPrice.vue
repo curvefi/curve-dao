@@ -7,16 +7,16 @@
             <!-- <input id="gasslow" type="radio" name="gas" :value='gasPriceSlow' @click='gasPrice = gasPriceSlow'>
             <label for="gasslow">{{Math.round(gasPriceSlow)}} Slow</label> -->
 
-            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='gasPrice = gasPriceMedium'>
+            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
             <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
 
-            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='gasPrice = gasPriceFast'>
+            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
             <label for="gasfast">{{Math.round(gasPriceFast)}} Fast</label>
 
-            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='gasPrice = gasPriceFastest'>
+            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
             <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
-            <input id="custom_gas" type="radio" name="gas" value='-' @click="gasPrice = -1">
-            <label for="custom_gas" @click="gasPrice = -1">
+            <input id="custom_gas" type="radio" name="gas" value='-' @click="customGasDisabled = false; gasPrice = gasPriceSlow">
+            <label for="custom_gas" @click="customGasDisabled = false; gasPrice = gasPriceSlow">
                 <input type="text" id="custom_gas_input" 
                     :disabled='customGasDisabled'
                     name="custom_gas_input"
@@ -47,6 +47,7 @@
 	export default {
 		data: () => ({
 			gasPriceInterval: null,
+            customGasDisabled: true,
 		}),
 
 		computed: {
@@ -62,9 +63,6 @@
             gasPriceFastest() {
                 return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
             },
-            customGasDisabled() {
-            	return state.gasPriceInfo && (Object.values(state.gasPriceInfo).slice(0, -1)).includes(state.gasPrice)
-            },
             gasPrice: {
             	get() {
             		return state.gasPrice
@@ -74,7 +72,6 @@
             	},
             },
             customGasPriceInput() {
-                if(this.gasPrice == -1) return ''
             	if(this.customGasDisabled) return this.gasPriceSlow
             	return this.gasPrice
             },

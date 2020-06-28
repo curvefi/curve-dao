@@ -141,7 +141,7 @@
                 v-show = "['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0 "
                 :disabled = 'slippage < -0.03 || !btcAddress || amountAfterBTC < 0'
                 @click='handle_remove_liquidity(true)'>
-                Withdraw & exit <span class='loading line' v-show='loadingAction == 2'></span>
+                Withdraw & claim <span class='loading line' v-show='loadingAction == 2'></span>
             </button>
             <button id='claim-snx'
                 @click='claim_SNX'

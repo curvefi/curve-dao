@@ -267,7 +267,7 @@
                     //mooniswap, uniswap v2 all, dforce
                 //enable multipath DAI, multipath USDC
                 //enabled curve compound, curve usdt, curve y, curve binance, curve susd, curve pax
-                let disabled = 0x20000000;
+                let disabled = 0x20000000 + 0x40000000;
                 let enabled = 0x1000 + 0x2000 + 0x4000 + 0x8000 + 0x40000 + 0x80000000
                 let enabledMulti = 0x10000 + 0x20000 + 0x400000000
                 let curveFlags = {

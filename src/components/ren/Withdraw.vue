@@ -190,6 +190,9 @@
     import * as store from './shiftStore'
     import { state } from './shiftState'
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
     import * as errorStore from '../common/errorStore'
 
     import ApproveCHI from './ApproveCHI.vue'

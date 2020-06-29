@@ -32,6 +32,7 @@ const VolumePerPair = () => import('../components/VolumePerPair.vue')
 const TotalDeposits = () => import('../components/TotalDeposits.vue')
 const Integrations = () => import('../views/Integrations.vue')
 const Risks = () => import('../views/Risks.vue')
+const BugBounty = () => import('../views/BugBounty.vue')
 
 const ycTokens = () => import('../components/ycTokens/Index.vue')
 
@@ -152,6 +153,11 @@ let routes = [
         path: 'risks',
         name: 'Risks',
         component: Risks,
+      },
+      {
+        path: 'bugbounty',
+        name: 'BugBounty',
+        component: BugBounty,
       },
     ]
   },

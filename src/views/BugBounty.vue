@@ -96,16 +96,16 @@
     .description li {
         margin-top: 0.3em;
     }
-    .low .type {
+    .low {
         color: grey;
     }
-    .medium .type {
+    .medium {
         color: green;
     }
-    .high .type {
+    .high {
         color: purple;
     }
-    .veryhigh .type {
+    .veryhigh {
         color: darkred;
     }
 </style>

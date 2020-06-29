@@ -7,7 +7,7 @@
                     <span class='first-letter'>S</span>cope:
                 </span>
                 <div class='description'>
-                    Issues which can lead to substantial loss of money
+                    Issues which can lead to substantial loss of money, critical bugs like a broken live-ness condition or irreversible loss of funds.
                 </div>
             </div>
             <div>
@@ -27,8 +27,8 @@
                 </span>
                 <div class='description'>
                     <ul>
-                        <li>Already known vulnerabilities</li>
-                        <li>Vulnerabilities in front-end code not leading to smart contract vulnerabilities</li>
+                        <li>Already known vulnerabilities.</li>
+                        <li>Vulnerabilities in front-end code not leading to smart contract vulnerabilities.</li>
                     </ul>
                 </div>
             </div>
@@ -49,7 +49,18 @@
                     <span class='first-letter'>B</span>ounty payout:
                 </span>
                 <div class='description'>
-                    TBD
+                    <div>
+                        <span class='low'>Low:</span> 2500$
+                    </div>
+                    <div>
+                        <span class='medium'>Medium:</span> 5000$
+                    </div>
+                    <div>
+                        <span class='high'>High:</span> 10 000$
+                    </div>
+                    <div>
+                        <span class='veryhigh'>Very high:</span> 50 000$
+                    </div>
                 </div>
             </div>
             <div>
@@ -57,7 +68,7 @@
                     <span class='first-letter'>C</span>ontact:
                 </span>
                 <div class='description'>
-                    info@swiss-stake.com
+                    security@curve.fi
                 </div>
             </div>
         </fieldset>
@@ -84,5 +95,17 @@
     }
     .description li {
         margin-top: 0.3em;
+    }
+    .low .type {
+        color: grey;
+    }
+    .medium .type {
+        color: green;
+    }
+    .high .type {
+        color: purple;
+    }
+    .veryhigh .type {
+        color: darkred;
     }
 </style>

@@ -38,28 +38,6 @@ contract.web3.setProvider(biconomy)
 console.log(contract.adapterContract, "ADAPTER CONTRACT")
 
 
-
-const domainType = [
-  { name: "name", type: "string" },
-  { name: "version", type: "string" },
-  { name: "chainId", type: "uint256" },
-  { name: "verifyingContract", type: "address" }
-];
-
-const metaTransactionType = [
-  { name: "nonce", type: "uint256" },
-  { name: "from", type: "address" },
-  { name: "functionSignature", type: "bytes" }
-];
-
-let domainData = {
-  name: "CurveExchangeAdapter",
-  version: "1",
-  verifyingContract: null,
-  chainId: 1,
-};
-
-
 const txObject = () => ({
 	id: '',
 	timestamp: null,
@@ -765,8 +743,6 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 
 	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
-	domainData.verifyingContract = adapterContract._address
-
 	console.log(params.contractCalls[0].sendTo, "SEND TO")
 	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase()]
 		.includes(params.contractCalls[0].sendTo.toLowerCase())) {
@@ -789,21 +765,6 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 		let functionSignature = adapterContract.methods.mintThenSwap(
 			...args
 		).encodeABI()
-
-		let message = {}
-		message.nonce = +nonce
-		message.from = state.default_account
-		message.functionSignature = functionSignature
-
-		let dataToSign = {
-          types: {
-            EIP712Domain: domainType,
-            MetaTransaction: metaTransactionType
-          },
-          domain: domainData,
-          primaryType: "MetaTransaction",
-          message: message
-        };
 
 		new Promise((resolve, reject) => {
 			contract.web3.currentProvider.send({
@@ -1006,62 +967,25 @@ export async function burnSwap(data) {
 
 
 	let nonce = await contract.adapterContract.methods.getNonce(state.default_account).call()
-
-	domainData.verifyingContract = contract.adapterContract._address
+	let chainID = await contract.adapterContract.methods.getChainID().call()
 
 	let functionSignature = contract.adapterContract.methods.swapThenBurn(
 		...args
 	).encodeABI()
 
+	let message = 'Please sign this message to send the free meta transaction'
+	let messageToSign = `${message}${nonce}${chainID}`
 
-	let message = {}
-	message.nonce = +nonce
-	message.from = state.default_account
-	message.functionSignature = functionSignature
+	let metaSignature = await web3.eth.personal.sign(messageToSign, state.default_account)
 
-	let dataToSign = {
-      types: {
-        EIP712Domain: domainType,
-        MetaTransaction: metaTransactionType
-      },
-      domain: domainData,
-      primaryType: "MetaTransaction",
-      message: message
-    };
-
-	let [r, s, v] = await new Promise((resolve, reject) => {
-		contract.web3.currentProvider.send({
-            jsonrpc: "2.0",
-            id: 999999999999,
-            method: "eth_signTypedData_v4",
-            params: [state.default_account, JSON.stringify(dataToSign)]
-          },
-          function(error, response) {
-            console.info(`User signature is ${response.result}`);
-            if (error || (response && response.error)) {
-              reject(error)
-            } else if (response && response.result) {
-              let { r, s, v } = helpers.getSignatureParameters(response.result);
-              console.log(JSON.stringify(message));
-              console.log(message);
-              console.log(helpers.getSignatureParameters(response.result));
-
-              const recovered = sigUtil.recoverTypedSignature_v4({
-                data: dataToSign,
-                sig: response.result
-              });
-              console.log(`Recovered ${recovered}`);
-              resolve([r, s, v])
-            }
-          }
-        )
-    })
+	let {r, s, v} = helpers.getSignatureParameters(metaSignature)
 
     try {
-    	await contract.adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v)
+    	await contract.adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, message, `${messageToSign.length}`, r, s, v)
 	    .send({
 	    	from: state.default_account,
 	    	gasLimit: 2100000,
+	    	gasPrice: gasPriceStore.state.gasPriceWei,
 	    })
 	}
 	catch(err) {

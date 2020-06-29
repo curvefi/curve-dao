@@ -125,7 +125,7 @@
                     </li>
                     <li>
                         <input id='swapw' type='checkbox' name='swapw' v-model = 'swapwrapped'>
-                        <label for='swapw' v-show = "!['susdv2', 'tbtc', 'ren'].includes(currentPool)">Swap wrapped</label>
+                        <label for='swapw' v-show = "!['susdv2', 'tbtc', 'ren', 'sbtc'].includes(currentPool)">Swap wrapped</label>
                     </li>
                 </ul>
                 <p class='simple-error' v-show='exchangeRate<=0.98'>

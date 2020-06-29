@@ -28,6 +28,40 @@ import { state } from './shiftState'
 
 import * as errorStore from '../common/errorStore'
 
+let sigUtil = require('eth-sig-util')
+
+import Biconomy from "@biconomy/mexa";
+const biconomy = new Biconomy(contract.web3.currentProvider,{apiKey: 'KlDgWW0Dg.48cc902e-03a1-4d7b-9774-83b4e8571736', debug: true});
+window.web3.setProvider(biconomy)
+contract.web3.setProvider(biconomy)
+
+let biconomyweb3 = new Web3(biconomy)
+
+console.log(contract.adapterContract, "ADAPTER CONTRACT")
+
+
+
+const domainType = [
+  { name: "name", type: "string" },
+  { name: "version", type: "string" },
+  { name: "chainId", type: "uint256" },
+  { name: "verifyingContract", type: "address" }
+];
+
+const metaTransactionType = [
+  { name: "nonce", type: "uint256" },
+  { name: "from", type: "address" },
+  { name: "functionSignature", type: "bytes" }
+];
+
+let domainData = {
+  name: "CurveExchangeAdapter",
+  version: "1",
+  verifyingContract: null,
+  chainId: 1,
+};
+
+
 const txObject = () => ({
 	id: '',
 	timestamp: null,
@@ -74,7 +108,7 @@ const txObject = () => ({
 })
 
 let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.oldAdapterAddress)
-let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+let renAdapter = new biconomyweb3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 
 let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.oldAdapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
@@ -733,6 +767,8 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 
 	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
+	domainData.verifyingContract = adapterContract._address
+
 	console.log(params.contractCalls[0].sendTo, "SEND TO")
 	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase()]
 		.includes(params.contractCalls[0].sendTo.toLowerCase())) {
@@ -748,6 +784,63 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	}
 	let txhash
 	try {
+
+		//meta tx
+
+		let nonce = await adapterContract.methods.getNonce(state.default_account).call()
+		let functionSignature = adapterContract.methods.mintThenSwap(
+			...args
+		).encodeABI()
+
+		let message = {}
+		message.nonce = +nonce
+		message.from = state.default_account
+		message.functionSignature = functionSignature
+
+		let dataToSign = {
+          types: {
+            EIP712Domain: domainType,
+            MetaTransaction: metaTransactionType
+          },
+          domain: domainData,
+          primaryType: "MetaTransaction",
+          message: message
+        };
+
+		new Promise((resolve, reject) => {
+			contract.web3.currentProvider.send({
+	            jsonrpc: "2.0",
+	            id: 999999999999,
+	            method: "eth_signTypedData_v4",
+	            params: [state.default_account, JSON.stringify(dataToSign)]
+	          },
+	          function(error, response) {
+	            console.info(`User signature is ${response.result}`);
+	            if (error || (response && response.error)) {
+	              reject(error)
+	            } else if (response && response.result) {
+	              let { r, s, v } = helpers.getSignatureParameters(response.result);
+	              console.log(userAddress);
+	              console.log(JSON.stringify(message));
+	              console.log(message);
+	              console.log(helpers.getSignatureParameters(response.result));
+
+	              const recovered = sigUtil.recoverTypedSignature_v4({
+	                data: dataToSign,
+	                sig: response.result
+	              });
+	              console.log(`Recovered ${recovered}`);
+	              resolve(r, s, v)
+	            }
+	          }
+	        )
+        })
+
+        await adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v).send({
+        	from: state.default_account,
+        	gasLimit: 2100000,
+        })
+
 		txhash = await new Promise((resolve, reject) => {
 			return adapterContract.methods.mintThenSwap(
 				...args
@@ -899,6 +992,8 @@ export async function burnSwap(data) {
 		state.default_account, contract.adapterContract._address, data.inf_approval)
     await helpers.setTimeoutPromise(100)
 
+    console.log(contract.adapterContract._address, "THE ADDRESS")
+
 
 	let args = [
 		RenJS.utils.BTC.addressToHex(data.address),
@@ -909,6 +1004,73 @@ export async function burnSwap(data) {
 
 	if(contract.currentContract == 'ren') args = args.slice(0,-1)
 
+	console.log(args, "THE ARGS")
+
+
+	let nonce = await contract.adapterContract.methods.getNonce(state.default_account).call()
+
+	domainData.verifyingContract = contract.adapterContract._address
+
+	let functionSignature = contract.adapterContract.methods.swapThenBurn(
+		...args
+	).encodeABI()
+
+
+	let message = {}
+	message.nonce = +nonce
+	message.from = state.default_account
+	message.functionSignature = functionSignature
+
+	let dataToSign = {
+      types: {
+        EIP712Domain: domainType,
+        MetaTransaction: metaTransactionType
+      },
+      domain: domainData,
+      primaryType: "MetaTransaction",
+      message: message
+    };
+
+	let [r, s, v] = await new Promise((resolve, reject) => {
+		contract.web3.currentProvider.send({
+            jsonrpc: "2.0",
+            id: 999999999999,
+            method: "eth_signTypedData_v4",
+            params: [state.default_account, JSON.stringify(dataToSign)]
+          },
+          function(error, response) {
+            console.info(`User signature is ${response.result}`);
+            if (error || (response && response.error)) {
+              reject(error)
+            } else if (response && response.result) {
+              let { r, s, v } = helpers.getSignatureParameters(response.result);
+              console.log(JSON.stringify(message));
+              console.log(message);
+              console.log(helpers.getSignatureParameters(response.result));
+
+              const recovered = sigUtil.recoverTypedSignature_v4({
+                data: dataToSign,
+                sig: response.result
+              });
+              console.log(`Recovered ${recovered}`);
+              resolve([r, s, v])
+            }
+          }
+        )
+    })
+
+    try {
+    	await renAdapter.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v)
+	    .send({
+	    	from: state.default_account,
+	    	gasLimit: 2100000,
+	    })
+	}
+	catch(err) {
+		console.error(err)
+	}
+
+    return;
 	let tx = contract.adapterContract.methods.swapThenBurn(
 			...args
 		).send({

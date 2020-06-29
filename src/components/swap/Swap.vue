@@ -165,7 +165,7 @@
 
 <script>
     import * as common from '../../utils/common.js'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
     import { getters, contract as currentContract, gas as contractGas} from '../../contract'
     import * as helpers from '../../utils/helpers'
     import allabis from '../../allabis'
@@ -534,6 +534,7 @@
                 min_dy = min_dy.times(1-maxSlippage)
                 dx = cBN(dx.toString()).toFixed(0,1);
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 try {
                     if (this.inf_approval)
                         await common.ensure_underlying_allowance(i, currentContract.max_allowance, [], undefined, this.swapwrapped)
@@ -546,9 +547,11 @@
                     this.show_loading = false
                     throw err;
                 }
+                dismiss()
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
                                         for min ${this.toFixed(min_dy / this.precisions[j])} ${this.getCurrency(this.to_currency)}`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 min_dy = cBN(min_dy).toFixed(0);
                 let exchangeMethod = currentContract.swap.methods.exchange_underlying
                 if(this.swapwrapped || ['susdv2', 'tbtc', 'ren', 'sbtc'].includes(this.currentPool)) exchangeMethod = currentContract.swap.methods.exchange
@@ -562,6 +565,7 @@
                                     contractGas.swap[this.currentPool].exchange(i, j) : contractGas.swap[this.currentPool].exchange_underlying(i, j),
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>

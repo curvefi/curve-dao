@@ -56,6 +56,16 @@ export function notifyHandler(hash) {
   )
 }
 
+export function notifyNotification(message) {
+  let notificationObject = {
+    eventCode: 'notification',
+    type: 'pending',
+    message: message,
+  }
+
+  return notify.notification(notificationObject)
+}
+
 const wallets = [
   { walletName: "metamask" },
   {

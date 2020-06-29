@@ -1001,6 +1001,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
 		.once('transactionHash', hash => {
+			data.dismiss()
 			notifyHandler(hash)
 			resolve(hash)
 		})

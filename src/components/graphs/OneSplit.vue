@@ -189,7 +189,7 @@
     import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi,
         synthetixExchanger_address, synthetixExchanger_ABI,
         onesplit_address, onesplit_abi } from '../../allabis'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -611,11 +611,13 @@
                     bestContract.swap._address = address
                 }
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 try {
                     if (this.inf_approval)
                             await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                         else
                             await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                dismiss()
                 }
                 catch(err) {
                     this.handleError(err)
@@ -623,6 +625,7 @@
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
                                         for min ${this.toFixed(min_dy / this.precisions(j))} ${this.getCurrency(this.to_currency)}`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 if(this.bestPool == 7) {
                     try {
                         await this.onesplit.methods.swap(
@@ -638,6 +641,7 @@
                             gas: 4000000,
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>

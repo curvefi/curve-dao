@@ -152,7 +152,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas } from '../../contract'
     import allabis from '../../allabis'
@@ -279,18 +279,23 @@
                 this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
         		this.waitingMessage = `Please approve staking ${this.toFixed(tokens.div(BN(1e18)))} of your sCurve tokens`
+                var { dismiss } = notifyNotification(this.waitingMessage)
 				await common.ensure_stake_allowance(tokens);
-				this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+                dismiss()
+                this.waitingMessage = 'Please confirm stake transaction'
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
                 this.estimateGas = 125000
-				try {
+                try {
                     await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
-    					from: currentContract.default_account,
+                        from: currentContract.default_account,
                         gasPrice: this.gasPriceWei,
-    					gas: 200000,
-    				})
+                        gas: 200000,
+                    })
                     .once('transactionHash', hash => {
+				        this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+                        dismiss()
                         notifyHandler(hash)
                     })
                 }
@@ -538,12 +543,14 @@
 			    let minted = 0;
 			    if(this.depositc) {
                     this.waitingMessage = 'Please confirm deposit transaction'
+                    var { dismiss } = notifyNotification(this.waitingMessage)
                     await helpers.setTimeoutPromise(100)
 			    	let add_liquidity = currentContract.swap.methods.add_liquidity(this.amounts, token_amount).send({
 				        from: currentContract.default_account,
                         gasPrice: this.gasPriceWei,
 				        gas: contractGas.deposit[this.currentPool],
 				    }).once('transactionHash', hash => {
+                        dismiss()
                         notifyHandler(hash)
                         this.waitingMessage = 
                         `Waiting for deposit 
@@ -616,8 +623,6 @@
                     }
 				}
 				this.estimateGas = 0 
-				this.gasPrice = 0
-                this
                 this.justDeposit = false
 
 			    await this.handle_sync_balances();

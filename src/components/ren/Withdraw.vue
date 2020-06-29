@@ -175,7 +175,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { adapterAddress, balancer_ABI,  balancer_address } from '../../allabis'
@@ -524,7 +524,7 @@
                 this.waitingMessage = `Claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
                 if(this.currentPool == 'sbtc')
                     this.waitingMessage += ` and ${(this.pendingRENRewards / 1e18).toFixed(2)} REN`
-                
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
 
                 await new Promise((resolve, reject) => {
@@ -535,6 +535,7 @@
                             gas: 200000,
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                             resolve()
                         })
@@ -578,6 +579,7 @@
                     You'll see them in your unstaked balance afterwards.
                         
                 `;
+                var { dismiss } = notifyNotification(this.waitingMessage)
 
                 try {
                     await new Promise((resolve, reject) => {
@@ -588,6 +590,7 @@
                                 gas: 125000,
                             })
                             .once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 resolve()
                             })
@@ -652,7 +655,7 @@
                     this.estimateGas = gas / 2;
                     try {
                         await common.ensure_allowance_zap_out(token_amount, undefined, allabis[currentContract.currentContract].adapterAddress)
-
+                        var { dismiss } = notifyNotification('Please confirm withdrawal transaction')
 			        	await store.removeLiquidityImbalanceThenBurn({
                             address: this.btcAddress,
                             coinDestination: currentContract.default_account,
@@ -660,6 +663,7 @@
                             renBTCAmount: this.inputs[0],
                             max_burn_amount: token_amount,
                             gasPrice: this.gasPriceWei,
+                            dismiss: dismiss,
                         })
                     }
                     catch(err) {
@@ -680,6 +684,7 @@
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} tokens for withdrawal`
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         let min_amount;
                         try {
@@ -692,6 +697,7 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         console.log('remove liqudiity one coin then burn')
 			        	await store
 			        		.removeLiquidityOneCoinThenBurn({
@@ -701,12 +707,14 @@
                                 renBTCAmount: this.inputs[0],
                                 min_amount: BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1),
                                 gasPrice: this.gasPriceWei,
+                                dismiss: dismiss,
                             })
 			        }
 			        else {
                         try {
     			        	let min_amounts = await this.getMinAmounts();
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            var { dismiss } = notifyNotification(this.waitingMessage)
                             this.estimateGas = 600000
     			        	await store
                                 .removeLiquidityThenBurn({
@@ -716,6 +724,7 @@
                                     renBTCAmount: this.inputs[0],
                                     min_amounts: min_amounts,
                                     gasPrice: this.gasPriceWei,
+                                    dismiss: dismiss,
                                 })
                         }
                         catch(err) {

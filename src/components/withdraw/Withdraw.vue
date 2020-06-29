@@ -163,7 +163,7 @@
 
 <script>
 	import Vue from 'vue'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
     import * as common from '../../utils/common.js'
     import { getters, contract as currentContract, gas as contractGas, init } from '../../contract'
     import allabis, { balancer_ABI, balancer_address } from '../../allabis'
@@ -490,10 +490,11 @@
 			},
             async claim_SNX() {
                 this.show_loading = true
-                this.waitingMessage = `Claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
+                this.waitingMessage = `Please confirm claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
                 if(this.currentPool == 'sbtc')
                     this.waitingMessage += ` and ${(this.pendingRENRewards / 1e18).toFixed(2)} REN`
-
+                
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
                 this.estimateGas = 200000
@@ -508,6 +509,7 @@
                             gas: 200000,
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                             resolve()
                         })
@@ -529,6 +531,7 @@
                             gas: 600000,
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                         })
                     }
@@ -544,7 +547,7 @@
 			async unstake(amount, exit = false, unstake_only = false) {
                 if(unstake_only)
                     this.waitingMessage = `
-                        Unstaking ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr
+                        Please confirm unstaking ${this.toFixed(amount.div(BN(1e18)))} tokens from Mintr
                     `
                 else 
                     this.waitingMessage = `
@@ -554,6 +557,8 @@
                     You'll see them in your unstaked balance afterwards.
                         
                 `;
+                
+                var { dismiss } = notifyNotification(this.waitingMessage)
 
                 try {
     				await new Promise((resolve, reject) => {
@@ -564,6 +569,8 @@
                                 gas: 125000,
     						})
     						.once('transactionHash', hash => {
+                                this.waitingMessage = ''
+                                dismiss()
                                 notifyHandler(hash)
                                 resolve()
                             })
@@ -654,6 +661,8 @@
 			        	let gas = contractGas.withdraw[this.currentPool].imbalance(nonZeroInputs) | 0
                         try {
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            var { dismiss } = notifyNotification(this.waitingMessage)
+
                             try {
                                 this.estimateGas = await currentContract.swap.methods.remove_liquidity_imbalance(this.amounts, token_amount)
                                                     .estimateGas({
@@ -671,6 +680,7 @@
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
     				        }).once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
@@ -694,16 +704,20 @@
                         amounts = amounts.map(amount => amount || 0)
                         let gas = contractGas.depositzap[this.currentPool].withdrawImbalance(nonZeroInputs) | 0
                         this.waitingMessage = `Please approve ${this.toFixed(token_amount / 1e18)} Curve LP tokens for withdrawal`
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         try {
                             this.estimateGas = gas / (['compound', 'usdt'].includes(currentContract.currentContract) ? 1.5 : 2.5)
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(token_amount)
+                            dismiss()
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            var { dismiss } = notifyNotification(this.waitingMessage)
                             await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity_imbalance(amounts, token_amount).send({
     				        	from: currentContract.default_account, 
                                 gasPrice: this.gasPriceWei,
                                 gas: gas,
     				        }).once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 this.waitingMessage = 'Waiting for withdrawal to confirm: no further action needed'
                             })
@@ -729,8 +743,10 @@
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {
                         this.waitingMessage = `Please approve ${this.toFixed((amount / 1e18))} Curve LP tokens for withdrawal`
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         this.estimateGas = contractGas.depositzap[this.currentPool].withdraw / 2
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
+                        dismiss()
                         let min_amount;
                         try {
                             min_amount = await inOneCoin.methods.calc_withdraw_one_coin(amount, this.to_currency).call();
@@ -742,6 +758,7 @@
                             this.show_nobalance_i = this.to_currency;
                         }
                         this.waitingMessage = 'Please confirm withdrawal transaction'
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         let args = [BN(amount).toFixed(0,1), this.to_currency, BN(min_amount).times(BN(1).div(BN(this.getMaxSlippage))).toFixed(0, 1)]
                         if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) args.push(this.donate_dust)
                         await helpers.setTimeoutPromise(100)
@@ -753,6 +770,7 @@
 			        			gasPrice: this.gasPriceWei,
                                 gas: contractGas.depositzap[this.currentPool].withdraw | 0,
 			        		}).once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -766,10 +784,13 @@
 			        }
 			        else if(this.to_currency == 10) {
                         this.waitingMessage = `Please approve ${this.toFixed(amount / 1e18)} Curve LP tokens for withdrawal`
+                        var { dismiss } = notifyNotification(this.waitingMessage)
                         try {
                             this.estimateGas = contractGas.depositzap[this.currentPool].withdrawShare / 2
                             if(!['tbtc','ren','sbtc'].includes(currentContract.currentContract)) await common.ensure_allowance_zap_out(amount)
+                            dismiss()
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            var { dismiss } = notifyNotification(this.waitingMessage)
                             let min_amounts = await this.getMinAmounts();
                             await helpers.setTimeoutPromise(100)
     			        	await inOneCoin.methods.remove_liquidity(amount, min_amounts)
@@ -779,6 +800,7 @@
                                 gas: contractGas.depositzap[this.currentPool].withdrawShare,
                             })
                             .once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -797,6 +819,7 @@
                         try {
     			        	let min_amounts = await this.getMinAmounts();
                             this.waitingMessage = 'Please confirm withdrawal transaction'
+                            var { dismiss } = notifyNotification(this.waitingMessage)
                             try {
                                 this.estimateGas = await currentContract.swap.methods.remove_liquidity(amount, min_amounts)
                                                     .estimateGas({
@@ -815,6 +838,7 @@
                                 gas: 600000,
                             })
                             .once('transactionHash', hash => {
+                                dismiss()
                                 notifyHandler(hash)
                                 this.waitingMessage = `Waiting for withdrawal 
                                 <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -929,11 +953,14 @@
 
                 amounts = amounts.map((v, i)=>BN(v).times(allabis.pax.coin_precisions[i]).toFixed(0))
                 this.waitingMessage = 'Please approve spending your coins'
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 await common.ensure_allowance(amounts, true, 'pax', 3)
+                dismiss()
                 let pax_deposit_zap = new currentContract.web3.eth.Contract(allabis.pax.deposit_abi, allabis.pax.deposit_address)
                 let token_amount = await currentContract.contracts.pax.swap.methods.calc_token_amount(amounts, true).call();
                 token_amount = BN(Math.floor(token_amount * 0.99).toString()).toFixed(0,1);
                 this.waitingMessage = 'Please confirm deposit to PAX pool transaction'
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 let nonZeroInputs = amounts.filter(Number).length
                 let gas = contractGas.depositzap.pax.deposit(nonZeroInputs) | 0
                 await helpers.setTimeoutPromise(100)
@@ -943,6 +970,7 @@
                         gas: gas,
                     })
                     .once('transactionHash', hash => {
+                        dismiss()
                         notifyHandler(hash)
                         this.waitingMessage = `Waiting for deposit to PAX transaction to confirm no further action required`
                     })

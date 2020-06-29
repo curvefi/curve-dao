@@ -35,8 +35,6 @@ const biconomy = new Biconomy(contract.web3.currentProvider,{apiKey: 'KlDgWW0Dg.
 window.web3.setProvider(biconomy)
 contract.web3.setProvider(biconomy)
 
-let biconomyweb3 = new Web3(biconomy)
-
 console.log(contract.adapterContract, "ADAPTER CONTRACT")
 
 
@@ -108,7 +106,7 @@ const txObject = () => ({
 })
 
 let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.oldAdapterAddress)
-let renAdapter = new biconomyweb3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 
 let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.oldAdapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
@@ -1060,7 +1058,7 @@ export async function burnSwap(data) {
     })
 
     try {
-    	await renAdapter.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v)
+    	await contract.adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v)
 	    .send({
 	    	from: state.default_account,
 	    	gasLimit: 2100000,
@@ -1070,6 +1068,7 @@ export async function burnSwap(data) {
 		console.error(err)
 	}
 
+    console.log("HERE")
     return;
 	let tx = contract.adapterContract.methods.swapThenBurn(
 			...args

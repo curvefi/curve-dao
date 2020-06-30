@@ -56,7 +56,7 @@
                     <input id="sync-balances" type="checkbox" name="sync-balances" @change='handle_sync_balances_proportion' :disabled='disabledButtons' checked v-model='sync_balances'>
                     <label for="sync-balances">Add all coins in a balanced proportion</label>
                 </li> -->
-                <li>
+                <li id='inf_approval_wrapper'>
                     <input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
                     <label for="inf-approval">Infinite approval - trust this contract forever 
                     	<span class='tooltip'>[?]
@@ -476,5 +476,8 @@
     }
     .currency_label .token-icon {
         margin-right: 0.6em;
+    }
+    #inf_approval_wrapper {
+        margin-top: 1em;
     }
 </style>

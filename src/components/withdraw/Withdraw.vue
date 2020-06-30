@@ -84,8 +84,8 @@
 	            	<input type='checkbox' id='donate_dust' name='donate_dust' v-model='donate_dust'>
 	            	<label 
                         for='donate_dust' 
-                        v-show="!['tbtc', 'ren', 'sbtc'].includes(currentPool)">
-                            Donate dust<span class='tooltip'>[?]<span class='tooltiptext'>(may use less gas)</span>
+                        v-show="!['tbtc', 'ren', 'sbtc'].includes(currentPool)">Donate dust
+                            <span class='tooltip'>[?]<span class='tooltiptext'>(may use less gas)</span>
                         </span>
 	            	</label>
 	            </li>

@@ -50,16 +50,16 @@
                 </span>
                 <div class='description'>
                     <div>
-                        <span class='low'>Low:</span> 2500$
+                        <span class='low'>Low:</span> $2,500 USD
                     </div>
                     <div>
-                        <span class='medium'>Medium:</span> 5000$
+                        <span class='medium'>Medium:</span> $5,000 USD
                     </div>
                     <div>
-                        <span class='high'>High:</span> 10 000$
+                        <span class='high'>High:</span> $10,000 USD
                     </div>
                     <div>
-                        <span class='veryhigh'>Very high:</span> 50 000$
+                        <span class='veryhigh'>Very high:</span> $50,000 USD
                     </div>
                 </div>
             </div>

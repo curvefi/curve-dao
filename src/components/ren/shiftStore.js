@@ -26,6 +26,9 @@ import * as subscriptionStore from '../common/subscriptionStore'
 import EventBus from '../graphs/EventBus'
 import { state } from './shiftState'
 
+import { clearIntervalAsync } from 'set-interval-async/dynamic'
+clearIntervalAsync(gasPriceStore.state.gasPriceInterval)
+
 import * as errorStore from '../common/errorStore'
 
 const txObject = () => ({
@@ -102,6 +105,7 @@ async function init() {
 	state.minersReleaseFee = fees.btc.release
 	state.mintFee = fees.btc.ethereum.mint
 	state.burnFee = fees.btc.ethereum.burn
+	state.loaded = true
 	if(findFirebaseUserSignature(contract.default_account)) useFirestore()
 	else loadTransactions()
 }

@@ -359,7 +359,7 @@
             },
 		},
 		created() {
-			this.$watch(() => contract.initializedContracts, val => {
+			this.$watch(() => contract.initializedContracts && state.loaded, val => {
 				if(!val) return;
 				this.mounted()
 			})
@@ -372,7 +372,7 @@
 					this.showModal = false
 			  	}
 			})
-			contract.initializedContracts && this.mounted()
+			contract.initializedContracts && state.loaded && this.mounted()
 		},
 		methods: {
 			async mounted() {
@@ -412,6 +412,7 @@
             },
 
 			async set_to_amount() {
+                console.log("SET TO AMOUNT")
 				this.highlight_input();
 				let i = this.from_currency
 				let j = this.to_currency
@@ -421,7 +422,7 @@
 				let ethfee = i == 0 ? state.mintFee : state.burnFee
 				ethfee = 1 - ethfee/10000
 				dx = BN(this.fromInput).times(this.fromPrecisions).times(ethfee).minus(fee).toFixed(0,1)
-
+                console.log(state.minersLockFee, state.mintFee, dx, "THE DX")
 				//case WBTC -> BTC
 					//swapping the entered WBTC amount and then from result subtract fees
 				//case BTC -> WBTC

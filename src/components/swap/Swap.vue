@@ -179,8 +179,6 @@
     import BigNumber from 'bignumber.js'
     var cBN = (val) => new BigNumber(val);
 
-    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
-
 
 	export default {
 
@@ -364,8 +362,6 @@
             },
             async set_to_amount() {
                 this.promise.cancel()
-                this.updateTimer && clearIntervalAsync(this.updateTimer)
-                this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 let promise = this.setAmountPromise()
                 try {
                     let [dy, dy_, dx_, balance] = await promise

@@ -276,6 +276,7 @@
                     susdv2: 0x40000,
                     pax: 0x80000000,
                     ren: 0x100000000,
+                    sbtc: 0x40000000000,
                 }
                 let addPoolFlag = Object.keys(curveFlags).filter(pool=>this.pools.includes(pool)).map(pool=>curveFlags[pool])
                 addPoolFlag = addPoolFlag.reduce((a, b) => a + b, 0)
@@ -389,8 +390,11 @@
                     this.multipath = 3
                 }
                 //no multipath
-                let curveDist = this.distribution.slice(4, 9);
+                let curveDist = this.distribution.slice(4, 9)
+                //pax
                 curveDist.push(this.distribution[17])
+                //ren, sbtc
+                curveDist.push(this.distribution[14], this.distribution[18]);
                 if(this.multipath == 0) {
                     distArr.push(curveDist)
                 }
@@ -403,7 +407,7 @@
             },
             distributionText() {
                 if(!this.decodeDistribution.length) return null;
-                let distPools = ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
+                let distPools = ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc']
                 let text = '';
                 let multipaths = ['DAI', 'USDC', 'USDT']
 
@@ -756,6 +760,11 @@
                         this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x20000),
                     )
                 }
+                if([7,8].includes(this.from_currency) && [7,8].includes(this.to_currency)) {
+                    calls.push(
+                        this.makeCall(amount, 1000, 4403952091136)
+                    )
+                }
                 return calls
             },
             async set_to_amount_onesplit() {
@@ -950,7 +959,7 @@
                         let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', 'ren', 'sbtc', '1split']
                         this.swapPromise.cancel()
                         let promises = [this.realComparePools()]
-                        if(!([7, 8].includes(this.from_currency) && [7,8].includes(this.to_currency)) || this.fromInput > 100) {
+                        if(this.fromInput > 100 || [7,8].includes(this.from_currency) && [7,8].includes(this.to_currency)) {
                             promises = [this.realComparePools(), this.set_to_amount_onesplit()]
                         }
                         this.swapPromise = helpers.makeCancelable(Promise.all(promises))

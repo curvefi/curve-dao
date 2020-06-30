@@ -26,9 +26,6 @@ import * as subscriptionStore from '../common/subscriptionStore'
 import EventBus from '../graphs/EventBus'
 import { state } from './shiftState'
 
-import { clearIntervalAsync } from 'set-interval-async/dynamic'
-clearIntervalAsync(gasPriceStore.state.gasPriceInterval)
-
 import * as errorStore from '../common/errorStore'
 
 const txObject = () => ({

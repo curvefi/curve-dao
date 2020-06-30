@@ -83,9 +83,11 @@
 		},
 
 		async created() {
-            this.getGasPrice()
+            !state.fetched && this.getGasPrice()
             state.gasPriceInterval && clearIntervalAsync(state.gasPriceInterval)
-            state.gasPriceInterval = setIntervalAsync(() => this.getGasPrice(), 3000)
+            if(!state.gasPriceInterval || state.gasPriceInterval.stopped) {
+                state.gasPriceInterval = setIntervalAsync(() => this.getGasPrice(), 3000)
+            }
 			this.$watch(() => state.gasPrice, val => {
 				state.gasPriceWei = BN(val).times(1e9).toFixed(0,1)
 			}, {

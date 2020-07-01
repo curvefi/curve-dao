@@ -343,7 +343,7 @@
                 return gasPriceStore.state.gasPriceWei
             },
             checkAddress() {
-                if(this.from_currency == 0 && this.to_currency == 1) {
+                if(this.from_currency == 0 && [1,2].includes(this.to_currency)) {
                     return contract.web3.utils.isAddress(this.address)
                 }
                 else {

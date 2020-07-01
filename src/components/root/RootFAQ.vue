@@ -48,6 +48,21 @@
         <p>Using Curve as an exchange user should be significantly less
         risky, but this is not advice.</p>
 
+        <h3>
+            <router-link to="/bugbounty">Bug bounty</router-link>
+        </h3>
+
+        <h3>Source code git</h3>
+        <p>
+  			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
+        </p>
+        <p>
+		 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
+		</p>
+        <p>
+            <a href='https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb'>Curve pool registry</a>
+        </p>
+
         <h3>How do I trade on Curve?</h3>
         <p>Before trading, you’ll have to approve Curve to interact with
         your stablecoin balance, similar to most DeFi applications.</p>
@@ -66,16 +81,6 @@
             In the future, fees and pool parameters will be decided by a DAO.
         </p>
 
-        <h3>Source code git</h3>
-        <p>
-  			<a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
-        </p>
-        <p>
-		 	<a href="https://github.com/pengiundev/curve-vue">Frontend</a>
-		</p>
-        <p>
-            <a href='https://github.com/curvefi/curve-pool-registry/blob/b17/doc/notebook/playbook.ipynb'>Curve pool registry</a>
-        </p>
 
         <h3>How do I provide liquidity to Curve?</h3>
 
@@ -118,3 +123,12 @@
     </div>
 
 </template>
+
+<style scoped>
+    .window.white a {
+        border-bottom: 1px dashed gray;
+    }
+    .window.white a:hover {
+        border-bottom: none;
+    }
+</style>

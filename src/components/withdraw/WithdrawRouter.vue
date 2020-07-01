@@ -5,10 +5,10 @@
 		</div>
 		<div v-show="['ren', 'sbtc'].includes(currentPool)" class='swapBTC-container info-message gentle-message'>
 	        <input id='swapbtc' type='checkbox' value='swapbtc' v-model='swapbtc'/>
-	        <label for='swapbtc'>
-	        	Withdraw <img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
+	        <label for='swapbtc'>Withdraw
+	        	<img :src="publicPath + 'tokens/btc.svg'" class='token-icon vamiddle'>
 	        	<span v-show='hasIncomplete > 0 && swapbtc == false'>
-	        		( {{hasIncomplete}} incomplete tx)
+	        		({{hasIncomplete}} incomplete tx)
 	        	</span>
 	        </label>
 	    	<span v-show='loading' class='loading line'></span>

@@ -237,9 +237,9 @@ export const gas = {
 	},
 	adapter: {
 		ren: {
-			mintThenSwap: 400001,
-			mintThenDeposit: 600001,
-			swapThenBurn: 400001,
+			mintThenSwap: 600001,
+			mintThenDeposit: 1100001,
+			swapThenBurn: 600001,
 			removeLiquidityThenBurn: 400001,
 			removeLiquidityImbalanceThenBurn: 600001,
 			removeLiquidityOneCoinThenBurn: 400001,

@@ -48,6 +48,7 @@
           <router-link to="/audits">Audits</router-link>
           <router-link to="/events">Events</router-link>
           <router-link to="/contracts">Contracts</router-link>
+          <router-link to="/bugbounty">Bug Bounty</router-link>
           <router-link to="/rootfaq">FAQ</router-link>
           <router-link to="/integrations">Integrations</router-link>
           <a href="https://twitter.com/CurveFinance">#Twitter</a>
@@ -65,6 +66,7 @@
       <router-link to="/totaldeposits" class='showmobile'>Total deposits</router-link>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
       <router-link to="/events" class='showmobile'>Events</router-link>
+      <router-link to="/bugbounty" class='showmobile'>Bug Bounty</router-link>
       <router-link to="/rootfaq" class='showmobile'>FAQ</router-link>
       <router-link to="/integrations" class='showmobile'>Integrations</router-link>
       <a href="https://twitter.com/CurveFinance" class='showmobile'>#Twitter</a>

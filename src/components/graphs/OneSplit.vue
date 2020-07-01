@@ -189,7 +189,7 @@
     import contractAbis, { ERC20_abi, cERC20_abi, yERC20_abi, synthERC20_abi,
         synthetixExchanger_address, synthetixExchanger_ABI,
         onesplit_address, onesplit_abi } from '../../allabis'
-    import { notify, notifyHandler } from '../../init'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
 
     import { contract, LENDING_PRECISION, PRECISION, gas as contractGas } from '../../contract'
     import * as common from '../../utils/common'
@@ -208,8 +208,6 @@
     import Worker from 'worker-loader!./worker.js';
     const worker = new Worker();
     const calcWorker = Comlink.wrap(worker);
-
-    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
 
     export default {
 
@@ -278,6 +276,7 @@
                     susdv2: 0x40000,
                     pax: 0x80000000,
                     ren: 0x100000000,
+                    sbtc: 0x40000000000,
                 }
                 let addPoolFlag = Object.keys(curveFlags).filter(pool=>this.pools.includes(pool)).map(pool=>curveFlags[pool])
                 addPoolFlag = addPoolFlag.reduce((a, b) => a + b, 0)
@@ -391,8 +390,11 @@
                     this.multipath = 3
                 }
                 //no multipath
-                let curveDist = this.distribution.slice(4, 9);
+                let curveDist = this.distribution.slice(4, 9)
+                //pax
                 curveDist.push(this.distribution[17])
+                //ren, sbtc
+                curveDist.push(this.distribution[14], this.distribution[18]);
                 if(this.multipath == 0) {
                     distArr.push(curveDist)
                 }
@@ -405,7 +407,7 @@
             },
             distributionText() {
                 if(!this.decodeDistribution.length) return null;
-                let distPools = ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax']
+                let distPools = ['compound', 'usdt', 'y', 'busd', 'susdv2', 'pax', 'ren', 'sbtc']
                 let text = '';
                 let multipaths = ['DAI', 'USDC', 'USDT']
 
@@ -611,11 +613,13 @@
                     bestContract.swap._address = address
                 }
                 this.waitingMessage = `Please approve ${this.fromInput} ${this.getCurrency(this.from_currency)} for exchange`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 try {
                     if (this.inf_approval)
                             await common.ensure_underlying_allowance(this.from_currency, contract.max_allowance, this.underlying_coins, address, this.swapwrapped, bestContract)
                         else
                             await common.ensure_underlying_allowance(this.from_currency, amount, this.underlying_coins, address, this.swapwrapped, bestContract);
+                dismiss()
                 }
                 catch(err) {
                     this.handleError(err)
@@ -623,6 +627,7 @@
                 this.waitingMessage = `Please confirm swap 
                                         from ${this.fromInput} ${this.getCurrency(this.from_currency)}
                                         for min ${this.toFixed(min_dy / this.precisions(j))} ${this.getCurrency(this.to_currency)}`
+                var { dismiss } = notifyNotification(this.waitingMessage)
                 if(this.bestPool == 7) {
                     try {
                         await this.onesplit.methods.swap(
@@ -638,6 +643,7 @@
                             gas: 4000000,
                         })
                         .once('transactionHash', hash => {
+                            dismiss()
                             notifyHandler(hash)
                             this.waitingMessage = `Waiting for swap 
                                                     <a href='https://etherscan.io/tx/${hash}'>transaction</a>
@@ -752,6 +758,11 @@
                         this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x400000000),
                         this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x20000 - 0x400000000),
                         this.makeCall(amount, 30, this.CONTRACT_FLAG - 0x10000 - 0x20000),
+                    )
+                }
+                if([7,8].includes(this.from_currency) && [7,8].includes(this.to_currency)) {
+                    calls.push(
+                        this.makeCall(amount, 1000, 4403952091136)
                     )
                 }
                 return calls
@@ -917,8 +928,6 @@
                 return [txPricePool, txPrice1split]
             },
             async set_to_amount() {
-                this.updateTimer && clearIntervalAsync(this.updateTimer)
-                //this.updateTimer = setIntervalAsync(() => this.set_to_amount(), 500)
                 this.distribution = null
                 let minAmount = 10000
                 if(this.swapwrapped) minAmount *= 50
@@ -950,7 +959,7 @@
                         let pools = ['compound', 'iearn', 'busd', 'susdv2', 'pax', 'ren', 'sbtc', '1split']
                         this.swapPromise.cancel()
                         let promises = [this.realComparePools()]
-                        if(!([7, 8].includes(this.from_currency) && [7,8].includes(this.to_currency)) || this.fromInput > 100) {
+                        if(this.fromInput > 100 || [7,8].includes(this.from_currency) && [7,8].includes(this.to_currency)) {
                             promises = [this.realComparePools(), this.set_to_amount_onesplit()]
                         }
                         this.swapPromise = helpers.makeCancelable(Promise.all(promises))

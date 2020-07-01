@@ -7,4 +7,5 @@ export const state = Vue.observable({
 	gasPriceInfo: {},
 	gasPrice: 20,
 	gasPriceWei: "20000000000",
+	gasPriceInterval: null,
 })

@@ -39,14 +39,15 @@
 <script>
 	import { state } from './gasPriceStore'
     import { state as errorState } from './errorStore'
-
     import { retry } from '../../utils/helpers'
 
-	import BN from 'bignumber.js'
+    import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async/dynamic'
+
+    import BN from 'bignumber.js'
+
 
 	export default {
 		data: () => ({
-			gasPriceInterval: null,
             customGasDisabled: true,
 		}),
 
@@ -82,9 +83,11 @@
 		},
 
 		async created() {
-            this.getGasPrice()
-            this.gasPriceInterval && clearInterval(this.gasPriceInterval)
-            //this.gasPriceInterval = setInterval(() => this.getGasPrice(), 3000)
+            !state.fetched && this.getGasPrice()
+            state.gasPriceInterval && clearIntervalAsync(state.gasPriceInterval)
+            if(!state.gasPriceInterval || state.gasPriceInterval.stopped) {
+                state.gasPriceInterval = setIntervalAsync(() => this.getGasPrice(), 3000)
+            }
 			this.$watch(() => state.gasPrice, val => {
 				state.gasPriceWei = BN(val).times(1e9).toFixed(0,1)
 			}, {

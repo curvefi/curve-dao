@@ -28,7 +28,7 @@ export const state = Vue.observable({
 	aes_key: null,
 	fireUser: null,
 
-
+	loaded: false,
 	adapterContract: null,
 })
 

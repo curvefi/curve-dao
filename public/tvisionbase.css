@@ -208,6 +208,10 @@ input[type=checkbox] + label[for]:before {
   height: 1em; width: 2em;
 }
 
+input[type=checkbox] + label[for]:before {
+  margin-right: 0.2em;
+}
+
 input[type=radio] + label[for]:before {
   content: "( ) ";
   cursor: pointer;

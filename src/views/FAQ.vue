@@ -45,6 +45,10 @@
         <p>Using Curve as an exchange user should be significantly less
         risky, but this is not advice.</p>
 
+        <h3>
+            <router-link to="/bugbounty">Bug bounty</router-link>
+        </h3>
+
         <h3>Source code git</h3>
         <p>
             <a href="https://github.com/curvefi/curve-contract">Smart contracts</a>
@@ -120,3 +124,12 @@
         case.</p>
     </div>
 </template>
+
+<style scoped>
+    .window.white a {
+        border-bottom: 1px dashed gray;
+    }
+    .window.white a:hover {
+        border-bottom: none;
+    }
+</style>

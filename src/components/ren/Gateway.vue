@@ -150,11 +150,10 @@
         </div>
 
         <approve-chi></approve-chi>
-
+        
         <p class='simple-error' v-show='address && !checkAddress'>
             Invalid {{ from_currency == 0 ? 'ETH' : 'BTC' }} address
         </p>
-
         <button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
 		<tx-table></tx-table>
@@ -374,7 +373,7 @@
             },
 		},
 		created() {
-			this.$watch(() => contract.initializedContracts, val => {
+			this.$watch(() => contract.initializedContracts && state.loaded, val => {
 				if(!val) return;
 				this.mounted()
 			})
@@ -387,7 +386,7 @@
 					this.showModal = false
 			  	}
 			})
-			contract.initializedContracts && this.mounted()
+			contract.initializedContracts && state.loaded && this.mounted()
 		},
 		methods: {
 			async mounted() {
@@ -436,7 +435,6 @@
 				let ethfee = i == 0 ? state.mintFee : state.burnFee
 				ethfee = 1 - ethfee/10000
 				dx = BN(this.fromInput).times(this.fromPrecisions).times(ethfee).minus(fee).toFixed(0,1)
-
 				//case WBTC -> BTC
 					//swapping the entered WBTC amount and then from result subtract fees
 				//case BTC -> WBTC

@@ -112,6 +112,7 @@ async function init() {
 	state.minersReleaseFee = fees.btc.release
 	state.mintFee = fees.btc.ethereum.mint
 	state.burnFee = fees.btc.ethereum.burn
+	state.loaded = true
 	if(findFirebaseUserSignature(contract.default_account)) useFirestore()
 	else loadTransactions()
 }
@@ -1129,6 +1130,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 	let txhash = await new Promise(async (resolve, reject) => {
 		await burn
 		.once('transactionHash', hash => {
+			data.dismiss()
 			notifyHandler(hash)
 			resolve(hash)
 		})

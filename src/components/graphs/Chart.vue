@@ -90,9 +90,15 @@
 								point: {
 									events: {
 										click: (function(self) {
-											return function() {
-												let index = this.dataGroup ? this.dataGroup.start : this.index
-												EventBus.$emit('changeTime', self.data.map(p=>p[this.index]))
+											return function(e) {
+												let nearest = self.chart.pointer.findNearestKDPoint(self.chart.series, false, e)
+
+												let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
+
+												let poolDataPoint = self.data.map(p=>p.filter(v=>v.timestamp))
+																	.map(p=>p[this.index])
+																	.filter(p=>p)
+												EventBus.$emit('changeTime', poolDataPoint)
 											}
 										})(this)
 									}
@@ -257,7 +263,10 @@
 					        			//console.log(nearest)
 					        			let index = nearest.dataGroup ? nearest.dataGroup.start : nearest.index
 					        			//console.log(self.data[nearest.sindex])
-										EventBus.$emit('changeTime', self.data.map(p=>p[index]))
+					        			let poolDataPoint = self.data.map(p=>p.filter(v=>v.timestamp))
+																	.map(p=>p[this.index])
+																	.filter(p=>p)
+										EventBus.$emit('changeTime', poolDataPoint)
 										//console.log(+get_dy_underlying, "price at point", index)
 										//console.log(self.data[index].prices["0-1"])
 					        		}

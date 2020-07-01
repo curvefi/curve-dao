@@ -376,6 +376,7 @@
 					ys.push(exp)
 					for(let j = 0; j < pools.length; j++) {
 						if(poolConfigs[j].N_COINS-1 < toCurrency || poolConfigs[j].N_COINS-1 < fromCurrency) continue;
+						if(!tradeStore.poolInfo[poolIdx[j]]) continue;
 						let volume = i;
 						let dx1 = exp * abis[pools[j]].coin_precisions[fromCurrency]
 						let dy1 = exp * abis[pools[j]].coin_precisions[toCurrency]

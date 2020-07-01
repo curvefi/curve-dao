@@ -32,8 +32,6 @@ let sigUtil = require('eth-sig-util')
 
 import Biconomy from "@biconomy/mexa";
 const biconomy = new Biconomy(contract.web3.currentProvider,{apiKey: 'KlDgWW0Dg.48cc902e-03a1-4d7b-9774-83b4e8571736', debug: true});
-window.web3.setProvider(biconomy)
-contract.web3.setProvider(biconomy)
 
 console.log(contract.adapterContract, "ADAPTER CONTRACT")
 
@@ -83,13 +81,15 @@ const txObject = () => ({
 
 })
 
-let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.oldAdapterAddress)
+let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+let renAdapterBiconomy = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterBiconomyAddress)
 
-let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.oldAdapterAddress)
+let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
+let sbtcAdapterBiconomy = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterBiconomyAddress)
 
-let adapters = [oldrenAdapter, renAdapter, oldsbtcAdapter, sbtcAdapter]
+let adapters = [oldrenAdapter, renAdapter, oldsbtcAdapter, sbtcAdapter, renAdapterBiconomy, sbtcAdapterBiconomy]
 
 let renSwap = new contract.web3.eth.Contract(allabis.ren.swap_abi, allabis.ren.swap_address)
 let sbtcSwap = new contract.web3.eth.Contract(allabis.sbtc.swap_abi, allabis.sbtc.swap_address)
@@ -116,7 +116,13 @@ async function init() {
 	else loadTransactions()
 }
 
-init()
+biconomy.onEvent(biconomy.READY, () => {
+	let biconomyWeb3 = new Web3(biconomy)
+	adapters.push(new biconomyWeb3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterBiconomyAddress))
+	adapters.push(new biconomyWeb3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterBiconomyAddress))
+
+	init()
+})
 
 async function syncStores(items) {
 
@@ -499,7 +505,7 @@ function initSwapMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterBiconomyAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -515,6 +521,7 @@ function initSwapMint(transaction) {
 	    web3Provider: web3.currentProvider,
 	}
 
+	console.log(transfer, "TRANSFER")
 	console.log(transfer.sendTo, "SEND TO")
 
 	return transfer
@@ -551,7 +558,7 @@ function initDepositMint(transaction) {
 	    sendToken: RenJS.Tokens.BTC.Btc2Eth,
 
 	    // The contract we want to interact with
-	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterAddress,
+	    sendTo: params && params.contractCalls[0].sendTo || allabis[transaction.pool].adapterBiconomyAddress,
 
 	    suggestedAmount: RenJS.utils.value(amount, "btc").sats().toNumber(),
 
@@ -741,10 +748,10 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 	]
 
-	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
+	let adapterContract = adapters.filter(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
 	console.log(params.contractCalls[0].sendTo, "SEND TO")
-	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase()]
+	if([oldrenAdapter._address.toLowerCase(), renAdapter._address.toLowerCase(), renAdapterBiconomy._address.toLowerCase()]
 		.includes(params.contractCalls[0].sendTo.toLowerCase())) {
 		args = [
 			params.contractCalls[0].contractParams[0].value,
@@ -756,54 +763,35 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 			signature,
 		]
 	}
-	let txhash
-	try {
+	//meta tx biconomy enabled adapters -> adapterContract = [adapter, BiconomyAdapter]
+	let txs = []
+	txs.push(adapterContract[0].methods.mintThenSwap(...args))
+	console.log(adapters, "ADAPTERS")
+	console.log(adapterContract, "ADAPTER CONTRACT")
+	if(adapterContract.length == 2) {
+		let nonce = await adapterContract[1].methods.getNonce(state.default_account).call()
+		let chainID = await adapterContract[1].methods.getChainID().call()
 
-		//meta tx
-
-		let nonce = await adapterContract.methods.getNonce(state.default_account).call()
-		let functionSignature = adapterContract.methods.mintThenSwap(
+		let functionSignature = adapterContract[1].methods.mintThenSwap(
 			...args
 		).encodeABI()
 
-		new Promise((resolve, reject) => {
-			contract.web3.currentProvider.send({
-	            jsonrpc: "2.0",
-	            id: 999999999999,
-	            method: "eth_signTypedData_v4",
-	            params: [state.default_account, JSON.stringify(dataToSign)]
-	          },
-	          function(error, response) {
-	            console.info(`User signature is ${response.result}`);
-	            if (error || (response && response.error)) {
-	              reject(error)
-	            } else if (response && response.result) {
-	              let { r, s, v } = helpers.getSignatureParameters(response.result);
-	              console.log(userAddress);
-	              console.log(JSON.stringify(message));
-	              console.log(message);
-	              console.log(helpers.getSignatureParameters(response.result));
+		let message = 'Please sign this message to send the free meta transaction'
+		let messageToSign = `${message}${nonce}${chainID}`
 
-	              const recovered = sigUtil.recoverTypedSignature_v4({
-	                data: dataToSign,
-	                sig: response.result
-	              });
-	              console.log(`Recovered ${recovered}`);
-	              resolve(r, s, v)
-	            }
-	          }
-	        )
-        })
+		let metaSignature = await web3.eth.personal.sign(messageToSign, state.default_account)
 
-        await adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, r, s, v).send({
-        	from: state.default_account,
-        	gasLimit: 2100000,
-        })
+		let {r, s, v} = helpers.getSignatureParameters(metaSignature)
 
+	    txs.unshift(
+	    	adapterContract[1].methods
+	    		.executeMetaTransaction(state.default_account, functionSignature, message, `${messageToSign.length}`, r, s, v),
+		)
+	}
+	let txhash
+	try {
 		txhash = await new Promise((resolve, reject) => {
-			return adapterContract.methods.mintThenSwap(
-				...args
-			).send({
+			return txs[0].send({
 				from: state.default_account,
 				gasPrice: gasPriceStore.state.gasPriceWei,
 				gas: gas.adapter[transaction.pool].mintThenSwap,
@@ -823,6 +811,7 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 				errorStore.handleError(err)
 				transaction.state = 16;
 				upsertTx(transaction)
+				reject(err)
 			})
 			.catch(err => {
 				console.error(err)
@@ -833,6 +822,38 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	}
 	catch(err) {
 		errorStore.handleError(err)
+		//biconomy returned an error - rate limit? retry with normal web3 adapter contract
+		if(adapterContract.length == 2) {
+			txhash = await new Promise((resolve, reject) => {
+				return txs[1].send({
+					from: state.default_account,
+					gasPrice: gasPriceStore.state.gasPriceWei,
+					gas: gas.adapter[transaction.pool].mintThenSwap,
+				})
+				.once('transactionHash', hash => {
+					notifyHandler(hash)
+					resolve(hash)
+				})
+				.once('receipt', () => {
+					//this.transactions = this.transactions.filter(t => t.id != id)
+					transaction.state = 14
+					transaction.ethTxHash = receipt.transactionHash
+					upsertTx(transaction)
+				})
+				.on('error', err => {
+					console.error(err)
+					errorStore.handleError(err)
+					transaction.state = 16;
+					upsertTx(transaction)
+					reject(err)
+				})
+				.catch(err => {
+					console.error(err)
+					errorStore.handleError(err)
+					reject(err)
+				})
+			})
+		}
 	}
 
 	subscriptionStore.removeTxNotification(transaction.btcTxHash)
@@ -887,7 +908,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		transaction.new_min_amount = 0
 	}
 
-	let adapterContract = adapters.find(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
+	let adapterContract = adapters.filter(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())
 
 	console.log(params.contractCalls[0].contractParams[0].value,
 			utxoAmount,
@@ -897,18 +918,43 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			renResponse.autogen.nhash,
 			signature, "PARAMS")
 
+	let args = [
+					params.contractCalls[0].contractParams[0].value,
+					utxoAmount,
+					params.contractCalls[0].contractParams[1].value,
+					params.contractCalls[0].contractParams[2].value,
+					transaction.new_min_amount,
+					renResponse.autogen.nhash,
+					signature,
+				]
+
+	let txs = []
+	txs.push(adapterContract[0].methods.mintThenDeposit(...args))
+	if(adapterContract.length == 2) {
+		let nonce = await adapterContract[1].methods.getNonce(state.default_account).call()
+		let chainID = await adapterContract[1].methods.getChainID().call()
+
+		let functionSignature = adapterContract[1].methods.mintThenDeposit(
+			...args
+		).encodeABI()
+
+		let message = 'Please sign this message to send the free meta transaction'
+		let messageToSign = `${message}${nonce}${chainID}`
+
+		let metaSignature = await web3.eth.personal.sign(messageToSign, state.default_account)
+
+		let {r, s, v} = helpers.getSignatureParameters(metaSignature)
+
+	    txs.unshift(
+	    	adapterContract[1].methods
+	    		.executeMetaTransaction(state.default_account, functionSignature, message, `${messageToSign.length}`, r, s, v),
+		)
+	}
+
 	let txhash
 	try {
 		txhash = await new Promise((resolve, reject) => {
-			return adapterContract.methods.mintThenDeposit(
-				params.contractCalls[0].contractParams[0].value,
-				utxoAmount,
-				params.contractCalls[0].contractParams[1].value,
-				params.contractCalls[0].contractParams[2].value,
-				transaction.new_min_amount,
-				renResponse.autogen.nhash,
-				signature,
-			).send({
+			return txs[0].send({
 				from: state.default_account,
 				gasPrice: gasPriceStore.state.gasPriceWei,
 				gas: gas.adapter[transaction.pool].mintThenDeposit,
@@ -926,12 +972,38 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 			.on('error', err => {
 				transaction.state = 16;
 				upsertTx(transaction)
+				reject(err)
 			})
 			.catch(err => reject(err))
 		})
 	}
 	catch(err) {
 		errorStore.handleError(err)
+
+		//biconomy returned an error - rate limit? retry with normal web3 adapter contract
+		txhash = await new Promise((resolve, reject) => {
+			return txs[1].send({
+				from: state.default_account,
+				gasPrice: gasPriceStore.state.gasPriceWei,
+				gas: gas.adapter[transaction.pool].mintThenDeposit,
+			})
+			.once('transactionHash', hash => {
+				notifyHandler(hash)
+				resolve(hash)
+			})
+			.once('receipt', () => {
+				//this.transactions = this.transactions.filter(t => t.id != id)
+				transaction.state = 14
+				transaction.ethTxHash = receipt.transactionHash
+				upsertTx(transaction)
+			})
+			.on('error', err => {
+				transaction.state = 16;
+				upsertTx(transaction)
+				reject(err)
+			})
+			.catch(err => reject(err))
+		})
 	}
 
 	subscriptionStore.removeTxNotification(transaction.btcTxHash)
@@ -965,35 +1037,6 @@ export async function burnSwap(data) {
 
 	console.log(args, "THE ARGS")
 
-
-	let nonce = await contract.adapterContract.methods.getNonce(state.default_account).call()
-	let chainID = await contract.adapterContract.methods.getChainID().call()
-
-	let functionSignature = contract.adapterContract.methods.swapThenBurn(
-		...args
-	).encodeABI()
-
-	let message = 'Please sign this message to send the free meta transaction'
-	let messageToSign = `${message}${nonce}${chainID}`
-
-	let metaSignature = await web3.eth.personal.sign(messageToSign, state.default_account)
-
-	let {r, s, v} = helpers.getSignatureParameters(metaSignature)
-
-    try {
-    	await contract.adapterContract.methods.executeMetaTransaction(state.default_account, functionSignature, message, `${messageToSign.length}`, r, s, v)
-	    .send({
-	    	from: state.default_account,
-	    	gasLimit: 2100000,
-	    	gasPrice: gasPriceStore.state.gasPriceWei,
-	    })
-	}
-	catch(err) {
-		console.error(err)
-	}
-
-    console.log("HERE")
-    return;
 	let tx = contract.adapterContract.methods.swapThenBurn(
 			...args
 		).send({

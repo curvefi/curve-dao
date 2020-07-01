@@ -84,7 +84,7 @@
 					//is the url like /DAI-USDC/30m
 					//or is it like /compound,usdt,y,busd,susdv2/DAI-USDC/30m
 					let pair = params[params.length - 2];
-					let interval = params[params.length - 1];
+					let interval = params[params.length - 1] || '30m';
 					if(params.length == 3)
 					this.pools = tradeStore.allPools.filter(pool => params[0].split('_').includes(pool))
 					this.pair = this.allPairs.find(p => p.val == pair.toLowerCase())

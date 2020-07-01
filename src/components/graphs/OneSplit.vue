@@ -475,6 +475,9 @@
                 else
                     return this.exchangeRate
             },
+            gasPrice() {
+                this.set_to_amount()
+            },
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)

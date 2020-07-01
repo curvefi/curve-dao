@@ -18,6 +18,7 @@
 </template>
 
 <script>
+	import Web3 from 'web3'
 	import Highcharts from 'highcharts'
 	import HC_exporting from 'highcharts/modules/exporting';
 	import HC_exporting_data from 'highcharts/modules/export-data';
@@ -27,8 +28,10 @@
 	import {Chart} from 'highcharts-vue'
 	import stockInit from 'highcharts/modules/stock'
 
+	import { contract } from '../../contract'
+
 	import * as helpers from '../../utils/helpers'
-	import abis from '@/allabis'
+	import abis, { multicall_abi, multicall_address, infura_url } from '@/allabis'
 	import * as volumeStore from '@/components/common/volumeStore'
 
 	stockInit(Highcharts)
@@ -38,6 +41,8 @@
 			loading: '',
 		}
 	})
+
+	let web3 = new Web3(infura_url)
 
 	export default {
 		props: {
@@ -217,6 +222,18 @@
 		        	let endTime = this.data[this.data.length - 1].timestamp
 		        	let SNXprices = await fetch(`https://api.coingecko.com/api/v3/coins/havven/market_chart/range?vs_currency=usd&from=${startTime}&to=${endTime}`)
 		        	SNXprices = (await SNXprices.json()).prices
+
+		        	let curveRewards = new web3.eth.Contract(abis.susdv2.sCurveRewards_abi, abis.susdv2.sCurveRewards_address)
+		        	let multicall = new web3.eth.Contract(multicall_abi, multicall_address)
+
+		        	let calls = [
+						[curveRewards._address, curveRewards.methods.DURATION().encodeABI()],
+						[curveRewards._address, curveRewards.methods.rewardRate().encodeABI()],
+					]
+
+					let aggcalls = await multicall.methods.aggregate(calls).call()
+					let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+
 		        	let SNXapys = []
 		        	for(let i = 1; i < this.data.length; i++) {
 		        		let timestamp = this.data[i].timestamp
@@ -224,7 +241,7 @@
 		        		let virtual_price = this.data[i].virtual_price
 		        		let SNXprice = this.findClosestPrice(this.data[i].timestamp, SNXprices)
 		        		let reward = 64000
-		        		if(timestamp > 1590705735) reward = 48000
+		        		if(timestamp > 1590705735) reward = decoded[0] * decoded[1] / 1e18
 		        		let SNXapy = 356 * reward / 7 * SNXprice / (0.98 * total_supply * virtual_price / 1e36) * 100
 		        		SNXapys.push([timestamp * 1000, SNXapy])
 		        	}
@@ -259,6 +276,7 @@
 		        	let SNXprices = prices[0].prices
 		        	let RENprices = prices[1].prices
 		        	let btcPrice = prices[2].quotes.USD.price
+
 		        	let SNXapys = []
 		        	for(let i = 1; i < this.data.length; i++) {
 		        		let timestamp = this.data[i].timestamp

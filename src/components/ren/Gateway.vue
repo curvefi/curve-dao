@@ -150,7 +150,10 @@
         </div>
 
         <approve-chi></approve-chi>
-
+        
+        <p class='simple-error' v-show='address && !checkAddress'>
+            Invalid {{ from_currency == 0 ? 'ETH' : 'BTC' }} address
+        </p>
         <button class='swap' @click='submit' :disabled='swapDisabled'>Swap</button>
 
 		<tx-table></tx-table>
@@ -181,6 +184,8 @@
     import * as errorStore from '../common/errorStore'
 
     import ApproveCHI from './ApproveCHI.vue'
+
+    import validate from 'bitcoin-address-validation';
 	
 	const txObject = () => ({
 		id: '',
@@ -252,7 +257,8 @@
 		computed: {
 			swapDisabled() {
 				return this.lessThanMinOrder || 
-					([1,2].includes(this.from_currency) && this.to_currency == 0 && !this.address)
+					([1,2].includes(this.from_currency) && this.to_currency == 0 && !this.address) ||
+                    !this.checkAddress
 			},
 			maxBalanceText() {
 				if(this.from_currency == 0) return 'N/A'
@@ -335,6 +341,14 @@
             },
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
+            },
+            checkAddress() {
+                if(this.from_currency == 0 && this.to_currency == 1) {
+                    return contract.web3.utils.isAddress(this.address)
+                }
+                else {
+                    return validate(this.address) !== false
+                }
             },
 		},
 		watch: {

@@ -130,16 +130,19 @@
                 <a href='https://bridge.renproject.io/'> Mint/redeem renBTC </a>
             </p>
             
+            <p class='simple-error invalid-address' v-show='btcAddress && !checkAddress'>
+                Invalid {{ from_currency == 0 ? 'ETH' : 'BTC' }} address
+            </p>
 
             <button id="remove-liquidity"
-                :disabled = "!btcAddress || amountAfterBTC < 0"
+                :disabled = "!btcAddress || amountAfterBTC < 0 || !checkAddress"
                 @click='handle_remove_liquidity()' v-show="currentPool != 'susd'">
                 Withdraw <span class='loading line' v-show='loadingAction == 1'></span>
             </button>            
             <button 
                 id='remove-liquidity-unstake'
                 v-show = "['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0 "
-                :disabled = 'slippage < -0.03 || !btcAddress || amountAfterBTC < 0'
+                :disabled = 'slippage < -0.03 || !btcAddress || amountAfterBTC < 0 || !checkAddress'
                 @click='handle_remove_liquidity(true)'>
                 Withdraw & claim <span class='loading line' v-show='loadingAction == 2'></span>
             </button>
@@ -196,6 +199,8 @@
     import * as errorStore from '../common/errorStore'
 
     import ApproveCHI from './ApproveCHI.vue'
+
+    import validate from 'bitcoin-address-validation';
 
     export default {
     	components: {
@@ -327,6 +332,9 @@
             },
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
+            },
+            checkAddress() {
+                return validate(this.btcAddress) !== false
             },
         },
         async mounted() {
@@ -861,5 +869,8 @@
     }
     .input.address.btc {
         margin-top: 1em;
+    }
+    .simple-error.invalid-address {
+        margin-bottom: 1em;
     }
 </style>

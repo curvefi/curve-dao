@@ -12,6 +12,7 @@
     "@sentry/browser": "https://github.com/pengiundev/sentry-browser",
     "@sentry/integrations": "^5.15.0",
     "bignumber.js": "^9.0.0",
+    "bitcoin-address-validation": "^1.0.2",
     "bnc-notify": "^1.2.2",
     "bnc-onboard": "^1.10.1",
     "break_infinity.js": "^1.1.0",

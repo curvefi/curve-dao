@@ -81,11 +81,11 @@ const txObject = () => ({
 
 })
 
-let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
+let oldrenAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.oldAdapterAddress)
 let renAdapter = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterAddress)
 let renAdapterBiconomy = new contract.web3.eth.Contract(allabis.ren.adapterABI, allabis.ren.adapterBiconomyAddress)
 
-let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
+let oldsbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.oldAdapterAddress)
 let sbtcAdapter = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterAddress)
 let sbtcAdapterBiconomy = new contract.web3.eth.Contract(allabis.sbtc.adapterABI, allabis.sbtc.adapterBiconomyAddress)
 
@@ -615,11 +615,13 @@ export async function sendMint(transfer) {
 
 	console.log(transfer, "SEND MINT")
 
-	if(transfer.fromAddress.toLowerCase() != state.default_account) {
+
+	let transaction = state.transactions.find(t => t.id == transfer.id)
+	console.log(transaction.from)
+	if(transaction.fromAddress.toLowerCase() != state.default_account.toLowerCase()) {
 		return;
 	}
 
-	let transaction = state.transactions.find(t => t.id == transfer.id)
 	//transaction is ready to be sent to eth network
 	if(transaction.renResponse && transaction.signature) {
 		if(!transaction.ethTxHash) {

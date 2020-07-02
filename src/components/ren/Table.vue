@@ -138,7 +138,7 @@
 									From: {{ transaction.fromAddress }}
 								</span>
 							</span>
-							<span class='tooltip' v-show='transaction.fromAddress != default_account && ![14, 65].includes(transaction.state)'>
+							<span class='tooltip' v-show='transaction.fromAddress.toLowerCase() != default_account.toLowerCase() && ![14, 65].includes(transaction.state)'>
 								<img class='icon small hoverpointer warning' :src="publicPath + 'exclamation-circle-solid.svg'">
 								<span class='tooltiptext long'>
 									Please submit this transaction from <br> {{ transaction.fromAddress }} 

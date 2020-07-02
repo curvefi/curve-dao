@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<span v-show='transaction.fromAddress != default_account && ![14, 65].includes(state)' class='submitfromwarning'>
+		<span v-show='transaction.fromAddress.toLowerCase() != default_account.toLowerCase() && ![14, 65].includes(state)' class='submitfromwarning'>
 			<span class='tooltip'>
 				Submit from {{ shortenAddress(transaction.fromAddress) }}
 				<span class='tooltiptext long'>

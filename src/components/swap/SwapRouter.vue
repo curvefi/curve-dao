@@ -86,9 +86,12 @@
 			publicPath() {
                 return process.env.BASE_URL
             },
+            default_account() {
+            	return getters.default_account()
+            },
             contactUs() {
             	return ['0x0f87dd03a74e6a48d56661d96f44880c79b9d795'].map(a => a.toLowerCase())
-            		.includes(currentContract.default_account.toLowerCase())
+            		.includes(this.default_account.toLowerCase())
             },
 		},
 

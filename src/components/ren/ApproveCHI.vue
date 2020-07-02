@@ -1,6 +1,6 @@
 <template>
 	<div class='CHIcontainer'>
-		<span v-show='!showCHIbutton'>
+		<span v-show='!showCHIbutton && chiUser > 0'>
 			Using <img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
 		</span>
 		<span>
@@ -21,6 +21,7 @@
 		data: () => ({
 			chi: null,
 			showCHIbutton: false,
+			chiUser: 0,
 		}),
 
 		computed: {
@@ -40,8 +41,8 @@
 		methods: {
 			async mounted() {
 				if(!['ren','sbtc'].includes(currentContract.currentContract)) return;
-				let calls = [
-					[CHI_address, currentContract.chi.methods.balanceOf(allabis.sbtc.adapterAddress).encodeABI()],
+				let calls = [	
+					[CHI_address, currentContract.chi.methods.balanceOf(allabis[currentContract.currentContract].adapterAddress).encodeABI()],
 					[CHI_address, currentContract.chi.methods.balanceOf(currentContract.default_account).encodeABI()],
 					[CHI_address, currentContract.chi.methods.allowance(currentContract.default_account, 
 						allabis[currentContract.currentContract].adapterAddress).encodeABI()]
@@ -49,9 +50,9 @@
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 				let chiAdapter = +decoded[0]
-				let chiUser = +decoded[1]
+				this.chiUser = +decoded[1]
 				let chiAllowance = +decoded[2]
-				if(chiAdapter > 20 || chiUser == 0) {
+				if(chiAdapter > 20 || this.chiUser == 0) {
 					this.showCHIbutton = false
 					return;
 				}

@@ -475,6 +475,9 @@
                 else
                     return this.exchangeRate
             },
+            gasPrice() {
+                this.set_to_amount()
+            },
         },
         async created() {
             //EventBus.$on('selected', this.selectPool)
@@ -783,7 +786,7 @@
                 console.log(max, "1split swap", this.underlying_coins[this.from_currency], this.underlying_coins[this.to_currency])
 
                 let amount_dy = max[0];
-                let exchangeRate = BN(amount_dy).div(this.precisions(this.to_currency)).div(this.fromInput).toFixed(4);
+                let exchangeRate = BN(amount_dy).div(this.precisions(this.to_currency)).div(this.fromInput)
                 this.distribution = max[1]
                 return ['1split', exchangeRate, amount_dy]
                 // this.setExchangeRate(exchangeRate)
@@ -967,7 +970,7 @@
                         let [poolAddress, dy] = result[0]
                         let pool = this.addresses.find(v => v.address == poolAddress).pool
                         let dy_ = BN(dy).div(this.precisions(this.to_currency, pool))
-                        exchangeRate = BN(dy_).div(BN(this.fromInput)).toFixed(4)
+                        exchangeRate = BN(dy_).div(BN(this.fromInput))
                         bestdy_ = dy_
                         let pool1 = 0
                         let exchangeRate1 = 0

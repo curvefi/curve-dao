@@ -121,4 +121,7 @@
 	.submitfromwarning {
 		color: darkred;
 	}
+	.submitfromwarning .tooltip {
+		width: min-content;
+	}
 </style>

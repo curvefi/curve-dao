@@ -598,6 +598,10 @@ export async function sendMint(transfer) {
 
 	console.log(transfer, "SEND MINT")
 
+	if(transfer.fromAddress.toLowerCase() != state.default_account) {
+		return;
+	}
+
 	let transaction = state.transactions.find(t => t.id == transfer.id)
 	//transaction is ready to be sent to eth network
 	if(transaction.renResponse && transaction.signature) {

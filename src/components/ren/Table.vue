@@ -138,6 +138,12 @@
 									From: {{ transaction.fromAddress }}
 								</span>
 							</span>
+							<span class='tooltip' v-show='transaction.fromAddress != default_account'>
+								<img class='icon small hoverpointer warning' :src="publicPath + 'exclamation-circle-solid.svg'">
+								<span class='tooltiptext long'>
+									Please submit this transaction from <br> {{ transaction.fromAddress }} 
+								</span>
+							</span>
 						</span>
 					</td>
 					<td>
@@ -373,7 +379,10 @@
         		set(value) {
         			state.showModal = value
         		},
-        	}
+        	},
+        	default_account() {
+        		return state.default_account
+        	},
 		},
 
 
@@ -518,10 +527,13 @@
 		cursor: pointer;
 		font-size: 1em;
 	}
-	.icon.cancel img {
+	.icon.cancel img, .icon.warning {
 		width: 1em;
 		margin-left: 0.8em;
 		filter: invert(13%) sepia(90%) saturate(4444%) hue-rotate(11deg) brightness(88%) contrast(97%);
+	}
+	.icon.warning {
+		margin-left: 0;
 	}
 	.redtext {
 		color: red;

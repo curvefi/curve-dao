@@ -286,7 +286,7 @@
             lessThanMinOrder() {
             	if([1,2].includes(this.from_currency) && [1,2].includes(this.to_currency)) return false
                 if(this.from_currency == 0 && this.amountAfterBTC < 0) return true
-                if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < 35547) return true 
+                if(this.from_currency == 1 && (this.fromInput * 1e8 * (1-state.burnFee/10000)) < state.minersReleaseFee + 500) return true 
             },
         	toInputFormat() {
         		if(!this.toInput || typeof this.toInput == 'string') return '0.00'

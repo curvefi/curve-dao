@@ -132,6 +132,12 @@
                 Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX
                 <span v-show="currentPool == 'sbtc'"> + {{(pendingRENRewards / 1e18).toFixed(2)}} REN</span>
             </button>
+            <button id='claim-bpt'
+                @click='claim_SNX(true)'
+                v-show="['sbtc'].includes(currentPool) && pendingBALRewards > 0"
+            >
+                Claim {{(pendingBALRewards / 1e18).toFixed(6)}} BPT
+            </button>
             <button id='unstake-snx'
                 @click='handle_remove_liquidity(true, true)'
                 v-show="['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0"
@@ -208,6 +214,7 @@
     		showstaked: false,
             pendingSNXRewards: 0,
             pendingRENRewards: 0,
+            pendingBALRewards: 0,
             balancerPool: null,
             show_loading: false,
             waitingMessage: '',
@@ -317,6 +324,7 @@
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
 
+                    this.pendingBALRewards = decoded[0]
                     this.pendingSNXRewards = decoded[0] * decoded[2] / decoded[1]
                     this.pendingRENRewards = decoded[0] * decoded[3] / decoded[1]
 
@@ -488,7 +496,7 @@
 				}
 				return min_amounts;
 			},
-            async claim_SNX() {
+            async claim_SNX(claim_bpt_only = false) {
                 this.show_loading = true
                 this.waitingMessage = `Please confirm claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
                 if(this.currentPool == 'sbtc')
@@ -520,7 +528,7 @@
                         })
                 })
 
-                if(this.currentPool == 'sbtc') {
+                if(this.currentPool == 'sbtc' && !claim_bpt_only) {
                     this.estimateGas = 300000
 
                     try {

@@ -101,7 +101,7 @@ let calc = ({
 	    	)
 	    let y_prev = ZERO
 	    let y = fcopy(D)
-	    for (let _i = 0; i < 255; i++) {
+	    for (let _i = 0; _i < 255; _i++) {
 	        y_prev = fcopy(y)
 	        let y1 = y.times(y)
 	        let y2 = y1.plus(c)

@@ -618,8 +618,21 @@
     					await this.stakeTokens(minted)
                     }
                     catch(err) {
-                        console.error(err)
-                        this.errorStaking = true;
+                        try {
+                            minted = BN(
+                                Object.values(receipt.logs).filter(event => {
+                                    return (event.address.toLowerCase() == allabis.susdv2.token_address.toLowerCase()
+                                                || event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
+                                            && event.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
+                                            && event.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
+                                })[0].data)
+                            await helpers.setTimeoutPromise(100)
+                            await this.stakeTokens(minted)
+                        }
+                        catch(err) {
+                            console.error(err)
+                            this.errorStaking = true;
+                        }
                     }
 				}
 				this.estimateGas = 0 

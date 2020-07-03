@@ -534,7 +534,8 @@
                     this.estimateGas = 300000
 
                     try {
-                        await this.balancerPool.methods.exitPool(earned, ['0', '0'])
+                        let balancerBalance = BN(await this.balancerPool.methods.balanceOf(currentContract.default_account).call())
+                        await this.balancerPool.methods.exitPool(balancerBalance.toFixed(0,1), ['0', '0'])
                         .send({
                             from: currentContract.default_account,
                             gasPrice: this.gasPriceWei,

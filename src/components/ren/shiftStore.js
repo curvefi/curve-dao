@@ -1036,12 +1036,10 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	}
 
 	if(transaction.stake) {
-		minted = BN(
-			Object.values(receipt.events).filter(event => {
-				return (event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
-						&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
-						&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + state.default_account.slice(2).toLowerCase()
-			})[0].raw.data)
+		//DepositMintedCurve
+		let mintData = Object.values(receipt.logs)
+					.filter(event => event.topics[0] == '0x0882f81e7e1d407c41100a8a53cd546a2f6ffff18d00dc1268ee70f1640932cc')[0].data
+		let tokens = contract.web3.eth.abi.decodeParameters(['uint256', 'uint256', 'uint256'], mintData)[1]
         await helpers.setTimeoutPromise(100)
 		let waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(8)} of your sCurve tokens`
         var { dismiss } = notifyNotification(waitingMessage)

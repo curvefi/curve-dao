@@ -17,7 +17,7 @@ const sdk = new RenSDK('mainnet', {
 })
 let Box
 import BN from 'bignumber.js'
-import { notify, notifyHandler } from '../../init'
+import { notify, notifyHandler, notifyNotification } from '../../init'
 import { getters, allCurrencies, contract, gas } from '../../contract'
 import allabis, { ERC20_abi } from '../../allabis'
 import * as common from '../../utils/common'
@@ -76,6 +76,7 @@ const txObject = () => ({
 	amounts: 0,
 	lessSent: false,
 	renCRVmin: null,
+	stake: false,
 
 	removed: false,
 
@@ -541,6 +542,7 @@ export async function deposit(data) {
 	transaction.amounts = data.amounts.map(amount => BN(amount).toFixed(0,1))
 	transaction.min_amount = data.min_amount
 	transaction.new_min_amount = data.min_amount
+	transaction.stake = data.stake
 	upsertTx(transaction)
 	state.transactions.unshift(transaction)
 
@@ -795,6 +797,8 @@ export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse
 	    		.executeMetaTransaction(state.default_account, functionSignature, message, `${messageToSign.length}`, r, s, v),
 		)
 	}
+
+	//refactor
 	let txhash
 	try {
 		txhash = await new Promise((resolve, reject) => {
@@ -958,23 +962,33 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		)
 	}
 
-	let txhash
+	//refactor
+
+	let receipt
 	try {
-		txhash = await new Promise((resolve, reject) => {
+		receipt = await new Promise((resolve, reject) => {
 			return txs[0].send({
 				from: state.default_account,
 				gasPrice: gasPriceStore.state.gasPriceWei,
 				gas: gas.adapter[transaction.pool].mintThenDeposit,
 			})
 			.once('transactionHash', hash => {
+				subscriptionStore.removeTxNotification(transaction.btcTxHash)
+
+				transaction.state = 12
+				transaction.ethTxHash = hash
+
+				upsertTx(transaction)
+
 				notifyHandler(hash)
-				resolve(hash)
+				//resolve(hash)
 			})
-			.once('receipt', () => {
+			.once('receipt', receipt => {
 				//this.transactions = this.transactions.filter(t => t.id != id)
 				transaction.state = 14
 				transaction.ethTxHash = receipt.transactionHash
 				upsertTx(transaction)
+				resolve(receipt)
 			})
 			.on('error', err => {
 				transaction.state = 16;
@@ -988,21 +1002,29 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		errorStore.handleError(err)
 
 		//biconomy returned an error - rate limit? retry with normal web3 adapter contract
-		txhash = await new Promise((resolve, reject) => {
+		receipt = await new Promise((resolve, reject) => {
 			return txs[1].send({
 				from: state.default_account,
 				gasPrice: gasPriceStore.state.gasPriceWei,
 				gas: gas.adapter[transaction.pool].mintThenDeposit,
 			})
 			.once('transactionHash', hash => {
+				subscriptionStore.removeTxNotification(transaction.btcTxHash)
+
+				transaction.state = 12
+				transaction.ethTxHash = hash
+
+				upsertTx(transaction)
+
 				notifyHandler(hash)
-				resolve(hash)
+				//resolve(hash)
 			})
-			.once('receipt', () => {
+			.once('receipt', receipt => {
 				//this.transactions = this.transactions.filter(t => t.id != id)
 				transaction.state = 14
 				transaction.ethTxHash = receipt.transactionHash
 				upsertTx(transaction)
+				resolve(receipt)
 			})
 			.on('error', err => {
 				transaction.state = 16;
@@ -1013,10 +1035,36 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 		})
 	}
 
-	subscriptionStore.removeTxNotification(transaction.btcTxHash)
+	if(transaction.stake) {
+		minted = BN(
+			Object.values(receipt.events).filter(event => {
+				return (event.address.toLowerCase() == allabis.sbtc.token_address.toLowerCase())
+						&& event.raw.topics[1] == "0x0000000000000000000000000000000000000000000000000000000000000000" 
+						&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + state.default_account.slice(2).toLowerCase()
+			})[0].raw.data)
+        await helpers.setTimeoutPromise(100)
+		let waitingMessage = `Please approve staking ${tokens.div(BN(1e18)).toFixed(8)} of your sCurve tokens`
+        var { dismiss } = notifyNotification(waitingMessage)
+		await common.ensure_stake_allowance(tokens);
+        dismiss()
+        waitingMessage = 'Please confirm stake transaction'
+        var { dismiss } = notifyNotification(waitingMessage)
+        await contract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
+            from: state.default_account,
+            gasPrice: gasPriceStore.state.gasPriceWei,
+            gas: 800000,
+        })
+        .once('transactionHash', hash => {
+	        this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+            dismiss()
+            notifyHandler(hash)
+        })
+	}
+ 
+	// subscriptionStore.removeTxNotification(transaction.btcTxHash)
 
-	transaction.state = 12
-	transaction.ethTxHash = txhash
+	// transaction.state = 12
+	// transaction.ethTxHash = txhash
 
 	upsertTx(transaction)
 }

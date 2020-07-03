@@ -21,7 +21,8 @@
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin'>
                                     Max: 
                                     <span 
-                                        v-show="currentPool == 'susdv2' && i == 3 || currentPool == 'sbtc' && i == 2"
+                                        v-show="(currentPool == 'susdv2' && i == 3 || currentPool == 'sbtc' && i == 2)
+                                                    && maxBalanceCoin(i) != '0.00'"
                                     >
                                         {{transferableBalanceText}}/
                                     </span>
@@ -34,7 +35,9 @@
                                             </span>
                                         </span>
                                     </span>
-                                    <span v-show="currentPool == 'susdv2' && i == 3" class='tooltip'> [?]
+                                    <span v-show="(currentPool == 'susdv2' && i == 3 || currentPool == 'sbtc' && i == 2)
+                                                    && maxBalanceCoin(i) != '0.00'" 
+                                        class='tooltip'> [?]
                                         <span class='tooltiptext long normalFont'>
                                             Max transferrable amount is {{ transferableBalanceText }}. You can free the remaining balance by settling.
                                         </span>
@@ -330,7 +333,7 @@
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
-                if(+num == 0 && ['ren', 'sbtc'].includes(currentContract.currentContract)) return '0.00000000'
+                if(+num == 0 && ['ren', 'sbtc'].includes(currentContract.currentContract)) return '0.00'
                 if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = (+num).toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded
@@ -342,7 +345,7 @@
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
                 if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     let maxbalance_susd = this.susdWaitingPeriod ? 0 : BN(this.transferableBalance).times(this.rates[i]).toString()
-                    Vue.set(this.inputs, i, maxbalance_susd)
+                    Vue.set(this.inputs, i, this.toFixed(maxbalance_susd))
                 }
             },
         	inputsFormat(i) {
@@ -437,7 +440,7 @@
                             let precisions = 2
                             if(this.currentPool == 'sbtc' && i == 2) precisions = 18
                             let maxbalance_susd = this.susdWaitingPeriod ? 0 : this.transferableBalance
-                            Vue.set(this.inputs, i, BN(this.transferableBalance).div(1e18).toString())
+                            Vue.set(this.inputs, i, this.toFixed(BN(this.transferableBalance).div(1e18)))
                         }
 			        }
 			    }

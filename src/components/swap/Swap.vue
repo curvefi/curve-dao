@@ -8,7 +8,8 @@
                         <div class='maxbalance' @click='set_max_balance'>
                             Max: 
                             <span 
-                                v-show="currentPool == 'susdv2' && from_currency == 3 || currentPool == 'sbtc' && from_currency == 2"
+                                v-show="(currentPool == 'susdv2' && from_currency == 3 || currentPool == 'sbtc' && from_currency == 2)
+                                         && maxBalanceText != '0.00'"
                             >
                                 {{maxSynthText}}/
                             </span>
@@ -21,7 +22,9 @@
                                     </span>
                                 </span>
                             </span>
-                            <span v-show="currentPool == 'susdv2' && from_currency == 3" class='tooltip'> [?]
+                            <span v-show="(currentPool == 'susdv2' && from_currency == 3 || currentPool == 'sbtc' && from_currency == 2)
+                                            && maxBalanceText != '0.00'" 
+                                class='tooltip'> [?]
                                 <span class='tooltiptext long'>
                                     Max transferrable amount is {{ maxSynthText }}. You can free the remaining balance by settling.
                                 </span>
@@ -341,7 +344,7 @@
                 if(inverse) return to + '/' + from
             },
             toFixed(num) {
-                if(num == '' || num == undefined || num == 0) return '0.00'
+                if(num == '' || num == undefined || +num == 0) return '0.00'
                 if(!BigNumber.isBigNumber(num)) num = +num
                 if(['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) return num.toFixed(8)
                 return num.toFixed(2)

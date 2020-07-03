@@ -12,7 +12,7 @@
                                     :src='getTokenIcon(currency)'>
     	                        <span>{{currency | capitalize}} </span>
                                 <span @click='setMaxBalanceCoin(i)' class='maxBalanceCoin' v-show="['wbtc', 'sbtc'].includes(currency)">
-                                    <span v-show="currentPool == 'sbtc' && i == 2">
+                                    <span v-show="currentPool == 'sbtc' && i == 2 && maxBalanceCoin(i) != '0.00'">
                                         {{transferableBalanceText}}/
                                     </span>
                                     <span>Max: {{ maxBalanceCoin(i) }} </span>
@@ -24,7 +24,7 @@
                                             </span>
                                         </span>
                                     </span>
-                                    <span v-show="currentPool == 'sbtc' && i == 2" class='tooltip'> [?]
+                                    <span v-show="currentPool == 'sbtc' && i == 2 && maxBalanceCoin(i) != '0.00'" class='tooltip'> [?]
                                         <span class='tooltiptext long normalFont'>
                                             Max transferable balance is {{ transferableBalanceText }}. You can free the remaining balance by settling.
                                         </span>
@@ -248,6 +248,7 @@
                 return helpers.getTokenIcon(token, this.depositc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
+                if(+num == 0 && ['ren', 'sbtc'].includes(currentContract.currentContract)) return '0.00'
                 if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded

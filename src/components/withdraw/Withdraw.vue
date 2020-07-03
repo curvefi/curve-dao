@@ -339,6 +339,7 @@
                 return helpers.getTokenIcon(token, this.withdrawc, this.currentPool)
             },
             toFixed(num, precisions = 2, round = 4) {
+                if(num == '' || num == undefined || +num == 0) return '0.00'
                 if(precisions == 2 && ['tbtc', 'ren', 'sbtc'].includes(currentContract.currentContract)) precisions = 8
                 let rounded = num.toFixed(precisions)
                 return isNaN(rounded) ? '0.00' : rounded

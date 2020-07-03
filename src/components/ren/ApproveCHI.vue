@@ -1,10 +1,10 @@
 <template>
 	<div class='CHIcontainer'>
-		<span v-show='!showCHIApprove'>
+		<span v-show='showCHIUsed'>
 			Using <img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
 		</span>
 		<span>
-		 	<button @click='approveCHI' v-show='showCHIApprove && chiUser > 0'>
+		 	<button @click='approveCHI' v-show='showApproveCHI'>
 				Approve
 		 		<img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
 			</button>
@@ -20,13 +20,20 @@
 	export default {
 		data: () => ({
 			chi: null,
-			showCHIApprove: true,
+			chiContract: 0,
 			chiUser: 0,
+			chiAllowance: 0,
 		}),
 
 		computed: {
 			publicPath() {
                 return process.env.BASE_URL
+            },
+            showCHIUsed() {
+            	return this.chiContract > 20 || (BN(this.chiAllowance).gt(currentContract.max_allowance.div(2)) && this.chiUser > 10)
+            },
+            showApproveCHI() {
+            	return this.chiContract == 0 && (BN(this.chiAllowance).lt(currentContract.max_allowance.div(2)) && this.chiUser > 10)
             },
 		},
 
@@ -42,19 +49,16 @@
 			async mounted() {
 				if(!['ren','sbtc'].includes(currentContract.currentContract)) return;
 				let calls = [	
-					[CHI_address, currentContract.chi.methods.balanceOf(allabis[currentContract.currentContract].adapterAddress).encodeABI()],
+					[CHI_address, currentContract.chi.methods.balanceOf(allabis[currentContract.currentContract].adapterBiconomyAddress).encodeABI()],
 					[CHI_address, currentContract.chi.methods.balanceOf(currentContract.default_account).encodeABI()],
 					[CHI_address, currentContract.chi.methods.allowance(currentContract.default_account, 
 						allabis[currentContract.currentContract].adapterAddress).encodeABI()]
 				]
 				let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
-				let chiAdapter = +decoded[0]
+				this.chiContract = +decoded[0]
 				this.chiUser = +decoded[1]
-				let chiAllowance = +decoded[2]
-				if(chiAdapter > 20 || BN(chiAllowance).gt(currentContract.max_allowance.div(2))) {
-					this.showCHIApprove = false
-				}
+				this.chiAllowance = +decoded[2]
 			},
 
 			async approveCHI() {

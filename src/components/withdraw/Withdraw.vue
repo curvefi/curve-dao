@@ -509,7 +509,7 @@
 
                 let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
 
-                if(earned) {
+                if(earned > 0) {
                     await new Promise((resolve, reject) => {
                         currentContract.curveRewards.methods.getReward()
                             .send({

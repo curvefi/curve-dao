@@ -509,24 +509,26 @@
 
                 let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
 
-                await new Promise((resolve, reject) => {
-                    currentContract.curveRewards.methods.getReward()
-                        .send({
-                            from: currentContract.default_account,
-                            gasPrice: this.gasPriceWei,
-                            gas: 800000,
-                        })
-                        .once('transactionHash', hash => {
-                            dismiss()
-                            notifyHandler(hash)
-                            resolve()
-                        })
-                        .on('receipt', () => this.pendingSNXRewards = 0)
-                        .catch(err => {
-                            errorStore.handleError(err)
-                            reject(err)
-                        })
-                })
+                if(earned) {
+                    await new Promise((resolve, reject) => {
+                        currentContract.curveRewards.methods.getReward()
+                            .send({
+                                from: currentContract.default_account,
+                                gasPrice: this.gasPriceWei,
+                                gas: 800000,
+                            })
+                            .once('transactionHash', hash => {
+                                dismiss()
+                                notifyHandler(hash)
+                                resolve()
+                            })
+                            .on('receipt', () => this.pendingSNXRewards = 0)
+                            .catch(err => {
+                                errorStore.handleError(err)
+                                reject(err)
+                            })
+                    })
+                }
 
                 if(this.currentPool == 'sbtc' && !claim_bpt_only) {
                     this.estimateGas = 300000

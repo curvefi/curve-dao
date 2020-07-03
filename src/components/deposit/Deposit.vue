@@ -274,7 +274,7 @@
             if(currentContract.initializedContracts) this.mounted();
         },
         methods: {
-        	async stakeTokens(tokens) {
+        	async stakeTokens(tokens, deposit_and_stake = false) {
                 if(this.loadingAction == 3) return;
                 this.setLoadingAction(3);
         		if(!tokens) tokens = BN(await currentContract.swap_token.methods.balanceOf(currentContract.default_account).call());
@@ -282,7 +282,7 @@
                 var { dismiss } = notifyNotification(this.waitingMessage)
 				await common.ensure_stake_allowance(tokens);
                 dismiss()
-                this.waitingMessage = 'Please confirm stake transaction'
+                this.waitingMessage = `Please confirm stake transaction ${deposit_and_stake ? '(2/2)' : ''}`
                 var { dismiss } = notifyNotification(this.waitingMessage)
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
@@ -294,7 +294,8 @@
                         gas: 800000,
                     })
                     .once('transactionHash', hash => {
-				        this.waitingMessage = 'Waiting for stake transaction to confirm: no further action needed'
+				        this.waitingMessage = `Waiting for stake transaction to confirm 
+                            ${deposit_and_stake ? '(2/2)' : ''}: no further action needed`
                         dismiss()
                         notifyHandler(hash)
                     })
@@ -587,7 +588,7 @@
                         notifyHandler(hash)
 						this.waitingMessage = `Waiting for deposit 
                             <a href='http://etherscan.io/tx/${hash}'>transaction</a>
-                            to confirm ${stake ? 'before staking' : 'no further action required'}`
+                            to confirm ${stake ? 'before staking (1/2)' : 'no further action required'}`
 						console.warn(hash, 'tx hash')
 					})
 					try {
@@ -615,7 +616,7 @@
     									&& event.raw.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
     						})[0].raw.data)
                         await helpers.setTimeoutPromise(100)
-    					await this.stakeTokens(minted)
+    					await this.stakeTokens(minted, true)
                     }
                     catch(err) {
                         try {
@@ -627,7 +628,7 @@
                                             && event.topics[2].toLowerCase() == '0x000000000000000000000000' + currentContract.default_account.slice(2).toLowerCase()
                                 })[0].data)
                             await helpers.setTimeoutPromise(100)
-                            await this.stakeTokens(minted)
+                            await this.stakeTokens(minted, true)
                         }
                         catch(err) {
                             console.error(err)

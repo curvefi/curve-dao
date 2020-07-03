@@ -51,7 +51,7 @@ let calc = ({
 		    	D_P = c1.div(c3)
 		        //D_P = D_P.times(D).div((_x.times(N_COINS).plus(ONE)))
 		    }
-		    let Dprev = fcopy(D)
+		    Dprev = fcopy(D)
 		    let d1 = Ann.times(S);
 		    let d2 = D_P.times(BN(N_COINS))
 		    let d3 = d1.plus(d2);

@@ -138,6 +138,12 @@
             >
                 Claim {{(pendingBALRewards / 1e18).toFixed(6)}} BPT
             </button>
+            <button id='claim-snxbpt' 
+                @click='claim_SNX(true, false)'
+                v-show="['sbtc'].includes(currentPool) && withdrawBALPool > 0"
+            >
+                Withdraw {{(withdrawSNXPool / 1e18).toFixed(0)}} SNX + {{(withdrawRENPool / 1e18).toFixed(0)}} REN
+            </button>
             <button id='unstake-snx'
                 @click='handle_remove_liquidity(true, true)'
                 v-show="['susdv2', 'sbtc'].includes(currentPool) && staked_balance > 0"
@@ -216,6 +222,9 @@
             pendingRENRewards: 0,
             pendingBALRewards: 0,
             balancerPool: null,
+            withdrawBALPool: 0,
+            withdrawSNXPool: 0,
+            withdrawRENPool: 0,
             show_loading: false,
             waitingMessage: '',
             showWithdrawSlippage: false,
@@ -320,6 +329,7 @@
                         [this.balancerPool._address, this.balancerPool.methods.totalSupply().encodeABI()],
                         [this.balancerPool._address, this.balancerPool.methods.getBalance('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f').encodeABI()],
                         [this.balancerPool._address, this.balancerPool.methods.getBalance('0x408e41876cccdc0f92210600ef50372656052a38').encodeABI()],
+                        [this.balancerPool._address, this.balancerPool.methods.balanceOf(currentContract.default_account).encodeABI()],
                     ]
                     let aggcalls = await currentContract.multicall.methods.aggregate(calls).call()
                     let decoded = aggcalls[1].map(hex => currentContract.web3.eth.abi.decodeParameter('uint256', hex))
@@ -327,6 +337,10 @@
                     this.pendingBALRewards = decoded[0]
                     this.pendingSNXRewards = decoded[0] * decoded[2] / decoded[1]
                     this.pendingRENRewards = decoded[0] * decoded[3] / decoded[1]
+
+                    this.withdrawBALPool = decoded[4]
+                    this.withdrawSNXPool = decoded[4] * decoded[2] / decoded[1]
+                    this.withdrawRENPool = decoded[4] * decoded[3] / decoded[1]
 
                 }
 
@@ -497,7 +511,7 @@
 				}
 				return min_amounts;
 			},
-            async claim_SNX(claim_bpt_only = false) {
+            async claim_SNX(claim_bpt_only = false, unstake = true) {
                 this.show_loading = true
                 this.waitingMessage = `Please confirm claiming ${(this.pendingSNXRewards / 1e18).toFixed(2)} SNX`
                 if(this.currentPool == 'sbtc')
@@ -510,7 +524,7 @@
 
                 let earned = await currentContract.curveRewards.methods.earned(currentContract.default_account).call()
 
-                if(earned > 0) {
+                if(earned > 0 && unstake) {
                     await new Promise((resolve, reject) => {
                         currentContract.curveRewards.methods.getReward()
                             .send({
@@ -531,7 +545,7 @@
                     })
                 }
 
-                if(this.currentPool == 'sbtc' && !claim_bpt_only) {
+                if(this.currentPool == 'sbtc' && !claim_bpt_only || !unstake) {
                     this.estimateGas = 300000
 
                     try {
@@ -998,7 +1012,7 @@
 </script>
 
 <style>
-	#remove-liquidity, #remove-liquidity-unstake, #claim-snx, #claim-bpt {
+	#remove-liquidity, #remove-liquidity-unstake, #claim-snx, #claim-bpt, #claim-snxbpt {
 		margin-right: 1em;
 	}
 	#withdrawold {

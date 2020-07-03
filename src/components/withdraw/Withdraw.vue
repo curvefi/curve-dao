@@ -126,7 +126,7 @@
                 Withdraw & claim <span class='loading line' v-show='loadingAction == 2'></span>
             </button>
             <button id='claim-snx'
-                @click='claim_SNX'
+                @click='claim_SNX(false)'
                 v-show="['susdv2', 'sbtc'].includes(currentPool) && pendingSNXRewards > 0"
             >
                 Claim {{(pendingSNXRewards / 1e18).toFixed(2)}} SNX

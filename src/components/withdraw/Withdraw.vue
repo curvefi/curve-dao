@@ -994,7 +994,7 @@
 </script>
 
 <style>
-	#remove-liquidity, #remove-liquidity-unstake, #claim-snx {
+	#remove-liquidity, #remove-liquidity-unstake, #claim-snx, #claim-bpt {
 		margin-right: 1em;
 	}
 	#withdrawold {
@@ -1021,5 +1021,8 @@
     }
     .withdrawin {
         margin-bottom: 0.3em;
+    }
+    #withdraw_buttons button:nth-child(n+3) {
+        margin-top: 0.6em;
     }
 </style>

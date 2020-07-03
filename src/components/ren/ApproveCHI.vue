@@ -1,10 +1,10 @@
 <template>
 	<div class='CHIcontainer'>
-		<span v-show='!showCHIbutton && chiUser > 0'>
+		<span v-show='!showCHIApprove'>
 			Using <img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
 		</span>
 		<span>
-		 	<button @click='approveCHI' v-show='showCHIbutton'>
+		 	<button @click='approveCHI' v-show='showCHIApprove && chiUser > 0'>
 				Approve
 		 		<img class='icon small' :src="publicPath + 'tokens/chi.png'"> CHI
 			</button>
@@ -20,7 +20,7 @@
 	export default {
 		data: () => ({
 			chi: null,
-			showCHIbutton: false,
+			showCHIApprove: true,
 			chiUser: 0,
 		}),
 
@@ -52,15 +52,9 @@
 				let chiAdapter = +decoded[0]
 				this.chiUser = +decoded[1]
 				let chiAllowance = +decoded[2]
-				if(chiAdapter > 20 || this.chiUser == 0) {
-					this.showCHIbutton = false
-					return;
+				if(chiAdapter > 20 || BN(chiAllowance).gt(currentContract.max_allowance.div(2))) {
+					this.showCHIApprove = false
 				}
-
-                if (BN(chiAllowance).gt(currentContract.max_allowance))
-                    this.showCHIbutton = false;
-                else
-                    this.showCHIbutton = true;
 			},
 
 			async approveCHI() {

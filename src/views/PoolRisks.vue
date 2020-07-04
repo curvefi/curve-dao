@@ -43,7 +43,7 @@
         <ul class='poolrisks' v-show="['susdv2'].includes(currentPool)">
 			<li>Smart contract issues with Curve</li>
 			<li>Systemic issues with the stable coins in those pools</li>
-			<li>Systemic issues with Synthetix</li>
+			<li>Systemic issues with Synthetix(when staking)</li>
         </ul>
         <ul class='poolrisks' v-show="['susdv2'].includes(currentPool)">
 			<li>Smart contract issues with Curve</li>
@@ -57,7 +57,7 @@
         <ul class='poolrisks' v-show="['sbtc'].includes(currentPool)">
 			<li>Smart contract issues with Curve</li>
 			<li>Systemic issues with renBTC, wBTC or sBTC</li>
-			<li>Systemic issues with Synthetix</li>
+			<li>Systemic issues with Synthetix(when staking)</li>
         </ul>
 
     </div>

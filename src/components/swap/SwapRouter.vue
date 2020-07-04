@@ -54,6 +54,8 @@
 			if(this.$route.path.includes('native')) this.swapbtc = true
 			this.$watch(() => currentContract.currentContract, (val, oldval) => {
 				if(['ren', 'sbtc'].includes(oldval) && !['ren', 'sbtc'].includes(val)) this.swapbtc = false
+			}, {
+				immediate: true,
 			})
 		},
 
@@ -66,7 +68,8 @@
 
 		computed: {
 			swapComponent() {
-				if(this.swapbtc) return 'SwapNative'
+				console.log(currentContract.currentContract, "CURRENT CONTRACT")
+				if(this.swapbtc && ['ren', 'sbtc'].includes(currentContract.currentContract)) return 'SwapNative'
 				return 'Swap'
 			},
 			currentPool() {
@@ -77,7 +80,7 @@
 			},
 			swapbtc: {
 				get() {
-					return currentContract.swapbtc
+					return currentContract.swapbtc && ['ren', 'sbtc'].includes(currentContract.currentContract)
 				},
 				set(val) {
 					currentContract.swapbtc = val

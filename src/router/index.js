@@ -330,6 +330,10 @@ router.beforeEach(async (to, from, next) => {
   if(subdomain == 'y') subdomain = 'iearn'
   if(!pools.includes(subdomain)) subdomain = 'compound'
 
+  if(!['ren', 'sbtc'].includes(subdomain)) {
+    currentContract.swapbtc = false
+  }
+
   if((currentContract.currentContract != subdomain && !['Stats', 'FAQ', 'Donate'].includes(to.name)) || ['Stats', 'FAQ', 'Donate'].includes(from.name)) {
     changeContract(subdomain)
     currentContract.currentContract = subdomain

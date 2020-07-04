@@ -58,7 +58,7 @@
 
 		computed: {
 			swapComponent() {
-				if(this.swapbtc) return 'WithdrawNative'
+				if(this.swapbtc && ['ren', 'sbtc'].includes(currentContract.currentContract)) return 'WithdrawNative'
 				return 'Withdraw'
 			},
 			currentPool() {
@@ -69,7 +69,7 @@
 			},
 			swapbtc: {
 				get() {
-					return currentContract.swapbtc
+					return currentContract.swapbtc && ['ren', 'sbtc'].includes(currentContract.currentContract)
 				},
 				set(val) {
 					currentContract.swapbtc = val

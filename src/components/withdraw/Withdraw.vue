@@ -595,7 +595,7 @@
                                 gas: 125000,
     						})
     						.once('transactionHash', hash => {
-                                this.waitingMessage = ''
+                                this.waitingMessage = 'Waiting for unstake transaction to confirm'
                                 dismiss()
                                 notifyHandler(hash)
                                 resolve()
@@ -613,6 +613,8 @@
                     this.show_loading = false;
                     throw err
                 }
+                this.waitingMessage = ''
+                this.show_loading = false
 			},
             setLoadingAction(val) {
                 this.loadingAction = val;
@@ -679,8 +681,11 @@
 			        }
                     token_amount = BN(token_amount).times(BN(1).plus(this.calcFee))
 			        token_amount = BN(Math.floor(token_amount * this.getMaxSlippage).toString()).toFixed(0,1)
-                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
-                        await this.unstake(BN(token_amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if((this.token_balance.lt(BN(token_amount)) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool)) {
+                        let unstakeAmount = BN(token_amount).minus(BN(this.token_balance))
+                        if(unstake) unstakeAmount = BN(token_amount) 
+                        await this.unstake(unstakeAmount, unstake && !unstake_only, unstake_only)
+                    }
                     if(unstake_only) return;
 			        let nonZeroInputs = this.inputs.filter(Number).length
 			        if(this.withdrawc || ['susdv2', 'sbtc'].includes(this.currentPool)) {
@@ -763,8 +768,11 @@
                     if(this.showstaked) balance = balance.plus(this.staked_balance)
                     var amount = BN(this.share).div(BN(100)).times(balance)
 
-                    if((this.token_balance.lt(amount) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool))
-                        await this.unstake(BN(amount).minus(BN(this.token_balance)), unstake && !unstake_only, unstake_only)
+                    if((this.token_balance.lt(amount) || unstake) && ['susdv2', 'sbtc'].includes(this.currentPool)) {
+                        let unstakeAmount = BN(amount).minus(BN(this.token_balance))
+                        if(unstake) unstakeAmount = BN(amount)
+                        await this.unstake(unstakeAmount, unstake && !unstake_only, unstake_only)
+                    }
                     if(unstake_only) return;
                     amount = amount.toFixed(0,1)
                     if(this.to_currency !== null && this.to_currency < 10) {

@@ -269,6 +269,7 @@ let initState = () => ({
 	totalSupply: 0,
 	totalBalance: 0,
 	usdShare: null,
+	swapbtc: false,
 })
 
 const state = Vue.observable({

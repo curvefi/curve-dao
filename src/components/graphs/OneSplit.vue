@@ -654,6 +654,7 @@
                         })
                     }
                     catch(err) {
+                        dismiss()
                         this.handleError(err)
                         errorStore.handleError(err)
                     }

@@ -542,6 +542,7 @@
                 }
                 catch(err) {
                     console.error(err)
+                    dismiss()
                     this.waitingMessage = '',
                     this.show_loading = false
                     throw err;
@@ -573,6 +574,7 @@
                 }
                 catch(err) {
                     console.error(err)
+                    dismiss()
                     errorStore.handleError(err)
                     this.waitingMessage = '';
                     this.show_loading = '';

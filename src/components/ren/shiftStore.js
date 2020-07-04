@@ -1057,6 +1057,10 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
             dismiss()
             notifyHandler(hash)
         })
+        .on('error', err => {
+        	console.error(err)
+        	dismiss()
+        })
 	}
  
 	// subscriptionStore.removeTxNotification(transaction.btcTxHash)
@@ -1210,6 +1214,7 @@ export async function burn(burn, address, renBTCAmount, burnType, data) {
 		})
 		.on('error', (err, receipt) => {
 			errorStore.handleError(err)
+			data.dismiss()
 			txFailed(receipt.transactionHash)
 		})
 		.catch(err => {

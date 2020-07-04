@@ -550,6 +550,7 @@
                         })
                         .on('receipt', () => this.pendingSNXRewards = 0)
                         .catch(err => {
+                            dismiss()
                             errorStore.handleError(err)
                             reject(err)
                         })
@@ -603,7 +604,10 @@
                                 notifyHandler(hash)
                                 resolve()
                             })
-                            .catch(err => reject(err))
+                            .catch(err => {
+                                dismiss()
+                                reject(err)
+                            })
                     })
                     if(exit) {
                         this.claim_SNX()

@@ -304,6 +304,7 @@
                 }
                 catch(err) {
                     console.error(err)
+                    dismiss()
                     errorStore.handleError(err)
                 }
 				currentContract.totalShare = 0
@@ -565,6 +566,7 @@
 				    }
 				    catch(err) {
                         console.error(err)
+                        dismiss()
                         errorStore.handleError(err)
 				    	if(err.code == -32603) {
 				    		await common.setTimeout(300)

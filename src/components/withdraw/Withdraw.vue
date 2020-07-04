@@ -540,6 +540,7 @@
                             .on('receipt', () => this.pendingSNXRewards = 0)
                             .catch(err => {
                                 errorStore.handleError(err)
+                                dismiss()
                                 reject(err)
                             })
                     })
@@ -563,6 +564,7 @@
                     }
                     catch(err) {
                         console.log(err)
+                        dismiss()
                         errorStore.handleError(err)
                     }
                 }
@@ -600,7 +602,10 @@
                                 notifyHandler(hash)
                                 resolve()
                             })
-                            .catch(err => reject(err))
+                            .catch(err => {
+                                dismiss()
+                                reject(err)
+                            })
     				})
                     if(exit) {
         				this.claim_SNX()
@@ -718,6 +723,7 @@
                         }
                         catch(err) {
                             console.error(err)
+                            dismiss()
                             errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false
@@ -755,6 +761,7 @@
                         }
                         catch(err) {
                             console.error(err)
+                            dismiss()
                             errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false;
@@ -813,6 +820,7 @@
                         }
                         catch(err) {
                             console.error(err)
+                            dismiss()
                             errorStore.handleError(err)
                         }
 			        }
@@ -843,6 +851,7 @@
                         }
                         catch(err) {
                             console.error(err)
+                            dismiss()
                             errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false
@@ -881,6 +890,7 @@
                         }
                         catch(err) {
                             console.error(err)
+                            dismiss()
                             errorStore.handleError(err)
                             this.waitingMessage = ''
                             this.show_loading = false

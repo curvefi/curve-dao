@@ -31,7 +31,7 @@
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
                                             <span class='tooltiptext normalFont'>
-                                                Cannot transfer during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
+                                                Cannot transfer during waiting period. {{ (susdWaitingPeriodTime ).toFixed(0) }} secs left.
                                             </span>
                                         </span>
                                     </span>
@@ -84,20 +84,22 @@
                     <label for="depositc">Deposit wrapped</label>
                 </li>
             </ul>
-
+            <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime).toFixed(0) }} secs left.
+            </div>
             <p style="text-align: center" class='buttons'>
                 <button id="add-liquidity" 
                     :disabled="currentPool == 'susdv2' && slippage < -0.03 || depositingZeroWarning"
-                	@click='justDeposit = true; handle_add_liquidity()' 
-                	>
-                		Deposit <span class='loading line' v-show='loadingAction == 1'></span>
+                    @click='justDeposit = true; handle_add_liquidity()' 
+                    >
+                        Deposit <span class='loading line' v-show='loadingAction == 1'></span>
                 </button>
                 <button 
-                	id='add-liquidity-stake' 
-                	v-show="['susdv2', 'sbtc'].includes(currentPool)" 
-                	:disabled = 'slippage < -0.03 || depositingZeroWarning'
-                	@click = 'justDeposit = false; deposit_stake()'>
-                	Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
+                    id='add-liquidity-stake' 
+                    v-show="['susdv2', 'sbtc'].includes(currentPool)" 
+                    :disabled = 'slippage < -0.03 || depositingZeroWarning'
+                    @click = 'justDeposit = false; deposit_stake()'>
+                    Deposit and stake <span class='loading line' v-show='loadingAction == 2'></span>
                 </button>
                 <button id='stakeunstaked' v-show="totalShare > 0 && ['susdv2', 'sbtc'].includes(currentPool)" @click='stakeTokens()'>
                     Stake unstaked <span class='loading line' v-show='loadingAction == 3'></span>
@@ -114,15 +116,15 @@
                     <a href='https://bridge.renproject.io/'>Mint/redeem renBTC</a>
                 </p>
                 <div id='mintr' v-show="['susdv2', 'sbtc'].includes(currentPool)">
-	                <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
-	            </div>
+                    <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer">Manage staking in Mintr</a>
+                </div>
                 <button id="migrate-new" @click='handle_migrate_new' v-show="currentPool == 'compound' && oldBalance > 0">Migrate from old</button>
                 <div class='info-message gentle-message' v-show='show_loading'>
-                	<span v-html='waitingMessage'></span> <span class='loading line'></span>
+                    <span v-html='waitingMessage'></span> <span class='loading line'></span>
                 </div>
                 <div class='info-message gentle-message' v-show='estimateGas'>
-	                Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
-	            </div>
+                    Estimated tx cost: {{ (estimateGas * gasPrice / 1e9 * ethPrice).toFixed(2) }}$
+                </div>
                 <div class='simple-error' v-show="justDeposit && currentPool == 'susdv2'">
                     Your tokens are being deposited into the susd pool without staking.
                     You can do that manually later on here or on <a href = 'https://mintr.synthetix.io/' target='_blank' rel="noopener noreferrer"> Mintr. </a> 
@@ -136,9 +138,6 @@
                         Maybe you forgot to uncheck the first 
                         "Add all coins in a balanced proportion" checkbox?
                     </p>
-                </div>
-                <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                    Cannot transfer {{ currentPool == 'susdv2' ? 'sUSD' : 'sBTC' }} during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
                 </div>
                 <div class='simple-error pulse' v-show='depositingZeroWarning && !max_balances'>
                     You're depositing 0 coins.

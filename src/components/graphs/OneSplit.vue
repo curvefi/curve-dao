@@ -36,7 +36,7 @@
                             <span class='tooltip'>
                                 <img src='@/assets/clock-regular.svg' class='icon small'>
                                 <span class='tooltiptext'>
-                                    Cannot transfer during waiting period. {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left.
+                                    Cannot transfer during waiting period. {{ (susdWaitingPeriodTime).toFixed(0) }} secs left.
                                 </span>
                             </span>
                         </span>
@@ -150,9 +150,12 @@
             <p class='simple-error' v-show='exchangeRate<=0.98'>
                 Warning! Exchange rate is too low!
             </p>
-            <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth'>
+            <p class='simple-error' id='no-balance-synth' v-show='notEnoughBalanceSynth && !susdWaitingPeriod && +maxSynthBalanceText > 0'>
                 Max balance you can use is {{ maxSynthBalanceText }}
             </p>
+            <div class='simple-error pulse' v-show="susdWaitingPeriod">
+                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period {{ (susdWaitingPeriodTime).toFixed(0) }} secs left
+            </div>
             <p class='trade-buttons'>
                 <button id="trade" @click='handle_trade' :disabled='selldisabled'>
                     Sell <span class='loading line' v-show='loadingAction'></span>
@@ -172,9 +175,6 @@
             </p>
             <div class='info-message gentle-message' v-show='selldisabled'>
                 Swapping between {{Object.values(currencies)[from_currency]}} and {{Object.values(currencies)[to_currency]}} is not available currently
-            </div>
-            <div class='simple-error pulse' v-show="susdWaitingPeriod">
-                Cannot transfer {{ from_currency == 5 ? 'sUSD' : 'sBTC' }} during waiting period {{ (susdWaitingPeriodTime / 1e18).toFixed(2) }} secs left
             </div>
             <div class='info-message gentle-message' v-show='warningNoPool !== null'>
                 Swap not available. Please select {{warningNoPool}} in pool select
@@ -699,7 +699,7 @@
                     balanceCalls.push([coinAddress, 
                         this.getCoins(i).methods.transferableSynths(contract.default_account || '0x0000000000000000000000000000000000000000').encodeABI()])
                     let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
-                    if(this.currentPool == 'sbtc') 
+                    if(i == 9) 
                         currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'
                     balanceCalls.push([this.snxExchanger._address, 
                         this.snxExchanger.methods
@@ -1108,6 +1108,9 @@
     .pulse {
         animation: pulse 1s 3;
         margin-bottom: 8px;
+    }
+    #no-balance-synth {
+        margin-bottom: 0.3em;
     }
     @media only screen and (max-device-width: 1200px) {
         .exchange {

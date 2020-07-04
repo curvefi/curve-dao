@@ -4,6 +4,10 @@
             Risks of using 
             <span><img :src="publicPath + 'logo.png'" class='icon'> Curve Finance</span>
         </h2>
+        
+        <p>
+            Providing liquidity on Curve doesn't come without risks. Before making a deposit, it is best to research and understand the risks involved.
+        </p>
 
         <a href='https://www.curve.fi/stableswap-paper.pdf'>Whitepaper</a>
 
@@ -22,6 +26,7 @@
             risky, but this is not advice.</p>
 
         </p>
+
 
         <h3>Admin keys</h3>
 

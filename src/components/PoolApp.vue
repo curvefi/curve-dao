@@ -53,15 +53,16 @@
         <div class='dropdown'>
           <router-link to="/audits">Audits</router-link>
           <router-link to="/events">Events</router-link>
-          <a :href="'https://etherscan.io/address/' + this.poolAddress">Pool contract</a>
-          <a :href="'https://etherscan.io/address/' + this.tokenAddress">Token contract</a>
+          <a :href="'https://etherscan.io/address/' + this.poolAddress" rel='noopener noreferrer'>Pool contract</a>
+          <a :href="'https://etherscan.io/address/' + this.tokenAddress" rel='noopener noreferrer'>Token contract</a>
           <router-link to="/risks">Risks</router-link>
           <router-link to="/bugbounty">Bug Bounty</router-link>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link to="/integrations">Integrations</router-link>
           <router-link :to="'/' + currentPool + '/donate'">Donate</router-link>
-          <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]">git@</a>
-          <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
+          <a href='https://guides.curve.fi' rel='noopener noreferrer'>Guides</a>
+          <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]" rel='noopener noreferrer'>git@</a>
+          <a href="https://github.com/pengiundev/curve-vue" rel='noopener noreferrer'>git@UI</a>
         </div>
       </div>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
@@ -70,8 +71,9 @@
       <router-link to="/integrations" class='showmobile'>Integrations</router-link>
       <router-link to="/bugbounty" class='showmobile'>Bug Bounty</router-link>
       <router-link :to="'/' + currentPool + '/donate'" class='showmobile'>Donate</router-link>
-      <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]" class='showmobile'>git@</a>
-      <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>
+      <a href='https://guides.curve.fi' rel='noopener noreferrer' class='showmobile'>Guides</a>
+      <a :href="'https://github.com/curvefi/curve-contract/tree/pool_'+gitBranches[currentPool]" class='showmobile' rel='noopener noreferrer'>git@</a>
+      <a href="https://github.com/pengiundev/curve-vue" class='showmobile' rel='noopener noreferrer'>git@UI</a>
       <button class='simplebutton showmobile' @click = 'changeWallets'>Change wallet</button>
       <button id='changeAccounts' class='simplebutton showmobile' 
         v-show="['ledger', 'trezor'].includes(walletName)" 

@@ -47,6 +47,10 @@
             When staking you use multiple smart contract products each of which has its own risks
         </p>
 
+        <h3>
+            <a href='https://guides.curve.fi/how-to-choose-the-right-curve-pool-for-you/' rel='noopener noreferrer'>Learn more about each pool's risks</a>
+        </h3>
+
     </div>
 </template>
 
@@ -60,7 +64,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     h2 {
         display: flex;
         flex-wrap: wrap;
@@ -76,5 +80,11 @@
         h2 img {
             margin-left: 0;
         }
+    }
+    .window.white a {
+        border-bottom: 1px dashed gray;
+    }
+    .window.white a:hover {
+        border-bottom: none;
     }
 </style>

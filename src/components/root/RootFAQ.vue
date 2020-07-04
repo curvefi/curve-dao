@@ -24,16 +24,20 @@
                 <router-link to='/integrations'>Integrations</router-link>
             </div>
 
+            <div>
+                <a href='https://guides.curve.fi' rel='noopener noreferrer'>Guides</a>
+            </div>
+
             <p>
-                <a href='https://medium.com/@crypto.tutorials/curve-fi-how-does-it-work-b673a8fe16cc'>Getting started tutorial</a>
+                <a href='https://medium.com/@crypto.tutorials/curve-fi-how-does-it-work-b673a8fe16cc' rel='noopener noreferrer'>Getting started tutorial</a>
             </p>
 
             <p>
-                <a href='https://www.youtube.com/watch?v=fGxTwm-rf1s'>How to use Curve Y pool video</a>
+                <a href='https://www.youtube.com/watch?v=fGxTwm-rf1s' rel='noopener noreferrer'>How to use Curve Y pool video</a>
             </p>
 
             <p>
-                <a href='https://www.youtube.com/watch?v=1SN7zKlb5pk'>How Curve.fi works</a>
+                <a href='https://www.youtube.com/watch?v=1SN7zKlb5pk' rel='noopener noreferrer'>How Curve.fi works</a>
             </p>
         </p>
 

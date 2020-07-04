@@ -43,7 +43,7 @@ export function findClosestPrice(timestamp, data) {
 export async function fetchVolumeData(pools, refresh = false, period = 5) {
 	if(!Array.isArray(pools)) pools = [pools]
 	pools = pools.map(p => p == 'iearn' ? 'y' : p == 'susdv2' ? 'susd' : p == 'ren2' ? 'ren' : p == 'rens' ? 'sbtc' : p)
-	pools = pools.filter(pool => !state.volumeData[period][pool].length)
+	if(!refresh) pools = pools.filter(pool => !state.volumeData[period][pool].length)
 	//pools = pools.filter(pool => !['tbtc'].includes(pool))
 	let requests = pools.map(p => {
 		if(p == 'ren') p = 'ren2'

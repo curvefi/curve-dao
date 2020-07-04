@@ -27,7 +27,7 @@
                                         {{transferableBalanceText}}/
                                     </span>
                                     <span>{{ maxBalanceCoin(i) }} </span>
-                                    <span v-show="i == 3 && susdWaitingPeriod">
+                                    <span v-show="susdWaitingPeriod">
                                         <span class='tooltip'>
                                             <img src='@/assets/clock-regular.svg' class='icon small'>
                                             <span class='tooltiptext normalFont'>
@@ -345,7 +345,7 @@
                 Vue.set(this.inputs, i, this.maxBalanceCoin(i))
                 if(this.currentPool == 'susdv2' && i == 3 || this.currentPool == 'sbtc' && i == 2) {
                     let maxbalance_susd = this.susdWaitingPeriod ? 0 : BN(this.transferableBalance).times(this.rates[i]).toString()
-                    Vue.set(this.inputs, i, this.toFixed(maxbalance_susd))
+                    Vue.set(this.inputs, i, maxbalance_susd)
                 }
             },
         	inputsFormat(i) {
@@ -425,7 +425,7 @@
                 if(this.currentPool == 'susdv2' || this.currentPool == 'sbtc') {
                     this.transferableBalance = decoded[decoded.length - 2]
                     this.susdWaitingPeriod = (+decoded[decoded.length - 1] != 0)
-                    this.susdWaitingPeriodTime = +decoded[decoded.length -2]
+                    this.susdWaitingPeriodTime = +decoded[decoded.length - 1]
                 }
 			    if (this.max_balances) {
 			        this.disabled = true;
@@ -475,7 +475,7 @@
                     )
                 let endOffset = 1
                 calls.push([currentContract.swap_token._address, currentContract.swap_token.methods.totalSupply().encodeABI()])
-                if(this.currentPool == 'susdv2') {
+                if(['susdv2', 'sbtc'].includes(this.currentPool)) {
                     let currencyKey = '0x7355534400000000000000000000000000000000000000000000000000000000'
                     if(this.currentPool == 'sbtc') 
                         currencyKey = '0x7342544300000000000000000000000000000000000000000000000000000000'

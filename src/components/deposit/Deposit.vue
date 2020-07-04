@@ -289,12 +289,12 @@
                 var { dismiss } = notifyNotification(this.waitingMessage)
                 let promises = await Promise.all([helpers.getETHPrice()])
                 this.ethPrice = promises[0]
-                this.estimateGas = 400000
+                this.estimateGas = 200000
                 try {
                     await currentContract.curveRewards.methods.stake(tokens.toFixed(0,1)).send({
                         from: currentContract.default_account,
                         gasPrice: this.gasPriceWei,
-                        gas: 800000,
+                        gas: 400000,
                     })
                     .once('transactionHash', hash => {
 				        this.waitingMessage = `Waiting for stake transaction to confirm 

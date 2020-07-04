@@ -33,6 +33,7 @@ const TotalDeposits = () => import('../components/TotalDeposits.vue')
 const Integrations = () => import('../views/Integrations.vue')
 const Risks = () => import('../views/Risks.vue')
 const BugBounty = () => import('../views/BugBounty.vue')
+const PoolRisks = () => import('../views/PoolRisks.vue')
 
 const ycTokens = () => import('../components/ycTokens/Index.vue')
 
@@ -296,6 +297,11 @@ let routes = [
         path: 'audits',
         name: 'Audits',
         component: Audits,
+      },
+      {
+        path: 'risks',
+        name: 'PoolRisks',
+        component: PoolRisks,
       },
     ]
   },

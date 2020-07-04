@@ -55,7 +55,7 @@
           <router-link to="/events">Events</router-link>
           <a :href="'https://etherscan.io/address/' + this.poolAddress" rel='noopener noreferrer'>Pool contract</a>
           <a :href="'https://etherscan.io/address/' + this.tokenAddress" rel='noopener noreferrer'>Token contract</a>
-          <router-link to="/risks">Risks</router-link>
+          <router-link :to="'/' + currentPool + '/risks'">Risks</router-link>
           <router-link to="/bugbounty">Bug Bounty</router-link>
           <router-link :to="'/' + currentPool + '/faq'">FAQ</router-link>
           <router-link to="/integrations">Integrations</router-link>

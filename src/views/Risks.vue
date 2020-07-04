@@ -2,9 +2,9 @@
 	<div class="window white">
         <h2>
             Risks of using 
-            <span><img :src="publicPath + 'logo.png'" class='icon'> Curve Finance</span>
+            <img :src="publicPath + 'logo.png'" class='icon'> Curve Finance
         </h2>
-        
+
         <p>
             Providing liquidity on Curve doesn't come without risks. Before making a deposit, it is best to research and understand the risks involved.
         </p>

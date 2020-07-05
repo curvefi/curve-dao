@@ -9,6 +9,16 @@ body {
     margin: 0;
 }
 
+#app {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+#screen {
+  flex: 1 0 auto;
+}
+
 @font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
@@ -504,4 +514,11 @@ input[type=range]:focus::-ms-fill-upper {
 .tooltip:hover .tooltiptext {
   text-align: center;
   visibility: visible;
+}
+
+footer {
+  flex-shrink: none;
+  background: silver;
+  font-weight: bolder;
+  text-align: center;
 }

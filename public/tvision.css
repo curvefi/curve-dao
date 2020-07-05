@@ -5,18 +5,18 @@
   text-align: center;
 }
 
-.top-menu-bar a, .poolsdialog a .top-menu-bar .icon-container {
+.top-menu-bar a, .poolsdialog a .top-menu-bar .icon-container, footer a {
   margin: 0 1em;
   text-decoration: none;
   color: black;
   padding: 0 1em;
 }
 
-.top-menu-bar a:visited, .poolsdialog a:visited {
+.top-menu-bar a:visited, .poolsdialog a:visited, footer a:visited {
     color: black;
 }
 
-.top-menu-bar a:hover, .poolsdialog div.selected, .poolsdialog div.selected a, .poolsdialog div.selected a:visited {
+.top-menu-bar a:hover, .poolsdialog div.selected, .poolsdialog div.selected a, .poolsdialog div.selected a:visited, footer a:hover {
     background-color: #505050;
     color: #c0c0c0;
 }
@@ -779,4 +779,10 @@ li.coins label:hover {
 
 .vamiddle {
   vertical-align: middle;
+}
+
+/* DAO */
+
+.root.Votes #screen > .window {
+  max-width: 1000px;
 }

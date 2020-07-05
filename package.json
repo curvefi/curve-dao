@@ -7,6 +7,8 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@aragon/connect": "^0.3.0",
+    "@aragon/connect-thegraph-voting": "^0.3.0",
     "@biconomy/mexa": "^1.5.12",
     "@chenfengyuan/vue-qrcode": "^1.0.2",
     "@renproject/ren": "^1.0.5",

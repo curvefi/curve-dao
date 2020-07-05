@@ -41,6 +41,9 @@ const Registry = () => import('../components/test/Registry.vue')
 
 const Gateway = () => import('../components/ren/Gateway.vue')
 
+//DAO
+const Votes = () => import('../components/dao/Votes.vue')
+
 import Index from '../components/Index.vue'
 
 import init from '../init'
@@ -244,6 +247,18 @@ let routes = [
         component: SwapRouter,
       }
     ]
+  },
+  {
+    path: '/dao',
+    name: 'DAO',
+    component: RootApp,
+    children: [
+      {
+        path: '',
+        name: 'Votes',
+        component: Votes,
+      },
+    ],
   },
   {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren|sbtc)/',

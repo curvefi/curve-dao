@@ -140,6 +140,20 @@ export function formatDateToHuman(timestamp) {
           .join(':');
 }
 
+export function formatDayTimeToHuman(timestamp) {
+  //convert to UTC
+  let d = new Date(timestamp*1000+(new Date).getTimezoneOffset() * 60 * 1000)
+  return [
+            d.getDate(),
+          ].join('/')+' '+
+          [
+            `${d.getHours()}`.padStart(2, '0'),
+            `${d.getMinutes()}`.padStart(2, '0'),
+            `${d.getSeconds()}`.padStart(2, '0'),
+          ]
+          .join(':');
+}
+
 export function urlBase64ToUint8Array(base64String) {
   var padding = '='.repeat((4 - base64String.length % 4) % 4);
   var base64 = (base64String + padding)

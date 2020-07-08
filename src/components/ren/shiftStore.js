@@ -192,7 +192,6 @@ export async function loadTransactions() {
 		.on('data', block => {
 			console.log("NEW BLOCK")
 			for(let transaction of state.transactions.filter(t => !t.btcTxHash && t.ethTxHash && t.state && ![65, 66].includes(t.state != 65))) {
-				console.log(transaction, "TRANSACTION")
 				if(transaction.state >= 62 || transaction.confirmations >= 30 || transaction.state == 30) continue;
 				transaction.confirmations = block.number - transaction.ethStartBlock + 1
 				transaction.ethCurrentBlock = block.number
@@ -615,14 +614,14 @@ export async function initMint(transaction) {
 
 export async function sendMint(transfer) {
 
-	console.log(transfer, "SEND MINT")
+	console.log(transfer.btcTxHash, transfer.ethTxHash, transfer.state, "SEND MINT")
 
 
 	let transaction = state.transactions.find(t => t.id == transfer.id)
 	console.log(transaction.from)
-	if(transaction.fromAddress.toLowerCase() != state.default_account.toLowerCase()) {
-		return;
-	}
+	// if(transaction.fromAddress && transaction.fromAddress.toLowerCase() != state.default_account.toLowerCase()) {
+	// 	return;
+	// }
 
 	//transaction is ready to be sent to eth network
 	if(transaction.renResponse && transaction.signature) {
@@ -725,6 +724,7 @@ export async function receiveRen(transaction) {
 
 export async function mintThenSwap({ id, amount, params, utxoAmount, renResponse, signature }, swapNow = false, receiveRen = false) {
 	let transaction = state.transactions.find(t => t.id == id);
+	console.log(transaction.btcTxHash, "MINT THEN SWAP")
 	let exchangeAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
 	let get_dy = BN(await swaps[transaction.pool].methods.get_dy(0, transaction.to_currency, exchangeAmount.toFixed(0, 1)).call())
 	let exchangeRateNow = get_dy.times(1e8).div(exchangeAmount)
@@ -891,6 +891,7 @@ function calcFee() {
 export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmount, renResponse, signature }, depositNow = false, receiveRen = false) {
 	//handle change calc_token_amount like in mintThenSwap
 	let transaction = state.transactions.find(t => t.id == id);
+	console.log(transaction.btcTxHash, "MINT THEN DEPOSIT")
 	let renAmount = BN(utxoAmount).times(10000 - state.mintFee).div(10000)
 	if(BN(transaction.amounts[0]).lt(utxoAmount)) {
 		transaction.lessSent = true

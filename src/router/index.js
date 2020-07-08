@@ -42,7 +42,7 @@ const Registry = () => import('../components/test/Registry.vue')
 const Gateway = () => import('../components/ren/Gateway.vue')
 
 //DAO
-const Votes = () => import('../components/dao/Votes.vue')
+const Votes = () => import('../components/dao/votes/Votes.vue')
 
 import Index from '../components/Index.vue'
 

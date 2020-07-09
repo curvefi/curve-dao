@@ -23,6 +23,7 @@
 </template>
 
 <script>
+
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
 
@@ -53,6 +54,7 @@
 
 			// Fetch the apps belonging to this organization
 			let apps = await org.apps()
+			state.apps = apps
 
 			apps.forEach(console.log)
 
@@ -93,10 +95,7 @@
 
 			const { votes } = results.data
 
-			console.log(votes, "ALL VOTES")
-
 			state.votes = votes
-
 
 
 			// let ovoting = new Voting(
@@ -111,8 +110,6 @@
 
 			// state.votes = await Promise.all([ovoting.votes(), pvoting.votes()])
 			// state.votes = state.votes.flat()
-
-			// console.log(state.votes, "THE VOTES")
 		},
 
 		methods: {

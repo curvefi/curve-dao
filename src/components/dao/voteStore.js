@@ -2,6 +2,7 @@ import Vue from 'vue'
 import * as allabis from './allabis'
 
 export let state = Vue.observable({
+	apps: [],
 	votes: [],
 })
 

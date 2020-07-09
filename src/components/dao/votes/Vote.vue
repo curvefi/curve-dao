@@ -8,8 +8,11 @@
 			<span v-show='contractCalled'>
 				{{ contractCalled }}: {{ description }}
 			</span>
-			<span v-show='!contractCalled'>
+			<span v-show='!contractCalled && vote.metadata'>
 				{{ vote.metadata }}
+			</span>
+			<span v-show='!contractCalled && description'>
+				{{ description }}
 			</span>
 			<countdown :timestamp = 'vote.startDate'></countdown>
 		</fieldset>
@@ -17,12 +20,17 @@
 </template>
 
 <script>
+	import { connect, describeScript } from '@aragon/connect'
+
+	import { state, getters } from '../voteStore'
+	
 	import * as radspec from 'radspec'
-	console.log(radspec, "RADSPEC")
 
 	import Countdown from '../common/Countdown.vue'
 	import { helpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
 	import * as allabis from '../allabis'
+
+
 
 	export default {
 		components: {
@@ -74,25 +82,28 @@
 					let match = signatures.map(sig => this.vote.script.indexOf(sig)).find(idx => idx > -1)
 					let method = Object.keys(natspec).find(key => 
 						natspec[key].signature.substr(2) == signatures.filter(sig => this.vote.script.indexOf(sig) > -1))
-					console.log(method, "THE METHOD")
-					if(method === undefined) return ''
+					if(method === undefined) return null;
 					let data = this.vote.script.substr(match)
-					console.log(data, "DATA")
 					let expression = natspec[method].notice
-					console.log(expression, "EXPRESSION")
-					console.log(abi.find(v => v.name == method.split('(')[0]), "ABI")
 					let call = {
 						abi: [abi.find(v => v.name == method.split('(')[0])],
 						transaction: {
 							data: '0x' + data,
 						}
 					}
-					console.log(expression, call, "THE DESC CALL")
 					let desc = await radspec.evaluate(expression, call)
-					console.log(desc, "DESC")
 					return desc
 				}
+				else if(!this.vote.metadata) {
+					try {
+						let desc = await describeScript(this.vote.script, state.apps)
+					}
+					catch(err) {
+						console.error(err)
+					}
+				}
 			},
+
 		},
 	}
 </script>

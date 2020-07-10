@@ -5,22 +5,38 @@
 				{{ getVotingAppName }} ({{getSupportRequiredPct}}% / {{getMinAcceptQuorum}}%)
 			</legend>
 			<b> #{{getVoteId}} </b>
-			<span v-show='contractCalled'>
-				{{ contractCalled }}: {{ description }}
-			</span>
-			<span v-show='!contractCalled && vote.metadata'>
-				{{ vote.metadata }}
-			</span>
-			<span v-show='!contractCalled && description'>
-				{{ description }}
-			</span>
+			<div class='description'>
+				<span v-show='contractCalled'>
+					{{ contractCalled }}: {{ description }}
+				</span>
+				<span v-show='!contractCalled && vote.metadata'>
+					{{ vote.metadata }}
+				</span>
+				<span v-show='!contractCalled && description'>
+					{{ description }}
+				</span>
+			</div>
 			<countdown :timestamp = 'vote.startDate'></countdown>
+			<div class="tui-progress-bar">
+				<span class='yestext'>Yes:</span>
+			    <span class="tui-progress-label">{{ getSupportYea }}%</span>
+			    <span class="tui-progress yes" :style="{width: getSupportYea + '%'}"></span>
+			</div>
+			<div class="tui-progress-bar">
+				<span class='notext'>No:</span>
+			    <span class="tui-progress-label">{{ getSupportNay }}%</span>
+			    <span class="tui-progress no" :style="{width: getSupportNay + '%'}"></span>
+			</div>
+			<div class='enacted' v-show='vote.executed'>
+				√ Passed(enacted)
+			</div>
 		</fieldset>
 	</div>
 </template>
 
 <script>
-	import { connect, describeScript } from '@aragon/connect'
+	import { connect, describeScript, App } from '@aragon/connect'
+	console.log(describeScript, connect, App, "WTF")
 
 	import { state, getters } from '../voteStore'
 	
@@ -61,10 +77,21 @@
 			getVoteId() {
 				return +this.vote.id.split(':')[2]
 			},
+			totalSupport() {
+				return +this.vote.yea + +this.vote.nay
+			},
+			getSupportYea() {
+				if(this.totalSupport == 0) return 0
+				return (+this.vote.yea / this.totalSupport * 100).toFixed(1)
+			},
+			getSupportNay() {
+				if(this.totalSupport == 0) return 0
+				return (+this.vote.nay / this.totalSupport * 100).toFixed(1)
+			},
 			contractCalled() {
-				if(this.vote.script.includes(allabis.poolproxy_address.substr(2).toLowerCase())) return 'Pool Proxy'
-				if(this.vote.script.includes(allabis.votingescrow_address.substr(2).toLowerCase())) return 'Voting Escrow'
-				if(this.vote.script.includes(allabis.gaugecontroller_address.substr(2).toLowerCase())) return 'Gauge Controller'
+				if(this.vote.script.substr(90,40) == allabis.poolproxy_address.substr(2).toLowerCase()) return 'Pool Proxy'
+				if(this.vote.script.substr(90,40) == allabis.votingescrow_address.substr(2).toLowerCase()) return 'Voting Escrow'
+				if(this.vote.script.substr(90,40) == allabis.gaugecontroller_address.substr(2).toLowerCase()) return 'Gauge Controller'
 				return null
 			},
 
@@ -97,6 +124,7 @@
 				else if(!this.vote.metadata) {
 					try {
 						let desc = await describeScript(this.vote.script, state.apps)
+						return desc[0].description
 					}
 					catch(err) {
 						console.error(err)
@@ -109,7 +137,41 @@
 </script>
 
 <style scoped>
+	fieldset {
+		height: 100%;
+	}
 	legend {
 		text-align: center;
 	}
+	.progress {
+		width: 100%;
+	}
+	.tui-progress-bar {
+		background: gray;
+		margin-top: 0.4em;
+	}
+	.tui-progress.yes {
+		background: green;
+	}
+	.tui-progress.no {
+		background: darkred;
+	}
+	.yestext, .notext {
+		position: absolute;
+		top: 50%;
+		z-index: 1;
+		transform: translateY(-50%);
+		padding-left: 3px;
+	}
+	.enacted {
+		margin-top: 1em;
+		color: green;
+	}
+	/*.description {
+		height: 30px;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+		overflow: hidden;
+	}*/
 </style>

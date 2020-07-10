@@ -460,6 +460,39 @@ input[type=range]:focus::-ms-fill-upper {
     padding: 10px;
     vertical-align: top; }
 
+  .tui-progress-bar {
+    display: block;
+    position: relative;
+    height: 20px;
+    width: 200px;
+    background-color: #00a8a8;
+    overflow: hidden; }
+
+  .tui-progress {
+    position: absolute;
+    left: 0px;
+    background-color: cyan;
+    height: 100%;
+    display: inline-block; }
+
+  .tui-progress-bar .tui-indeterminate {
+    position: absolute;
+    left: 0px;
+    background-color: cyan;
+    height: 20px;
+    width: 20px;
+    display: inline-block;
+    animation: indeterminate 1s backwards;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear; }
+
+  .tui-progress-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    z-index: 1; }
+
 
 /* Tooltip container */
 .tooltip {

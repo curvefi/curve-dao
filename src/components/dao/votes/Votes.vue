@@ -6,7 +6,7 @@
 				<fieldset>
 					<legend>Open votes ({{ openVotes.length }})</legend>
 					<div class='votes open'>
-						<vote v-for='vote in openVotes' :vote='vote'></vote>
+						<vote v-for='vote in openVotes' :vote='vote' class='vote'></vote>
 					</div>
 				</fieldset>
 			</div>
@@ -14,7 +14,7 @@
 				<fieldset>
 					<legend>Closed votes ({{ closedVotes.length }})</legend>
 					<div class='votes closed'>
-						<vote v-for='vote in closedVotes' :vote='vote'></vote>
+						<vote v-for='vote in closedVotes' :vote='vote' class='vote'></vote>
 					</div>
 				</fieldset>
 			</div>
@@ -27,7 +27,8 @@
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
 
-	import { connect } from '@aragon/connect'
+	import { connect, describeScript } from '@aragon/connect'
+	console.log(describeScript)
 	import { Voting } from '@aragon/connect-thegraph-voting'
 
 	import { state, getters } from '../voteStore'
@@ -125,7 +126,13 @@
 	.votes {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-gap: 1em;
 		word-break: break-all;
+	}
+	.votes .vote {
+		height: 150px;
+		/* fix for fieldset height 100% issue */
+		margin-bottom: 1em;
 	}
 	.votes-closed {
 		margin-top: 1em;

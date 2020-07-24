@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 0a82ebbafb89caffdda9e4fe909fc61e00228dfd AA <angelangelov97@gmail.com> 1585750045 +0300	branch: Created from master
+0a82ebbafb89caffdda9e4fe909fc61e00228dfd 41949bcfffc418a9a610b3736e1cd26fe88c3cd8 AA <angelangelov97@gmail.com> 1585754613 +0300	commit: use break_infinity which is much faster compared to BigNumber for trading page
+41949bcfffc418a9a610b3736e1cd26fe88c3cd8 2549ef563dd32a8bd323e53fc86dbab1771a5f49 AA <angelangelov97@gmail.com> 1585756114 +0300	commit: small change to enable price chart to show with infura
+2549ef563dd32a8bd323e53fc86dbab1771a5f49 95754d5f27d0ff01fd9f34bcbffe1384f553087a AA <angelangelov97@gmail.com> 1585763077 +0300	commit: small fixes

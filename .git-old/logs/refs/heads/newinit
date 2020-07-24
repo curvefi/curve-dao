@@ -1,0 +1,10 @@
+0000000000000000000000000000000000000000 7525ceb706beca35513732102f49ea101a7098de AA <angelangelov97@gmail.com> 1586643199 +0300	branch: Created from master
+7525ceb706beca35513732102f49ea101a7098de a7c19d2c7a9e043f918f49a215b2f3afb7e24e98 AA <angelangelov97@gmail.com> 1586908451 +0300	commit: refactor inits
+a7c19d2c7a9e043f918f49a215b2f3afb7e24e98 6be806c18c7294d1599789423d15d20b8008897a AA <angelangelov97@gmail.com> 1586969178 +0300	commit: new init
+6be806c18c7294d1599789423d15d20b8008897a 99f105c4fcc735179ea662303687310cb1d3e597 AA <angelangelov97@gmail.com> 1586972469 +0300	commit: inits
+99f105c4fcc735179ea662303687310cb1d3e597 6762325da0b2b0be25bbfc6f65c48d091ccb7264 AA <angelangelov97@gmail.com> 1587004963 +0300	commit: init fixes
+6762325da0b2b0be25bbfc6f65c48d091ccb7264 cacb901cdc04991a5a7abd9f070604c2cc771290 AA <angelangelov97@gmail.com> 1587094995 +0300	commit: depth chart fix select compound+y, small css fix on root page
+cacb901cdc04991a5a7abd9f070604c2cc771290 8a8dec6bdc046d5a6786bb5a52178f18f16212cf AA <angelangelov97@gmail.com> 1587149728 +0300	commit: get lending apy
+8a8dec6bdc046d5a6786bb5a52178f18f16212cf 70cf1dd18003e1c135f81343b22a610e3380cc96 AA <angelangelov97@gmail.com> 1587164797 +0300	commit: small fixes with init
+70cf1dd18003e1c135f81343b22a610e3380cc96 af8e1c06886867dc842b26845b3d9fb31e559687 AA <angelangelov97@gmail.com> 1587178850 +0300	commit: refactor done?
+af8e1c06886867dc842b26845b3d9fb31e559687 d1e96b1e9911015c414167eadbb465fe84c1ee1d AA <angelangelov97@gmail.com> 1587188840 +0300	commit: 100ms faster init!

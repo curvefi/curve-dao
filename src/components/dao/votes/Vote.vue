@@ -2,33 +2,57 @@
 	<div>
 		<fieldset>
 			<legend>
-				{{ getVotingAppName }} ({{getSupportRequiredPct}}% / {{getMinAcceptQuorum}}%)
+				{{ vote.votingAppName }} ({{getSupportRequiredPct}}% / {{getMinAcceptQuorum}}%)
 			</legend>
-			<b> #{{getVoteId}} </b>
-			<div class='description'>
-				<span v-show='contractCalled'>
-					{{ contractCalled }}: {{ description }}
-				</span>
-				<span v-show='!contractCalled && vote.metadata'>
-					{{ vote.metadata }}
-				</span>
-				<span v-show='!contractCalled && description'>
-					{{ description }}
+			<div class='voteTitle'>
+				<router-link :to="'dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
+					<b> #{{ vote.voteNumber }} </b>
+				</router-link> 
+				<span class='userCastVote tooltip'>
+					<span v-show='vote.casts.length && vote.casts[0].supports' class='userVotedYes'>√</span>
+					<span v-show='vote.casts.length && !vote.casts[0].supports' class='userVotedNo'>X</span>
+					<span class='tooltiptext'>
+						You voted {{vote.casts.length && vote.casts[0].supports ? 'Yes' : 'No'}}
+					</span>
 				</span>
 			</div>
-			<countdown :timestamp = 'vote.startDate'></countdown>
+			<div class='description'>
+				<span v-show='vote.contractName'>
+					{{ vote.contractName }}: {{ vote.description }}
+				</span>
+				<span v-show='!vote.contractName && vote.metadata'>
+					{{ vote.metadata }}
+				</span>
+				<span v-show='!vote.contractName && vote.description'>
+					{{ vote.description }}
+				</span>
+			</div>
+			<countdown :timestamp = 'vote.startDate' :vote = 'vote' v-show='isOpen(vote) && !vote.executed'></countdown>
 			<div class="tui-progress-bar">
 				<span class='yestext'>Yes:</span>
-			    <span class="tui-progress-label">{{ getSupportYea }}%</span>
-			    <span class="tui-progress yes" :style="{width: getSupportYea + '%'}"></span>
+			    <span class="tui-progress-label">{{ vote.yeap }}%</span>
+			    <span class="tui-progress yes" :style="{width: vote.yeap + '%'}"></span>
 			</div>
 			<div class="tui-progress-bar">
 				<span class='notext'>No:</span>
-			    <span class="tui-progress-label">{{ getSupportNay }}%</span>
-			    <span class="tui-progress no" :style="{width: getSupportNay + '%'}"></span>
+			    <span class="tui-progress-label">{{ vote.nop }}%</span>
+			    <span class="tui-progress no" :style="{width: vote.nop + '%'}"></span>
 			</div>
 			<div class='enacted' v-show='vote.executed'>
 				√ Passed(enacted)
+			</div>
+			<div class='canexecute' v-show='!vote.executed && canExecute'>
+				√ Passed <button @click = 'enact(vote)'>Enact</button>
+			</div>
+			<div class='rejected' v-show='isRejected'>
+				X Rejected
+			</div>
+			<div class='createdon'>
+				<img 
+					:src="publicPath + 'clock-regular.svg'" 
+					class='icon small'
+				> 
+				{{ startDateFormat }}
 			</div>
 		</fieldset>
 	</div>
@@ -36,15 +60,15 @@
 
 <script>
 	import { connect, describeScript, App } from '@aragon/connect'
-	console.log(describeScript, connect, App, "WTF")
 
 	import { state, getters } from '../voteStore'
 	
 	import * as radspec from 'radspec'
 
 	import Countdown from '../common/Countdown.vue'
-	import { helpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
+	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
 	import * as allabis from '../allabis'
+	import * as helpers from '../../../utils/helpers'
 
 
 
@@ -56,80 +80,93 @@
 		props: ['vote'],
 
 		data: () => ({
-			description: null,
+			//description: null,
 		}),
 
 		async created() {
-			this.description = await this.decodeCall()
+			//this.description = await this.decodeCall()
 		},
 
 		computed: {
-			getVotingAppName() {
-				if(this.vote.appAddress.toLowerCase() == OWNERSHIP_APP_ADDRESS.toLowerCase()) return 'Ownership'
-				if(this.vote.appAddress.toLowerCase() == PARAMETER_APP_ADDRESS.toLowerCase()) return 'Parameter'
-			},
 			getSupportRequiredPct() {
 				return this.vote.supportRequiredPct / 1e16
 			},
 			getMinAcceptQuorum() {
 				return this.vote.minAcceptQuorum / 1e16
 			},
-			getVoteId() {
-				return +this.vote.id.split(':')[2]
+			// contractCalled() {
+			// 	if(this.vote.script.substr(90,40) == allabis.poolproxy_address.substr(2).toLowerCase()) 
+			// 		return 'poolproxy'
+			// 	if(this.vote.script.substr(90,40) == allabis.votingescrow_address.substr(2).toLowerCase()) 
+			// 		return 'votingescrow'
+			// 	if(this.vote.script.substr(90,40) == allabis.gaugecontroller_address.substr(2).toLowerCase()) 
+			// 		return 'gaugecontroller'
+			// 	return null
+			// },
+			// contractName() {
+			// 	if(this.contractCalled == 'poolproxy') 
+			// 		return 'Pool Proxy'
+			// 	if(this.contractCalled == 'votingescrow')
+			// 		return 'Voting Escrow'
+			// 	if(this.contractCalled == 'gaugecontroller')
+			// 		return 'Gauge Controller'
+			// 	return null
+			// },
+			startDateFormat() {
+				return helpers.formatDateToHuman(this.vote.startDate)
 			},
-			totalSupport() {
-				return +this.vote.yea + +this.vote.nay
+			canExecute() {
+				return voteHelpers.canExecute(this.vote)
 			},
-			getSupportYea() {
-				if(this.totalSupport == 0) return 0
-				return (+this.vote.yea / this.totalSupport * 100).toFixed(1)
+			isRejected() {
+				return voteHelpers.isRejected(this.vote)
 			},
-			getSupportNay() {
-				if(this.totalSupport == 0) return 0
-				return (+this.vote.nay / this.totalSupport * 100).toFixed(1)
+			publicPath() {
+				return process.env.BASE_URL
 			},
-			contractCalled() {
-				if(this.vote.script.substr(90,40) == allabis.poolproxy_address.substr(2).toLowerCase()) return 'Pool Proxy'
-				if(this.vote.script.substr(90,40) == allabis.votingescrow_address.substr(2).toLowerCase()) return 'Voting Escrow'
-				if(this.vote.script.substr(90,40) == allabis.gaugecontroller_address.substr(2).toLowerCase()) return 'Gauge Controller'
-				return null
-			},
-
 		},
 
 		methods: {
 			isOpen(vote) {
-				return helpers.isOpen(vote)
+				return voteHelpers.isVoteOpen(vote)
 			},
-			async decodeCall() {
-				if(this.contractCalled == 'Pool Proxy') {
-					let natspec = allabis.poolproxy_natspec.methods
-					let abi = allabis.poolproxy_abi
-					let signatures = Object.values(natspec).map(m => m.signature.substr(2))
-					let match = signatures.map(sig => this.vote.script.indexOf(sig)).find(idx => idx > -1)
-					let method = Object.keys(natspec).find(key => 
-						natspec[key].signature.substr(2) == signatures.filter(sig => this.vote.script.indexOf(sig) > -1))
-					if(method === undefined) return null;
-					let data = this.vote.script.substr(match)
-					let expression = natspec[method].notice
-					let call = {
-						abi: [abi.find(v => v.name == method.split('(')[0])],
-						transaction: {
-							data: '0x' + data,
-						}
-					}
-					let desc = await radspec.evaluate(expression, call)
-					return desc
-				}
-				else if(!this.vote.metadata) {
-					try {
-						let desc = await describeScript(this.vote.script, state.apps)
-						return desc[0].description
-					}
-					catch(err) {
-						console.error(err)
-					}
-				}
+			// async decodeCall() {
+			// 	if(this.contractCalled !== null) {
+			// 		let natspec = allabis[this.contractCalled+'_natspec'].methods
+			// 		let abi = allabis[this.contractCalled+'_abi']
+			// 		let signature = '0x'+this.vote.script.substr(322, 8)
+			// 		let method = Object.keys(natspec).find(key => web3.eth.abi.encodeFunctionSignature(key) == signature)
+			// 		console.log(method, "THE METHOD")
+			// 		// let signatures = Object.values(natspec).map(m => m.signature.substr(2))
+			// 		// let match = signatures.map(sig => this.vote.script.indexOf(sig)).find(idx => idx > -1)
+			// 		// let method = Object.keys(natspec).find(key => 
+			// 		// 	natspec[key].signature.substr(2) == signatures.filter(sig => this.vote.script.indexOf(sig) > -1))
+			// 		// if(method === undefined) return null;
+			// 		// let data = this.vote.script.substr(match)
+			// 		let data = this.vote.script.substr(322)
+			// 		let expression = natspec[method].notice
+			// 		let call = {
+			// 			abi: [abi.find(v => v.name == method.split('(')[0])],
+			// 			transaction: {
+			// 				data: '0x' + data,
+			// 			}
+			// 		}
+			// 		let desc = await radspec.evaluate(expression, call)
+			// 		return desc
+			// 	}
+			// 	else if(!this.vote.metadata) {
+			// 		try {
+			// 			let desc = await describeScript(this.vote.script, state.apps)
+			// 			return desc[0].description
+			// 		}
+			// 		catch(err) {
+			// 			console.error(err)
+			// 		}
+			// 	}
+			// },
+
+			enact(vote) {
+
 			},
 
 		},
@@ -167,6 +204,29 @@
 		margin-top: 1em;
 		color: green;
 	}
+	.rejected {
+		margin-top: 1em;
+		color: darkred;
+	}
+	.createdon {
+		margin-top: 0.4em;
+	}
+	.userCastVote {
+		cursor: pointer;
+	}
+	.userVotedYes {
+		color: green;
+	}
+	.userVotedNo {
+		color: darkred;
+	}
+	.voteTitle {
+		display: flex;
+		justify-content: space-between;
+	}
+	.description {
+		margin-top: 0.1em;
+	}
 	/*.description {
 		height: 30px;
 		display: -webkit-box;
@@ -174,4 +234,7 @@
 		-webkit-line-clamp: 3;
 		overflow: hidden;
 	}*/
+	.userCastVote .tooltiptext {
+		padding: 0.4em;
+	}
 </style>

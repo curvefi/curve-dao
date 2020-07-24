@@ -285,15 +285,16 @@
 				let S = point.balances
 					.map((balance, i) => balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain == 'rens' ? 'sbtc' : subdomain].coin_precisions[i])
             		.reduce((a, b) => a + b, 0)
-
+            	console.log(point.timestamp, "POINT")
             	let real_profit = point.balances
             		.map((balance, i) => {
             			//comparing prices against USDC
 	            		let key = "1-"+i;
 	                	if(i == 0) key = "0-1"
 	                	let price = point.prices[key] && point.prices[key][3]
-	                	if(i == 0) price = 1 / price
+	                	if(i > 1) price = 1 / price
 	                	price = price || 1
+	                	console.log(i, price, "THE PRICE")
 	                	if(['ren2', 'rens'].includes(subdomain)) price = point.prices['0-1'] && point.prices['0-1'][3] || 1
 
 	            		let real_amount = balance * point.rates[i] / abis[subdomain == 'susd' ? 'susdv2' : subdomain == 'ren2' ? 'ren' : subdomain == 'rens' ? 'sbtc' : subdomain].coin_precisions[i];

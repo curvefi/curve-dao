@@ -1,0 +1,37 @@
+0000000000000000000000000000000000000000 ed69805f8aa42791e63027fd82805b41d080b8f6 AA <angelangelov97@gmail.com> 1587357429 +0300	branch: Created from master
+ed69805f8aa42791e63027fd82805b41d080b8f6 8574199d617130c2862878b5ae50f0ba75031312 AA <angelangelov97@gmail.com> 1587357503 +0300	commit: small changes
+8574199d617130c2862878b5ae50f0ba75031312 b76fc01cb9b7917210a833b11554831e95f468f1 AA <angelangelov97@gmail.com> 1587359207 +0300	commit: small changes
+b76fc01cb9b7917210a833b11554831e95f468f1 f03675143c8916a63b74a3f05fc5554bc1e87f58 AA <angelangelov97@gmail.com> 1587359833 +0300	commit: fix gas
+f03675143c8916a63b74a3f05fc5554bc1e87f58 f3dbd3e59895bfdd8cfbba774c0282389a93340b AA <angelangelov97@gmail.com> 1587360720 +0300	commit: fix gas
+f3dbd3e59895bfdd8cfbba774c0282389a93340b e6b6f8b005d6f6cc3ae632e3d58498dfc0980d18 AA <angelangelov97@gmail.com> 1587362366 +0300	commit: combined stats
+e6b6f8b005d6f6cc3ae632e3d58498dfc0980d18 7970686f66363699d9ce2cea22012b8558874567 AA <angelangelov97@gmail.com> 1587410399 +0300	commit: changes
+7970686f66363699d9ce2cea22012b8558874567 ba96b263186a42dce17d12a5952b4b2a5ee99d5d AA <angelangelov97@gmail.com> 1587412989 +0300	commit: slippage changes
+ba96b263186a42dce17d12a5952b4b2a5ee99d5d 64ac0c67e760022dbb8406d6abc0911831321fa7 AA <angelangelov97@gmail.com> 1587425264 +0300	commit: changes
+64ac0c67e760022dbb8406d6abc0911831321fa7 ae735228625ed324f7fa885fdeb77bdd090b205c AA <angelangelov97@gmail.com> 1587427730 +0300	commit: small fix profit calc
+ae735228625ed324f7fa885fdeb77bdd090b205c a3cf16267d851186e2fd819d3996491daca757ec AA <angelangelov97@gmail.com> 1587447452 +0300	commit: new stats
+a3cf16267d851186e2fd819d3996491daca757ec b06b5c39fd4764571c916ec6d2f81ae5a0c7dd94 AA <angelangelov97@gmail.com> 1587447738 +0300	commit: new stats
+b06b5c39fd4764571c916ec6d2f81ae5a0c7dd94 852d28ca46cfa79ff10c6482c869510498e14f68 AA <angelangelov97@gmail.com> 1587449337 +0300	commit: changes
+852d28ca46cfa79ff10c6482c869510498e14f68 bbb5002688a2060dc4403858f689bfc6b8512102 AA <angelangelov97@gmail.com> 1587449821 +0300	commit: links and button
+bbb5002688a2060dc4403858f689bfc6b8512102 5d3ba62749a5b46cd6dc0f48757371e1987e55f6 AA <angelangelov97@gmail.com> 1587450315 +0300	commit: button -> link
+5d3ba62749a5b46cd6dc0f48757371e1987e55f6 5b8e15ddad26e22b4c51680f4cdde78fe4536f9c AA <angelangelov97@gmail.com> 1587450884 +0300	commit: small fixes
+5b8e15ddad26e22b4c51680f4cdde78fe4536f9c e4129397e1c724773de307cc4fad5ff3204908e2 AA <angelangelov97@gmail.com> 1587452057 +0300	commit: small change
+e4129397e1c724773de307cc4fad5ff3204908e2 a7370f482eb79d0c2daf05df6ec76974ff6ec6e4 AA <angelangelov97@gmail.com> 1587491808 +0300	commit: small fixes
+a7370f482eb79d0c2daf05df6ec76974ff6ec6e4 3374460868c6f267831ab52477b89f1e8d6ba974 AA <angelangelov97@gmail.com> 1587502766 +0300	commit: add susd to onesplit and chart
+3374460868c6f267831ab52477b89f1e8d6ba974 3e6c81fab0e8f2169ca67c2feffd056a3e978fe5 AA <angelangelov97@gmail.com> 1587502937 +0300	commit: change 'for now' -> 'currently' on onesplit
+3e6c81fab0e8f2169ca67c2feffd056a3e978fe5 5b156a00d09d559cc8f3f2dbf0bdb3e526a607fa AA <angelangelov97@gmail.com> 1587506930 +0300	commit: include susd pool in dai/usdc/usdt conversions
+5b156a00d09d559cc8f3f2dbf0bdb3e526a607fa 10749e438f3e27f293c6ad8a00957c95ac13e228 AA <angelangelov97@gmail.com> 1587512802 +0300	commit: small fix
+10749e438f3e27f293c6ad8a00957c95ac13e228 12ac04fcf6ed861e41650f219888347172d8b03b AA <angelangelov97@gmail.com> 1587513461 +0300	commit: better info message about swapping susd<->tusd/busd
+12ac04fcf6ed861e41650f219888347172d8b03b 3a1d25cfc104c316c45a06acaf296ec671d78393 AA <angelangelov97@gmail.com> 1587565256 +0300	pull origin newsusd: Fast-forward
+3a1d25cfc104c316c45a06acaf296ec671d78393 a08e3007b9c4556ead727053e2a87c4e397c76bc AA <angelangelov97@gmail.com> 1587565492 +0300	commit: fix susd total
+a08e3007b9c4556ead727053e2a87c4e397c76bc bc8e64026d1a0b908b0bc0b664b1ab97b67251aa AA <angelangelov97@gmail.com> 1587581858 +0300	commit: profit calc fix
+bc8e64026d1a0b908b0bc0b664b1ab97b67251aa 414c2175da8d221c405d5f5697d00cd766e35df5 AA <angelangelov97@gmail.com> 1587582063 +0300	commit: fix daily stats
+414c2175da8d221c405d5f5697d00cd766e35df5 3ac03cdfb060fc4b72b5c3407f18ee76b9af143a AA <angelangelov97@gmail.com> 1587582699 +0300	commit: slippage + pricing
+3ac03cdfb060fc4b72b5c3407f18ee76b9af143a 4e461cd8c944b8cf470d4f1857424d190b1b00e0 AA <angelangelov97@gmail.com> 1587583400 +0300	commit: slippage/bonus tooltips
+4e461cd8c944b8cf470d4f1857424d190b1b00e0 78985fab1f929f5010b56e9dfcb939fd0ba82f5b AA <angelangelov97@gmail.com> 1587604769 +0300	commit: staked stats
+78985fab1f929f5010b56e9dfcb939fd0ba82f5b 22b37aa4f87319d29e404349fb55a12fc0a334b6 AA <angelangelov97@gmail.com> 1587607183 +0300	commit: show staked share in blue window
+22b37aa4f87319d29e404349fb55a12fc0a334b6 0747c9996848c7a473682787cab7f370fc3e0e56 AA <angelangelov97@gmail.com> 1587610437 +0300	commit: add staked share to combined stats for susdv2 pool and update onboard.js
+0747c9996848c7a473682787cab7f370fc3e0e56 845a9ffb5765397fb7b4751415449a6b38586f7b AA <angelangelov97@gmail.com> 1587612869 +0300	commit: fix stake %, add audits links in mobile menu
+845a9ffb5765397fb7b4751415449a6b38586f7b 44a85271a20a9136377459fafe336c51613cb5d9 AA <angelangelov97@gmail.com> 1587667763 +0300	commit: chart set interval update data
+44a85271a20a9136377459fafe336c51613cb5d9 07c3825214830c0f1336936c9069390ff1fd2b0d AA <angelangelov97@gmail.com> 1587672261 +0300	commit: averaged usd price
+07c3825214830c0f1336936c9069390ff1fd2b0d 197afa5f9c70f870bb9bf48a8839d1b517262ddc AA <angelangelov97@gmail.com> 1587676256 +0300	commit: cancel dialog fixes
+197afa5f9c70f870bb9bf48a8839d1b517262ddc 675fc0fc53f7952c36863d10b77dedd3a45f9120 AA <angelangelov97@gmail.com> 1587677660 +0300	commit: fixes

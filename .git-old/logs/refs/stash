@@ -1,0 +1,141 @@
+0000000000000000000000000000000000000000 c7200a6fd6617e58efb86d80d89ffa0017e568f0 AA <angelangelov97@gmail.com> 1584736036 +0200	WIP on master: 203bb69 update version
+c7200a6fd6617e58efb86d80d89ffa0017e568f0 62d50ecf01048d677dabd37e6b4c92e56f74c3b9 AA <angelangelov97@gmail.com> 1584806907 +0200	WIP on master: 608cfa1 add app keys for portis and squarelink
+62d50ecf01048d677dabd37e6b4c92e56f74c3b9 5c59eab5737872e444efb25fe3906a2ebbff8dad AA <angelangelov97@gmail.com> 1584865670 +0200	WIP on master: c0d0471 remove build analyzer
+5c59eab5737872e444efb25fe3906a2ebbff8dad 9c7552483699a6a8dddb775233260070bc07c004 AA <angelangelov97@gmail.com> 1584888846 +0200	WIP on master: bae73ba small fixes
+9c7552483699a6a8dddb775233260070bc07c004 3ae9e31e29e9471640df133d7e9f73f4137e199c AA <angelangelov97@gmail.com> 1584992589 +0200	WIP on master: 0da7f9b add daily APY chart
+3ae9e31e29e9471640df133d7e9f73f4137e199c cdd5e344dff5160fe0d8c3ae499bc140e3ac9975 AA <angelangelov97@gmail.com> 1585499326 +0300	WIP on graphs: b045762 depth using log and sum of balnaces
+cdd5e344dff5160fe0d8c3ae499bc140e3ac9975 811dbff5357334204ea2b2f8a669e8aed84a5872 AA <angelangelov97@gmail.com> 1585615946 +0300	WIP on master: 996b9ec bump version
+811dbff5357334204ea2b2f8a669e8aed84a5872 1c825a6971b1e88a8a4566666078a168ed42ddf5 AA <angelangelov97@gmail.com> 1585753261 +0300	WIP on bigint: 0a82ebb small changes
+1c825a6971b1e88a8a4566666078a168ed42ddf5 1651ab9cf919ab4f89d981a131ea35a4bb19f829 AA <angelangelov97@gmail.com> 1585756706 +0300	WIP on bigint: 2549ef5 small change to enable price chart to show with infura
+1651ab9cf919ab4f89d981a131ea35a4bb19f829 f9c095fb2f3a64a31990d83137848b8dabb1b1e1 AA <angelangelov97@gmail.com> 1585757578 +0300	WIP on bigint: 2549ef5 small change to enable price chart to show with infura
+f9c095fb2f3a64a31990d83137848b8dabb1b1e1 3d41ec4cc1810ddfad1a635b917702199cbe7c4e AA <angelangelov97@gmail.com> 1585763163 +0300	WIP on master: 0a82ebb small changes
+3d41ec4cc1810ddfad1a635b917702199cbe7c4e e9372c32efb3fab84deef894615a27b7bdeeb308 AA <angelangelov97@gmail.com> 1585777339 +0300	WIP on master: 95754d5 small fixes
+e9372c32efb3fab84deef894615a27b7bdeeb308 158b698dfb547ccd61e38e447a34c63d70637a06 AA <angelangelov97@gmail.com> 1585853557 +0300	WIP on combinedstats: 37b6b02 combined prices
+158b698dfb547ccd61e38e447a34c63d70637a06 52f0f1e4262c69dcaf6920b86be1f0a1104c9bec AA <angelangelov97@gmail.com> 1585950806 +0300	WIP on master: 4c2ec51 fix inverse
+52f0f1e4262c69dcaf6920b86be1f0a1104c9bec b548f13eb600f8b5d3217f21eb2f7f3eded89e3b AA <angelangelov97@gmail.com> 1585976242 +0300	WIP on depositplain: 2fc2da7 add deposit/withdraw plain
+b548f13eb600f8b5d3217f21eb2f7f3eded89e3b f45cd59865b141586d64849174078fbaf71e1258 AA <angelangelov97@gmail.com> 1586040171 +0300	WIP on depositplain: 0dea73d fixes
+f45cd59865b141586d64849174078fbaf71e1258 e4760b6080300a655e5382796d4a9e6646de1eeb AA <angelangelov97@gmail.com> 1586106007 +0300	WIP on master: 1378da7 small fix profit calc new zap deposits
+e4760b6080300a655e5382796d4a9e6646de1eeb 5b4c83b3b6ba855c67a4f136ef819829551ad0fb AA <angelangelov97@gmail.com> 1586127955 +0300	WIP on master: 754f9f5 fix block number
+5b4c83b3b6ba855c67a4f136ef819829551ad0fb 8f93eaae8a98ab33669ebb2382cb6e01cefff332 AA <angelangelov97@gmail.com> 1586643186 +0300	WIP on master: 7525ceb small changes
+8f93eaae8a98ab33669ebb2382cb6e01cefff332 a877a3d17421886a636294cc188b67b07a7e2036 AA <angelangelov97@gmail.com> 1586969379 +0300	WIP on master: c3674bc fix
+a877a3d17421886a636294cc188b67b07a7e2036 91cdba0dbed023cdbbd1cba0895ce1c975f208e9 AA <angelangelov97@gmail.com> 1587093621 +0300	WIP on master: 9f411fb small fix
+91cdba0dbed023cdbbd1cba0895ce1c975f208e9 c92b081c7fd144ac2f5518c45a8959a6b1d50f11 AA <angelangelov97@gmail.com> 1587159234 +0300	WIP on master: dde09bd Lending APYs
+c92b081c7fd144ac2f5518c45a8959a6b1d50f11 483b4658cdbc6e070d26ad4b5bc7cbf06a6cd3ad AA <angelangelov97@gmail.com> 1587246301 +0300	WIP on master: 667e8c8 Add routed through, basic trade link, switch to deposit/withdraw plain by default
+483b4658cdbc6e070d26ad4b5bc7cbf06a6cd3ad d430ddad97e37e36bbc5e4f1dcc8cceae5db536a AA <angelangelov97@gmail.com> 1587312690 +0300	WIP on susd1: c144b11 prepare for susd
+d430ddad97e37e36bbc5e4f1dcc8cceae5db536a 21fe35bbc5ba103642b3aca3cd54fb4e63a4575c AA <angelangelov97@gmail.com> 1587326659 +0300	WIP on master: 35e8d07 small css change
+21fe35bbc5ba103642b3aca3cd54fb4e63a4575c 7b4d84f489e652afeaaeb8ac3370360ccd2e44f9 AA <angelangelov97@gmail.com> 1587348554 +0300	WIP on master: ed69805 add % of total share in my share
+7b4d84f489e652afeaaeb8ac3370360ccd2e44f9 354a909b2c5597d9a38c3aed41298279a4adc29c AA <angelangelov97@gmail.com> 1587406480 +0300	WIP on newsusd: e6b6f8b combined stats
+354a909b2c5597d9a38c3aed41298279a4adc29c 65021fc6197e5f290e05ec20eb42ef10c8c92c2f AA <angelangelov97@gmail.com> 1587435333 +0300	WIP on newsusd: ae73522 small fix profit calc
+65021fc6197e5f290e05ec20eb42ef10c8c92c2f 3bc3a34e143a835235399114314a37ccc77e3463 AA <angelangelov97@gmail.com> 1587556700 +0300	WIP on newsusd: 12ac04f better info message about swapping susd<->tusd/busd
+3bc3a34e143a835235399114314a37ccc77e3463 053fbf29b671c46375f4053b4c4efe2b6b59fe2c AA <angelangelov97@gmail.com> 1587576391 +0300	WIP on newsusd: a08e300 fix susd total
+053fbf29b671c46375f4053b4c4efe2b6b59fe2c 719fa434e84d07a44df1156bcb814ed946a4f249 AA <angelangelov97@gmail.com> 1587582185 +0300	WIP on newsusd: 414c217 fix daily stats
+719fa434e84d07a44df1156bcb814ed946a4f249 e7fa16efd8ca299d2f802b01761b343589711579 AA <angelangelov97@gmail.com> 1587678143 +0300	WIP on newsusd: 675fc0f fixes
+e7fa16efd8ca299d2f802b01761b343589711579 e234318704e6684f708a69d8a81c237263c90567 AA <angelangelov97@gmail.com> 1587689256 +0300	WIP on master: 8bf9f69 update onboard.js and susdv2 deposit gas
+e234318704e6684f708a69d8a81c237263c90567 23bd73912f4c07d52c825d267d5a917d8794ed40 AA <angelangelov97@gmail.com> 1587689883 +0300	WIP on newinit: d1e96b1 100ms faster init!
+23bd73912f4c07d52c825d267d5a917d8794ed40 0356c3a6cb0334aae96bce054e1341bc936b66ec AA <angelangelov97@gmail.com> 1587693909 +0300	WIP on newinit: d1e96b1 100ms faster init!
+0356c3a6cb0334aae96bce054e1341bc936b66ec 16c9711c9ebe914b0f34b558671474f8b531e80b AA <angelangelov97@gmail.com> 1587777107 +0300	WIP on master: 5f91fc6 change gas for susd swap
+16c9711c9ebe914b0f34b558671474f8b531e80b fb69e04f3471e5d316b7e1318c256b4141fef83f AA <angelangelov97@gmail.com> 1587780221 +0300	WIP on formatinput: fab7e43 format input
+fb69e04f3471e5d316b7e1318c256b4141fef83f 35fd823ba06fd58cbca361aaf210249fd007ebd9 AA <angelangelov97@gmail.com> 1587785967 +0300	WIP on master: 4510095 fix
+35fd823ba06fd58cbca361aaf210249fd007ebd9 497e5dcd3debfa7b54bab19707acacd4a0ad83c8 AA <angelangelov97@gmail.com> 1587858807 +0300	WIP on master: 276af00 fixes
+497e5dcd3debfa7b54bab19707acacd4a0ad83c8 4cc6e484cbb78438cfc0ba9213d08da90c593811 AA <angelangelov97@gmail.com> 1587864075 +0300	WIP on master: 276af00 fixes
+4cc6e484cbb78438cfc0ba9213d08da90c593811 ca817b7e5fe2e924fbb1a1302d1ee9cd7c1beba4 AA <angelangelov97@gmail.com> 1587865192 +0300	WIP on master: 276af00 fixes
+ca817b7e5fe2e924fbb1a1302d1ee9cd7c1beba4 05a3ea51552334e3389f4398dc9569e27b55c551 AA <angelangelov97@gmail.com> 1587866695 +0300	WIP on master: 276af00 fixes
+05a3ea51552334e3389f4398dc9569e27b55c551 63557e5df71a6ef51929cdf0297f06f8f712a2e9 AA <angelangelov97@gmail.com> 1587869524 +0300	WIP on master: 3c341c4 log deposit zap to sentry
+63557e5df71a6ef51929cdf0297f06f8f712a2e9 f75b5e393608236296b0c76ae7f9b4825844e797 AA <angelangelov97@gmail.com> 1588069373 +0300	WIP on master: bda3cf3 latest rates
+f75b5e393608236296b0c76ae7f9b4825844e797 45cfea95627d5630208a1f2f2901f39a29bb0e16 AA <angelangelov97@gmail.com> 1588399625 +0300	WIP on master: ee51c42 pie chart last week
+45cfea95627d5630208a1f2f2901f39a29bb0e16 ce132f6c376ed830843013dd542a25777ea8d91b AA <angelangelov97@gmail.com> 1588399866 +0300	WIP on master: ee51c42 pie chart last week
+ce132f6c376ed830843013dd542a25777ea8d91b 01b76f675adbf9c1964f511e5beba774da6db2d1 AA <angelangelov97@gmail.com> 1588583662 +0300	WIP on master: 1620485 max slippage withdrawal
+01b76f675adbf9c1964f511e5beba774da6db2d1 f73ee92f67de67d935e5b8042b7064e9d2f8c873 AA <angelangelov97@gmail.com> 1588724857 +0300	WIP on master: 8b3d416 onesplit changes
+f73ee92f67de67d935e5b8042b7064e9d2f8c873 095d7a64a8931b5d1b26ce98f68694534efafa31 AA <angelangelov97@gmail.com> 1588731266 +0300	WIP on master: 6c276f2 css fix
+095d7a64a8931b5d1b26ce98f68694534efafa31 22755ea2ef34734df98c14b4b57248e3e9d7bf07 AA <angelangelov97@gmail.com> 1588732247 +0300	WIP on master: 6c276f2 css fix
+22755ea2ef34734df98c14b4b57248e3e9d7bf07 40e197de9c25155c643e5464a28b5d06ce3c7382 AA <angelangelov97@gmail.com> 1588826537 +0300	WIP on master: 081d529 profit in USD
+40e197de9c25155c643e5464a28b5d06ce3c7382 643666866806995690ce747d1c7af0bb2ed5013a AA <angelangelov97@gmail.com> 1588839973 +0300	WIP on master: ae3882b css fix margin in checkbox in profit calc
+643666866806995690ce747d1c7af0bb2ed5013a d3fb08d53e452905063b69a6942bf92266580eac AA <angelangelov97@gmail.com> 1588886272 +0300	WIP on master: 7b26c4a use 1 as start fromInput in OneSplit component
+d3fb08d53e452905063b69a6942bf92266580eac 1e23ea3d56967e9296c558f569c2e5c4ad3c0255 AA <angelangelov97@gmail.com> 1588889025 +0300	WIP on master: df7f572 fix mounted hook OneSplit component
+1e23ea3d56967e9296c558f569c2e5c4ad3c0255 426af563e8e2a979752bb3d9801df135d70bbc48 AA <angelangelov97@gmail.com> 1588905490 +0300	WIP on master: facfd3d profit calc 1440m data interpolation
+426af563e8e2a979752bb3d9801df135d70bbc48 69c3aceb5f050add772ca3a845ce1fd80c697222 AA <angelangelov97@gmail.com> 1588918246 +0300	WIP on master: 9628d78 spacing
+69c3aceb5f050add772ca3a845ce1fd80c697222 7fb86a9a5072c637f32e94844eeba8a3591542a2 AA <angelangelov97@gmail.com> 1588918258 +0300	WIP on master: 9628d78 spacing
+7fb86a9a5072c637f32e94844eeba8a3591542a2 a9634479c27376e8a139d9c72b6cb572e69d94b3 AA <angelangelov97@gmail.com> 1588938777 +0300	WIP on master: f1538e4 fix profit calc
+a9634479c27376e8a139d9c72b6cb572e69d94b3 0fa423fd646b9e9222414fc7f4ca775b50639e4a AA <angelangelov97@gmail.com> 1589013669 +0300	WIP on master: 447e022 Event page yield
+0fa423fd646b9e9222414fc7f4ca775b50639e4a b993ad3111c3197d82d3197e83a5d0b0cc5938b2 AA <angelangelov97@gmail.com> 1589109765 +0300	WIP on master: 447e022 Event page yield
+b993ad3111c3197d82d3197e83a5d0b0cc5938b2 bd30baae8955892c34ccf27bfd8328a1ce91e82c AA <angelangelov97@gmail.com> 1589110842 +0300	WIP on master: f08f67b fix events
+bd30baae8955892c34ccf27bfd8328a1ce91e82c d9a611de46b6580e82a72204112cc3b60f000738 AA <angelangelov97@gmail.com> 1589146091 +0300	WIP on master: f08f67b fix events
+d9a611de46b6580e82a72204112cc3b60f000738 7f4c0feffd80fd79238b6cc8ae8bfc18d5883011 AA <angelangelov97@gmail.com> 1589243590 +0300	WIP on master: d95f51b remove unneeded file
+7f4c0feffd80fd79238b6cc8ae8bfc18d5883011 a181722dafa76db327813531a627fc21f3eb659b AA <angelangelov97@gmail.com> 1589267635 +0300	WIP on master: 0a63d27 fix back width of trade page
+a181722dafa76db327813531a627fc21f3eb659b b67cf844f067464fc0cd72d289eb30ffbb1234b7 AA <angelangelov97@gmail.com> 1589268390 +0300	WIP on newevents: 5e338f8 new events
+b67cf844f067464fc0cd72d289eb30ffbb1234b7 1fbe3814ceddcd9282fcf9bae0ce070669702188 AA <angelangelov97@gmail.com> 1589321339 +0300	WIP on master: 87a90c7 css fix mobile
+1fbe3814ceddcd9282fcf9bae0ce070669702188 371e94744e06633b6ca5496df4e34cc91fc8de01 AA <angelangelov97@gmail.com> 1589363111 +0300	WIP on tbtc: f14ad3d add PAX 1split
+371e94744e06633b6ca5496df4e34cc91fc8de01 b2569862a541745425aeec8e580f8e2bfe688f63 AA <angelangelov97@gmail.com> 1589499339 +0300	WIP on master: ab2f3ce fix combined stats
+b2569862a541745425aeec8e580f8e2bfe688f63 c3f42cc11c365d80f3d54c7e7cd16090211e4bb4 AA <angelangelov97@gmail.com> 1589611687 +0300	WIP on gatewayjs: 384cdb7 test
+c3f42cc11c365d80f3d54c7e7cd16090211e4bb4 8f9a3c6a50dba953b4ea5d6cf1c8d628c9eb46f3 AA <angelangelov97@gmail.com> 1589784340 +0300	WIP on btc: 11cb3b0 fixes
+8f9a3c6a50dba953b4ea5d6cf1c8d628c9eb46f3 4738e9e2e6dbee9554a5654330223a12fc868d9b AA <angelangelov97@gmail.com> 1589785515 +0300	WIP on btc: 11cb3b0 fixes
+4738e9e2e6dbee9554a5654330223a12fc868d9b 5180ca4649c3a938004f0954f506de9de540133b AA <angelangelov97@gmail.com> 1589831816 +0300	WIP on btc: 181225b tbtc calls fail fixes
+5180ca4649c3a938004f0954f506de9de540133b 8d0d9f683d71d8d07d5bcc31853cfebd313e0db6 AA <angelangelov97@gmail.com> 1589957411 +0300	WIP on gatewayjs: b3ebbb3 fee fixes
+8d0d9f683d71d8d07d5bcc31853cfebd313e0db6 bb31dd8556fd66ef2b11d911b0b1407777f8c4cb AA <angelangelov97@gmail.com> 1589961267 +0300	WIP on gatewayjs: b3ebbb3 fee fixes
+bb31dd8556fd66ef2b11d911b0b1407777f8c4cb b739011fe66f8e620cc085494db086701f51a60f AA <angelangelov97@gmail.com> 1590107295 +0300	WIP on btc: 7ad4c30 fix OneSplit component
+b739011fe66f8e620cc085494db086701f51a60f ab4c8eaa98c8f4496a10b0eca423cbd011ae9ace AA <angelangelov97@gmail.com> 1590107517 +0300	WIP on btc: 7ad4c30 fix OneSplit component
+ab4c8eaa98c8f4496a10b0eca423cbd011ae9ace cbd07802e6b1c3f3e6f341e4d44eccfd80139c1b AA <angelangelov97@gmail.com> 1590107659 +0300	WIP on btc: 7ad4c30 fix OneSplit component
+cbd07802e6b1c3f3e6f341e4d44eccfd80139c1b a2c736daf3ed2bc4cd8be9e4113974b4299d1c71 AA <angelangelov97@gmail.com> 1590108691 +0300	WIP on btc: 7ad4c30 fix OneSplit component
+a2c736daf3ed2bc4cd8be9e4113974b4299d1c71 1c2667b2addf49d27f30d037dbb9ee6eafcf4826 AA <angelangelov97@gmail.com> 1590210237 +0300	WIP on btc: 3a54651 add icons
+1c2667b2addf49d27f30d037dbb9ee6eafcf4826 e937f52e3762f6ad0b18c98b41fb9743aa547c04 AA <angelangelov97@gmail.com> 1590279421 +0300	WIP on btc: 46a9aca fix infinite approval
+e937f52e3762f6ad0b18c98b41fb9743aa547c04 bdf6f357bbc0c139866b2a1f6c5506f631b8de74 AA <angelangelov97@gmail.com> 1590651478 +0300	WIP on btc: dc29983 fix btc price promise race
+bdf6f357bbc0c139866b2a1f6c5506f631b8de74 bfad5da009f13536bd45185e8c61c3d0939c432d AA <angelangelov97@gmail.com> 1590652020 +0300	WIP on master: b1f1214 small balances info fix
+bfad5da009f13536bd45185e8c61c3d0939c432d 359df4049b88671b79e2113c17d4a1306e9f6913 AA <angelangelov97@gmail.com> 1590655475 +0300	WIP on btc: ab232ea fix trade chart
+359df4049b88671b79e2113c17d4a1306e9f6913 59160944f088399386c59c69ba727e9d81474734 AA <angelangelov97@gmail.com> 1590656265 +0300	WIP on btc: ab232ea fix trade chart
+59160944f088399386c59c69ba727e9d81474734 3e668fff69f3e4c16b088e522f67820bd2f03455 AA <angelangelov97@gmail.com> 1590674679 +0300	WIP on btc: 0792501 fix depth chart for btcs
+3e668fff69f3e4c16b088e522f67820bd2f03455 821efbeeb5820a042c7ca4feb4eb4347a0560f51 AA <angelangelov97@gmail.com> 1590675615 +0300	WIP on btc: 0792501 fix depth chart for btcs
+821efbeeb5820a042c7ca4feb4eb4347a0560f51 439c58f3ee4741550c43db6e1735d858fb53e557 AA <angelangelov97@gmail.com> 1591532806 +0300	WIP on master: 1ed57a4 fix error in console
+439c58f3ee4741550c43db6e1735d858fb53e557 60c3e4e0e91f649fdde00060b2355204e7a55ef7 AA <angelangelov97@gmail.com> 1591719422 +0300	WIP on master: d35501e total deposits chart
+60c3e4e0e91f649fdde00060b2355204e7a55ef7 146bf5657d2a5c92ab78759cff6bcd8f9405ff18 AA <angelangelov97@gmail.com> 1591750685 +0300	WIP on coingecko: d35501e total deposits chart
+146bf5657d2a5c92ab78759cff6bcd8f9405ff18 18dec575b7532c27646c8255ab3a6af2c8ab9a24 AA <angelangelov97@gmail.com> 1591956321 +0300	WIP on pwamasterGSN: d06f957 fix native UI when using through OneSplit page
+18dec575b7532c27646c8255ab3a6af2c8ab9a24 d8cb26f5c6688f1b7dc89114caf013ef2c13cc72 AA <angelangelov97@gmail.com> 1591972200 +0300	WIP on pwamasterdepositfix: 5b6e351 fix???
+d8cb26f5c6688f1b7dc89114caf013ef2c13cc72 9feb0428111eee8fa3c27cd4a8f7bb044e4769f2 AA <angelangelov97@gmail.com> 1591975467 +0300	WIP on pwamaster: cc7dbf9 enable deposits back
+9feb0428111eee8fa3c27cd4a8f7bb044e4769f2 ba01fe6190ec6ccbaa014ec5b6d87d69e1031d8c AA <angelangelov97@gmail.com> 1592068914 +0300	WIP on pwamaster: 9828d4c fix button styles
+ba01fe6190ec6ccbaa014ec5b6d87d69e1031d8c 03c50c733593d2745a8dd2c262e994a33840e0ef AA <angelangelov97@gmail.com> 1592127904 +0300	WIP on pwamaster: d698476 mention DAO in admin keys section in Risks page
+03c50c733593d2745a8dd2c262e994a33840e0ef 855550380aba02a9056ee991565114fc38b3d9c2 AA <angelangelov97@gmail.com> 1592146595 +0300	WIP on pwamaster: 882f085 fix pushing curvebtc__ items only
+855550380aba02a9056ee991565114fc38b3d9c2 b9cec5821681d41d11b836bd88af47f82d949d43 AA <angelangelov97@gmail.com> 1592214556 +0300	WIP on pwamaster: d0f8244 fix table on mobile
+b9cec5821681d41d11b836bd88af47f82d949d43 01d2a3ab7cb894b45db5da32f8afe7d9f60238d8 AA <angelangelov97@gmail.com> 1592215613 +0300	WIP on pwamaster: d0f8244 fix table on mobile
+01d2a3ab7cb894b45db5da32f8afe7d9f60238d8 bea9a27662eb3bcfac75a1dd0052c32d9f6e772e AA <angelangelov97@gmail.com> 1592236056 +0300	WIP on pwamaster: b706e7f update onboard.js and fix stats chart
+bea9a27662eb3bcfac75a1dd0052c32d9f6e772e edd31feb96ab65bcc6fff3fe5966c22ef7dc952a AA <angelangelov97@gmail.com> 1592240078 +0300	WIP on pwamaster: 3716a45 Native BTC UI fixes
+edd31feb96ab65bcc6fff3fe5966c22ef7dc952a 6fc1816c73e41529ec6e9471c2441f075cd4d11f AA <angelangelov97@gmail.com> 1592343007 +0300	WIP on pwamastersbtc: 8de4c84 icons
+6fc1816c73e41529ec6e9471c2441f075cd4d11f 140df0c18aa1752d5e5fa5a24a223cd61a763cde AA <angelangelov97@gmail.com> 1592494663 +0300	WIP on pwamastersbtc: 8de4c84 icons
+140df0c18aa1752d5e5fa5a24a223cd61a763cde 02f25e68b41ceafce296dcad6bb73cdd56c12984 AA <angelangelov97@gmail.com> 1592495159 +0300	WIP on pwamaster: 8342abb change min order size
+02f25e68b41ceafce296dcad6bb73cdd56c12984 6f49d2b6b955c1b72dd4cc17de2d54e39a6de2e4 AA <angelangelov97@gmail.com> 1592505405 +0300	WIP on pwamastersbtc: 8de4c84 icons
+6f49d2b6b955c1b72dd4cc17de2d54e39a6de2e4 54e8db62a48a5f76c034f68821ed43ba27b2d96b AA <angelangelov97@gmail.com> 1592515070 +0300	WIP on pwamastersbtc: 8de4c84 icons
+54e8db62a48a5f76c034f68821ed43ba27b2d96b 3358510c50b8497314e3c794a49ef9e02b5d5f79 AA <angelangelov97@gmail.com> 1592571467 +0300	WIP on pwamastersbtc: a4a9038 native BTC<->sBTC UI
+3358510c50b8497314e3c794a49ef9e02b5d5f79 712f41a51efd52df3fa6672431cda34e4f97549c AA <angelangelov97@gmail.com> 1592616399 +0300	WIP on pwamastersbtcstable: 03dffbd Staking risks
+712f41a51efd52df3fa6672431cda34e4f97549c 05c99117f36aa3e297522217e95a7a4a7ec706be AA <angelangelov97@gmail.com> 1592640244 +0300	WIP on pwamastersbtc: da781b1 native BTC sbtc pool UI
+05c99117f36aa3e297522217e95a7a4a7ec706be b0cb42fbe0572c87c60917cbf9027a01e4122e3e AA <angelangelov97@gmail.com> 1592679581 +0300	WIP on pwamastersbtc: 39503b0 resubmit in swap done
+b0cb42fbe0572c87c60917cbf9027a01e4122e3e 03d67dff8d341335c61ddfa094957a31998c66df AA <angelangelov97@gmail.com> 1592692676 +0300	WIP on pwamastersbtcstable: 32ad94a gas fixes
+03d67dff8d341335c61ddfa094957a31998c66df 17cccb4c8f41882a78ef065de770b8eb6a0b426f AA <angelangelov97@gmail.com> 1592767415 +0300	WIP on pwamastersbtcstable: 8f1cdd8 fix min_dy
+17cccb4c8f41882a78ef065de770b8eb6a0b426f d3c354e301888ddd10dea7fdd75bb5bb63a99f20 AA <angelangelov97@gmail.com> 1592812870 +0300	WIP on pwamastertom: b01025a wtf
+d3c354e301888ddd10dea7fdd75bb5bb63a99f20 a152db2715e1f1c51e27f38ef22aa52cbbb3ae1f AA <angelangelov97@gmail.com> 1592935637 +0300	WIP on pwamastertom: b01025a wtf
+a152db2715e1f1c51e27f38ef22aa52cbbb3ae1f a5a5e8d39025bab8f59513f0fc0c995d6aa49300 AA <angelangelov97@gmail.com> 1592936333 +0300	WIP on pwamastersbtcstable: 614e011 fix weekly rewards estimates
+a5a5e8d39025bab8f59513f0fc0c995d6aa49300 a6a08fabe6b9a35484133ea6d823db48fcb0eacd AA <angelangelov97@gmail.com> 1592946537 +0300	WIP on pwamastersbtc: 780476e Approve CHI when contract doesn't have
+a6a08fabe6b9a35484133ea6d823db48fcb0eacd 3f0c40b19b43eb2e17ff498806598f4a97bbc4b6 AA <angelangelov97@gmail.com> 1592954897 +0300	WIP on pwamastersbtc: c109d4c update docs with how to get underlying balances
+3f0c40b19b43eb2e17ff498806598f4a97bbc4b6 3e5624fe5d9ed63a02f5672cae9557e009b71691 AA <angelangelov97@gmail.com> 1593009570 +0300	WIP on pwamastersbtc: 45461de sbtc in daily stats
+3e5624fe5d9ed63a02f5672cae9557e009b71691 d8047539f7deac4a9cec193bfbc958e202f2abb6 AA <angelangelov97@gmail.com> 1593013705 +0300	WIP on pwamastersbtcbugg: f2e3dc9 Temporary fix Trust wallet
+d8047539f7deac4a9cec193bfbc958e202f2abb6 251cff0723798296c215db6f6cd220751490e3d7 AA <angelangelov97@gmail.com> 1593046333 +0300	WIP on pwamastersbtc: d116317 Add videos link
+251cff0723798296c215db6f6cd220751490e3d7 72cfe07986305e7389767284eb45a206045d431f AA <angelangelov97@gmail.com> 1593058731 +0300	WIP on pwamasterrecover: 28c0ad2 new adaptersg
+72cfe07986305e7389767284eb45a206045d431f 53c52c57234de5f49f8adb2be700f08a056778c1 AA <angelangelov97@gmail.com> 1593088393 +0300	WIP on pwamasterrecover: 28c0ad2 new adaptersg
+53c52c57234de5f49f8adb2be700f08a056778c1 1ef02cd6a61385c5c1cbe7dd1a55ac5b18707655 AA <angelangelov97@gmail.com> 1593377038 +0300	WIP on master: e187b26 small fix show exchange rate + renVM fee
+1ef02cd6a61385c5c1cbe7dd1a55ac5b18707655 02cb99d784a5360ec1e105375c6f4b6213c07ddd AA <angelangelov97@gmail.com> 1593534692 +0300	WIP on mastershowremovedtx: d1f693c fix spacing
+02cb99d784a5360ec1e105375c6f4b6213c07ddd d439d5c5eef463e891388c74c3091d183fb8ee37 AA <angelangelov97@gmail.com> 1593535749 +0300	WIP on biconomy: 7ba77bd new adapters and test personal_sign
+d439d5c5eef463e891388c74c3091d183fb8ee37 fc58b2684fd380d8bdd98f645cef656416af0a58 AA <angelangelov97@gmail.com> 1593581994 +0300	WIP on master: 9dd7ff3 validate addresses
+fc58b2684fd380d8bdd98f645cef656416af0a58 e976aa3a80c041a8da2f44a7e2a1607bf4bd0096 AA <angelangelov97@gmail.com> 1593642200 +0300	WIP on ledgerissue: e187b26 small fix show exchange rate + renVM fee
+e976aa3a80c041a8da2f44a7e2a1607bf4bd0096 22f57b462af6e8df8b3635fcb7d9fe85cdf864a2 AA <angelangelov97@gmail.com> 1593653277 +0300	WIP on master: 4454b14 z fix
+22f57b462af6e8df8b3635fcb7d9fe85cdf864a2 cf69d51d9e31ad2b70491dbe3e5eb18ccdbd579e AA <angelangelov97@gmail.com> 1593700826 +0300	WIP on master: a732326 remove hardcoded min amount
+cf69d51d9e31ad2b70491dbe3e5eb18ccdbd579e 0c88d35888c847e34d86a5245e7bb06981dbe3ed AA <angelangelov97@gmail.com> 1593701710 +0300	WIP on master: a732326 remove hardcoded min amount
+0c88d35888c847e34d86a5245e7bb06981dbe3ed 3641505a052e53001038f54c6ed0a680ac8196ff AA <angelangelov97@gmail.com> 1593702468 +0300	WIP on btcNaNfix: a732326 remove hardcoded min amount
+3641505a052e53001038f54c6ed0a680ac8196ff 3ededc2bb25235a02809e7ce72587283abc9637a AA <angelangelov97@gmail.com> 1594042622 +0300	WIP on curvedao: 404765f Initial DAO
+3ededc2bb25235a02809e7ce72587283abc9637a ef5a8bce3e53c2a6560ca3454f6c890d1e9b1f59 AA <angelangelov97@gmail.com> 1594134772 +0300	WIP on txlog: a6b4f11 Styling of advanced box in Swap
+ef5a8bce3e53c2a6560ca3454f6c890d1e9b1f59 a4ae129f4d529f75e34e92f9ab5813c765792eac AA <angelangelov97@gmail.com> 1594258866 +0300	WIP on curvedao: f2884a9 DAO Votes
+a4ae129f4d529f75e34e92f9ab5813c765792eac ccd4228d1c155c1ba0fd63b81652be27572ce4bb AA <angelangelov97@gmail.com> 1594301745 +0300	WIP on master: 1e39128 fix
+ccd4228d1c155c1ba0fd63b81652be27572ce4bb acb9f774c62a0b950d00dfe57d0ff4af129ffad6 AA <angelangelov97@gmail.com> 1594433110 +0300	WIP on master: 6209fc2 check for eth hash in addition to status when resubmitting
+acb9f774c62a0b950d00dfe57d0ff4af129ffad6 b0b81a0ac370db920c5d95e99e772257d8858a41 AA <angelangelov97@gmail.com> 1594528294 +0300	WIP on curvedao: 5da0e64 parse descriptions from Aragon
+b0b81a0ac370db920c5d95e99e772257d8858a41 6fc240d8bab77a837ad66ef2485378a05e7cc40e AA <angelangelov97@gmail.com> 1594615969 +0300	WIP on trezor: 7999cc0 fix getting total supply
+6fc240d8bab77a837ad66ef2485378a05e7cc40e 78a8a1d868d92d3cf29c46e4f1eddbe4e62753f9 AA <angelangelov97@gmail.com> 1594652981 +0300	WIP on showtxs: 7999cc0 fix getting total supply
+78a8a1d868d92d3cf29c46e4f1eddbe4e62753f9 5b305d78b4660701794abc309effbef8c684dd1d AA <angelangelov97@gmail.com> 1594683281 +0300	WIP on showtxs: 7999cc0 fix getting total supply
+5b305d78b4660701794abc309effbef8c684dd1d 4367a227836b3a6a937f07f7df09695748f6561a AA <angelangelov97@gmail.com> 1594731920 +0300	WIP on curvedao: 5da0e64 parse descriptions from Aragon
+4367a227836b3a6a937f07f7df09695748f6561a 3c0e08a845709af18430d74c2445d56367afbb88 AA <angelangelov97@gmail.com> 1594761430 +0300	WIP on master: c3800ac fix favicon in MetaMask
+3c0e08a845709af18430d74c2445d56367afbb88 498387331db737b7804908448c2f9f45aa3f32fe AA <angelangelov97@gmail.com> 1594770192 +0300	WIP on master: b8db783 fix swap/deposit BTC boxes padding

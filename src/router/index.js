@@ -43,6 +43,7 @@ const Gateway = () => import('../components/ren/Gateway.vue')
 
 //DAO
 const Votes = () => import('../components/dao/votes/Votes.vue')
+const VoteView = () => import('../components/dao/votes/VoteView.vue')
 
 import Index from '../components/Index.vue'
 
@@ -257,6 +258,11 @@ let routes = [
         path: '',
         name: 'Votes',
         component: Votes,
+      },
+      {
+        path: 'vote/:app/:id',
+        name: 'Vote',
+        component: VoteView,
       },
     ],
   },

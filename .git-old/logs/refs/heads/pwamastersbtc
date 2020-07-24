@@ -1,0 +1,30 @@
+0000000000000000000000000000000000000000 771ebc8e12accb8d5919ff9ac3e919f66f633802 AA <angelangelov97@gmail.com> 1592312139 +0300	branch: Created from pwamaster
+771ebc8e12accb8d5919ff9ac3e919f66f633802 10f2053dbe97829ae379c85fa53dbd8ad72dcbd4 AA <angelangelov97@gmail.com> 1592322146 +0300	commit: sbtc pool
+10f2053dbe97829ae379c85fa53dbd8ad72dcbd4 16001fc98ad5ccda4cb0e987a4144dfaa173b2b6 AA <angelangelov97@gmail.com> 1592325394 +0300	commit: fix combined stats
+16001fc98ad5ccda4cb0e987a4144dfaa173b2b6 0ddcd5386115479193bd9d75188dc57591e4cd26 AA <angelangelov97@gmail.com> 1592326394 +0300	commit: add sbtc pool
+0ddcd5386115479193bd9d75188dc57591e4cd26 1321f563351de517a5a817f3c8748754cfd9ce14 AA <angelangelov97@gmail.com> 1592329265 +0300	commit: add sBTC to OneSplit componentg
+1321f563351de517a5a817f3c8748754cfd9ce14 14038f82eaec77a35bd4dcfe217b5677268a4994 AA <angelangelov97@gmail.com> 1592329400 +0300	commit: sbtc in Chart/Depth configs
+14038f82eaec77a35bd4dcfe217b5677268a4994 a44798dbbb24d88bdc3ee3f7dd1fa4610aa17035 AA <angelangelov97@gmail.com> 1592330534 +0300	commit: icons
+a44798dbbb24d88bdc3ee3f7dd1fa4610aa17035 8de4c840d443fdc1f995b21f19a9dc85d1f9e9de AA <angelangelov97@gmail.com> 1592330676 +0300	commit: icons
+8de4c840d443fdc1f995b21f19a9dc85d1f9e9de d820a44ce6c3b610c70cfd2ca1e564864d986e63 AA <angelangelov97@gmail.com> 1592526142 +0300	commit: native BTC<->sBTC UI|
+d820a44ce6c3b610c70cfd2ca1e564864d986e63 a4a90388d022dac108c1a3b4088b9e4e4e968c8d AA <angelangelov97@gmail.com> 1592526145 +0300	commit (amend): native BTC<->sBTC UI
+a4a90388d022dac108c1a3b4088b9e4e4e968c8d 4795357fa09a3b5955a0cf7dda246aa664b15db8 AA <angelangelov97@gmail.com> 1592634489 +0300	commit: native sbtc UI
+4795357fa09a3b5955a0cf7dda246aa664b15db8 da781b16018235f27b057cd663fb74f05b522982 AA <angelangelov97@gmail.com> 1592634499 +0300	commit (amend): native BTC sbtc pool UI
+da781b16018235f27b057cd663fb74f05b522982 39503b0de7a1104dc7de900223a8d1a427acd997 AA <angelangelov97@gmail.com> 1592642891 +0300	commit: resubmit in swap done
+39503b0de7a1104dc7de900223a8d1a427acd997 0b06fde8508425d8faf13adfcebdfedca665005d AA <angelangelov97@gmail.com> 1592696466 +0300	commit: new adapter with CHI
+0b06fde8508425d8faf13adfcebdfedca665005d c3958f0ad48a6b8b25142733a61a01b047d79a20 AA <angelangelov97@gmail.com> 1592807050 +0300	commit: sBTC native UI
+c3958f0ad48a6b8b25142733a61a01b047d79a20 d22b95dbaff4b4b72185cae7b22334f4f9e1ece2 AA <angelangelov97@gmail.com> 1592869307 +0300	commit (merge): sBTC Native UI
+d22b95dbaff4b4b72185cae7b22334f4f9e1ece2 3addfc0f83fe43ff2c1f4b33e22cd2b9916b9791 AA <angelangelov97@gmail.com> 1592877996 +0300	commit: fix get_dy
+3addfc0f83fe43ff2c1f4b33e22cd2b9916b9791 96a79845557247cbdfc30841bcea6e54ea7e2a29 AA <angelangelov97@gmail.com> 1592878489 +0300	commit: fix gas
+96a79845557247cbdfc30841bcea6e54ea7e2a29 fee9c94ce8d79fc855158a89a48dcbc9c35567af AA <angelangelov97@gmail.com> 1592923544 +0300	commit: sBTC UI fixes
+fee9c94ce8d79fc855158a89a48dcbc9c35567af 62eb4169c538f81a1c72a16526b6f837e23a6aa2 AA <angelangelov97@gmail.com> 1592926849 +0300	commit: fixes
+62eb4169c538f81a1c72a16526b6f837e23a6aa2 780476eca54f02c576daa05d69df00101073614c AA <angelangelov97@gmail.com> 1592930809 +0300	commit: Approve CHI when contract doesn't have
+780476eca54f02c576daa05d69df00101073614c 1cc4709e1b6fb081dc1eef3653d14d517e0dd980 AA <angelangelov97@gmail.com> 1592947472 +0300	commit: fix
+1cc4709e1b6fb081dc1eef3653d14d517e0dd980 dce2fe0d27bb7e8cbeaf52162b7efdef72bf86c0 AA <angelangelov97@gmail.com> 1592947549 +0300	merge pwamastersbtcstable: Merge made by the 'recursive' strategy.
+dce2fe0d27bb7e8cbeaf52162b7efdef72bf86c0 5937349d837b802933491d942cc16384809364e7 AA <angelangelov97@gmail.com> 1592947708 +0300	commit: one BTC recovered, one left
+5937349d837b802933491d942cc16384809364e7 c109d4c1f51cd8ce7146edf81ed816377ff80ec8 AA <angelangelov97@gmail.com> 1592951147 +0300	commit: update docs with how to get underlying balances
+c109d4c1f51cd8ce7146edf81ed816377ff80ec8 f2e3dc9c578f3ac37389638b9c24bc810f99bbad AA <angelangelov97@gmail.com> 1592963896 +0300	commit: Temporary fix Trust wallet
+f2e3dc9c578f3ac37389638b9c24bc810f99bbad be21f9d6d7bf4b311632ad1a90b054478fe6d7ec AA <angelangelov97@gmail.com> 1592971327 +0300	commit: Fix native UI changing pools issue
+be21f9d6d7bf4b311632ad1a90b054478fe6d7ec 45461de2253f0fe364a35292bbf36175a8c3f38e AA <angelangelov97@gmail.com> 1592995586 +0300	commit: sbtc in daily stats
+45461de2253f0fe364a35292bbf36175a8c3f38e 861b1632f57f0c113cb239bdbdee37fee2c4cc81 AA <angelangelov97@gmail.com> 1593035568 +0300	commit: Trust wallet fix
+861b1632f57f0c113cb239bdbdee37fee2c4cc81 d1163176234d76969101989b1460209699daa34a AA <angelangelov97@gmail.com> 1593036470 +0300	commit: Add videos link

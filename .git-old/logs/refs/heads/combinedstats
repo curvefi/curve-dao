@@ -1,0 +1,10 @@
+0000000000000000000000000000000000000000 95754d5f27d0ff01fd9f34bcbffe1384f553087a AA <angelangelov97@gmail.com> 1585769000 +0300	branch: Created from master
+95754d5f27d0ff01fd9f34bcbffe1384f553087a 37b6b0237c6e4dbc22448e84067d9092108b82e1 AA <angelangelov97@gmail.com> 1585776866 +0300	commit: combined prices
+37b6b0237c6e4dbc22448e84067d9092108b82e1 251d9f5b8cccdf6915e7d9238847fbe0bf2a05e9 AA <angelangelov97@gmail.com> 1585934248 +0300	commit: depth combined
+251d9f5b8cccdf6915e7d9238847fbe0bf2a05e9 780f1f2c814e8d34a45e135227cf6adcf6c533fd AA <angelangelov97@gmail.com> 1585949884 +0300	commit: depth
+780f1f2c814e8d34a45e135227cf6adcf6c533fd f5748a4d125ead223eac7ca9ea61ef6ce02a668e AA <angelangelov97@gmail.com> 1585951866 +0300	commit: cleanup console.logs
+f5748a4d125ead223eac7ca9ea61ef6ce02a668e 98f2b396459c210ae357bd92cb64a534fa22914d AA <angelangelov97@gmail.com> 1585977783 +0300	commit: linear spline!
+db8c1c7eb247acfaaa052f34f3e35d690fcd0e3e 48a68cd73a21e0b605e000a132bbeb03b8f5ddbf AA <angelangelov97@gmail.com> 1585982436 +0300	commit: remove not needed console.logs
+48a68cd73a21e0b605e000a132bbeb03b8f5ddbf 69e3f68e68c7243211d66d4ddd707290a8bdf8f7 AA <angelangelov97@gmail.com> 1585982913 +0300	commit: remove not needed spline deps
+69e3f68e68c7243211d66d4ddd707290a8bdf8f7 63d07065792d8b65708f32f434d5ad080fc0edd9 AA <angelangelov97@gmail.com> 1585983267 +0300	commit: small fix
+63d07065792d8b65708f32f434d5ad080fc0edd9 af365ec62f9c8a7db6fcbb4aa8e3ac58bf49e0e6 AA <angelangelov97@gmail.com> 1586009619 +0300	pull origin combinedstats: Fast-forward

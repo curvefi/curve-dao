@@ -1,0 +1,10 @@
+0000000000000000000000000000000000000000 47d1040f26ff2583ef1521d1c6b08aac108f7242 AA <angelangelov97@gmail.com> 1592655854 +0300	branch: Created from pwamastersbtcstable
+47d1040f26ff2583ef1521d1c6b08aac108f7242 97d8c27b4ff15215ac11cfe71ba81c229ee5db68 AA <angelangelov97@gmail.com> 1592655871 +0300	commit: sbtc rewards
+97d8c27b4ff15215ac11cfe71ba81c229ee5db68 e0dc963293522eb8c7d142cbe0090d4f53abd1f3 AA <angelangelov97@gmail.com> 1592658948 +0300	commit: changes
+e0dc963293522eb8c7d142cbe0090d4f53abd1f3 a3cf6046baec859230247dcae4789a7cb7eacf9b AA <angelangelov97@gmail.com> 1592661601 +0300	commit: fixes
+a3cf6046baec859230247dcae4789a7cb7eacf9b d4b38bc66c311e79d0e7f7cea45593a93d02e14f AA <angelangelov97@gmail.com> 1592679292 +0300	commit (merge): changes
+d4b38bc66c311e79d0e7f7cea45593a93d02e14f f60c5627a3668c5fa7756f927b09128391baa361 AA <angelangelov97@gmail.com> 1592679602 +0300	commit: change version
+f60c5627a3668c5fa7756f927b09128391baa361 d050ed98aba1c3be0022566882d9f11b1c8ee7b5 AA <angelangelov97@gmail.com> 1592745306 +0300	commit: fix precisions
+d050ed98aba1c3be0022566882d9f11b1c8ee7b5 91219a532282ef60626fd4b160a967f0154046fb AA <angelangelov97@gmail.com> 1592745375 +0300	merge pwamastersbtcstable: Merge made by the 'recursive' strategy.
+91219a532282ef60626fd4b160a967f0154046fb 20d85a96c76cfaddbfdaa1add75415286ddfce36 AA <angelangelov97@gmail.com> 1592747941 +0300	commit: merge
+20d85a96c76cfaddbfdaa1add75415286ddfce36 056f8ba4844e5a4e9ef0a82ed50f3ac0cf969852 AA <angelangelov97@gmail.com> 1592756325 +0300	commit: fixes

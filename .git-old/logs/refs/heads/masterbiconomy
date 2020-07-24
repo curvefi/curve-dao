@@ -1,0 +1,42 @@
+0000000000000000000000000000000000000000 4f82f10a7a626cf477a27760e7547a9acb39df59 AA <angelangelov97@gmail.com> 1593622325 +0300	branch: Created from biconomy
+4f82f10a7a626cf477a27760e7547a9acb39df59 de63e27795c17decd56fd1369292215f95a72675 AA <angelangelov97@gmail.com> 1593627681 +0300	commit (merge): merge biconomy
+de63e27795c17decd56fd1369292215f95a72675 64d18cbdd0cb10b95ed4f79fa2daa299b82ceaf9 AA <angelangelov97@gmail.com> 1593638085 +0300	commit: Check ETH address when swapping from BTC -> sBTC
+64d18cbdd0cb10b95ed4f79fa2daa299b82ceaf9 73d9b5f07b717cfcb47df386711ee05e5fd03430 AA <angelangelov97@gmail.com> 1593643826 +0300	commit: fix use default interval in Chart
+73d9b5f07b717cfcb47df386711ee05e5fd03430 a1f9bd888f0a9134fd95c10f30fa8bf3f2f99ee5 AA <angelangelov97@gmail.com> 1593713566 +0300	commit (merge): fixes|
+a1f9bd888f0a9134fd95c10f30fa8bf3f2f99ee5 ade290457dd3e704057814a3322febfec28d8820 AA <angelangelov97@gmail.com> 1593713571 +0300	commit (amend): fixes
+ade290457dd3e704057814a3322febfec28d8820 b3e682c2c22c2457dcfe467409008074729ef821 AA <angelangelov97@gmail.com> 1593713744 +0300	commit: css width fix
+b3e682c2c22c2457dcfe467409008074729ef821 07c27bb2304f65c357b408b60590c2c3aacdbec5 AA <angelangelov97@gmail.com> 1593714721 +0300	commit: fix warning icon showing
+07c27bb2304f65c357b408b60590c2c3aacdbec5 043773fe9ecfc7e9cdf70b312424b7eb97a9bf82 AA <angelangelov97@gmail.com> 1593715178 +0300	commit: shorten addresses
+043773fe9ecfc7e9cdf70b312424b7eb97a9bf82 ec77fe8514a46d57b257a97ded586c1e3d4e53fd AA <angelangelov97@gmail.com> 1593718825 +0300	commit: fix
+ec77fe8514a46d57b257a97ded586c1e3d4e53fd 628dc9a289dcacdba2361c7315994686a657367a AA <angelangelov97@gmail.com> 1593728628 +0300	commit: Claim BPT button
+628dc9a289dcacdba2361c7315994686a657367a 3c4364bdded9af750b776856aaabc0c7a71c28cb AA <angelangelov97@gmail.com> 1593734947 +0300	commit: update onboard
+3c4364bdded9af750b776856aaabc0c7a71c28cb a274453160e15916ba6e10861a5c59c36f343344 AA <angelangelov97@gmail.com> 1593740727 +0300	commit: Deposit and stake native
+a274453160e15916ba6e10861a5c59c36f343344 54788c0b618729c308dd0c3b5a025376a20de92e AA <angelangelov97@gmail.com> 1593742999 +0300	commit: css fix in Withdraw page buttons
+54788c0b618729c308dd0c3b5a025376a20de92e 6efb0b181d17e60c0cda903ec72d6f25a5d4b7a7 AA <angelangelov97@gmail.com> 1593746997 +0300	commit: fix staking after deposit
+6efb0b181d17e60c0cda903ec72d6f25a5d4b7a7 65afac24341c6cff0a3b423a3a8803358da360dc AA <angelangelov97@gmail.com> 1593747003 +0300	commit (amend): fix staking after deposit in native UI
+65afac24341c6cff0a3b423a3a8803358da360dc 9b5cb8916ee457bf9c556b390b5a4eb67ac49e7c AA <angelangelov97@gmail.com> 1593747319 +0300	commit: fix staking after depositing
+9b5cb8916ee457bf9c556b390b5a4eb67ac49e7c 6e1e9cc996a313bcbedb11b708c64d772785876f AA <angelangelov97@gmail.com> 1593748824 +0300	commit: fixes
+6e1e9cc996a313bcbedb11b708c64d772785876f e33af2d8f82ac62ba63abc3c5035517f4691defb AA <angelangelov97@gmail.com> 1593748832 +0300	commit (amend): fixes in staking
+e33af2d8f82ac62ba63abc3c5035517f4691defb 782411d180629bbf5ed7aee3eecb9eccc13a5e2c AA <angelangelov97@gmail.com> 1593749445 +0300	commit: fix check
+782411d180629bbf5ed7aee3eecb9eccc13a5e2c 936ad59d29fd368f66a13aa82eb4b12ac73ed5cf AA <angelangelov97@gmail.com> 1593750232 +0300	commit: fix claiming SNX/REN
+936ad59d29fd368f66a13aa82eb4b12ac73ed5cf 516ffa796b9a1d870874e50f4af88215f7257733 AA <angelangelov97@gmail.com> 1593785683 +0300	commit: Fix withdraw full balance from Balancer SNX/REN pool
+516ffa796b9a1d870874e50f4af88215f7257733 4656d24de8e7ed823076ac2ecc4eb159cc1e172c AA <angelangelov97@gmail.com> 1593798892 +0300	commit: Fixes in showing 0.00
+4656d24de8e7ed823076ac2ecc4eb159cc1e172c fa817a4798b3ea60759430f0ccdcfa23fe8b89a3 AA <angelangelov97@gmail.com> 1593799945 +0300	commit: z fix
+fa817a4798b3ea60759430f0ccdcfa23fe8b89a3 bc58a9077f9b8c86d2780f3d0bbff92fb1742e8b AA <angelangelov97@gmail.com> 1593800748 +0300	commit: fix
+bc58a9077f9b8c86d2780f3d0bbff92fb1742e8b f96e2d0fa406f0da958e4308266cb2b374542d85 AA <angelangelov97@gmail.com> 1593810632 +0300	commit: Withdraw from BAL SNX/REN pool
+f96e2d0fa406f0da958e4308266cb2b374542d85 30361c06f9a9ac01497db9df41d0cefe4eeb3c8b AA <angelangelov97@gmail.com> 1593811391 +0300	commit: Show Using CHI
+30361c06f9a9ac01497db9df41d0cefe4eeb3c8b cbdb7e0222cbc082ef66f8cb34e1f4e4bd47c0cd AA <angelangelov97@gmail.com> 1593812237 +0300	commit: fix address, clean-up code
+cbdb7e0222cbc082ef66f8cb34e1f4e4bd47c0cd 962f7398224f307d421533f9fb596c135a8fb021 AA <angelangelov97@gmail.com> 1593823720 +0300	commit: fix
+962f7398224f307d421533f9fb596c135a8fb021 3a2b4ecab8b1f3dd4ac9348bd7844a7de4f4d360 AA <angelangelov97@gmail.com> 1593826480 +0300	commit: fix unstake only when you have unstaked tokens
+3a2b4ecab8b1f3dd4ac9348bd7844a7de4f4d360 4c37344f4c16c8f54705bf5f73c25e1ad4f76059 AA <angelangelov97@gmail.com> 1593826711 +0300	commit: lower stake gas limit
+4c37344f4c16c8f54705bf5f73c25e1ad4f76059 ce3cc3a7792dc22760aa6904c38c4a966a0b170c AA <angelangelov97@gmail.com> 1593872275 +0300	commit: fix non-organic billion USD Total USD Deposits
+ce3cc3a7792dc22760aa6904c38c4a966a0b170c 3965f12c570e596c277287da64eb285b80e389b4 AA <angelangelov97@gmail.com> 1593874930 +0300	commit: make Synth waiting period warning more visible
+3965f12c570e596c277287da64eb285b80e389b4 188b9aad77339b91515930b9e4e7d7561021fe3f AA <angelangelov97@gmail.com> 1593876408 +0300	commit: Fix withdraw old showing in Compound pool
+188b9aad77339b91515930b9e4e7d7561021fe3f 315baac2c2cd9e5ed18af8a41a69a70f6e1f8a7c AA <angelangelov97@gmail.com> 1593876645 +0300	commit: swap btc state fix
+315baac2c2cd9e5ed18af8a41a69a70f6e1f8a7c 7383226abfb995b041e85bd299449b63a1a46e63 AA <angelangelov97@gmail.com> 1593877890 +0300	commit: fix race condition
+7383226abfb995b041e85bd299449b63a1a46e63 a5837cf7e23edd7ac02cf43a66f43ecade7936fa AA <angelangelov97@gmail.com> 1593877897 +0300	commit (amend): fix switching between pools when native checkbox is clicked and doesn't load
+a5837cf7e23edd7ac02cf43a66f43ecade7936fa 586b548a0a8aca8f840ad5efac6a8b2f2e778cdc AA <angelangelov97@gmail.com> 1593890583 +0300	commit: dismiss pending on error
+586b548a0a8aca8f840ad5efac6a8b2f2e778cdc e61bc82e1750103499052b9304b84a3d6adf4926 AA <angelangelov97@gmail.com> 1593898897 +0300	commit: guides.curve.fi
+e61bc82e1750103499052b9304b84a3d6adf4926 b37dcaf66b52f51b4008b7b26accc7432a478f71 AA <angelangelov97@gmail.com> 1593899063 +0300	commit: add disclaimer about risks
+b37dcaf66b52f51b4008b7b26accc7432a478f71 cd45b06035d0044bc908125c0bdef350c7533ab2 AA <angelangelov97@gmail.com> 1593900704 +0300	commit: Pool Risks pages
+cd45b06035d0044bc908125c0bdef350c7533ab2 71a74217ad8f472ce79d794022ac25de3b8ea9ad AA <angelangelov97@gmail.com> 1593900860 +0300	commit: clarify Synthetix risks

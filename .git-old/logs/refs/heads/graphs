@@ -1,0 +1,42 @@
+0000000000000000000000000000000000000000 3161c6da105bfd0cc53ac0f2486dc0a91c8a3964 AA <angelangelov97@gmail.com> 1585068930 +0200	branch: Created from master
+3161c6da105bfd0cc53ac0f2486dc0a91c8a3964 679e02d30686a75d5aaf1943ed040271205e74d6 AA <angelangelov97@gmail.com> 1585092453 +0200	commit: graphs
+679e02d30686a75d5aaf1943ed040271205e74d6 f36a9d399f98830d07c95c4fd0b8ff8db565a95b AA <angelangelov97@gmail.com> 1585097822 +0200	commit: graph
+f36a9d399f98830d07c95c4fd0b8ff8db565a95b 4c8462ff8cf0884a01077fb62fde9aca8ba426e1 AA <angelangelov97@gmail.com> 1585098343 +0200	commit: add zooming
+bba602571e79faa48f2f9cc2a3aaa866844fe940 530da17aa604e998580630614ca5ddc7797e53d2 AA <angelangelov97@gmail.com> 1585186275 +0200	commit: depth chart
+530da17aa604e998580630614ca5ddc7797e53d2 f37e9139a14fe70728275f7f7d78b257f06a0bdd AA <angelangelov97@gmail.com> 1585267235 +0200	commit: trading interface
+f37e9139a14fe70728275f7f7d78b257f06a0bdd b66841820433a83b2eb21d752c83539f9fcdf86a AA <angelangelov97@gmail.com> 1585322829 +0200	commit: 1split exchange
+b66841820433a83b2eb21d752c83539f9fcdf86a 323f8995a2d268e5a3d5a27c767605fe1b4499be AA <angelangelov97@gmail.com> 1585341905 +0200	commit: trade demo
+323f8995a2d268e5a3d5a27c767605fe1b4499be f9bfbc83ac6b1d8cd275e31749a545358be2ed16 AA <angelangelov97@gmail.com> 1585341974 +0200	commit: trade link in root
+f9bfbc83ac6b1d8cd275e31749a545358be2ed16 bd7e475c423e0b42228f7faf3c634c2ab4268f59 AA <angelangelov97@gmail.com> 1585345175 +0200	commit: add cancelable promise to OneSplit Swap page
+bd7e475c423e0b42228f7faf3c634c2ab4268f59 04b270fe09b30925435f415bb9a34c47af897038 AA <angelangelov97@gmail.com> 1585355837 +0200	commit: trade demo
+04b270fe09b30925435f415bb9a34c47af897038 e8ed6cdc55aea8e58888a5fafc8dc99c5090143d AA <angelangelov97@gmail.com> 1585423850 +0200	commit: fix issue with wrong contract init
+e8ed6cdc55aea8e58888a5fafc8dc99c5090143d 3d3b3e2cca5d56b953ee3e0de85843deb5e5885a AA <angelangelov97@gmail.com> 1585426315 +0200	commit: fix up code a bit
+3d3b3e2cca5d56b953ee3e0de85843deb5e5885a c32d5b436fa470ebbb8b8353de8627cdcabc4490 AA <angelangelov97@gmail.com> 1585426458 +0200	commit: fix up code a bit
+c32d5b436fa470ebbb8b8353de8627cdcabc4490 ebb08ed73eb36a0fe336a968903ae55ea8bfaf18 AA <angelangelov97@gmail.com> 1585427292 +0200	commit: 70% width
+ebb08ed73eb36a0fe336a968903ae55ea8bfaf18 7be7bc3b982bc224733a09816b9899d408d918cf AA <angelangelov97@gmail.com> 1585427363 +0200	commit: fix auto select in OneSplit
+7be7bc3b982bc224733a09816b9899d408d918cf 92e6635ddafcd5ce0453195e2688abe053e5ef58 AA <angelangelov97@gmail.com> 1585429035 +0200	commit: zoom
+92e6635ddafcd5ce0453195e2688abe053e5ef58 b65a9724911e8c64fb8dac8ff6154f35d204e131 AA <angelangelov97@gmail.com> 1585438469 +0200	commit: small fixes
+b65a9724911e8c64fb8dac8ff6154f35d204e131 cb466fb4bbc836e1276426b8d4dcd33b0b6b4dbe AA <angelangelov97@gmail.com> 1585439418 +0200	commit: small fixes
+cb466fb4bbc836e1276426b8d4dcd33b0b6b4dbe 1807bfc66279404c0050570d4ab2458584b77e94 AA <angelangelov97@gmail.com> 1585440009 +0200	commit: small fixes
+1807bfc66279404c0050570d4ab2458584b77e94 9e4af15efdcd930287c2361062c24ad4474a8d34 AA <angelangelov97@gmail.com> 1585440800 +0200	commit: small fixes
+9e4af15efdcd930287c2361062c24ad4474a8d34 bd6f856cf34fd5f75d2d337eb9ac3cebd988dbcb AA <angelangelov97@gmail.com> 1585441966 +0200	commit: small fixes
+bd6f856cf34fd5f75d2d337eb9ac3cebd988dbcb 13e2bd6e864f19d294698f171521f9ecc6231f2e AA <angelangelov97@gmail.com> 1585442419 +0200	commit: small fixes
+13e2bd6e864f19d294698f171521f9ecc6231f2e 4110f7f58f7c876774fa34fc0edfcea95c5a7a42 AA <angelangelov97@gmail.com> 1585444012 +0300	commit: small fixes
+4110f7f58f7c876774fa34fc0edfcea95c5a7a42 f31b470a2fb141bbd28d80bfca3b070573f85e15 AA <angelangelov97@gmail.com> 1585444331 +0300	commit: small fixes
+f31b470a2fb141bbd28d80bfca3b070573f85e15 b588d98a37281f6427ccefd3df64857b0eb62156 AA <angelangelov97@gmail.com> 1585444374 +0300	commit: small fixes
+b588d98a37281f6427ccefd3df64857b0eb62156 0004ecc99696f5fc625bd89d1c181c74d70b90a8 AA <angelangelov97@gmail.com> 1585448484 +0300	commit: depth chart correct zoom
+0004ecc99696f5fc625bd89d1c181c74d70b90a8 d033b555c8c890ef65d81d19889b680acef4b4c5 AA <angelangelov97@gmail.com> 1585449342 +0300	commit: range input style
+d033b555c8c890ef65d81d19889b680acef4b4c5 b045762038272e7b508f088b384cfaea5b7cfc1f AA <angelangelov97@gmail.com> 1585451304 +0300	commit: depth using log and sum of balnaces
+b045762038272e7b508f088b384cfaea5b7cfc1f 9d21f4e937e2dfec1c38b3bac476965959a26e9c AA <angelangelov97@gmail.com> 1585499997 +0300	commit: depth chart fix?
+9d21f4e937e2dfec1c38b3bac476965959a26e9c e748f9b8377a1e470860c6e074c7d59bb180a7e1 AA <angelangelov97@gmail.com> 1585503469 +0300	commit: zoom centered
+e748f9b8377a1e470860c6e074c7d59bb180a7e1 f719425c7ae0051311251c0d626e27cdbfb3c831 AA <angelangelov97@gmail.com> 1585505824 +0300	commit: log zoom
+f719425c7ae0051311251c0d626e27cdbfb3c831 fd59ab3f66faf5eb25c88c683de009f7b8c65279 AA <angelangelov97@gmail.com> 1585506395 +0300	commit: fix
+fd59ab3f66faf5eb25c88c683de009f7b8c65279 f4d2d973d5707e57e85654bc0fc4b9fa4faab262 AA <angelangelov97@gmail.com> 1585506627 +0300	commit: fix
+f4d2d973d5707e57e85654bc0fc4b9fa4faab262 d12c4cf6e5293ea51ee529f7bf9a8c8d958a05cb AA <angelangelov97@gmail.com> 1585506936 +0300	commit: fix fees on first load
+d12c4cf6e5293ea51ee529f7bf9a8c8d958a05cb 3529ed7ab6cce8331466e310a495db0aa9a97734 AA <angelangelov97@gmail.com> 1585507587 +0300	commit: mid point on zoom
+3529ed7ab6cce8331466e310a495db0aa9a97734 37bddbcaec41baf8a44a02a275e93bf041e8c967 AA <angelangelov97@gmail.com> 1585509448 +0300	commit: fixed depth
+37bddbcaec41baf8a44a02a275e93bf041e8c967 08f94061f49edcf47d40f131dd2e555c7962be7b AA <angelangelov97@gmail.com> 1585510224 +0300	commit: add calculated price to all points
+08f94061f49edcf47d40f131dd2e555c7962be7b 54e7a8c8b1ce63ab337084fb88b8b967a6df299e AA <angelangelov97@gmail.com> 1585514248 +0300	commit: fix gaps
+54e7a8c8b1ce63ab337084fb88b8b967a6df299e 03b1372e379ad2cc359c654ee992e7acfc02ad5f AA <angelangelov97@gmail.com> 1585520048 +0300	commit: zoom
+03b1372e379ad2cc359c654ee992e7acfc02ad5f fb5ad901f89f569285532db865126663683a058d AA <angelangelov97@gmail.com> 1585520425 +0300	commit: zoom
+fb5ad901f89f569285532db865126663683a058d 7251db626c9bf6082dfa7345a6d85e37d2638ba5 AA <angelangelov97@gmail.com> 1585527368 +0300	commit: fix double loading

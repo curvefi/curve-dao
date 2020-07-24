@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 3e0984879a45b612f1ebbf332e2886aaa552be02 AA <angelangelov97@gmail.com> 1590723276 +0300	branch: Created from btc
+3e0984879a45b612f1ebbf332e2886aaa552be02 499a97442d2d1c51db69ba004ebcdcf9001af547 AA <angelangelov97@gmail.com> 1590723300 +0300	commit: init btcs
+499a97442d2d1c51db69ba004ebcdcf9001af547 fe4e0cf166a3b7354279a1fac4153d40ac17c75a AA <angelangelov97@gmail.com> 1590737161 +0300	commit: btcs in OneSplit component and max available synth balance
+fe4e0cf166a3b7354279a1fac4153d40ac17c75a 543376b6377a8be58a940f484c649e1ab2e8e562 AA <angelangelov97@gmail.com> 1590737225 +0300	commit: OneSplit component when clicking max balance -> set actual balance without rounding
+543376b6377a8be58a940f484c649e1ab2e8e562 31745cf930b0071b7e4e85dbfc2cb83bfc1a12db AA <angelangelov97@gmail.com> 1590737351 +0300	commit: cursor pointer on hover of currencies

@@ -1,0 +1,21 @@
+0000000000000000000000000000000000000000 f45ce655624a5757bec64cf1c40dbd8c8bd4983e AA <angelangelov97@gmail.com> 1590893336 +0300	branch: Created from master
+f45ce655624a5757bec64cf1c40dbd8c8bd4983e 9b16a5b4ade3519ae09a607f598bd15d7fbe929c AA <angelangelov97@gmail.com> 1590965388 +0300	commit: pwa and transaction status
+9b16a5b4ade3519ae09a607f598bd15d7fbe929c 0bdeceae28341f052e0cb58dbdffe84cce93f9d3 AA <angelangelov97@gmail.com> 1591073356 +0300	commit: new design
+0bdeceae28341f052e0cb58dbdffe84cce93f9d3 114f746d0a0f9b33d0d22244e7bf30342ca112c6 AA <angelangelov97@gmail.com> 1591102905 +0300	commit: native swaps
+114f746d0a0f9b33d0d22244e7bf30342ca112c6 8e87c1529859805dbad6f220887025d9d1e68b4b AA <angelangelov97@gmail.com> 1591175123 +0300	commit: native swap/deposit/withdraw
+8e87c1529859805dbad6f220887025d9d1e68b4b a5dbb63696d25aa63bbd543a1317561f454d2de3 AA <angelangelov97@gmail.com> 1591189051 +0300	commit: small fixes
+a5dbb63696d25aa63bbd543a1317561f454d2de3 80e88f3a396eec0696a0a40847baf36da0890b24 AA <angelangelov97@gmail.com> 1591249228 +0300	commit: fixes
+80e88f3a396eec0696a0a40847baf36da0890b24 076fbb132c17c943142ae14221d31c4671d1941c AA <angelangelov97@gmail.com> 1591260960 +0300	commit: better changed rates/min amount indication in UI and listen to replaced transactions
+076fbb132c17c943142ae14221d31c4671d1941c 699d3ec7c9cdfaf4430f09bb43ac894d99289477 AA <angelangelov97@gmail.com> 1591274533 +0300	commit: fixes
+699d3ec7c9cdfaf4430f09bb43ac894d99289477 9a4a3d404a22ae1c02d6fc41fa616fbb6553f00c AA <angelangelov97@gmail.com> 1591327764 +0300	commit: fixes
+9a4a3d404a22ae1c02d6fc41fa616fbb6553f00c b59cd15d91bd9cf159c8c41c1142c1f4c57fa64f AA <angelangelov97@gmail.com> 1591336065 +0300	commit: more fixes
+b59cd15d91bd9cf159c8c41c1142c1f4c57fa64f 005add8b2ced53096f5849e8901cec846c45282e AA <angelangelov97@gmail.com> 1591370176 +0300	commit: change notifications server url
+005add8b2ced53096f5849e8901cec846c45282e 95d0c32455e6867ddf77f028d9684bd77c577157 AA <angelangelov97@gmail.com> 1591386923 +0300	commit: small UI fixes
+95d0c32455e6867ddf77f028d9684bd77c577157 ec6bbd6f10566656b18ac7e09cac4aec8db96d37 AA <angelangelov97@gmail.com> 1591450748 +0300	commit: fixes
+ec6bbd6f10566656b18ac7e09cac4aec8db96d37 39106f3fc8a9900d0161dfd83bef0ac336bd4c32 AA <angelangelov97@gmail.com> 1591482752 +0300	commit: fixes
+39106f3fc8a9900d0161dfd83bef0ac336bd4c32 658e70762854e1646f7424a2069095bc468eeb80 AA <angelangelov97@gmail.com> 1591524518 +0300	commit: changes for updated Adapter contract, preventing someone else submitting your tx
+658e70762854e1646f7424a2069095bc468eeb80 8e04351d605257117a27350a58d41c854804efd9 AA <angelangelov97@gmail.com> 1591534475 +0300	commit: fix quotes bell icon
+8e04351d605257117a27350a58d41c854804efd9 39106f3fc8a9900d0161dfd83bef0ac336bd4c32 AA <angelangelov97@gmail.com> 1591534917 +0300	reset: moving to 39106f3fc8a9900d0161dfd83bef0ac336bd4c32
+39106f3fc8a9900d0161dfd83bef0ac336bd4c32 10c1b3cae941c863a0ebead69bf336a40b537fba AA <angelangelov97@gmail.com> 1591535107 +0300	commit: make new branch for new contract, revert to changes before and fix quotes
+10c1b3cae941c863a0ebead69bf336a40b537fba fd5d583d7ec92154f55791ad0ee2b3fb2ff3f4a9 AA <angelangelov97@gmail.com> 1591631646 +0300	commit: change 3box to firestore
+fd5d583d7ec92154f55791ad0ee2b3fb2ff3f4a9 9a603f7abb3aea8bb2a2177f1b3cdb6e3436d465 AA <angelangelov97@gmail.com> 1591649202 +0300	commit: remove not needed libraries

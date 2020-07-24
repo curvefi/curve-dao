@@ -3,63 +3,80 @@
 		<img 
 			:src="publicPath + 'hourglass-start-solid.svg'" 
 			class='icon small'
-			v-show='timestamp1 > 0'
+			v-show='vote.timeLeft > 0'
 		> {{ formatTime }}
+
+		{{ vote.timeLeft }}
 	</div>
 </template>
 
 <script>
-	import { OWNERSHIP_VOTE_TIME } from '../voteStore'
 	import { formatDayTimeToHuman } from '../../../utils/helpers'
 
 	export default {
-		props: ['timestamp'],
+		props: ['vote'],
 
 		data: function() {
 			return {
 				interval: null,
-				timestamp1: null,
 			}
 		},
 
-		created() {
-			this.timestamp1 = OWNERSHIP_VOTE_TIME - ((new Date().getTime() / 1000) - this.timestamp)
-			if(this.timestamp1 > 0) {
-				this.interval = setInterval(() => {
-					this.timestamp1 -= 1
-					if(this.timestamp1 < 0) clearInterval(this.interval)
-				}, 1000)
+		watch: {
+			voteNumber: {
+				handler(val) {
+					this.startTimer()
+				},
+				immediate: true,
 			}
 		},
 
 		computed: {
+			voteNumber() {
+				return this.vote.voteNumber
+			},
 			days() {
-				return Math.floor(this.timestamp1 / (60 * 60 * 24))
+				return Math.floor(this.vote.timeLeft / (60 * 60 * 24))
 			},
 			hours() {
-				return Math.floor((this.timestamp1 % ( 60 * 60 * 24)) / (60 * 60))
+				return Math.floor((this.vote.timeLeft % ( 60 * 60 * 24)) / (60 * 60))
 			},
 			minutes() {
-				return Math.floor((this.timestamp1 % ( 60 * 60)) / (60))
+				return Math.floor((this.vote.timeLeft % ( 60 * 60)) / (60))
 			},
 			seconds() {
-				return Math.floor((this.timestamp1 % (60)) )
+				return Math.floor((this.vote.timeLeft % (60)) )
 			},
 			formatTime() {
 				let str = ''
 				if(this.days > 0)
-					str += this.days + ' D:'
+					str += String(this.days).padStart(2, '0') + ' D:'
 				if(this.hours > 0)
-					str += this.hours + 'H:'
-				if(this.minutes > 0)
-					str += this.minutes + 'M:'
-				if(this.seconds > 0)
-					str += this.seconds + 'S'
+					str += String(this.hours).padStart(2, '0') + 'H:'
+				if(this.minutes >= 0)
+					str += String(this.minutes).padStart(2, '0') + 'M:'
+				if(this.seconds >= 0)
+					str += String(this.seconds).padStart(2, '0') + 'S'
 				return str
 			},
 			publicPath() {
 				return process.env.BASE_URL
 			},
+		},
+
+		methods: {
+			startTimer() {
+				if(this.vote.timeLeft > 0 && !this.vote.executed && this.interval === null) {
+					this.interval = setInterval(() => {
+						this.vote.timeLeft -= 1
+						if(this.vote.timeLeft < 0) clearInterval(this.interval)
+					}, 1000)
+				}
+			},
+		},
+
+		beforeDestroy() {
+			clearInterval(this.interval)
 		},
 	}
 </script>

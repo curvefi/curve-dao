@@ -1,0 +1,108 @@
+0000000000000000000000000000000000000000 9a603f7abb3aea8bb2a2177f1b3cdb6e3436d465 AA <angelangelov97@gmail.com> 1591649244 +0300	branch: Created from pwa
+9a603f7abb3aea8bb2a2177f1b3cdb6e3436d465 a3c48d72f5b5b43c348b5c9860a7b732aea7d9fd AA <angelangelov97@gmail.com> 1591650147 +0300	commit (merge): merge master into pwa
+a3c48d72f5b5b43c348b5c9860a7b732aea7d9fd da4b6d0e8ea423787b5a357bfe9f9279755c2393 AA <angelangelov97@gmail.com> 1591667484 +0300	commit: new deployment
+da4b6d0e8ea423787b5a357bfe9f9279755c2393 477d4a07f1338d7aa0b8c9445b4018af90c3d0c9 AA <angelangelov97@gmail.com> 1591667504 +0300	commit (amend): new CurveExchangeAdapter deployment
+477d4a07f1338d7aa0b8c9445b4018af90c3d0c9 624c24edec8d339bc360b9cdeca0f8d1c24f5b7b AA <angelangelov97@gmail.com> 1591719222 +0300	commit: small changes
+624c24edec8d339bc360b9cdeca0f8d1c24f5b7b 1e0b81e7f4a6bd08e1cc4e10fa3034a972b3838b AA <angelangelov97@gmail.com> 1591720159 +0300	commit: small changes
+1e0b81e7f4a6bd08e1cc4e10fa3034a972b3838b a5e547f5c4d79201da7b918b3c20f18c553e3567 AA <angelangelov97@gmail.com> 1591754998 +0300	commit: small UI fixes
+a5e547f5c4d79201da7b918b3c20f18c553e3567 f96fd6e3b776eb4e875818adb9de0a4c65e8ba24 AA <angelangelov97@gmail.com> 1591797209 +0300	commit: use personal_sign instead of signTyped
+f96fd6e3b776eb4e875818adb9de0a4c65e8ba24 8189d8cd6b8050422830e147e8ac6c40cc49b9b1 AA <angelangelov97@gmail.com> 1591800709 +0300	commit: logo change and message
+8189d8cd6b8050422830e147e8ac6c40cc49b9b1 55b7087137adc0afaa3ec1fe28f2665750a7e5b2 AA <angelangelov97@gmail.com> 1591800714 +0300	commit (amend): logo change when on native BTC and beta message
+55b7087137adc0afaa3ec1fe28f2665750a7e5b2 3d1c19fcf2b3667f534678148e3dbfe9760e179f AA <angelangelov97@gmail.com> 1591800957 +0300	commit (merge): merge master
+3d1c19fcf2b3667f534678148e3dbfe9760e179f d344ce6c3b9c92d09d7c9f8c000d7a58b88c3520 AA <angelangelov97@gmail.com> 1591821199 +0300	commit: fixes
+d344ce6c3b9c92d09d7c9f8c000d7a58b88c3520 ed2f56cabc0509a4957f2bbbb99d4f4b474996b8 AA <angelangelov97@gmail.com> 1591830159 +0300	commit: small UI touches
+ed2f56cabc0509a4957f2bbbb99d4f4b474996b8 abad358d9b5bd241587aa3559bf66c2225fb5594 AA <angelangelov97@gmail.com> 1591881879 +0300	commit: some small touches
+abad358d9b5bd241587aa3559bf66c2225fb5594 16b2ebc8350bd351b0661975e23c15ff7f5069b9 AA <angelangelov97@gmail.com> 1591881924 +0300	commit: some small touches
+16b2ebc8350bd351b0661975e23c15ff7f5069b9 4044b110ed0d032674f7a59dc7fd6d05f671fdcc AA <angelangelov97@gmail.com> 1591882034 +0300	commit (merge): merge master
+4044b110ed0d032674f7a59dc7fd6d05f671fdcc a949b91512f246557084ff40dd934766e45a7b2b AA <angelangelov97@gmail.com> 1591882961 +0300	merge master: Fast-forward
+a949b91512f246557084ff40dd934766e45a7b2b d3b650259256f0097c2286c847e9f057c87b5581 AA <angelangelov97@gmail.com> 1591885861 +0300	commit: fix subscriptions
+d3b650259256f0097c2286c847e9f057c87b5581 e67315179d948c065694c188ea1c1222a40b0410 AA <angelangelov97@gmail.com> 1591888898 +0300	commit: adjust gas
+e67315179d948c065694c188ea1c1222a40b0410 b2bb723ebcd1593eebfc54ee890ed590e4c3b2c2 AA <angelangelov97@gmail.com> 1591888904 +0300	commit (amend): adjust gas limits on ren native UI
+b2bb723ebcd1593eebfc54ee890ed590e4c3b2c2 62383c3c244143e048528f2d27f4383231c082cf AA <angelangelov97@gmail.com> 1591891026 +0300	commit: change native BTC position
+62383c3c244143e048528f2d27f4383231c082cf 43a961c6c1191dc164a00510a51154357e0fb9d6 AA <angelangelov97@gmail.com> 1591893236 +0300	commit: show haven't connected wallet message
+43a961c6c1191dc164a00510a51154357e0fb9d6 16b8b5f8429a443772700c2935cf430b641da644 AA <angelangelov97@gmail.com> 1591895899 +0300	commit: border on native BTC icon
+16b8b5f8429a443772700c2935cf430b641da644 35beb4c4f616ddca10b0aab1f791af2b439b296a AA <angelangelov97@gmail.com> 1591897222 +0300	commit: swap BTC is more clear to see
+35beb4c4f616ddca10b0aab1f791af2b439b296a 76f4a105b0ab4dbb77bb725bd3ed08bcb9e0d84e AA <angelangelov97@gmail.com> 1591898151 +0300	commit: add native BTC swap on Root page
+76f4a105b0ab4dbb77bb725bd3ed08bcb9e0d84e d06f957023a2bbcbc0ff5c56c608be3963f35e81 AA <angelangelov97@gmail.com> 1591900802 +0300	merge pwamasterGSN: Fast-forward
+d06f957023a2bbcbc0ff5c56c608be3963f35e81 6f23f686971acce38ea63cda47cc2220231f2bc9 AA <angelangelov97@gmail.com> 1591901257 +0300	commit: fix slippage on BTC
+6f23f686971acce38ea63cda47cc2220231f2bc9 ae29fc57684fcf220aed5160803e0ee02ddc8143 AA <angelangelov97@gmail.com> 1591956518 +0300	commit: fix deposit
+ae29fc57684fcf220aed5160803e0ee02ddc8143 9078fdd16093dc4bca0560ebca1d184b8511e1cb AA <angelangelov97@gmail.com> 1591962066 +0300	commit: disable deposit for now
+9078fdd16093dc4bca0560ebca1d184b8511e1cb cc7dbf9877660e15c54344cae872212bc984f805 AA <angelangelov97@gmail.com> 1591969149 +0300	commit: enable deposits back
+cc7dbf9877660e15c54344cae872212bc984f805 fdd1652f6d6dc9e1589a15da2271a6651d9c3be0 AA <angelangelov97@gmail.com> 1591975579 +0300	commit: use BN
+fdd1652f6d6dc9e1589a15da2271a6651d9c3be0 302c591bc1bfc80c79b945f3b6139e93d5b832c9 AA <angelangelov97@gmail.com> 1591982152 +0300	commit: Integrations page
+302c591bc1bfc80c79b945f3b6139e93d5b832c9 3353ad64fb8de5d04f0306bcb8e30b37b480f364 AA <angelangelov97@gmail.com> 1591984998 +0300	commit: fix icons
+3353ad64fb8de5d04f0306bcb8e30b37b480f364 cf70cea99455c19786e3d4a09f6bd4239ca91ad7 AA <angelangelov97@gmail.com> 1591998001 +0300	commit: use both firebase and localstorage
+cf70cea99455c19786e3d4a09f6bd4239ca91ad7 0336082b14938899f92d7066c55c69e61b2c6e9a AA <angelangelov97@gmail.com> 1592044467 +0300	commit: keep localStorage and firestore in sync
+0336082b14938899f92d7066c55c69e61b2c6e9a 13bcacc9479bbcc9133b31e94247b19b3c25ce6c AA <angelangelov97@gmail.com> 1592046247 +0300	commit: better failure handling
+13bcacc9479bbcc9133b31e94247b19b3c25ce6c 8df7c383cfa272f04a5917eff7d23c2a6b56b6e3 AA <angelangelov97@gmail.com> 1592046979 +0300	commit: get SNX rewards from smart contract
+8df7c383cfa272f04a5917eff7d23c2a6b56b6e3 54a81b85ebc972e8d0e6fd6226949d69384f3cd7 AA <angelangelov97@gmail.com> 1592047572 +0300	commit: auto login in firebase on found signature
+54a81b85ebc972e8d0e6fd6226949d69384f3cd7 846375592ae99ecdaca560ab7cd5332be87c8f7a AA <angelangelov97@gmail.com> 1592047586 +0300	commit (amend): auto login in firebase on found signature in localStorage
+846375592ae99ecdaca560ab7cd5332be87c8f7a 1b60e2d3f45e6252cda2aba661ce276e122ded7e AA <angelangelov97@gmail.com> 1592056814 +0300	commit: fix z typo
+1b60e2d3f45e6252cda2aba661ce276e122ded7e cd48c7363a743672d570736befc98634fdc89500 AA <angelangelov97@gmail.com> 1592058326 +0300	commit: fix z typo 2
+cd48c7363a743672d570736befc98634fdc89500 7d2dc494f47bffdc454b374db6d0c46ca0f7035d AA <angelangelov97@gmail.com> 1592061254 +0300	commit: fix for WalletConnect signing
+7d2dc494f47bffdc454b374db6d0c46ca0f7035d 191eed87977ac79a3b9290aed01765b62feefae2 AA <angelangelov97@gmail.com> 1592063693 +0300	commit: update onboard.js, add Authereum API key and UI fixes
+191eed87977ac79a3b9290aed01765b62feefae2 9828d4c6390a9769ad852db661dd9834dcd24b05 AA <angelangelov97@gmail.com> 1592067825 +0300	commit: fix button styles
+9828d4c6390a9769ad852db661dd9834dcd24b05 04e36946391c427a0b8aa96a358a11388f634919 AA <angelangelov97@gmail.com> 1592073685 +0300	commit: reset onboard on change wallets button so to be able to select same wallet
+04e36946391c427a0b8aa96a358a11388f634919 f04da8c3cabb3648a4d61c207c8e942ea0560ff9 AA <angelangelov97@gmail.com> 1592078640 +0300	commit: fix authereum to use persistent signature
+f04da8c3cabb3648a4d61c207c8e942ea0560ff9 6d64b01405d928ff8de1cf2d8718c142a2dac7c6 AA <angelangelov97@gmail.com> 1592080025 +0300	commit: Risks page
+6d64b01405d928ff8de1cf2d8718c142a2dac7c6 d698476ac8fae71c52eb37b92d5f128fc3716ba8 AA <angelangelov97@gmail.com> 1592080171 +0300	commit: mention DAO in admin keys section in Risks page
+d698476ac8fae71c52eb37b92d5f128fc3716ba8 7796f84bcc50527b64c507f50efd330d95d90acf AA <angelangelov97@gmail.com> 1592130912 +0300	commit: fix
+7796f84bcc50527b64c507f50efd330d95d90acf 2b59396a7766ac13484a3c2f856ace3cdc476bc0 AA <angelangelov97@gmail.com> 1592132536 +0300	commit: fix Charts
+2b59396a7766ac13484a3c2f856ace3cdc476bc0 72cea2f5e7210ba45b604d3aa78424e7c812bcc3 AA <angelangelov97@gmail.com> 1592133067 +0300	commit: checkboxes fix
+72cea2f5e7210ba45b604d3aa78424e7c812bcc3 bf46e2bb3911938ec2dcd9dd89b75a0c492d20c2 AA <angelangelov97@gmail.com> 1592134937 +0300	commit: fix Charts
+bf46e2bb3911938ec2dcd9dd89b75a0c492d20c2 2370435d166ff8b7ae366e2a7cba675b88507d1b AA <angelangelov97@gmail.com> 1592140754 +0300	merge pwamasterdb: Merge made by the 'recursive' strategy.
+2370435d166ff8b7ae366e2a7cba675b88507d1b 4b1a06555c65f49aa8d8f66bcc9f2211aadcbf96 AA <angelangelov97@gmail.com> 1592142842 +0300	commit: Update Risks page to add info about a currency losing the peg
+4b1a06555c65f49aa8d8f66bcc9f2211aadcbf96 3d39e66170025a9427ee475883efc6c23fb04d5a AA <angelangelov97@gmail.com> 1592143058 +0300	commit: fix Risk heading for mobile
+3d39e66170025a9427ee475883efc6c23fb04d5a 882f085930424116b802de7cd8b7c0885dfe158c AA <angelangelov97@gmail.com> 1592145573 +0300	commit: fix pushing curvebtc__ items only
+882f085930424116b802de7cd8b7c0885dfe158c 764366aad9075eccd985e38931c9479774f6e8ac AA <angelangelov97@gmail.com> 1592159066 +0300	commit: fix rate and to amount when swapping WBTC->BTC
+764366aad9075eccd985e38931c9479774f6e8ac 286a1be4262f7c3103032e95e06e2ddaf4772896 AA <angelangelov97@gmail.com> 1592159247 +0300	commit: amount before renVM fees in WBTC->BTC swap
+286a1be4262f7c3103032e95e06e2ddaf4772896 d0f824491bd6543fbb731f6597bcd81d98e56d34 AA <angelangelov97@gmail.com> 1592168251 +0300	commit: fix table on mobile
+d0f824491bd6543fbb731f6597bcd81d98e56d34 0292733cbee37a3208d763eb14a55b10f2f76653 AA <angelangelov97@gmail.com> 1592215763 +0300	commit: hacky fix chart
+0292733cbee37a3208d763eb14a55b10f2f76653 d7e39e072aff86aa19114fb99c6356cd7e85da3d AA <angelangelov97@gmail.com> 1592219223 +0300	commit: fix infinite approval
+d7e39e072aff86aa19114fb99c6356cd7e85da3d ef4326aa93235a7d90d56018703c9e82a652cbf6 AA <angelangelov97@gmail.com> 1592219862 +0300	commit: one more hacky solution
+ef4326aa93235a7d90d56018703c9e82a652cbf6 f4437c0e690f126c9bdd66e0614154a96f83730a AA <angelangelov97@gmail.com> 1592224010 +0300	commit: fix onboard.js css
+f4437c0e690f126c9bdd66e0614154a96f83730a b706e7f5abb12ba84810cb080a2e64df992255da AA <angelangelov97@gmail.com> 1592225469 +0300	commit: update onboard.js and fix stats chart
+b706e7f5abb12ba84810cb080a2e64df992255da 3716a45a00c9cdc2413bc1f30d9ca1c5d88720bd AA <angelangelov97@gmail.com> 1592238722 +0300	commit: Native BTC UI fixes
+3716a45a00c9cdc2413bc1f30d9ca1c5d88720bd c53f8548dde847e9cf26f208181ac0b67302048d AA <angelangelov97@gmail.com> 1592240485 +0300	commit: fix negative BTC prive
+c53f8548dde847e9cf26f208181ac0b67302048d 4437e0b9bcce1a87da42ad51ec6396f04aa9d414 AA <angelangelov97@gmail.com> 1592240491 +0300	commit (amend): fix negative BTC price
+4437e0b9bcce1a87da42ad51ec6396f04aa9d414 1e7a997129c5a684f0bd10bf74bab48e788db5b5 AA <angelangelov97@gmail.com> 1592240630 +0300	commit: bump versions
+1e7a997129c5a684f0bd10bf74bab48e788db5b5 4849972e14b7b59fe3423d4c95600190eeac983e AA <angelangelov97@gmail.com> 1592243185 +0300	commit: Add claim SNX
+4849972e14b7b59fe3423d4c95600190eeac983e c443f0b5e9459e7e03770115b88439473add9a27 AA <angelangelov97@gmail.com> 1592243635 +0300	commit: fix profit calc decimal point
+c443f0b5e9459e7e03770115b88439473add9a27 5c1c1a20368938e92adf307030d996a1e833d9e3 AA <angelangelov97@gmail.com> 1592244531 +0300	commit: onboard.js css fix
+5c1c1a20368938e92adf307030d996a1e833d9e3 61861b39a281ae72cdee5bfad04d690455dba23c AA <angelangelov97@gmail.com> 1592250663 +0300	commit: add time to Events
+61861b39a281ae72cdee5bfad04d690455dba23c f15f6bd29900b6a000ca25754b76bcec7a52bff5 AA <angelangelov97@gmail.com> 1592253479 +0300	commit: fix Events Deposit timestamp
+f15f6bd29900b6a000ca25754b76bcec7a52bff5 aca4f34f155990192540d654167d6f9a34bc743c AA <angelangelov97@gmail.com> 1592253666 +0300	commit: add Curve Ren Adapter as text
+aca4f34f155990192540d654167d6f9a34bc743c 35771934311bf3b250276be0be5098a623375459 AA <angelangelov97@gmail.com> 1592257487 +0300	commit: unstake only button
+35771934311bf3b250276be0be5098a623375459 0657a342ad16706839943593531b0c10d718bc51 AA <angelangelov97@gmail.com> 1592261280 +0300	commit: Fees info in FAQ
+0657a342ad16706839943593531b0c10d718bc51 a903ffa04031921719c0e2469fd3727a75747051 AA <angelangelov97@gmail.com> 1592296984 +0300	commit: fixes
+a903ffa04031921719c0e2469fd3727a75747051 762124e3c010f402320d8b3031ecfa5cb0f5b3fa AA <angelangelov97@gmail.com> 1592297862 +0300	commit: fix OneSplit
+762124e3c010f402320d8b3031ecfa5cb0f5b3fa 7e92f167b0fa7ab4b21af65d43554685ba8a8bd3 AA <angelangelov97@gmail.com> 1592299011 +0300	commit: fix off by 1 in newMinExchangeRate
+7e92f167b0fa7ab4b21af65d43554685ba8a8bd3 1fd06160263d12a842af33bf28e2e71f70db197f AA <angelangelov97@gmail.com> 1592300779 +0300	commit: fix for confirmations on speed-ups
+1fd06160263d12a842af33bf28e2e71f70db197f 01570a53b9f7aef3e9fae6667b36a295ba1971e0 AA <angelangelov97@gmail.com> 1592301759 +0300	commit: Show swap not available on renBTC/WBTC<->stablecoin
+01570a53b9f7aef3e9fae6667b36a295ba1971e0 6a86d97b00e0f99c2cedc307f77fdb2b21aba078 AA <angelangelov97@gmail.com> 1592304073 +0300	commit: fix volume not fitting
+6a86d97b00e0f99c2cedc307f77fdb2b21aba078 771ebc8e12accb8d5919ff9ac3e919f66f633802 AA <angelangelov97@gmail.com> 1592304887 +0300	commit: up gas on Compound Deposit zap
+771ebc8e12accb8d5919ff9ac3e919f66f633802 fdd91bacf379902f085967982c4c11ffc2cdff4d AA <angelangelov97@gmail.com> 1592322177 +0300	commit: use max synth balance
+fdd91bacf379902f085967982c4c11ffc2cdff4d 7d351e10a400142ebe1da7524ba4328e8fe2c172 AA <angelangelov97@gmail.com> 1592322185 +0300	commit (amend): use max synth balance correctly
+7d351e10a400142ebe1da7524ba4328e8fe2c172 13ae6b966a39a38503c1c8bd60c2622c23179cd3 AA <angelangelov97@gmail.com> 1592326450 +0300	commit: bump gas in susdv2 pool on non-usd exchanges to 300k
+13ae6b966a39a38503c1c8bd60c2622c23179cd3 4ef865b6f9bfbc34348ca91dab271056277471e7 AA <angelangelov97@gmail.com> 1592343027 +0300	commit: Trading Volume chart
+4ef865b6f9bfbc34348ca91dab271056277471e7 af35fc8929406d31a8bb914c35269c528cbc19fa AA <angelangelov97@gmail.com> 1592343505 +0300	commit: fix Trading Volume chart height
+af35fc8929406d31a8bb914c35269c528cbc19fa c808d7735011ade4f3dde7876ed25384088cabc5 AA <angelangelov97@gmail.com> 1592344651 +0300	commit: change exchange rates in native BTC UI
+c808d7735011ade4f3dde7876ed25384088cabc5 5d3fb468992da21019ff475773ce0617ec1f112f AA <angelangelov97@gmail.com> 1592394886 +0300	commit: better rate handling
+5d3fb468992da21019ff475773ce0617ec1f112f 46fac28a5bcf521f31a5b54e47bce865db7403f9 AA <angelangelov97@gmail.com> 1592412402 +0300	commit: timeout before sending contract interaction transaction and dydx in integrations
+46fac28a5bcf521f31a5b54e47bce865db7403f9 19039e3d6fda6ebf55a8da88cccd71e427f20fc8 AA <angelangelov97@gmail.com> 1592413658 +0300	commit: navigating with keyboard
+19039e3d6fda6ebf55a8da88cccd71e427f20fc8 501db896628f75fc6eb28d0b11b22108b1e64169 AA <angelangelov97@gmail.com> 1592413666 +0300	commit (amend): navigating with keyboard in Integrations and Donate
+501db896628f75fc6eb28d0b11b22108b1e64169 70d8830ad33291d57e02d0e3de843f588aad5483 AA <angelangelov97@gmail.com> 1592421210 +0300	commit: disable ETH address input
+70d8830ad33291d57e02d0e3de843f588aad5483 0f0d4701dae24652fe144e735c34f66e867d1756 AA <angelangelov97@gmail.com> 1592422254 +0300	commit: reenable choosing different address to send coins to
+0f0d4701dae24652fe144e735c34f66e867d1756 64b8a659590159df9492f97815d61a0e6060f47d AA <angelangelov97@gmail.com> 1592425236 +0300	commit: z typo in resubmit
+64b8a659590159df9492f97815d61a0e6060f47d 5613791e84c61db212723fffb1db5de2e1f9fa3f AA <angelangelov97@gmail.com> 1592429175 +0300	commit: fix approvals
+5613791e84c61db212723fffb1db5de2e1f9fa3f 9c355b5bebc65748de6ad78c836f5e4ffc2b112a AA <angelangelov97@gmail.com> 1592475255 +0300	commit: total sum of currencies
+9c355b5bebc65748de6ad78c836f5e4ffc2b112a fe39f2d419e98bfac86bc21e62d9e9877d66b6dd AA <angelangelov97@gmail.com> 1592475266 +0300	commit (amend): total sum of currencies in Balances Info
+fe39f2d419e98bfac86bc21e62d9e9877d66b6dd f044a75ccc1624d2d1698eedad07c0404365ba30 AA <angelangelov97@gmail.com> 1592476285 +0300	commit: USD total in ren pool Balances Info
+f044a75ccc1624d2d1698eedad07c0404365ba30 8342abbd87f2c071835641f1520f87dabc9c513c AA <angelangelov97@gmail.com> 1592478310 +0300	commit: change min order size
+8342abbd87f2c071835641f1520f87dabc9c513c 1536b6e71dbcd8c14e20f7245c0b2c42616f9d2a AA <angelangelov97@gmail.com> 1592496734 +0300	commit: Events page fix
+1536b6e71dbcd8c14e20f7245c0b2c42616f9d2a efca8a54027a973b83ad5c7a095fb417f49998dd AA <angelangelov97@gmail.com> 1592499373 +0300	commit: Events page styles
+efca8a54027a973b83ad5c7a095fb417f49998dd 12e4dcb9c9aefcd8ddbd3c3080ef7f3f55a69287 AA <angelangelov97@gmail.com> 1592499896 +0300	commit: Events page fixes
+12e4dcb9c9aefcd8ddbd3c3080ef7f3f55a69287 cb9a60ccf1a6d60957a16e9890aaa1dcdb40f1fa AA <angelangelov97@gmail.com> 1592500980 +0300	commit: Mobile transactions table
+cb9a60ccf1a6d60957a16e9890aaa1dcdb40f1fa 85f87bf62cca3cd4119fd7e6c059150e6c422ec4 AA <angelangelov97@gmail.com> 1592506055 +0300	commit: update rates lvie
+85f87bf62cca3cd4119fd7e6c059150e6c422ec4 51d582af8eb8f619c4decf4d3380323a79bd0f1f AA <angelangelov97@gmail.com> 1592506062 +0300	commit (amend): update rates live
+51d582af8eb8f619c4decf4d3380323a79bd0f1f 7f4ba32bbf18edf02f617fc66db810c9415b2b06 AA <angelangelov97@gmail.com> 1592680893 +0300	commit: bump gas

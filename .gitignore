@@ -23,3 +23,5 @@ yarn-error.log*
 .now
 src/jsons
 src/json
+
+.git_old/

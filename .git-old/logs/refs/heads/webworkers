@@ -1,0 +1,13 @@
+0000000000000000000000000000000000000000 7251db626c9bf6082dfa7345a6d85e37d2638ba5 AA <angelangelov97@gmail.com> 1585527395 +0300	branch: Created from graphs
+7251db626c9bf6082dfa7345a6d85e37d2638ba5 a1489bc5aa28a3ed3c4854deb422f6e7f1c66889 AA <angelangelov97@gmail.com> 1585528862 +0300	commit: init webworkers
+a1489bc5aa28a3ed3c4854deb422f6e7f1c66889 78b2878992ef7bd839a76041a736cb291f60d5d5 AA <angelangelov97@gmail.com> 1585530388 +0300	commit: webworkers
+78b2878992ef7bd839a76041a736cb291f60d5d5 af45f9dcdcf4459c42ef86e7783bc53de7831a94 AA <angelangelov97@gmail.com> 1585531766 +0300	commit: web workers work :D
+af45f9dcdcf4459c42ef86e7783bc53de7831a94 694d57877fa08e5899221f7c6d42871bba62aa83 AA <angelangelov97@gmail.com> 1585533221 +0300	commit: web workers work fast!
+694d57877fa08e5899221f7c6d42871bba62aa83 6375af2fb88d7ea1d190b7d5ec5c4a478a8b6614 AA <angelangelov97@gmail.com> 1585536922 +0300	commit: fix inverse pairs on depth
+6375af2fb88d7ea1d190b7d5ec5c4a478a8b6614 85688a93c3f4d2f82c7d61bc40eac9e491ab1717 AA <angelangelov97@gmail.com> 1585537360 +0300	commit: uncomment initial set zoom
+85688a93c3f4d2f82c7d61bc40eac9e491ab1717 8d3abf88538d7d3a72872d56e8f319cb931cdb2c AA <angelangelov97@gmail.com> 1585537572 +0300	commit: minify public/worker.js
+8d3abf88538d7d3a72872d56e8f319cb931cdb2c 820f7a9475c7e1edeff8ea83cdf478d13d5a85aa AA <angelangelov97@gmail.com> 1585538347 +0300	commit: use 10 parts in 1split and set gas limit to 6M
+820f7a9475c7e1edeff8ea83cdf478d13d5a85aa 3b85a6745784df4b83e4a6e046570a7c9969a79f AA <angelangelov97@gmail.com> 1585539291 +0300	commit: missing else
+3b85a6745784df4b83e4a6e046570a7c9969a79f e26e6d93c642398d3bb22fe6f5506d2becf94c7f AA <angelangelov97@gmail.com> 1585559975 +0300	commit: fix range input on mobile
+e26e6d93c642398d3bb22fe6f5506d2becf94c7f 59611f451ef5a4be8e5b4fe9538c07e7716c58eb AA <angelangelov97@gmail.com> 1585563416 +0300	commit: fix selects
+59611f451ef5a4be8e5b4fe9538c07e7716c58eb 1dfdf5d3209ff67492e0221b2eb98f82745c7679 AA <angelangelov97@gmail.com> 1585583507 +0300	commit: small fixes

@@ -16,7 +16,7 @@
 		</button>
 
 
-		<div id='modal' class='modal' v-show='showModal'>
+		<div id='modal' class='modal' v-show='showModal' @click.self='showModal = false'>
 			<div class='modal-content window white'>
 				<fieldset>
 					<div class='legend2 hoverpointer' @click='showModal = false'>

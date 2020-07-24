@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 71a74217ad8f472ce79d794022ac25de3b8ea9ad AA <angelangelov97@gmail.com> 1593908076 +0300	branch: Created from master
+71a74217ad8f472ce79d794022ac25de3b8ea9ad 404765f166cca3047c57f78cba89bbe65d2d2a1a AA <angelangelov97@gmail.com> 1593925546 +0300	commit: Initial DAO
+404765f166cca3047c57f78cba89bbe65d2d2a1a 484a21790f74828e506c26a3f6d8ff99e2cd6016 AA <angelangelov97@gmail.com> 1594042488 +0300	commit: scroll into BTC address on swap/deposit in native UI and add links to guide
+484a21790f74828e506c26a3f6d8ff99e2cd6016 404765f166cca3047c57f78cba89bbe65d2d2a1a AA <angelangelov97@gmail.com> 1594042612 +0300	reset: moving to HEAD~
+404765f166cca3047c57f78cba89bbe65d2d2a1a f2884a95b09b62d2d35f9610eb43d821085290e7 AA <angelangelov97@gmail.com> 1594221033 +0300	commit: DAO Votes
+f2884a95b09b62d2d35f9610eb43d821085290e7 4a4f09ca8823cada6b54ec42ad7e0cb1d18edcd2 AA <angelangelov97@gmail.com> 1594329240 +0300	commit: describeScript
+4a4f09ca8823cada6b54ec42ad7e0cb1d18edcd2 5da0e6416ee01b502ca454af5171f1ef07a90bbe AA <angelangelov97@gmail.com> 1594340272 +0300	commit: parse descriptions from Aragon

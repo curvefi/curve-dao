@@ -1,0 +1,8 @@
+0000000000000000000000000000000000000000 bcba00392ae27cc66c1442411e2bb922a9ebb7ec AA <angelangelov97@gmail.com> 1585956838 +0300	branch: Created from master
+bcba00392ae27cc66c1442411e2bb922a9ebb7ec 2fc2da745148cf69800f855f9ea1fa39aafc5cf7 AA <angelangelov97@gmail.com> 1585974298 +0300	commit: add deposit/withdraw plain
+2fc2da745148cf69800f855f9ea1fa39aafc5cf7 e1f2bcee9eaf2c207e1d5349d4c3b6b06063353e AA <angelangelov97@gmail.com> 1585982636 +0300	commit: show deposit plain for compound pool only
+e1f2bcee9eaf2c207e1d5349d4c3b6b06063353e 0dea73d7ded3173dad4ba389903f9076a72034cd AA <angelangelov97@gmail.com> 1586037531 +0300	commit: fixes
+0dea73d7ded3173dad4ba389903f9076a72034cd 3905c5c7e588093574d8809ff4e3bc8a145b3e3e AA <angelangelov97@gmail.com> 1586138549 +0300	commit: calc_slippage one coin
+3905c5c7e588093574d8809ff4e3bc8a145b3e3e bbadbb30979cf78d379392064413259b78224b94 AA <angelangelov97@gmail.com> 1586179417 +0300	commit: new zap
+bbadbb30979cf78d379392064413259b78224b94 fce6dc42b4f561c6d611a677fb280ad75399a4e7 AA <angelangelov97@gmail.com> 1586182369 +0300	commit: fixes
+fce6dc42b4f561c6d611a677fb280ad75399a4e7 64bc05845fbe7c3cdcef9ebb647c7e21b83c5b03 AA <angelangelov97@gmail.com> 1586185030 +0300	commit: hint

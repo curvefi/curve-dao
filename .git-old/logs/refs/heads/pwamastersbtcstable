@@ -1,0 +1,59 @@
+0000000000000000000000000000000000000000 8de4c840d443fdc1f995b21f19a9dc85d1f9e9de AA <angelangelov97@gmail.com> 1592527911 +0300	branch: Created from 8de4c840d443fdc1f995b21f19a9dc85d1f9e9de
+8de4c840d443fdc1f995b21f19a9dc85d1f9e9de 603e2fa7281d6f961023a3eac58376562fb47d07 AA <angelangelov97@gmail.com> 1592532246 +0300	commit (merge): fixes
+603e2fa7281d6f961023a3eac58376562fb47d07 281e001ef1c040fd85cb407cf8572ac28fb1cddb AA <angelangelov97@gmail.com> 1592533050 +0300	commit: mintr
+281e001ef1c040fd85cb407cf8572ac28fb1cddb 5c6bda2d7d7e50458530ba493c92a1a1281b6191 AA <angelangelov97@gmail.com> 1592533058 +0300	commit (amend): mintr goes brr brr now
+5c6bda2d7d7e50458530ba493c92a1a1281b6191 a2a32c0fab8990e7893911bac2f3163a29797180 AA <angelangelov97@gmail.com> 1592533728 +0300	commit: fix OneSplit sbtc routing
+a2a32c0fab8990e7893911bac2f3163a29797180 3b9a8eec084a627f4bf69298f24c8b3187900f96 AA <angelangelov97@gmail.com> 1592534032 +0300	commit: fix swap BN
+3b9a8eec084a627f4bf69298f24c8b3187900f96 edce7490edcd16728bae4c980e516c4f6ca1e6c3 AA <angelangelov97@gmail.com> 1592534777 +0300	commit: fix zeroes in Deposit
+edce7490edcd16728bae4c980e516c4f6ca1e6c3 87ff06cc6a770923486787aa87e821451414141a AA <angelangelov97@gmail.com> 1592536205 +0300	commit: fix 'use max' checkbox on Deposit
+87ff06cc6a770923486787aa87e821451414141a 394b8de1aea4ed7ec3b86095f0033879f8732dd4 AA <angelangelov97@gmail.com> 1592536602 +0300	commit: fix slippage
+394b8de1aea4ed7ec3b86095f0033879f8732dd4 2d7227651490fc4c1db1c86859a361e83d67df78 AA <angelangelov97@gmail.com> 1592541301 +0300	commit: fix rounding issue
+2d7227651490fc4c1db1c86859a361e83d67df78 7854017ebd13601cbfbb12b44b04dd28cec0c260 AA <angelangelov97@gmail.com> 1592545602 +0300	commit: count susd pool deposits into total deposits and stats
+7854017ebd13601cbfbb12b44b04dd28cec0c260 fc594870aca7bd1d9700cb654b8bdf23f87f754e AA <angelangelov97@gmail.com> 1592545892 +0300	commit: USD total z typo
+fc594870aca7bd1d9700cb654b8bdf23f87f754e e820a038847f7a89e9f00cdb5066b7025ecfb2f9 AA <angelangelov97@gmail.com> 1592572415 +0300	commit: fix slippage and BTCs swaps in OneSplit
+e820a038847f7a89e9f00cdb5066b7025ecfb2f9 76946a7dc54902d0620513306da65989cbb609aa AA <angelangelov97@gmail.com> 1592572583 +0300	commit: use synthERC20 for coins too
+76946a7dc54902d0620513306da65989cbb609aa 3a0bf69deb0f4b15681663e7ec006336b396a8d1 AA <angelangelov97@gmail.com> 1592574339 +0300	commit: Synths waiting period warning
+3a0bf69deb0f4b15681663e7ec006336b396a8d1 ef3ba9352d04901bbadb44cc2cc543a8b2c070e5 AA <angelangelov97@gmail.com> 1592575063 +0300	commit: add sbtc to Events
+ef3ba9352d04901bbadb44cc2cc543a8b2c070e5 671dbbd7abd2d6b6e353d8620dafcedf9d3f3f57 AA <angelangelov97@gmail.com> 1592591262 +0300	commit: warning reusing addresses
+671dbbd7abd2d6b6e353d8620dafcedf9d3f3f57 61b52bd149a5c6b3e34fcded6330fd5fc77b857a AA <angelangelov97@gmail.com> 1592595124 +0300	commit: SNX/REN APY
+61b52bd149a5c6b3e34fcded6330fd5fc77b857a dabc52e8d7f99ad4780b9ba9f403f052a08dd01e AA <angelangelov97@gmail.com> 1592595868 +0300	commit: fix Events page for sbtc
+dabc52e8d7f99ad4780b9ba9f403f052a08dd01e 17d87c5b37916e3a727c5f57805271ecf9723fdb AA <angelangelov97@gmail.com> 1592596782 +0300	commit: navigating pools with keyboard
+17d87c5b37916e3a727c5f57805271ecf9723fdb db485e6ef543f0ebf0c46f6565d1c055e35491a8 AA <angelangelov97@gmail.com> 1592597323 +0300	commit: fix SNX and SNX/REN APY
+db485e6ef543f0ebf0c46f6565d1c055e35491a8 03dffbd0642ffb24adca2cea504cdd307fcdbfa8 AA <angelangelov97@gmail.com> 1592598135 +0300	commit: Staking risks
+03dffbd0642ffb24adca2cea504cdd307fcdbfa8 8e257ae261d16dae91f245774b02589420bb0468 AA <angelangelov97@gmail.com> 1592641204 +0300	commit: FAQ small fixes
+8e257ae261d16dae91f245774b02589420bb0468 47d1040f26ff2583ef1521d1c6b08aac108f7242 AA <angelangelov97@gmail.com> 1592644154 +0300	commit: waiting period fixes
+47d1040f26ff2583ef1521d1c6b08aac108f7242 ae2734a2cd744e2aeaba2170d89a0599d8cdb198 AA <angelangelov97@gmail.com> 1592656804 +0300	commit: staked sbtc info
+ae2734a2cd744e2aeaba2170d89a0599d8cdb198 2273d63cbf93f0ca711e5344f141a40faf032e0d AA <angelangelov97@gmail.com> 1592656814 +0300	commit (amend): staked sbtc info
+2273d63cbf93f0ca711e5344f141a40faf032e0d 365ae3413967c2144832f1f9c1e567bf9217ddff AA <angelangelov97@gmail.com> 1592659083 +0300	commit: Tutorial in FAQ
+365ae3413967c2144832f1f9c1e567bf9217ddff 31c27ab9457932f32198c43d25c9c293c5baf643 AA <angelangelov97@gmail.com> 1592659154 +0300	commit: integrators->intergations in link in pool's FAQ
+31c27ab9457932f32198c43d25c9c293c5baf643 358302a6e2f10af4be2db868e2431de555000bef AA <angelangelov97@gmail.com> 1592661928 +0300	commit: Total Deposits page chart title add USD deposits
+358302a6e2f10af4be2db868e2431de555000bef 1c2632bb9da19b8a6df32709b0d1cc64b43ff622 AA <angelangelov97@gmail.com> 1592662798 +0300	commit: secs not years in waiting period for synths :D
+1c2632bb9da19b8a6df32709b0d1cc64b43ff622 6e1c9c814468e38e7bde28dd703f1d13193ab905 AA <angelangelov97@gmail.com> 1592664862 +0300	commit: Pool USD % holdings chart
+6e1c9c814468e38e7bde28dd703f1d13193ab905 6d31aeb201348d7204fb827b4a6e60d48eb09053 AA <angelangelov97@gmail.com> 1592670676 +0300	commit: Curve Registry
+6d31aeb201348d7204fb827b4a6e60d48eb09053 32ad94a995ce088788420e0b6f2095d3f7b132a0 AA <angelangelov97@gmail.com> 1592681542 +0300	commit: gas fixes
+32ad94a995ce088788420e0b6f2095d3f7b132a0 f56ee2f62c39c9401d85f7473f65de0ad604d789 AA <angelangelov97@gmail.com> 1592740788 +0300	commit: waiting period in seconds not years
+f56ee2f62c39c9401d85f7473f65de0ad604d789 441d059682ab2876933551f0f8b27a4c80230ac7 AA <angelangelov97@gmail.com> 1592740956 +0300	commit: Curve Pool Registry logo
+441d059682ab2876933551f0f8b27a4c80230ac7 779d6829c51d78fc06992d0b628b146298c89dc4 AA <angelangelov97@gmail.com> 1592749239 +0300	commit: Fix volumes
+779d6829c51d78fc06992d0b628b146298c89dc4 15bc698bac50c88a43d6cb4ba0ae913b477e69e0 AA <angelangelov97@gmail.com> 1592749244 +0300	commit (amend): Fix volumes
+15bc698bac50c88a43d6cb4ba0ae913b477e69e0 0800a4886083e5448ba1cb9cc6a6c85c7f174f02 AA <angelangelov97@gmail.com> 1592749255 +0300	commit (amend): Fix volumes in Balances Info in sBTC pool
+0800a4886083e5448ba1cb9cc6a6c85c7f174f02 2fab70047cb599736b66745ef6fcf8e3576fc8fa AA <angelangelov97@gmail.com> 1592756421 +0300	merge pwamastersbtcstablerewards: Merge made by the 'recursive' strategy.
+2fab70047cb599736b66745ef6fcf8e3576fc8fa 8f1cdd83ff03cd2f3928e05811d10daf72411309 AA <angelangelov97@gmail.com> 1592757636 +0300	commit: fix min_dy
+8f1cdd83ff03cd2f3928e05811d10daf72411309 12b07ebd0964fe7ebba381ccee11fbd48fa01423 AA <angelangelov97@gmail.com> 1592771008 +0300	commit: Filter errors Sentry, show LP Curve tokens received and Total Profit
+12b07ebd0964fe7ebba381ccee11fbd48fa01423 d2c62f751e88b5f03bd60282364505cf53a6e56e AA <angelangelov97@gmail.com> 1592772236 +0300	commit: Total Deposits line chart and 1 Curve LP token = $/BTC
+d2c62f751e88b5f03bd60282364505cf53a6e56e 2da2fecf4c5c70a01566a0aab6b8ba1925627a63 AA <angelangelov97@gmail.com> 1592779721 +0300	commit: z fix
+2da2fecf4c5c70a01566a0aab6b8ba1925627a63 e5a926449a7c7299abed0109850f934e46358627 AA <angelangelov97@gmail.com> 1592781340 +0300	commit: 'Please approve Curve LP tokens'
+e5a926449a7c7299abed0109850f934e46358627 522a61f13420b5fdbae398cfb81f48f09e41addd AA <angelangelov97@gmail.com> 1592796045 +0300	commit: profit calc fixes
+522a61f13420b5fdbae398cfb81f48f09e41addd 573f380494bafe812179be9a3ce9e4def807e9fd AA <angelangelov97@gmail.com> 1592796992 +0300	commit: profit calc fixes
+573f380494bafe812179be9a3ce9e4def807e9fd 5354b84cb53dbcf9e6fa8a06c630bbdced5fb55e AA <angelangelov97@gmail.com> 1592797040 +0300	commit: profit calc fixes
+5354b84cb53dbcf9e6fa8a06c630bbdced5fb55e f649fe31682b3bb9da97067ac5f3d2ad5dda666c AA <angelangelov97@gmail.com> 1592807968 +0300	commit: fixes
+f649fe31682b3bb9da97067ac5f3d2ad5dda666c 64ea6875e5fff047bad2197edf8cf58dc7f558de AA <angelangelov97@gmail.com> 1592809057 +0300	commit: update onboard.js
+64ea6875e5fff047bad2197edf8cf58dc7f558de 02e527408b4880d520d4a63f647e71856a5802c6 AA <angelangelov97@gmail.com> 1592842098 +0300	commit: up all withdraw gas
+02e527408b4880d520d4a63f647e71856a5802c6 2d48a6ada866d157365cc53564f37889b42c213a AA <angelangelov97@gmail.com> 1592842307 +0300	commit: up withdraw imbalance gas too
+2d48a6ada866d157365cc53564f37889b42c213a 3b861d69dac9e8cc7b5a8078e51f5920df2f971b AA <angelangelov97@gmail.com> 1592842789 +0300	commit: fix profit calc
+3b861d69dac9e8cc7b5a8078e51f5920df2f971b 265f1b030f8919d786fca2f6b61734967e3ad7ae AA <angelangelov97@gmail.com> 1592844254 +0300	commit: return back gas limits
+265f1b030f8919d786fca2f6b61734967e3ad7ae 322f68ec804621577b7736cfc1024875f1cb5ad7 AA <angelangelov97@gmail.com> 1592845543 +0300	commit: uncheck swap BTC checkbox when going BTCs->stablecoins pools
+322f68ec804621577b7736cfc1024875f1cb5ad7 4bc4199af932a825fa0c3b82b66a8c967423fd2e AA <angelangelov97@gmail.com> 1592848391 +0300	commit: Weekly earned incentives
+4bc4199af932a825fa0c3b82b66a8c967423fd2e cdc82160abc31aab2c6d72648a3a982b83c00261 AA <angelangelov97@gmail.com> 1592870357 +0300	commit: please message us for native BTC swaps message
+cdc82160abc31aab2c6d72648a3a982b83c00261 44ea882838dc8b0fe796264cf5c113c588e4c7c7 AA <angelangelov97@gmail.com> 1592877751 +0300	commit: fixes
+44ea882838dc8b0fe796264cf5c113c588e4c7c7 325e43dfbf5be5239ba03f6fcdd14b48d7567a22 AA <angelangelov97@gmail.com> 1592915687 +0300	commit: truncate gas limit
+325e43dfbf5be5239ba03f6fcdd14b48d7567a22 614e0111501f305985a84d4173a59e06e11d6bca AA <angelangelov97@gmail.com> 1592916571 +0300	commit: fix weekly rewards estimates

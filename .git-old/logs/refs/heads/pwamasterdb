@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 d698476ac8fae71c52eb37b92d5f128fc3716ba8 AA <angelangelov97@gmail.com> 1592127565 +0300	branch: Created from pwamaster
+d698476ac8fae71c52eb37b92d5f128fc3716ba8 ed7fba1b13eac2d1674f2453d131cd710e3d9581 AA <angelangelov97@gmail.com> 1592127581 +0300	commit: sync to local db tii:
+ed7fba1b13eac2d1674f2453d131cd710e3d9581 e99b868cf93bef73568ead9777e2d3fb7160318a AA <angelangelov97@gmail.com> 1592127584 +0300	commit (amend): sync to local db too
+e99b868cf93bef73568ead9777e2d3fb7160318a 76f669efd58757113325d47c7a23a01e35bc7cd2 AA <angelangelov97@gmail.com> 1592140744 +0300	commit: fixes on syncing between 3 storages

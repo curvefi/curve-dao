@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 ac915d39081ab567b4c046e55d0e8642e5b73430 AA <angelangelov97@gmail.com> 1586099782 +0300	branch: Created from master
+ac915d39081ab567b4c046e55d0e8642e5b73430 fd7c9a024befe1a6e4cf401e68ad15f9eaa9e155 AA <angelangelov97@gmail.com> 1586105652 +0300	commit: muticall for update_fee_info
+fd7c9a024befe1a6e4cf401e68ad15f9eaa9e155 46f5951a44152862fab05b553c5258f81ecd6e9d AA <angelangelov97@gmail.com> 1586111442 +0300	commit: multicall and all pools selected by default

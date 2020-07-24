@@ -1,0 +1,159 @@
+0000000000000000000000000000000000000000 f14ad3d8833867711badfae7943b54ea5138a142 AA <angelangelov97@gmail.com> 1589362581 +0300	branch: Created from master
+f14ad3d8833867711badfae7943b54ea5138a142 c808741741a728ca5074994fec3beb36f6bc2639 AA <angelangelov97@gmail.com> 1589370673 +0300	commit: add init tbtc configs
+c808741741a728ca5074994fec3beb36f6bc2639 77b974435f4eca06ba7ea457f1332917f5afb50b AA <angelangelov97@gmail.com> 1589418156 +0300	commit: tbtc changes
+77b974435f4eca06ba7ea457f1332917f5afb50b 6f9ff5fab05f98796212e6e4aabd44079649a04a AA <angelangelov97@gmail.com> 1589436866 +0300	commit: init ren
+6f9ff5fab05f98796212e6e4aabd44079649a04a 0c021a4219c01d1249d038e14912d96c17ddeeb8 AA <angelangelov97@gmail.com> 1589496073 +0300	commit: tbtc, ren changes
+0c021a4219c01d1249d038e14912d96c17ddeeb8 4c03ffa0a46d658f0972767834478695659c083b AA <angelangelov97@gmail.com> 1589509548 +0300	commit: ren
+4c03ffa0a46d658f0972767834478695659c083b ecc5632b41ac47a157ace8b17a632ef94ce54959 AA <angelangelov97@gmail.com> 1589510226 +0300	commit: deposit max 8 digits
+ecc5632b41ac47a157ace8b17a632ef94ce54959 044191efcd102d2cf1bfd11f054dc7b25e5922ae AA <angelangelov97@gmail.com> 1589510354 +0300	commit: fix gas configs
+044191efcd102d2cf1bfd11f054dc7b25e5922ae b618d8ef2fbf197a67f4f0e0a1cf37e63bddc0a2 AA <angelangelov97@gmail.com> 1589510403 +0300	commit: show ren in menu
+b618d8ef2fbf197a67f4f0e0a1cf37e63bddc0a2 2811f4a8c0994b7be8b653327e3949a653966205 AA <angelangelov97@gmail.com> 1589511058 +0300	commit: ren coins
+2811f4a8c0994b7be8b653327e3949a653966205 42be957131c8f1c2d173bc416bd760592f63f30c AA <angelangelov97@gmail.com> 1589511496 +0300	commit: fix withdrawal
+42be957131c8f1c2d173bc416bd760592f63f30c 20958ef5929c1e7b63f32e1b636a82b1ca46e1cb AA <angelangelov97@gmail.com> 1589512950 +0300	commit: new pool
+20958ef5929c1e7b63f32e1b636a82b1ca46e1cb 6dad859210077709bbaab2f748e2ab798cd9489c AA <angelangelov97@gmail.com> 1589513276 +0300	commit: fix
+6dad859210077709bbaab2f748e2ab798cd9489c 137a828e1d400190772df4f363f2e6a8e1949817 AA <angelangelov97@gmail.com> 1589514073 +0300	commit: fix digits
+137a828e1d400190772df4f363f2e6a8e1949817 3390dbd59e018ca1e306a367f2fc4d50d6bb4938 AA <angelangelov97@gmail.com> 1589518710 +0300	commit: hide ren
+3390dbd59e018ca1e306a367f2fc4d50d6bb4938 b3a229c6f1921ce47d4817484208360e651fe066 AA <angelangelov97@gmail.com> 1589520089 +0300	commit: ren default from input
+b3a229c6f1921ce47d4817484208360e651fe066 2dc926be587365d440ade28841555c01e6453619 AA <angelangelov97@gmail.com> 1589520604 +0300	commit: remove donate dust
+2dc926be587365d440ade28841555c01e6453619 4c075998efc55fc318296f19a79f023645428cb8 AA <angelangelov97@gmail.com> 1589520912 +0300	commit: lower gas
+4c075998efc55fc318296f19a79f023645428cb8 8baa09d270200d278cfed1a052b8d9fa5c20ebe5 AA <angelangelov97@gmail.com> 1589521665 +0300	commit: change gas
+8baa09d270200d278cfed1a052b8d9fa5c20ebe5 8baa09d270200d278cfed1a052b8d9fa5c20ebe5 AA <angelangelov97@gmail.com> 1589521723 +0300	Branch: renamed refs/heads/tbtc to refs/heads/btc
+8baa09d270200d278cfed1a052b8d9fa5c20ebe5 2254577ab30a3241e3589aa4e19d1f1436af2656 AA <angelangelov97@gmail.com> 1589523103 +0300	commit: fix usd share/balance
+2254577ab30a3241e3589aa4e19d1f1436af2656 0bb44d130e5c84545642ccde64f85597b56e7d24 AA <angelangelov97@gmail.com> 1589526041 +0300	commit: fix balances format and volumes
+0bb44d130e5c84545642ccde64f85597b56e7d24 8a7981465a303be876eb24991b590b654f6c7fca AA <angelangelov97@gmail.com> 1589526696 +0300	commit: format
+8a7981465a303be876eb24991b590b654f6c7fca 960e1f3b9b2713c619c2a48a56ca3c95467e16d1 AA <angelangelov97@gmail.com> 1589527246 +0300	commit: fix front page when no volume
+960e1f3b9b2713c619c2a48a56ca3c95467e16d1 9c1882312e2a4fb0b5443cae729b514729609a63 AA <angelangelov97@gmail.com> 1589527642 +0300	commit: remove usdt from onesplit
+9c1882312e2a4fb0b5443cae729b514729609a63 0266d440ef311ef9efc83227448a8e9e89485df0 AA <angelangelov97@gmail.com> 1589528591 +0300	commit: hide btcs
+0266d440ef311ef9efc83227448a8e9e89485df0 8b79faa8e25a5492b16550c807436bfcc0a23fff AA <angelangelov97@gmail.com> 1589551074 +0300	commit: tbtc config
+8b79faa8e25a5492b16550c807436bfcc0a23fff dfecf1afcc2acc3f24431a65a1210cbe17b7d696 AA <angelangelov97@gmail.com> 1589551700 +0300	commit: fix bonus tooltip on withdrawal
+dfecf1afcc2acc3f24431a65a1210cbe17b7d696 58d16278b6c5c21bb46abc8e04aa650b8d0dab00 AA <angelangelov97@gmail.com> 1589578210 +0300	commit: fix charts
+58d16278b6c5c21bb46abc8e04aa650b8d0dab00 b305d9a788dabeea8189825b7a87e0c4b4679278 AA <angelangelov97@gmail.com> 1589579203 +0300	commit: better switching wallets/accounts
+b305d9a788dabeea8189825b7a87e0c4b4679278 d7a3a5578a1425feebd757e9a2f17e2694ee6893 AA <angelangelov97@gmail.com> 1589582299 +0300	commit: onesplit component disable swap on input < max balance
+d7a3a5578a1425feebd757e9a2f17e2694ee6893 492f8a0118ed5a6186c7c665eb6660b0f259aac1 AA <angelangelov97@gmail.com> 1589583298 +0300	commit: all engines ready, prepare for launch
+492f8a0118ed5a6186c7c665eb6660b0f259aac1 636fd42903af65f961af53d31ff0e23bb41aa48a AA <angelangelov97@gmail.com> 1589585501 +0300	commit: fix balances
+636fd42903af65f961af53d31ff0e23bb41aa48a db577992d6883041d8aec40044c12116b2d32fa7 AA <angelangelov97@gmail.com> 1589586957 +0300	commit: z typo
+db577992d6883041d8aec40044c12116b2d32fa7 4f28cc35ca1b0af1f6f924379b8316cc54d9f067 AA <angelangelov97@gmail.com> 1589592590 +0300	commit: tBTC->TBTC
+4f28cc35ca1b0af1f6f924379b8316cc54d9f067 81804ca32062a5d362701a576f12d8a54b5d71bc AA <angelangelov97@gmail.com> 1589600091 +0300	commit: tbtc pool addresses
+81804ca32062a5d362701a576f12d8a54b5d71bc 7a171371173e6d90738932b40b57c963daad7435 AA <angelangelov97@gmail.com> 1589601037 +0300	commit: text fixes
+7a171371173e6d90738932b40b57c963daad7435 9e36e91f1977c53bbe5edfb6a0217eb8d0b3e72f AA <angelangelov97@gmail.com> 1589602042 +0300	commit: text fixes
+9e36e91f1977c53bbe5edfb6a0217eb8d0b3e72f e18f343551e1d100ecb630e6646b946f7e5f0a7d AA <angelangelov97@gmail.com> 1589604347 +0300	commit: fix gas
+e18f343551e1d100ecb630e6646b946f7e5f0a7d 938f5fc5583c62f8bd540bdfaf7491f0c739553e AA <angelangelov97@gmail.com> 1589606122 +0300	commit: fixes
+938f5fc5583c62f8bd540bdfaf7491f0c739553e 6ffb6dadb52645482ddef9a36eb322544e0e68a1 AA <angelangelov97@gmail.com> 1589607016 +0300	commit: fix -1 volume
+6ffb6dadb52645482ddef9a36eb322544e0e68a1 63b4a7efd55ff04723a4f7a8b3a89e8a74341f90 AA <angelangelov97@gmail.com> 1589615315 +0300	commit: fix
+63b4a7efd55ff04723a4f7a8b3a89e8a74341f90 cdf46ba1c05df7b446ee2fbddb72f52424cdd900 AA <angelangelov97@gmail.com> 1589615488 +0300	commit: fix
+cdf46ba1c05df7b446ee2fbddb72f52424cdd900 af95c04e4f5408ba80505ae23574f33c44ed0c33 AA <angelangelov97@gmail.com> 1589615929 +0300	commit: fix swap
+af95c04e4f5408ba80505ae23574f33c44ed0c33 168342b40574ad30309e403714f32250893b82c2 AA <angelangelov97@gmail.com> 1589616172 +0300	commit: uncomment approvals
+168342b40574ad30309e403714f32250893b82c2 f69b8f2cc4a89f66c5180b2ff2224b4458002ba4 AA <angelangelov97@gmail.com> 1589627627 +0300	commit: fix volume per coin
+f69b8f2cc4a89f66c5180b2ff2224b4458002ba4 f2a082ad3ceffd116e36d80ee2f9140591da2725 AA <angelangelov97@gmail.com> 1589671582 +0300	commit: fix failing estimateGas
+f2a082ad3ceffd116e36d80ee2f9140591da2725 04c81ca79784af213f4ef5ad66713d9faa1f20e1 AA <angelangelov97@gmail.com> 1589671982 +0300	commit: fix unstake estimateGas
+04c81ca79784af213f4ef5ad66713d9faa1f20e1 51842d31c00295eb9be9fdabe91e9187356ec133 AA <angelangelov97@gmail.com> 1589671989 +0300	commit (amend): fix unstake estimateGas error
+51842d31c00295eb9be9fdabe91e9187356ec133 714a8d3720f0df686a985f9eaf5987859b8fb034 AA <angelangelov97@gmail.com> 1589675618 +0300	commit: show slippage & estimate gas fixon withdrawal
+714a8d3720f0df686a985f9eaf5987859b8fb034 337ae18efd9b8e839bc1bdc01cd9a30fd6c1fe57 AA <angelangelov97@gmail.com> 1589684586 +0300	commit: message instead of tooltip in unstake in withdraw
+337ae18efd9b8e839bc1bdc01cd9a30fd6c1fe57 0f0dc46bde871a1200e990bec685d74aa4b29122 AA <angelangelov97@gmail.com> 1589690811 +0300	commit: fix gas on withdraw one coin
+0f0dc46bde871a1200e990bec685d74aa4b29122 f5ec9a6a6d1284d779079c40615ad14e7f5e1358 AA <angelangelov97@gmail.com> 1589696226 +0300	commit: ren charts
+f5ec9a6a6d1284d779079c40615ad14e7f5e1358 672bea4ce797bc860532b23ffd2b7a08c951506e AA <angelangelov97@gmail.com> 1589696650 +0300	commit: remove visible ren pool links
+672bea4ce797bc860532b23ffd2b7a08c951506e a86496121cd7514f53262459c86fdd5765262172 AA <angelangelov97@gmail.com> 1589696941 +0300	commit: ren pool himBHs>BTC
+a86496121cd7514f53262459c86fdd5765262172 81974a9925c3a52db321430e80a27caa903941dc AA <angelangelov97@gmail.com> 1589697610 +0300	commit: fix events
+81974a9925c3a52db321430e80a27caa903941dc 2fa517458bd324e997941f1e1f4d76f460f1c64d AA <angelangelov97@gmail.com> 1589698434 +0300	commit: ren charts decimal places
+2fa517458bd324e997941f1e1f4d76f460f1c64d 878ea5a6fbf36588c89b79f4a427ca41ac6b85de AA <angelangelov97@gmail.com> 1589700963 +0300	commit: tbtc charts
+878ea5a6fbf36588c89b79f4a427ca41ac6b85de 7ef8f9fda437d073ca7c9a98cefc336defe5d32a AA <angelangelov97@gmail.com> 1589701505 +0300	commit: hide tbtc link
+7ef8f9fda437d073ca7c9a98cefc336defe5d32a b8095838f85239104c5629de8af5d4bfa44fe322 AA <angelangelov97@gmail.com> 1589704226 +0300	commit: volume per coin btcs
+b8095838f85239104c5629de8af5d4bfa44fe322 117d244fdfe79d894948d372fe40d3f74370e6d1 AA <angelangelov97@gmail.com> 1589704725 +0300	commit: fix lag volume per coin
+117d244fdfe79d894948d372fe40d3f74370e6d1 ad640b6fa6d9b5189d604804c62ae9971f21bcb0 AA <angelangelov97@gmail.com> 1589704988 +0300	commit: fixes
+ad640b6fa6d9b5189d604804c62ae9971f21bcb0 e5ac56a5c5c78f0b55f23e3ac764167622dab932 AA <angelangelov97@gmail.com> 1589736204 +0300	commit: fixes and BTC prices in USD
+e5ac56a5c5c78f0b55f23e3ac764167622dab932 967c8e7ce5a876cdbd1e9f4045a5e9813e5e4a83 AA <angelangelov97@gmail.com> 1589737568 +0300	commit: fix
+967c8e7ce5a876cdbd1e9f4045a5e9813e5e4a83 bba2d2eac8386c4b26e713ca5129cda1402d9ac6 AA <angelangelov97@gmail.com> 1589738485 +0300	commit: format balances numbers
+bba2d2eac8386c4b26e713ca5129cda1402d9ac6 33996ba26fd9e2816e413ba66ee4aa2921b63c9d AA <angelangelov97@gmail.com> 1589740103 +0300	commit: tbtc, ren to Contracts page
+33996ba26fd9e2816e413ba66ee4aa2921b63c9d ffd738de0e70b62950ad1c0d5894f1590410c749 AA <angelangelov97@gmail.com> 1589759130 +0300	commit: fix OneSplit component
+ffd738de0e70b62950ad1c0d5894f1590410c749 c0322606e9b06727eb46adc5c5713cc4bf0e2bb4 AA <angelangelov97@gmail.com> 1589760779 +0300	commit: log deposit events when staking
+c0322606e9b06727eb46adc5c5713cc4bf0e2bb4 a2864e29eb61a89ae3c20d7f926e5a0c41026d14 AA <angelangelov97@gmail.com> 1589761797 +0300	commit: add LogRocket
+a2864e29eb61a89ae3c20d7f926e5a0c41026d14 45a2e27e5c459e636b3a4acf61e67702b3c7c5ec AA <angelangelov97@gmail.com> 1589762461 +0300	commit: Revert "add LogRocket"
+45a2e27e5c459e636b3a4acf61e67702b3c7c5ec 34df58c2000f51cd1a0ab4631d1f48fc5ef4bbc8 AA <angelangelov97@gmail.com> 1589766671 +0300	commit: profit calc fixes
+34df58c2000f51cd1a0ab4631d1f48fc5ef4bbc8 aa79f558dbbe7367f9b3d3241b600449886a9870 AA <angelangelov97@gmail.com> 1589769900 +0300	commit: fixes Events btcs
+aa79f558dbbe7367f9b3d3241b600449886a9870 17531b275b32dcb298360607a25279a971dd8dc7 AA <angelangelov97@gmail.com> 1589773829 +0300	commit: profit calc btc fixes
+17531b275b32dcb298360607a25279a971dd8dc7 a7ed508992c8d1eb4fa3ec7f920d0ad160c086b7 AA <angelangelov97@gmail.com> 1589774128 +0300	commit: update versions
+a7ed508992c8d1eb4fa3ec7f920d0ad160c086b7 11cb3b0dad4d1af2898f67b65206dfce2441c90e AA <angelangelov97@gmail.com> 1589781228 +0300	commit: fixes
+11cb3b0dad4d1af2898f67b65206dfce2441c90e 2e8c252507a838317f5d91457a50f7cd283f21d5 AA <angelangelov97@gmail.com> 1589786611 +0300	commit: fix withdraw slippage
+2e8c252507a838317f5d91457a50f7cd283f21d5 f645325c465a9bda2ccb3e9e5a0b2e29f02763fa AA <angelangelov97@gmail.com> 1589787321 +0300	commit: withdraw fixes
+f645325c465a9bda2ccb3e9e5a0b2e29f02763fa 8e05756cc862aacc9dd87310efd5c5a4b578b688 AA <angelangelov97@gmail.com> 1589788354 +0300	commit: withdraw fixes
+8e05756cc862aacc9dd87310efd5c5a4b578b688 e74cde1288619e3fc5c7a7ea6c01f06460e45ef6 AA <angelangelov97@gmail.com> 1589789994 +0300	commit: fix one coin
+e74cde1288619e3fc5c7a7ea6c01f06460e45ef6 d25987379e9cac274632faf38d4afb75c1564762 AA <angelangelov97@gmail.com> 1589790448 +0300	commit: fix shown amounts
+d25987379e9cac274632faf38d4afb75c1564762 3a629b8c9e735488ccaba855117e262f9f78fd44 AA <angelangelov97@gmail.com> 1589791935 +0300	commit: currency text fix on withdraw page
+3a629b8c9e735488ccaba855117e262f9f78fd44 317a3397e0341603be75b2ddbd6b39208d4035dd AA <angelangelov97@gmail.com> 1589796077 +0300	commit: show ramping up of A
+317a3397e0341603be75b2ddbd6b39208d4035dd 181225b5355e327ec021d8bd6deff2f5891edc5a AA <angelangelov97@gmail.com> 1589800802 +0300	commit: tbtc calls fail fixes
+181225b5355e327ec021d8bd6deff2f5891edc5a c53361419c1092e83042cf9a282d0615aade8174 AA <angelangelov97@gmail.com> 1589842174 +0300	commit: better calc_token_amount
+c53361419c1092e83042cf9a282d0615aade8174 c03dc4935187606230c902d080d393fc7a17305d AA <angelangelov97@gmail.com> 1589849968 +0300	commit: fix susd deposit gas and disablewithdraw button when no balance in the contract for that many coins
+c03dc4935187606230c902d080d393fc7a17305d 2e2df6e07b030c45649befcdd699f6176b5353ac AA <angelangelov97@gmail.com> 1589943108 +0300	commit: deposit not enough balance warning
+2e2df6e07b030c45649befcdd699f6176b5353ac 097a3bb8f4f11fb9f2e1097ac5639dd2d2efb513 AA <angelangelov97@gmail.com> 1590009182 +0300	commit: fix warning no balance
+097a3bb8f4f11fb9f2e1097ac5639dd2d2efb513 0dd5d005714c41cb542010debaff10974db54761 AA <angelangelov97@gmail.com> 1590025859 +0300	commit: fix balances
+0dd5d005714c41cb542010debaff10974db54761 7ad4c30e98fee54d191bb2637fceb9f261e28dfa AA <angelangelov97@gmail.com> 1590106487 +0300	commit: fix OneSplit component
+7ad4c30e98fee54d191bb2637fceb9f261e28dfa 4e791dcd7454a2907182117c30721ff3b7625b14 AA <angelangelov97@gmail.com> 1590112600 +0300	commit: log wallet names to sentry
+4e791dcd7454a2907182117c30721ff3b7625b14 18e6f97f8b21f2889b07cef3d0f4033326fce6a1 AA <angelangelov97@gmail.com> 1590130158 +0300	commit: fix add liquidity
+18e6f97f8b21f2889b07cef3d0f4033326fce6a1 505416de22c34d62fff76b33c246ddee82b7bcd3 AA <angelangelov97@gmail.com> 1590133027 +0300	commit: deposit fixes
+505416de22c34d62fff76b33c246ddee82b7bcd3 88131afc7779d5145903dafc81b90c3e15b60bb1 AA <angelangelov97@gmail.com> 1590133393 +0300	commit: better message when not having enough balance for N_COINS - 1
+88131afc7779d5145903dafc81b90c3e15b60bb1 2ecd2ea40835b5602e16e7c11f1df2a39acf347e AA <angelangelov97@gmail.com> 1590134351 +0300	commit: Fix Curve Pay
+2ecd2ea40835b5602e16e7c11f1df2a39acf347e aa1a85baebfece0d639b7037a8575d9bc0987342 AA <angelangelov97@gmail.com> 1590137964 +0300	commit: fix onesplit multipath
+aa1a85baebfece0d639b7037a8575d9bc0987342 765aae8e3d96676f1d8ede6e0a651c888bfba623 AA <angelangelov97@gmail.com> 1590141044 +0300	commit: fix multipath OneSplit
+765aae8e3d96676f1d8ede6e0a651c888bfba623 67306df157a6e7be73d7962fbe03592abe2ac706 AA <angelangelov97@gmail.com> 1590184742 +0300	commit: fix events
+67306df157a6e7be73d7962fbe03592abe2ac706 19a3fbbd9f47ed6d4928decc905a95202ffb0c37 AA <angelangelov97@gmail.com> 1590189639 +0300	commit: fixes deposit
+19a3fbbd9f47ed6d4928decc905a95202ffb0c37 6568fb450117c34aceb9dd4eca3d04c95590eb13 AA <angelangelov97@gmail.com> 1590189870 +0300	commit: change add liquidity max gas
+6568fb450117c34aceb9dd4eca3d04c95590eb13 18294eebbf8dcb5f64d09e3449ebd2688987ebca AA <angelangelov97@gmail.com> 1590198989 +0300	commit: deposit 0 warning and slippage decrease
+18294eebbf8dcb5f64d09e3449ebd2688987ebca d002cc0d09e222077df385e5790c8ce9da99bc5b AA <angelangelov97@gmail.com> 1590199246 +0300	commit: depositing zero warning after loda
+d002cc0d09e222077df385e5790c8ce9da99bc5b 50b8d0ae7cc21e7b04e805d87b8e7626877b6a2b AA <angelangelov97@gmail.com> 1590199261 +0300	commit: Revert "depositing zero warning after loda"
+50b8d0ae7cc21e7b04e805d87b8e7626877b6a2b 86cd5adf68e0fe6a80f72bcba66e837f53e79aff AA <angelangelov97@gmail.com> 1590199416 +0300	commit: deposit zero warning after load
+86cd5adf68e0fe6a80f72bcba66e837f53e79aff 2abaeb62b0b9519d616ced106d65b57be3ac88bc AA <angelangelov97@gmail.com> 1590200777 +0300	commit: uncheck add sync balances by default
+2abaeb62b0b9519d616ced106d65b57be3ac88bc 3a5465174019da32f2ad11692dee948c4e2ef9ee AA <angelangelov97@gmail.com> 1590202851 +0300	commit: add icons
+3a5465174019da32f2ad11692dee948c4e2ef9ee 1bc5e32b54101cd76a7ecbf5fb6e4ed5c1139e1f AA <angelangelov97@gmail.com> 1590210510 +0300	commit: fix logo in Firefox
+1bc5e32b54101cd76a7ecbf5fb6e4ed5c1139e1f cf018a163eef12f971b635ced4cf7b7e9091a0b9 AA <angelangelov97@gmail.com> 1590210528 +0300	commit: fix logo in Firefox
+cf018a163eef12f971b635ced4cf7b7e9091a0b9 92791a7ede677ed0cf15eabda2911c0ce7c68cd6 AA <angelangelov97@gmail.com> 1590210583 +0300	commit: Revert "fix logo in Firefox"
+92791a7ede677ed0cf15eabda2911c0ce7c68cd6 27bc4db9323016f2eaa3f502e052f75bb5cdc420 AA <angelangelov97@gmail.com> 1590210649 +0300	commit: fix logo in Firefox
+27bc4db9323016f2eaa3f502e052f75bb5cdc420 9dd9d4836f96e6a03e09683f6197826d125fa15e AA <angelangelov97@gmail.com> 1590213203 +0300	commit: add icons to deposit/withdraw
+9dd9d4836f96e6a03e09683f6197826d125fa15e d032947949b9cbe10d8add86b2755f5a76feedcb AA <angelangelov97@gmail.com> 1590213797 +0300	commit: increase spacing inputs
+d032947949b9cbe10d8add86b2755f5a76feedcb 1636c096bcacdd5e521d43503a705add6cc12453 AA <angelangelov97@gmail.com> 1590215047 +0300	commit: padding
+1636c096bcacdd5e521d43503a705add6cc12453 dccfb600fee38611802b2e9a978de48c42f63e0c AA <angelangelov97@gmail.com> 1590215464 +0300	commit: fieldset percentage padding
+dccfb600fee38611802b2e9a978de48c42f63e0c 4ddeae1bada80232245ac5ec466cbee756a4058d AA <angelangelov97@gmail.com> 1590228309 +0300	commit: icons and ren fix
+4ddeae1bada80232245ac5ec466cbee756a4058d dc5a329a1d6f34645295b376f2714dc1563bb66a AA <angelangelov97@gmail.com> 1590228993 +0300	commit: fix empty icons
+dc5a329a1d6f34645295b376f2714dc1563bb66a 46a9acaf2fcc65dabc1406d2eea1d1632bb44ba2 AA <angelangelov97@gmail.com> 1590271209 +0300	commit: fix infinite approval
+46a9acaf2fcc65dabc1406d2eea1d1632bb44ba2 e1dca7e12631b84e3ea44ac1845fce783ace51e4 AA <angelangelov97@gmail.com> 1590285525 +0300	commit: deposit fixes
+e1dca7e12631b84e3ea44ac1845fce783ace51e4 1ea6006387bee1dfc48627a874729efd318a7561 AA <angelangelov97@gmail.com> 1590287268 +0300	commit: icons
+1ea6006387bee1dfc48627a874729efd318a7561 ba7c627c0fc04032be9876cb554dacfd6b2bf542 AA <angelangelov97@gmail.com> 1590287654 +0300	commit: bit of refactor of loading icons
+ba7c627c0fc04032be9876cb554dacfd6b2bf542 d8ab686d513d5cf2474a5c67d22680b83b48c9e5 AA <angelangelov97@gmail.com> 1590363206 +0300	commit: fix infinite approval
+d8ab686d513d5cf2474a5c67d22680b83b48c9e5 10f0588bd1fd1fbd5ecea4c6411867f077e44528 AA <angelangelov97@gmail.com> 1590381704 +0300	commit: fix events select
+10f0588bd1fd1fbd5ecea4c6411867f077e44528 fe39a861bfb272e852a85edb84d1465f1adea029 AA <angelangelov97@gmail.com> 1590382231 +0300	commit: fix event virtual prices
+fe39a861bfb272e852a85edb84d1465f1adea029 529c0195783ebfd73551ebfdea028752233ef7aa AA <angelangelov97@gmail.com> 1590398879 +0300	commit: show that volume is in USD for BTCs
+529c0195783ebfd73551ebfdea028752233ef7aa e4090378ff4fbb2d956941cf694549bd437164b7 AA <angelangelov97@gmail.com> 1590451364 +0300	commit: change susd gas limit to 500k
+e4090378ff4fbb2d956941cf694549bd437164b7 2f235b1b77ee5e457631ed64e070194c04ae386f AA <angelangelov97@gmail.com> 1590487204 +0300	commit: fix onesplit
+2f235b1b77ee5e457631ed64e070194c04ae386f 4c6f707fa1b57333ea73c4f021c922d2f56bc5b4 AA <angelangelov97@gmail.com> 1590487987 +0300	commit: fix onesplit
+4c6f707fa1b57333ea73c4f021c922d2f56bc5b4 eabce208d5eb368fa479acc19051dd91100fd213 AA <angelangelov97@gmail.com> 1590489697 +0300	commit: estimate gas
+eabce208d5eb368fa479acc19051dd91100fd213 25447d07eb75cc977e22946c26bb00e12421bb34 AA <angelangelov97@gmail.com> 1590489704 +0300	commit (amend): estimate gas onesplit component
+25447d07eb75cc977e22946c26bb00e12421bb34 c160a120fc60fead40153b72649f3dfc645acfdc AA <angelangelov97@gmail.com> 1590536531 +0300	commit: add loading indicator and delay for swap/deposit/withdraw buttons to prevent double-clicking
+c160a120fc60fead40153b72649f3dfc645acfdc edc3899407e168f2b66646e4e07e8faa1821f348 AA <angelangelov97@gmail.com> 1590571631 +0300	commit: remove loadingAction boolean
+edc3899407e168f2b66646e4e07e8faa1821f348 125b99f4ec49a8c5ec2cb9b7446542d88185c959 AA <angelangelov97@gmail.com> 1590591383 +0300	commit: add ren links and ren gateway
+125b99f4ec49a8c5ec2cb9b7446542d88185c959 27eb5e445cad1464e2ad97bdd51baf83c96adf3f AA <angelangelov97@gmail.com> 1590597782 +0300	commit: links to ren bridge to mint/redeem renBTC
+27eb5e445cad1464e2ad97bdd51baf83c96adf3f 7c8580b43175858ae746a91437217b9e1467cf38 AA <angelangelov97@gmail.com> 1590598484 +0300	commit: change type for ren APY chart to linear for now
+7c8580b43175858ae746a91437217b9e1467cf38 2fb7e1b083f4321700c12fe241d779a16e913b75 AA <angelangelov97@gmail.com> 1590599964 +0300	commit: remove ren link
+2fb7e1b083f4321700c12fe241d779a16e913b75 f6efa4ae80d8b28d44838aac93faf9c49549fcd6 AA <angelangelov97@gmail.com> 1590630825 +0300	commit: new ren pool
+f6efa4ae80d8b28d44838aac93faf9c49549fcd6 8b70897a54b6630b62faf3d3c45479ad8f44a48b AA <angelangelov97@gmail.com> 1590636353 +0300	commit: ren->ren2 for jsons
+8b70897a54b6630b62faf3d3c45479ad8f44a48b 496d733adb7157baf11f75bd4972b304e809ed02 AA <angelangelov97@gmail.com> 1590636506 +0300	commit: add links to ren
+496d733adb7157baf11f75bd4972b304e809ed02 197fcb520db4e16f00708b615c486cff829dd0e9 AA <angelangelov97@gmail.com> 1590637085 +0300	commit: remove souremaps for production
+197fcb520db4e16f00708b615c486cff829dd0e9 aa0a0fd30b4c643104330c5f50c18a45c698dba8 AA <angelangelov97@gmail.com> 1590637542 +0300	commit: total APY
+aa0a0fd30b4c643104330c5f50c18a45c698dba8 8332d30a7169fc2ddaaeeef727166c4cdd55da70 AA <angelangelov97@gmail.com> 1590637710 +0300	commit: all apys styles
+8332d30a7169fc2ddaaeeef727166c4cdd55da70 bbe0b4d2d7c1dcd8ef5162381f7e4de0f99dec91 AA <angelangelov97@gmail.com> 1590638890 +0300	commit: update state on tx hash
+bbe0b4d2d7c1dcd8ef5162381f7e4de0f99dec91 be136d385958226b4ce69d7f1fb448c67a51a30e AA <angelangelov97@gmail.com> 1590642666 +0300	commit: add retry for btc price
+be136d385958226b4ce69d7f1fb448c67a51a30e 5a458eef1af2e00446fe307c5382478c8b84f0a4 AA <angelangelov97@gmail.com> 1590642726 +0300	commit: increase btc price retry delay
+5a458eef1af2e00446fe307c5382478c8b84f0a4 2ed40c3bbf816dd4807efd3c8d708fbbf3178bf4 AA <angelangelov97@gmail.com> 1590642897 +0300	commit: fix typo
+2ed40c3bbf816dd4807efd3c8d708fbbf3178bf4 dc29983692a9c2c23df2d4ee5d6364e485a91913 AA <angelangelov97@gmail.com> 1590643883 +0300	commit: fix btc price promise race
+dc29983692a9c2c23df2d4ee5d6364e485a91913 ab232ead3a721f01666d6b9ba4cb12931902033f AA <angelangelov97@gmail.com> 1590652432 +0300	commit: fix trade chart
+ab232ead3a721f01666d6b9ba4cb12931902033f 079250159c9a781fdb96df16b5f329f11dd77f04 AA <angelangelov97@gmail.com> 1590672864 +0300	commit: fix depth chart for btcs
+079250159c9a781fdb96df16b5f329f11dd77f04 294038407768191a27c02c434c81ec5ffebad730 AA <angelangelov97@gmail.com> 1590678677 +0300	commit: Lower SNX reward rate :/
+294038407768191a27c02c434c81ec5ffebad730 193a9356bc3e530508c7520727b8a0d648e5dd4d AA <angelangelov97@gmail.com> 1590719557 +0300	commit: UI text fixes
+193a9356bc3e530508c7520727b8a0d648e5dd4d 4081a520b49da9d25dc58ce7b28af74aa26ace80 AA <angelangelov97@gmail.com> 1590721859 +0300	commit: chart fixes
+4081a520b49da9d25dc58ce7b28af74aa26ace80 3e0984879a45b612f1ebbf332e2886aaa552be02 AA <angelangelov97@gmail.com> 1590722195 +0300	commit: add BTC trading volume for BTCs
+3e0984879a45b612f1ebbf332e2886aaa552be02 63afb7aa1afa2c74be65c427b0ffecda917ebf83 AA <angelangelov97@gmail.com> 1590723836 +0300	commit (amend): add BTC trading volume for BTCs
+63afb7aa1afa2c74be65c427b0ffecda917ebf83 9ede676c26a39596bbbaa48e82279cb69ba18d81 AA <angelangelov97@gmail.com> 1590723855 +0300	commit: btc price fix in profit calc
+9ede676c26a39596bbbaa48e82279cb69ba18d81 e051c25edeea12815d255391b51504eac5641b9e AA <angelangelov97@gmail.com> 1590723922 +0300	commit (merge): btc price fix in profit calc
+e051c25edeea12815d255391b51504eac5641b9e 51c4ec7ba1e0fc027230463a37a5dc54db9a4514 AA <angelangelov97@gmail.com> 1590731792 +0300	commit: fix resizing issue with fieldsets
+51c4ec7ba1e0fc027230463a37a5dc54db9a4514 dc07fc426578f3e3d9cae5485f0d20477b4f7d2c AA <angelangelov97@gmail.com> 1590732550 +0300	commit: fix fix fieldsets
+dc07fc426578f3e3d9cae5485f0d20477b4f7d2c 90d7ce2c740705bdf5f317d34baadc2c704b9026 AA <angelangelov97@gmail.com> 1590737364 +0300	merge onesplitbtcs: Merge made by the 'recursive' strategy.
+90d7ce2c740705bdf5f317d34baadc2c704b9026 6539f907e926bd8b0fbed447cf87e30f9e538f77 AA <angelangelov97@gmail.com> 1590738313 +0300	commit: OneSplit btcs
+6539f907e926bd8b0fbed447cf87e30f9e538f77 2521a13bf2df7d50876393164e63062d908395f4 AA <angelangelov97@gmail.com> 1590749502 +0300	commit: add real USD balance

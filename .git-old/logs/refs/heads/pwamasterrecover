@@ -1,0 +1,42 @@
+0000000000000000000000000000000000000000 45461de2253f0fe364a35292bbf36175a8c3f38e AA <angelangelov97@gmail.com> 1593033925 +0300	branch: Created from pwamastersbtc
+45461de2253f0fe364a35292bbf36175a8c3f38e a80e793a8c424f97dd868625390c2f6dd936ec0d AA <angelangelov97@gmail.com> 1593033955 +0300	commit: recover
+a80e793a8c424f97dd868625390c2f6dd936ec0d 175913205043fcd7dd291365634b0ec3c774317a AA <angelangelov97@gmail.com> 1593043439 +0300	commit (amend): recover
+175913205043fcd7dd291365634b0ec3c774317a 1303d4d4a38607b1c6651521c1ac2db541dfedc9 AA <angelangelov97@gmail.com> 1593045743 +0300	commit: new adaptersg
+1303d4d4a38607b1c6651521c1ac2db541dfedc9 28c0ad2381c06a9c9ac89f2cd4b0c5c164a6011e AA <angelangelov97@gmail.com> 1593049881 +0300	commit (amend): new adaptersg
+28c0ad2381c06a9c9ac89f2cd4b0c5c164a6011e aca2363d0a3d75539b418a559889aaf9cd12ce64 AA <angelangelov97@gmail.com> 1593093812 +0300	commit: fixes
+aca2363d0a3d75539b418a559889aaf9cd12ce64 6c3946d68faa326e5be668f79d328152a29fc125 AA <angelangelov97@gmail.com> 1593095556 +0300	commit: old BTC swaps/deposits also work on new page
+6c3946d68faa326e5be668f79d328152a29fc125 dca3fdc125580298ebd28734ee4c5083aa6e3e2c AA <angelangelov97@gmail.com> 1593096081 +0300	commit: fix
+dca3fdc125580298ebd28734ee4c5083aa6e3e2c 2366826d1df7c910c54200f669abdd81d34aca28 AA <angelangelov97@gmail.com> 1593096830 +0300	commit: Didn't like old addreses to be lowercase
+2366826d1df7c910c54200f669abdd81d34aca28 930461918814d8c77fe54b832b637f874b797e59 AA <angelangelov97@gmail.com> 1593101364 +0300	commit: fix withdraw NaN issue
+930461918814d8c77fe54b832b637f874b797e59 b294d442314ad6f56a6dccb745b9c8a85c394014 AA <angelangelov97@gmail.com> 1593101764 +0300	commit: fix NaN
+b294d442314ad6f56a6dccb745b9c8a85c394014 cd8c55053c1cd2f8a5d0dee9f09147aef01245cf AA <angelangelov97@gmail.com> 1593102488 +0300	commit: fix NaN
+cd8c55053c1cd2f8a5d0dee9f09147aef01245cf d48b28a49e63c66d0051834318f6c268ce104d8f AA <angelangelov97@gmail.com> 1593103196 +0300	commit: fix
+d48b28a49e63c66d0051834318f6c268ce104d8f 0826625327894820f82d12b8128fa092d9895472 AA <angelangelov97@gmail.com> 1593111700 +0300	commit: update onboard to new walletconnect version
+0826625327894820f82d12b8128fa092d9895472 c3fc35e0a5a860a25a80d33ce1350eac76294840 AA <angelangelov97@gmail.com> 1593115048 +0300	commit: add My Total Deposits % chart
+c3fc35e0a5a860a25a80d33ce1350eac76294840 2af655fac096c0838caba6cf617ec7f91389a0a4 AA <angelangelov97@gmail.com> 1593116525 +0300	commit: fix my USD % holdings when no balances
+2af655fac096c0838caba6cf617ec7f91389a0a4 f762590aba446b4ded8dd80f8f34b6f7bb2fd181 AA <angelangelov97@gmail.com> 1593116747 +0300	commit: fix re-refresh
+f762590aba446b4ded8dd80f8f34b6f7bb2fd181 53a50801c653a059f71c924af1ea3e5d76482052 AA <angelangelov97@gmail.com> 1593128581 +0300	commit: Add choosing gas price
+53a50801c653a059f71c924af1ea3e5d76482052 fd0960bf02cd0a53bd6474d0a31fa50f37d40b4e AA <angelangelov97@gmail.com> 1593131529 +0300	commit: Gas price choice in native pages
+fd0960bf02cd0a53bd6474d0a31fa50f37d40b4e bd053077159a90b83925c2709f4511591e678676 AA <angelangelov97@gmail.com> 1593177159 +0300	commit: Gas Price choose component
+bd053077159a90b83925c2709f4511591e678676 ce4b68faf4e69ff430f795d514234dd0793be8b8 AA <angelangelov97@gmail.com> 1593183437 +0300	commit: update balances before withdrawing
+ce4b68faf4e69ff430f795d514234dd0793be8b8 400d137f6f5bc6b87648ac5e3bf279319604c656 AA <angelangelov97@gmail.com> 1593183902 +0300	commit: for remove_liquidity use 0.98 as slippage, txs won't fail if a large trade happens in between
+400d137f6f5bc6b87648ac5e3bf279319604c656 706b122e8d73f4d57bcef4e9400d7f50f47879d4 AA <angelangelov97@gmail.com> 1593184241 +0300	commit: Approve CHI in ren native UI too
+706b122e8d73f4d57bcef4e9400d7f50f47879d4 f00e8a6661c7a03c6f33e90ce841072373d0a13b AA <angelangelov97@gmail.com> 1593189338 +0300	commit: show estimated tx cost before unstaking
+f00e8a6661c7a03c6f33e90ce841072373d0a13b 43bb2d5828f7f3b6d9320056dbab84cdeec728f9 AA <angelangelov97@gmail.com> 1593190226 +0300	commit: Show gas estimate in Swap
+43bb2d5828f7f3b6d9320056dbab84cdeec728f9 ecbf09b0c34c72d81780bc5284f051416819e712 AA <angelangelov97@gmail.com> 1593194181 +0300	merge notifyjs: Merge made by the 'recursive' strategy.
+ecbf09b0c34c72d81780bc5284f051416819e712 43314029bba545d56a20d5e7a996cd96f00cc98a AA <angelangelov97@gmail.com> 1593196781 +0300	commit: show errors from wallets
+43314029bba545d56a20d5e7a996cd96f00cc98a 54d05fd6f2dd0f2955d6752e506fd3738996ddb6 AA <angelangelov97@gmail.com> 1593199593 +0300	commit: Using CHI
+54d05fd6f2dd0f2955d6752e506fd3738996ddb6 ab28d73804d2adfe11f171eb86a26d2822ba636d AA <angelangelov97@gmail.com> 1593199863 +0300	commit: remove duplicate link
+ab28d73804d2adfe11f171eb86a26d2822ba636d 4041a5462eaa1d7c675e433b3907ca7a54d3e7e0 AA <angelangelov97@gmail.com> 1593200237 +0300	commit: update renjs
+4041a5462eaa1d7c675e433b3907ca7a54d3e7e0 0fa8f1e6a2658799f7b3f2a08e2912916799a904 AA <angelangelov97@gmail.com> 1593206875 +0300	commit: update gas price live
+0fa8f1e6a2658799f7b3f2a08e2912916799a904 1e531fac589637905cd0e1486756479af68b93b1 AA <angelangelov97@gmail.com> 1593209686 +0300	commit: notify on click open etherscan
+1e531fac589637905cd0e1486756479af68b93b1 9e5c29ea6c0c52d63613016fda2f6a6bfa4e7a74 AA <angelangelov97@gmail.com> 1593213245 +0300	commit: SNX APY and Total APY
+9e5c29ea6c0c52d63613016fda2f6a6bfa4e7a74 4249951bcad3a902dc27e203d1ee45e0ae930443 AA <angelangelov97@gmail.com> 1593214303 +0300	commit: Add SNX+REN APY
+4249951bcad3a902dc27e203d1ee45e0ae930443 9e17be5cfb3acd0c530b582af76c79f139618327 AA <angelangelov97@gmail.com> 1593265025 +0300	commit: update onboard.js
+9e17be5cfb3acd0c530b582af76c79f139618327 12170a3e4a3bc9c08f889e2cffc183ecd0968013 AA <angelangelov97@gmail.com> 1593274413 +0300	commit (merge): UI fixes
+12170a3e4a3bc9c08f889e2cffc183ecd0968013 dc34e7088483fa0c63be13f287f40b3ef13b2cfb AA <angelangelov97@gmail.com> 1593276908 +0300	commit: Slow gas price and fix resetting gas price on input
+dc34e7088483fa0c63be13f287f40b3ef13b2cfb 2d742a57e5c226ce2fad6385782273dbcdbe4127 AA <angelangelov97@gmail.com> 1593276924 +0300	commit: fix resetting gas price on refresh of gas prices
+2d742a57e5c226ce2fad6385782273dbcdbe4127 0cb8f2de1a5c572c3046f1ffe17c16ffff73a516 AA <angelangelov97@gmail.com> 1593277099 +0300	commit: fix initially disabled custom input
+0cb8f2de1a5c572c3046f1ffe17c16ffff73a516 4b06790c0265fead2a65934d1442e3977c4c923c AA <angelangelov97@gmail.com> 1593280258 +0300	commit: BAL APY info
+4b06790c0265fead2a65934d1442e3977c4c923c 53a524c090a33f1a15fa2668112c8e1005476dd7 AA <angelangelov97@gmail.com> 1593290587 +0300	commit: error handling for mintThenSwap
+53a524c090a33f1a15fa2668112c8e1005476dd7 ad96fa57cc994b3eff35c818db00f92a26f3a4b9 AA <angelangelov97@gmail.com> 1593299408 +0300	commit: Get balancer TVL from API

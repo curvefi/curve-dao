@@ -1,11 +1,12 @@
 <template>
 	<div class='window white'>
-		<root-modal v-if=''></root-modal>
+		<root-modal v-if='showRootModal'></root-modal>
 
 		<fieldset>
 			<legend>Votes</legend>
 			<new-text-vote></new-text-vote>
 			<div class='votes-wrapper'>
+				<span class='loading matrix' v-show='!loadedVotes'></span>
 				<fieldset>
 					<legend>Open votes ({{ openVotes.length }})</legend>
 					<div class='votes open'>
@@ -14,6 +15,7 @@
 				</fieldset>
 			</div>
 			<div class='votes-wrapper'>
+				<span class='loading matrix' v-show='!loadedVotes'></span>
 				<fieldset>
 					<legend>Closed votes ({{ closedVotes.length }})</legend>
 					<div class='votes closed'>
@@ -58,19 +60,20 @@
 		},
 
 		data: () => ({
-
+			loadedVotes: false,
 		}),
 
 		computed: {
 			...getters,
+			showRootModal() {
+				return state.showRootModal
+			},
 		},
 
 		methods: {
 			async mounted() {
-				getAllVotes()
-			},
-			showRootModal() {
-				return state.showRootModal
+				await getAllVotes()
+				this.loadedVotes = true
 			},
 		},
 	}

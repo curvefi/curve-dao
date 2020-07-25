@@ -5,7 +5,7 @@
 				{{ vote.votingAppName }} ({{getSupportRequiredPct}}% / {{getMinAcceptQuorum}}%)
 			</legend>
 			<div class='voteTitle'>
-				<router-link :to="'dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
+				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
 					<b> #{{ vote.voteNumber }} </b>
 				</router-link> 
 				<span class='userCastVote tooltip'>
@@ -17,15 +17,17 @@
 				</span>
 			</div>
 			<div class='description'>
-				<span v-show='vote.contractName'>
-					{{ vote.contractName }}: {{ vote.description }}
-				</span>
-				<span v-show='!vote.contractName && vote.metadata'>
-					{{ vote.metadata }}
-				</span>
-				<span v-show='!vote.contractName && vote.description'>
-					{{ vote.description }}
-				</span>
+				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
+					<span v-show='vote.contractName'>
+						{{ vote.contractName }}: {{ vote.description }}
+					</span>
+					<span v-show='!vote.contractName && vote.metadata'>
+						{{ vote.metadata }}
+					</span>
+					<span v-show='!vote.contractName && vote.description'>
+						{{ vote.description }}
+					</span>
+				</router-link>
 			</div>
 			<countdown :timestamp = 'vote.startDate' :vote = 'vote' v-show='isOpen(vote) && !vote.executed'></countdown>
 			<div class="tui-progress-bar">

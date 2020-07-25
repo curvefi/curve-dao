@@ -9,11 +9,25 @@
 					<legend>Create a vote on {{ appName }}</legend>
 					<div class='content'>
 						<div>
-							{{ description }}
+							<span> {{ description }} </span>
+							<div class='content' v-if='vote'>
+								<span v-show='vote.contractName'>
+									{{ vote.contractName }}: {{ vote.description }}
+								</span>
+								<span v-show='!vote.contractName && vote.metadata'>
+									{{ vote.metadata }}
+								</span>
+								<span v-show='!vote.contractName && vote.description'>
+									{{ vote.description }}
+								</span>
+							</div>
 						</div>
 						<hr>
 						<p class='explanation'>
-							This vote requires 51% acceptance and 50% quorum to be passed
+							This vote requires {{ getSupportText }}% acceptance and {{ getQuorumText }}% quorum to be passed
+						</p>
+						<p class='simple-error' v-show='!willSucceed'>
+							The transaction may fail, you may not have the required permissions to make the transaction
 						</p>
 					</div>
 					<button @click='createVote'>Submit</button>
@@ -26,11 +40,13 @@
 <script>
     import { notify, notifyHandler, notifyNotification } from '../../../init'
 
-	import { state, getVotingAppName } from '../voteStore'
+	import { state, getVotingAppName, getSupportQuorum } from '../voteStore'
 
 	export default {
-		data: () => ({
+		props: ['vote'],
 
+		data: () => ({
+			willSucceed: true,
 		}),
 
 		computed: {
@@ -54,6 +70,12 @@
         		console.log(this.transactionPath.destination, "THE TX PATH DESTINATION")
         		return getVotingAppName(this.transactionPath.destination.address)
         	},
+        	getSupportText() {
+        		return getSupportQuorum(this.appName).support
+        	},
+        	getQuorumText() {
+        		return getSupportQuorum(this.appName).quorum
+        	},
         	description() {
         		return this.transactionPath.transactions[0].description
         	},
@@ -63,7 +85,23 @@
 		methods: {
 			async createVote() {
 				let data = this.transactionPath.transactions[0]
-				await web3.eth.sendTransaction(data)
+
+				console.log(data, "THE TX DATA")
+
+				try {
+					await web3.eth.estimateGas(data)
+				}
+				catch(err) {
+					this.willSucceed = false
+				}
+				
+				await new Promise((resolve, reject) => 
+					web3.eth.sendTransaction(data)
+						.once('transactionHash', resolve)
+						.on('error', reject)
+				)
+
+				state.showRootModal = false
 			},
 		},
 	}
@@ -116,5 +154,8 @@
 	.content {
 		color: black;
 		text-align: left;
+	}
+	.explanation {
+		font-size: 0.8em;
 	}
 </style>

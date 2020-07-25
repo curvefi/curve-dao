@@ -786,3 +786,7 @@ li.coins label:hover {
 .root.Votes #screen > .window {
   max-width: 1000px;
 }
+
+.root.CreateVote #screen > .window {
+  max-width: 1000px;
+}

@@ -19,6 +19,8 @@ import { GraphQLWrapper } from '@aragon/connect-thegraph'
 import { connect, describeScript } from '@aragon/connect'
 import { Voting } from '@aragon/connect-thegraph-voting'
 
+import { groupBy } from '../../utils/helpers'
+
 import BN from 'bignumber.js'
 
 export const VOTING_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/pengiundev/aragon-curvevoting-rinkeby' 
@@ -27,6 +29,8 @@ export const OWNERSHIP_VOTE_TIME = 3600
 export const PARAMETER_VOTE_TIME = 3600
 export const OWNERSHIP_APP_ADDRESS = '0x96B58C29c74fce0aBFE7c0C62225095f47A91A6D'
 export const PARAMETER_APP_ADDRESS = '0x3ef19f1EA214DF368Eb8a612dd1Aca45caC3c756'
+export const OWNERSHIP_AGENT = '0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
+export const PARAMETER_AGENT = '0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
 export const MIN_BALANCE = 2500 * 10 ** 18
 export const MIN_TIME = 15
 
@@ -36,8 +40,10 @@ export let state = Vue.observable({
 	apps: [],
 	ownershipVotingApp: null,
 	parameterVotingApp: null,
+	votingApps: [],
 	votes: [],
 	votingEscrow: null,
+	lastCreated: null,
 
 	transactionIntent: null,
 
@@ -60,6 +66,8 @@ export async function init() {
 										== OWNERSHIP_APP_ADDRESS.toLowerCase())
 	state.parameterVotingApp = apps.find(app => app.address.toLowerCase() 
 										== PARAMETER_APP_ADDRESS.toLowerCase())
+
+	state.votingApps = [OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS]
 
 	console.log(state.ownershipVotingApp, "OWNERSHIP VOTING APP")
 
@@ -125,14 +133,36 @@ export async function getAllVotes() {
 		${getUserVotes !== null ? getUserVotes : ''}
 	`
 
+	const lastCreatedVoteQuery = gql`
+		query {
+		  lastCreated: votes(where: {
+		  	appAddress_in: ["${OWNERSHIP_APP_ADDRESS}", "${PARAMETER_APP_ADDRESS}"],
+		  	creator: "${contract.default_account}"
+		  }) {
+		  	appAddress
+		    startDate
+		  }
+		}
+	`
+
+
 	const wrapper = new GraphQLWrapper(VOTING_SUBGRAPH_URL)
 
 	// Invoke the custom query and receive data
-	const results = await wrapper.performQuery(QUERY)
+	const results = await Promise.all([wrapper.performQuery(QUERY), wrapper.performQuery(lastCreatedVoteQuery)])
 
-	let { votes } = results.data
+	let { votes } = results[0].data
+	let { lastCreated } = results[1].data
+
+	console.log(votes, lastCreated, "VOTES LAST CREATED")
 
 	state.votes = decorateVotes(votes)
+
+	lastCreated = groupBy(lastCreated.sort((a,b) => a.startDate - b.startDate), 'appAddress')
+	lastCreated = Object.fromEntries(Object.entries(lastCreated).map(([k, v]) => [k, v[0].startDate])) 
+	state.lastCreated = lastCreated
+
+	console.log(state.lastCreated, "LAST CREATED")
 
 	state.votes.map(vote => decodeCall(vote))
 
@@ -237,6 +267,7 @@ export function decorateVotes(votes) {
 		if(vote.appAddress == PARAMETER_APP_ADDRESS)
 			time = PARAMETER_VOTE_TIME
 
+		vote.time = time
 		vote.timeLeft = time - ((new Date().getTime() / 1000) - vote.startDate)
 		vote.totalSupport = +vote.yea + +vote.nay
 		vote.voteNumber = getVoteId(vote)
@@ -313,6 +344,19 @@ export async function decodeCall(vote) {
 export function getVotingAppName(address) {
 	if(address.toLowerCase() == OWNERSHIP_APP_ADDRESS.toLowerCase()) return 'Ownership'
 	if(address.toLowerCase() == PARAMETER_APP_ADDRESS.toLowerCase()) return 'Parameter'
+	if(address.toLowerCase() == OWNERSHIP_AGENT.toLowerCase()) return 'Ownership Agent'
+	if(address.toLowerCase() == PARAMETER_AGENT.toLowerCase()) return 'Parameter Agent'
+}
+
+export function getSupportQuorum(appName) {
+	if(appName.toLowerCase().includes('ownership'))
+		return {
+			support: 51, quorum: 50,
+		}
+	if(appName.toLowerCase().includes('parameter'))
+		return {
+			support: 70, quorum: 15,
+		}
 }
 
 export function getVotingAppAddress(app) {
@@ -324,12 +368,20 @@ export function getVoteId(vote) {
 	return +vote.id.split(':')[2]
 }
 
-export async function canCreateNewVote() {
-	if(!contract.default_account) return false
+export async function canCreateNewVoteOn(appAddress) {
+	let now = Date.now() / 1000
 	let balance = await state.votingEscrow.methods.balanceOf(contract.default_account).call()
 	balance = BN(balance)
-	console.log(balance, "THE BALANCE")
-	return balance.gt(BN(MIN_BALANCE))
+	return balance.gt(BN(MIN_BALANCE)) && (now - MIN_TIME) > +state.lastCreated[appAddress.toLowerCase()]
+}
+
+export async function canCreateNewVote() {
+	// if(!contract.default_account) return false
+	// let balance = await state.votingEscrow.methods.balanceOf(contract.default_account).call()
+	// balance = BN(balance)
+	// return balance.gt(BN(MIN_BALANCE))
+
+	return canCreateNewVoteOn(OWNERSHIP_APP_ADDRESS) || canCreateNewVoteOn(PARAMETER_APP_ADDRESS)
 }
 
 // export function getVote(id) {
@@ -412,5 +464,5 @@ export let getters = {
 }
 
 export let helpers = {
-	isVoteOpen, canExecute, isRejected, canCreateNewVote,
+	isVoteOpen, canExecute, isRejected, canCreateNewVote, canCreateNewVoteOn,
 }

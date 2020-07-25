@@ -1,13 +1,19 @@
 <template>
 	<div class='window white vote'>
+		<root-modal v-if='showRootModal' :vote='vote'></root-modal>
+
+		<span class='loading matrix' v-show='!vote.id'></span>
+
+		<div class='flexbreak'></div>
+
 		<div class='voteview'>
-			<fieldset>
+			<fieldset v-show='vote.id'>
 				<legend>
 					Vote info
 				</legend>
 				<div v-show='vote && vote.id' class='voteinfo'>
 					<div class='title'>
-						<div>
+						<div>	
 							{{ vote.votingAppName }} ({{getSupportRequiredPct}}% / {{ getMinAcceptQuorum }}%)
 						</div>
 						<div class='votenum'>
@@ -15,15 +21,21 @@
 						</div> 
 					</div>
 					<div class='description'>
-						<span v-show='vote.contractName'>
-							{{ vote.contractName }}: {{ vote.description }}
-						</span>
-						<span v-show='!vote.contractName && vote.metadata'>
-							{{ vote.metadata }}
-						</span>
-						<span v-show='!vote.contractName && vote.description'>
-							{{ vote.description }}
-						</span>
+						<div> 
+							<b>Description:</b> 
+						</div>
+						<div class='content'>
+							<span v-show='vote.contractName'>
+								{{ vote.contractName }}: {{ vote.description }}
+							</span>
+							<span v-show='!vote.contractName && vote.metadata'>
+								{{ vote.metadata }}
+							</span>
+							<span v-show='!vote.contractName && vote.description'>
+								{{ vote.description }}
+							</span>
+						</div>
+
 					</div>
 					<div class='creator'>
 						<b>Proposed by:</b> <a :href="'https://etherscan.io/address/'+vote.creator">{{ shortenAddress(vote.creator) }}</a>
@@ -48,19 +60,33 @@
 						</div>
 
 						<div class='myvote' v-if='vote.casts && vote.casts.length'>
-							You voted with: <b> {{ voterStake }} </b> 
+							You voted with: <b> {{ voterStake }} </b> veCRV
 							at snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
+						</div>
+
+						<div class='myvote info-message gentle-message' v-if='canVote() && !vote.casts.length'>
+							Voting with {{ currentVotingPowerFormat() }} veCRV, you had {{ balanceOfAtFormat }} veCRV
+							at vote creation on snapshot block 
+							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
+							<div class='castvote'>
+								<button @click='voteyes'> Yes <span class='loading line' v-show='loadingyes'></span></button>
+								<button @click='voteno'> No <span class='loading line' v-show='loadingno'></span></button>
+							</div>
 						</div>
 					</div>
 				</div>
 			</fieldset>
 		</div>
 
-		<div class='voteinfo'>
+		<div class='voteinfo' v-show='vote.id'>
 			<fieldset>
 				<legend>Status</legend>
 				<div>
+					<div class='open' v-show='vote.timeLeft > 0 && !vote.executed && isVoteOpen'>
+						<span class='loading line'></span>
+						Open
+					</div>
 					<div v-if='vote.timeLeft < 0 || vote.executed'>
 						<div class='enacted' v-show='vote.executed'>
 							√ Passed(enacted)
@@ -72,14 +98,13 @@
 							X Rejected
 						</div>
 					</div>
-					<countdown :timestamp = 'vote.startDate' :vote = 'vote' v-show = '!vote.executed'></countdown>
+					<countdown :timestamp = 'vote.startDate' :vote = 'vote' v-show = '!vote.executed' class='countdown'></countdown>
 				</div>
 				<div class='createdon'>
 					<img 
 						:src="publicPath + 'clock-regular.svg'" 
 						class='icon small'
-					> 
-					{{ startDateFormat }}
+					>{{ startDateFormat }}
 				</div>
 			</fieldset>
 
@@ -107,6 +132,8 @@
 </template>
 
 <script>
+	import { contract } from '../../../contract'
+
 	import { getVote, state, getters } from '../voteStore'
 
 	import Countdown from '../common/Countdown.vue'
@@ -114,13 +141,20 @@
 	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
 	import * as helpers from '../../../utils/helpers'
 
+	import RootModal from '../common/RootModal'
+
 	export default {
 		components: {
 			Countdown,
+			RootModal,
 		},
 
 		data: () => ({
 			vote: {},
+			balanceOfAt: null,
+
+			loadingyes: false,
+			loadingno: false,
 		}),
 
 		async created() {
@@ -148,6 +182,9 @@
 				if(!this.vote.casts.length) return 0
 				return (this.vote.casts[0].voterStake / 1e18).toFixed(2)
 			},
+			isVoteOpen() {
+				return voteHelpers.isVoteOpen(this.vote) && !this.vote.executed
+			},
 			canExecute() {
 				return voteHelpers.canExecute(this.vote)
 			},
@@ -161,9 +198,13 @@
 				return helpers.formatDateToHuman(this.vote.startDate)
 			},
 			support() {
+				if(this.vote.totalSupport == 0)
+					return 0
 				return ((this.vote.yea / this.vote.totalSupport) * 100).toFixed(2)
 			},
 			quorum() {
+				if(this.vote.totalSupport == 0)
+					return 0
 				return ((this.vote.yea / this.vote.votingPower) * 100).toFixed(2)
 			},
 			hasSupport() {
@@ -172,6 +213,13 @@
 			hasQuorum() {
 				return this.support > this.getMinAcceptQuorum
 			},
+			balanceOfAtFormat() {
+				if(this.balanceOfAt === null) return 0
+				return (this.balanceOfAt / 1e18).toFixed(2,1)
+			},
+			showRootModal() {
+				return state.showRootModal
+			},
 		},
 
 		methods: {
@@ -179,10 +227,68 @@
 				let app = this.$route.params.app
 				let id = this.$route.params.id
 				this.vote = await getVote(app, id)
+				if(this.isVoteOpen)
+					this.balanceOfAt = BN(await state.votingEscrow.methods.balanceOfAt(contract.default_account, this.vote.snapshotBlock).call())
 			},
 			shortenAddress(address) {
 				if(!address) return ''
 				return address.slice(0,6) + '...' + address.slice(-6)
+			},
+			currentVotingPower() {
+				if(this.balanceOfAt === null) return 0
+				let now = Date.now() / 1000
+				let currentVotingPower = BN(2).times(this.balanceOfAt)
+											.times(
+												BN(this.vote.startDate)
+												.plus(BN(this.vote.time))
+												.minus(now)
+											).div(BN(this.vote.time));
+				if(currentVotingPower.gt(this.balanceOfAt))
+					currentVotingPower = this.balanceOfAt
+				return currentVotingPower.toFixed(2,1)
+			},
+			currentVotingPowerFormat() {
+				if(this.currentVotingPower() == 0) return 0
+				return (this.currentVotingPower() / 1e18).toFixed(2,1)
+			},
+			canVote() {
+				return this.isVoteOpen && this.currentVotingPower() > 0
+			},
+			async voteyes() {
+				this.loadingyes = true
+
+				let intent
+				try {
+					intent = await state.org.appIntent(this.vote.appAddress, 'vote', [this.vote.voteNumber, true, false])
+				}
+				catch(err) {
+					console.error(err)
+				}
+				let paths = await intent.paths(contract.default_account)
+
+				state.transactionIntent = paths
+
+				this.loadingyes = false
+
+				state.showRootModal = true
+			},
+			async voteno() {
+				this.loadingno = true
+
+				let intent
+				try {
+					intent = await state.org.appIntent(this.vote.appAddress, 'vote', [this.vote.voteNumber, false, false])
+				}
+				catch(err) {
+					console.error(err)
+				}
+				let paths = await intent.paths(contract.default_account)
+
+				state.transactionIntent = paths
+
+				this.loadingno = false
+
+				state.showRootModal = true
 			},
 		},
 	}
@@ -242,5 +348,31 @@
 	}
 	.rejected {
 		color: darkred;
+	}
+	.countdown {
+		margin-top: 1em;
+	}
+	.open, .countdown {
+		display: flex;
+		align-items: center;
+	}
+	.voteinfo img, .voteinfo .loading.line {
+		margin-right: 0.4em;
+	}
+	.description .content {
+		margin-top: 1em;
+	}
+	.castvote {
+		margin-top: 1em;
+	}
+	.castvote button {
+		margin-right: 1em;
+	}
+	.flexbreak {
+		width: 100%;
+		height: 0;
+	}
+	.loading.matrix {
+		flex: 1;
 	}
 </style>

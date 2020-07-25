@@ -5,8 +5,6 @@
 			class='icon small'
 			v-show='vote.timeLeft > 0'
 		> {{ formatTime }}
-
-		{{ vote.timeLeft }}
 	</div>
 </template>
 
@@ -82,5 +80,7 @@
 </script>
 
 <style scoped>
-	
+	img {
+		margin-right: 0.4em;
+	}
 </style>

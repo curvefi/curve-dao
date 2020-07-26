@@ -49,6 +49,8 @@ export let state = Vue.observable({
 
 	showModal: false,
 	showRootModal: false,
+
+	executeVote: false,
 })
 
 export async function init() {
@@ -127,6 +129,7 @@ export async function getAllVotes() {
 	      	nay
 	      	votingPower
 	      	script
+	      	transactionHash
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}
@@ -229,6 +232,7 @@ export async function getVote(app, voteId) {
 	      	nay
 	      	votingPower
 	      	script
+	      	transactionHash
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}

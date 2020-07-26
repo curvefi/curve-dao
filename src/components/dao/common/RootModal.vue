@@ -1,12 +1,13 @@
 <template>
 	<div>
-		<div id='modal' class='modal' v-show='showModal' @click.self='showModal = false'>
+		<div id='modal' class='modal' v-show='showModal' @click.self='hideModal'>
 			<div class='modal-content window white'>
 				<fieldset>
-					<div class='legend2 hoverpointer' @click='showModal = false'>
+					<div class='legend2 hoverpointer' @click='hideModal'>
 						[<span class='greentext'>■</span>]
 					</div>
-					<legend>Create a vote on {{ appName }}</legend>
+					<legend v-show='!executeVote'>Create a vote on {{ appName }}</legend>
+					<legend v-show='executeVote'>Execute a vote on {{ appName }}</legend>
 					<div class='content'>
 						<div>
 							<span> {{ description }} </span>
@@ -23,7 +24,7 @@
 							</div>
 						</div>
 						<hr>
-						<p class='explanation'>
+						<p class='explanation' v-show='!executeVote'>
 							This vote requires {{ getSupportText }}% acceptance and {{ getQuorumText }}% quorum to be passed
 						</p>
 						<p class='simple-error' v-show='!willSucceed'>
@@ -79,6 +80,9 @@
         	description() {
         		return this.transactionPath.transactions[0].description
         	},
+        	executeVote() {
+        		return state.executeVote
+        	},
 
 		},
 
@@ -102,6 +106,10 @@
 				)
 
 				state.showRootModal = false
+			},
+			hideModal() {
+				this.showModal = false
+				state.executeVote = false
 			},
 		},
 	}

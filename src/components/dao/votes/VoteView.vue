@@ -40,6 +40,9 @@
 					<div class='creator'>
 						<b>Proposed by:</b> <a :href="'https://etherscan.io/address/'+vote.creator">{{ shortenAddress(vote.creator) }}</a>
 					</div>
+					<div class='executedtx' v-show='vote.transactionHash !== null'>
+						<b>Executed:</b> <a :href="'https://etherscan.io/tx/'+vote.transactionHash">{{ shortenAddress(vote.transactionHash) }}</a>
+					</div>
 					<div class='votes'>
 						<b>Votes:</b>
 						<div class="tui-progress-bar">
@@ -83,16 +86,16 @@
 			<fieldset>
 				<legend>Status</legend>
 				<div>
-					<div class='open' v-show='vote.timeLeft > 0 && !vote.executed && isVoteOpen'>
+					<div class='open' v-show='vote.timeLeft > 0 && !vote.executed && isVoteOpen && !canExecute'>
 						<span class='loading line'></span>
 						Open
 					</div>
-					<div v-if='vote.timeLeft < 0 || vote.executed'>
+					<div v-if='vote.timeLeft < 0 || vote.executed || canExecute'>
 						<div class='enacted' v-show='vote.executed'>
 							√ Passed(enacted)
 						</div>
 						<div class='canexecute' v-show='!vote.executed && canExecute'>
-							√ Passed <button @click = 'enact(vote)'>Enact</button>
+							√ Passed <enact-vote :vote='vote'></enact-vote>
 						</div>
 						<div class='rejected' v-show='isRejected'>
 							X Rejected
@@ -143,10 +146,13 @@
 
 	import RootModal from '../common/RootModal'
 
+	import EnactVote from './EnactVote'
+
 	export default {
 		components: {
 			Countdown,
 			RootModal,
+			EnactVote,
 		},
 
 		data: () => ({

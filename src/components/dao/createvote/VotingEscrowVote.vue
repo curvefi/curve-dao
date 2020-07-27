@@ -138,6 +138,9 @@
 
 			async propose(method, ...params) {
 				this.proposeLoading = method
+
+				this.$emit('call', method, params)
+				
 				console.log(daoabis.votingescrow_abi, "VOTING ESCROW ABI")
 				let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
 				console.log(abi, "THE ABI", method, "THE METHOD")

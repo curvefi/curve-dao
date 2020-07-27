@@ -321,6 +321,12 @@ export function decorateVotes(votes) {
 			vote.app = 1
 		if(vote.votingAppName == 'Parameter')
 			vote.app = 2
+		console.log(vote.app, "VOTE APP")
+		if(vote.app == 1)
+			vote.voteTime = OWNERSHIP_VOTE_TIME
+		if(vote.app == 2)
+			vote.voteTime = PARAMETER_VOTE_TIME
+		console.log(vote.voteTime, "VOTE TIME")
 		vote.yeap = vote.totalSupport == 0 ? 0 : (+vote.yea / vote.totalSupport * 100).toFixed(1)
 		vote.nop = vote.totalSupport == 0 ? 0 : (+vote.nay / vote.totalSupport * 100).toFixed(1)
 		vote.callAddress = vote.script.substr(90,40).toLowerCase()
@@ -551,7 +557,7 @@ export let getters = {
 }
 
 export let helpers = {
-	isVoteOpen, canExecute, isRejected, canCreateNewVote, canCreateNewVoteOn, encodeCallsScript,
+	isVoteOpen, canExecute, isRejected, canCreateNewVote, canCreateNewVoteOn, encodeCallsScript, shortenAddress,
 }
 
 export function shortenAddress(address) {

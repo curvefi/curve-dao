@@ -1,6 +1,39 @@
 <template>
 	<div class='window white vote'>
-		<root-modal v-if='showRootModal' :vote='vote'></root-modal>
+		<div id='modal' class='modal rootmodal' v-if='showRootModal' @click.self='hideRootModal'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='hideRootModal'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Vote on {{ appName }}</legend>
+					<div class='content'>
+						<div>
+							<span> {{ voteDescription }} </span>
+							<div class='content' v-if='vote'>
+								<span v-show='vote.contractName'>
+									{{ vote.contractName }}: <span v-html='vote.description'></span>
+								</span>
+								<span v-show='!vote.contractName && vote.metadata'>
+									{{ vote.metadata }}
+								</span>
+								<span v-show='!vote.contractName && vote.description'>
+									<span v-html='vote.description'></span>
+								</span>
+							</div>
+						</div>
+						<hr>
+						<p class='explanation'>
+							This vote requires {{ getSupportText }}% acceptance and {{ getQuorumText }}% quorum to be passed
+						</p>
+						<p class='simple-error' v-show='!willSucceed'>
+							The transaction may fail, you may not have the required permissions to make the transaction
+						</p>
+					</div>
+					<button @click='createVote'>Vote {{ votetypeText }} </button>
+				</fieldset>
+			</div>
+		</div>
 
 		<router-link to='/dao'>← Back</router-link>
 
@@ -111,6 +144,12 @@
 						class='icon small'
 					>{{ startDateFormat }}
 				</div>
+				<div class='endson'>
+					<img 
+						:src="publicPath + 'clock-regular.svg'" 
+						class='icon small'
+					>{{ endDateFormat }}
+				</div>
 			</fieldset>
 
 			<fieldset>
@@ -146,23 +185,28 @@
 	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
 	import * as helpers from '../../../utils/helpers'
 
-	import RootModal from '../common/RootModal'
+	import RootModalMixin from '../common/RootModalMixin'
 
 	import EnactVote from './EnactVote'
 
 	export default {
 		components: {
 			Countdown,
-			RootModal,
 			EnactVote,
 		},
 
+		mixins: [RootModalMixin],
+
 		data: () => ({
-			vote: {},
+			vote: {
+				id: null,
+			},
 			balanceOfAt: null,
 
 			loadingyes: false,
 			loadingno: false,
+
+			votetype: null,
 		}),
 
 		async created() {
@@ -205,6 +249,9 @@
 			startDateFormat() {
 				return helpers.formatDateToHuman(this.vote.startDate)
 			},
+			endDateFormat() {
+				return helpers.formatDateToHuman(+this.vote.startDate + this.vote.voteTime)
+			},
 			support() {
 				if(this.vote.totalSupport == 0)
 					return 0
@@ -225,8 +272,9 @@
 				if(this.balanceOfAt === null) return 0
 				return (this.balanceOfAt / 1e18).toFixed(2,1)
 			},
-			showRootModal() {
-				return state.showRootModal
+			votetypeText() {
+				if(this.votetype == 0) return 'No'
+				return 'Yes'
 			},
 		},
 
@@ -265,6 +313,8 @@
 			async voteyes() {
 				this.loadingyes = true
 
+				this.votetype = 1
+
 				let intent
 				try {
 					intent = await state.org.appIntent(this.vote.appAddress, 'vote', [this.vote.voteNumber, true, false])
@@ -278,10 +328,12 @@
 
 				this.loadingyes = false
 
-				state.showRootModal = true
+				this.showRootModal = true
 			},
 			async voteno() {
 				this.loadingno = true
+
+				this.votetype = 0
 
 				let intent
 				try {
@@ -296,7 +348,7 @@
 
 				this.loadingno = false
 
-				state.showRootModal = true
+				this.showRootModal = true
 			},
 		},
 	}
@@ -350,6 +402,12 @@
 	}
 	.createdon {
 		margin-top: 1.4em;
+	}
+	.endson {
+		margin-top: 0.4em;
+	}
+	.endson img {
+		transform: rotateZ(45deg);
 	}
 	.passed {
 		color: green;

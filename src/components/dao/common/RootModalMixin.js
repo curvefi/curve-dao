@@ -3,7 +3,6 @@ import { notify, notifyHandler, notifyNotification } from '../../../init'
 import { state, getVotingAppName, getSupportQuorum } from '../voteStore'
 
 export default {
-	props: ['vote'],
 
 	data: () => ({
 		showRootModal: false,

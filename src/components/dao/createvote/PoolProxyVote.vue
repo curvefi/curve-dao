@@ -137,6 +137,8 @@
 			async propose(method, ...params) {
 				this.proposeLoading = method
 
+				this.$emit('call', method, params)
+
 				let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
 				console.log([...params], "PARAMS")
 				console.log(abi, "THE ABI")

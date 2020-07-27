@@ -44,7 +44,7 @@
 				√ Passed(enacted)
 			</div>
 			<div class='canexecute' v-show='!vote.executed && canExecute'>
-				√ Passed <button @click = 'enact(vote)'>Enact</button>
+				√ Passed <enact-vote :vote='vote'></enact-vote>
 			</div>
 			<div class='rejected' v-show='isRejected'>
 				X Rejected
@@ -72,11 +72,12 @@
 	import * as allabis from '../allabis'
 	import * as helpers from '../../../utils/helpers'
 
-
+	import EnactVote from './EnactVote'
 
 	export default {
 		components: {
 			Countdown,
+			EnactVote,
 		},
 
 		props: ['vote'],
@@ -166,10 +167,6 @@
 			// 		}
 			// 	}
 			// },
-
-			enact(vote) {
-
-			},
 
 		},
 	}

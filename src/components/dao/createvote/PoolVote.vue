@@ -352,10 +352,15 @@
 			async propose(method, ...params) {
 				this.proposeLoading = method
 
+
 				let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
+				let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
+				let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
 				console.log(['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], "PARAMS")
 				let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
 				console.log(abi, call, "ABI CALL")
+
+				this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
 
 				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
@@ -376,7 +381,7 @@
 
 				let intent
 				try {
-					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'test forwarder description', false, false])
+					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
 				}
 				catch(err) {
 					console.error(err)

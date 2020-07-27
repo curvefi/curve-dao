@@ -6,7 +6,7 @@
 					<div class='legend2 hoverpointer' @click='hideRootModal'>
 						[<span class='greentext'>■</span>]
 					</div>
-					<legend>Enact vote #{{ vote.voteNumber }} on {{ appName }}</legend>
+					<legend>Execute vote #{{ vote.voteNumber }} on {{ appName }}</legend>
 					<div class='content'>
 						<div>
 							<span> {{ voteDescription }} </span>
@@ -30,8 +30,7 @@
 							The transaction may fail, you may not have the required permissions to make the transaction
 						</p>
 					</div>
-					<button @click='createVote' v-show='!executeVote'>Create Vote</button>
-					<button @click='createVote' v-show='executeVote'>Vote</button>
+					<button @click='createVote'>Execute</button>
 				</fieldset>
 			</div>
 		</div>

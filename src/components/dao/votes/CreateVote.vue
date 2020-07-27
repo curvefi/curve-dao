@@ -1,6 +1,5 @@
 <template>
 	<div class='window white'>
-		{{ showRootModal }}
 		<div id='modal' class='modal rootmodal' v-if='showRootModal' @click.self='hideRootModal'>
 			<div class='modal-content window white'>
 				<fieldset>
@@ -12,6 +11,7 @@
 					<div class='content'>
 						<div>
 							<span> {{ voteDescription }} </span>
+							<p v-html = 'description'></p>
 							<div class='content' v-if='vote'>
 								<span v-show='vote.contractName'>
 									{{ vote.contractName }}: <span v-html='vote.description'></span>
@@ -48,7 +48,7 @@
 			<button @click='type=4' :class="{'simplebutton': type==4}">PoolProxy</button>
 		</div>
 
-		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal'></component>
+		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal' @call='describeCall'></component>
 
 	</div>
 </template>
@@ -62,6 +62,27 @@
 	import { getVote, state, getters } from '../voteStore'
 
 	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT } from '../voteStore'
+
+	import * as radspec from 'radspec'
+
+	const radspecFormat = {
+		userHelpers: {
+			address: () => async (address, prefix) => {
+				if(!prefix) prefix = ''
+				return {
+					type: 'string',
+					value: '<br> ' + prefix + ' ' + voteHelpers.shortenAddress(address),
+				}
+			},
+			param: () => async (param, name) => {
+				if(!name) name = ''
+				return {
+					type: 'string',
+					value: '<br> ' + name + ':' + param,
+				}
+			},
+		}
+	}
 
 	import RootModal from '../common/RootModal'
 
@@ -98,6 +119,8 @@
 			gaugeController: null,
 
 			type: 0,
+
+			description: '',
 
 		}),
 
@@ -141,6 +164,21 @@
 			},
 			emitShowRootModal() {
 				this.showRootModal = true
+			},
+			async describeCall(method, params, calldata, abi, expression) {
+				this.describeMethod = method
+				this.describeParams = params
+
+				console.log(abi, calldata, expression, "RADSPEC")
+
+				let desc = await radspec.evaluate(expression, {
+					abi: [abi],
+					transaction: {
+						data: calldata,
+					},
+				}, radspecFormat)
+
+				this.description = desc
 			},
 		},
 	}

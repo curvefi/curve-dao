@@ -267,6 +267,8 @@
 			async propose(method, ...params) {
 				this.proposeLoading = method
 
+				this.$emit('call', method, params)
+
 				let abi = daoabis.gaugecontroller_abi.find(abi => abi.name == method)
 				console.log([...params], "PARAMS")
 				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])

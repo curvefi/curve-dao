@@ -2,6 +2,8 @@
 	<div class='window white vote'>
 		<root-modal v-if='showRootModal' :vote='vote'></root-modal>
 
+		<router-link to='/dao'>← Back</router-link>
+
 		<span class='loading matrix' v-show='!vote.id'></span>
 
 		<div class='flexbreak'></div>
@@ -26,13 +28,13 @@
 						</div>
 						<div class='content'>
 							<span v-show='vote.contractName'>
-								{{ vote.contractName }}: {{ vote.description }}
+								{{ vote.contractName }}: <span v-html='vote.description'></span>
 							</span>
 							<span v-show='!vote.contractName && vote.metadata'>
 								{{ vote.metadata }}
 							</span>
 							<span v-show='!vote.contractName && vote.description'>
-								{{ vote.description }}
+								<span v-html='vote.description'></span>
 							</span>
 						</div>
 

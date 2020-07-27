@@ -1,5 +1,41 @@
 <template>
 	<span>
+		<div id='modal' class='modal rootmodal' v-if='showRootModal' @click.self='hideRootModal'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='hideRootModal'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Enact vote #{{ vote.voteNumber }} on {{ appName }}</legend>
+					<div class='content'>
+						<div>
+							<span> {{ voteDescription }} </span>
+							<div class='content' v-if='vote'>
+								<span v-show='vote.contractName'>
+									{{ vote.contractName }}: <span v-html='vote.description'></span>
+								</span>
+								<span v-show='!vote.contractName && vote.metadata'>
+									{{ vote.metadata }}
+								</span>
+								<span v-show='!vote.contractName && vote.description'>
+									<span v-html='vote.description'></span>
+								</span>
+							</div>
+						</div>
+						<hr>
+						<p class='explanation' v-show='!executeVote'>
+							This vote requires {{ getSupportText }}% acceptance and {{ getQuorumText }}% quorum to be passed
+						</p>
+						<p class='simple-error' v-show='!willSucceed'>
+							The transaction may fail, you may not have the required permissions to make the transaction
+						</p>
+					</div>
+					<button @click='createVote' v-show='!executeVote'>Create Vote</button>
+					<button @click='createVote' v-show='executeVote'>Vote</button>
+				</fieldset>
+			</div>
+		</div>
+
 		<button @click='enact'>Enact <span class='loading line' v-show='loading'></span></button>
 	</span>
 </template>
@@ -9,8 +45,12 @@
 
 	import { state, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, helpers as voteHelpers } from '../voteStore'
 
+	import RootModalMixin from '../common/RootModalMixin'
+
 	export default {
 		props: ['vote'],
+
+		mixins: [RootModalMixin],
 
 		data: () => ({
 			loading: false,
@@ -18,6 +58,7 @@
 
 		methods: {
 			async enact() {
+				console.log("ENACT")
 				this.loading = true
 				let intent
 				try {
@@ -33,7 +74,7 @@
 				this.loading = false
 				state.showModal = false
 
-				state.showRootModal = true
+				this.showRootModal = true
 				state.executeVote = true
 
 

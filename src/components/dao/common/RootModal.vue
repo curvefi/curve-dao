@@ -13,13 +13,13 @@
 							<span> {{ description }} </span>
 							<div class='content' v-if='vote'>
 								<span v-show='vote.contractName'>
-									{{ vote.contractName }}: {{ vote.description }}
+									{{ vote.contractName }}: <span v-html='vote.description'></span>
 								</span>
 								<span v-show='!vote.contractName && vote.metadata'>
 									{{ vote.metadata }}
 								</span>
 								<span v-show='!vote.contractName && vote.description'>
-									{{ vote.description }}
+									<span v-html='vote.description'></span>
 								</span>
 							</div>
 						</div>
@@ -31,7 +31,8 @@
 							The transaction may fail, you may not have the required permissions to make the transaction
 						</p>
 					</div>
-					<button @click='createVote'>Submit</button>
+					<button @click='createVote' v-show='!executeVote'>Create Vote</button>
+					<button @click='createVote' v-show='executeVote'>Vote</button>
 				</fieldset>
 			</div>
 		</div>

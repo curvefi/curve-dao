@@ -9,6 +9,7 @@
   "dependencies": {
     "@aragon/connect": "^0.4.2",
     "@aragon/connect-thegraph": "^0.4.2",
+    "@aragon/connect-thegraph-tokens": "^0.4.2",
     "@aragon/connect-thegraph-voting": "^0.3.0",
     "@biconomy/mexa": "^1.5.12",
     "@chenfengyuan/vue-qrcode": "^1.0.2",
@@ -35,6 +36,7 @@
     "vue-fragment": "^1.5.1",
     "vue-meta": "^2.3.3",
     "vue-router": "^3.1.5",
+    "vuejs-datepicker": "^1.6.2",
     "web3": "^1.2.6"
   },
   "devDependencies": {

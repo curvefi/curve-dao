@@ -133,7 +133,7 @@
 							</div>
 						</fieldset>
 					</div>
-					<div>
+					<!-- <div>
 						<fieldset>
 							<legend>
 								kill_me
@@ -150,7 +150,7 @@
 								</button>
 							</div>
 						</fieldset>
-					</div>
+					</div> -->
 					<div>
 						<fieldset>
 							<legend>
@@ -290,7 +290,7 @@
 
 	import * as daoabis from '../allabis'
 
-	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT } from '../voteStore'
+	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT, helpers as voteHelpers } from '../voteStore'
 
 	let ownership_actions = ['unkill_me', 'commit_transfer_ownership', 'revert_transfer_ownership', 'set_aave_referral', 'donate_admin_fees']
 
@@ -360,6 +360,7 @@
 				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
 
+
 				let agent = OWNERSHIP_AGENT
 				let votingApp = OWNERSHIP_APP_ADDRESS
 				if(parameter_actions.includes(method)) {
@@ -368,9 +369,14 @@
 				}
 				agent = agent.toLowerCase()
 
+				console.log(agent, "THE AGENT")
+				console.log(this.poolProxy._address, call, "POOL PROXY ADDRESS CALL DATA")
+
+				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
 				let intent
 				try {
-					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [this.poolProxy._address, 0, call])
+					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'test forwarder description', false, false])
 				}
 				catch(err) {
 					console.error(err)
@@ -383,7 +389,7 @@
 
 				this.proposeLoading = false
 
-				state.showRootModal = true
+				this.$emit('showRootModal')
 
 			},
 		},

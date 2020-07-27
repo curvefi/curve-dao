@@ -19,13 +19,13 @@
 			<div class='description'>
 				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
 					<span v-show='vote.contractName'>
-						{{ vote.contractName }}: {{ vote.description }}
+						{{ vote.contractName }}: <span v-html='vote.description'></span>
 					</span>
 					<span v-show='!vote.contractName && vote.metadata'>
 						{{ vote.metadata }}
 					</span>
 					<span v-show='!vote.contractName && vote.description'>
-						{{ vote.description }}
+						<span v-html='vote.description'></span>
 					</span>
 				</router-link>
 			</div>
@@ -202,7 +202,7 @@
 		transform: translateY(-50%);
 		padding-left: 3px;
 	}
-	.enacted {
+	.canexecute, .enacted {
 		margin-top: 1em;
 		color: green;
 	}

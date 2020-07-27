@@ -46,6 +46,9 @@ const Votes = () => import('../components/dao/votes/Votes.vue')
 const VoteView = () => import('../components/dao/votes/VoteView.vue')
 const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
 
+//Minter
+const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
+
 import Index from '../components/Index.vue'
 
 import init from '../init'
@@ -269,6 +272,18 @@ let routes = [
         path: 'createvote',
         name: 'CreateVote',
         component: CreateVote,
+      },
+    ],
+  },
+  {
+    path: '/minter',
+    name: 'Minter',
+    component: RootApp,
+    children: [
+      {
+        path: '',
+        name: 'VotingEscrow',
+        component: VotingEscrow,
       },
     ],
   },

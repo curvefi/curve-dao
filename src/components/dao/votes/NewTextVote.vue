@@ -1,5 +1,40 @@
 <template>
 	<div>
+		<div id='modal' class='modal rootmodal' v-if='showRootModal' @click.self='hideRootModal'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='hideRootModal'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Create a text vote on {{ appName }}</legend>
+					<div class='content'>
+						<div>
+							<span> {{ voteDescription }} </span>
+							<div class='content' v-if='vote'>
+								<span v-show='vote.contractName'>
+									{{ vote.contractName }}: <span v-html='vote.description'></span>
+								</span>
+								<span v-show='!vote.contractName && vote.metadata'>
+									{{ vote.metadata }}
+								</span>
+								<span v-show='!vote.contractName && vote.description'>
+									<span v-html='vote.description'></span>
+								</span>
+							</div>
+						</div>
+						<hr>
+						<p class='explanation'>
+							This vote requires {{ getSupportText }}% acceptance and {{ getQuorumText }}% quorum to be passed
+						</p>
+						<p class='simple-error' v-show='!willSucceed'>
+							The transaction may fail, you may not have the required permissions to make the transaction
+						</p>
+					</div>
+					<button @click='createVote'>Create Text Vote</button>
+				</fieldset>
+			</div>
+		</div>
+
 		<modal>
 			<template v-slot:activate='{ show }'>
 				<div v-show = 'canCreateNewVote' @click='show'>
@@ -43,11 +78,15 @@
 
 	import { state, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, helpers as voteHelpers } from '../voteStore'
 
+	import RootModalMixin from '../common/RootModalMixin'
+
 	export default {
 
 		components: {
 			Modal,
 		},
+
+		mixins: [RootModalMixin],
 
 		data: () => ({
 			description: '',
@@ -92,6 +131,7 @@
 			},
 			async canCreate() {
 				let canCreateVoteOn = await Promise.all([voteHelpers.canCreateNewVoteOn(OWNERSHIP_APP_ADDRESS), voteHelpers.canCreateNewVoteOn(PARAMETER_APP_ADDRESS)])
+				console.log(canCreateVoteOn, "CAN CREATE NEW VOTE ON")
 				if(canCreateVoteOn[0])
 					this.apps.push({
 						address: OWNERSHIP_APP_ADDRESS,
@@ -121,7 +161,7 @@
 				this.loading = false
 				state.showModal = false
 
-				state.showRootModal = true
+				this.showRootModal = true
 
 
 				console.log(paths, "THEPATH")

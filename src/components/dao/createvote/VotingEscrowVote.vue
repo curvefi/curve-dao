@@ -1,56 +1,85 @@
 <template>
 	<div>
 		<fieldset>
-			<legend>Vote on Emergency Members</legend>
+			<legend>Vote on Voting Escrow</legend>
 			<div>
 				<div class='actions'>
 					<div>
 						<fieldset>
 							<legend>
-								mint
+								commit_transfer_ownership
 								<span class='tooltip'> [?]
 									<span class='tooltiptext long'>
-										Mint Emergency Tokens to
+										Commit transfer ownership
 									</span>
 								</span>
 							</legend>
 							<div>
 								<div class='input'>
-									<label for='param1'>address:</label>
-									<input id='param1' type='text' v-model='mintaddress'>
+									<label for='param1'>addr:</label>
+									<input id='param1' type='text' v-model='owner_addr'>
 								</div>
-								<button :disabled='hasTokens' @click="propose('mint', mintaddress)" class='simplebutton'>
+								<button @click="propose('commit_transfer_ownership', owner_addr)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'mint'"></span>
+									<span class='loading line' v-show="proposeLoading == 'commit_transfer_ownership'"></span>
 								</button>
-								<div class='simple-error' v-show='hasTokens'>
-									Address is already a token holder
-								</div>
 							</div>
 						</fieldset>
 					</div>
 					<div>
 						<fieldset>
 							<legend>
-								burn
+								commit_smart_wallet_checker
 								<span class='tooltip'> [?]
 									<span class='tooltiptext long'>
-										Burn Emergency Tokens
+										Commit smart wallet checker
 									</span>
 								</span>
 							</legend>
 							<div>
 								<div class='input'>
-									<label for='param1'>address:</label>
-									<select class='tvision' v-model='burnaddress'>
-										<option v-for='(address, i) in addresses' :value='i'>
-											{{ shortenAddress(address) }}
-										</option>
-									</select>
+									<label for='param1'>addr:</label>
+									<input id='param1' type='text' v-model='checker_addr'>
 								</div>
-								<button @click="propose('burn', burnaddress)" class='simplebutton'>
+								<button @click="propose('commit_smart_wallet_cheker', checker_addr)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'burn'"></span>
+									<span class='loading line' v-show="proposeLoading == 'commit_smart_wallet_cheker'"></span>
+								</button>
+							</div>
+						</fieldset>
+					</div>
+					<div>
+						<fieldset>
+							<legend>
+								apply_transfer_ownership
+								<span class='tooltip'> [?]
+									<span class='tooltiptext long'>
+										Apply transfer ownership
+									</span>
+								</span>
+							</legend>
+							<div>
+								<button @click="propose('apply_transfer_ownership')" class='simplebutton'>
+									Submit
+									<span class='loading line' v-show="proposeLoading == 'apply_transfer_ownership'"></span>
+								</button>
+							</div>
+						</fieldset>
+					</div>
+					<div>
+						<fieldset>
+							<legend>
+								apply_smart_wallet_checker
+								<span class='tooltip'> [?]
+									<span class='tooltiptext long'>
+										Apply smart wallet checker
+									</span>
+								</span>
+							</legend>
+							<div>
+								<button @click="propose('apply_smart_wallet_cheker')" class='simplebutton'>
+									Submit
+									<span class='loading line' v-show="proposeLoading == 'apply_smart_wallet_cheker'"></span>
 								</button>
 							</div>
 						</fieldset>
@@ -69,23 +98,10 @@
 
 	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT } from '../voteStore'
 
-	import { TokenManager } from '@aragon/connect-thegraph-tokens'
-
-
-
-	let emergencyToken_address = '0x712635479fd7b5cfa5e7661109c3418bf2dbaa84'
-	let emergencyTokenManager_address = '0xc28190fd16fd20dd5f25e9eb20dd6e38f5c8d03b'
-
-	const tokenManager = new TokenManager(
-	  emergencyTokenManager_address,
-	  'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-rinkeby'
-	)
-
 	export default {
 		data: () => ({
-			addresses: [],
-			mintaddress: '',
-			burnaddress:'',
+			owner_addr: '',
+			checker_addr: '',
 
 			proposeLoading: false,
 		}),
@@ -113,47 +129,20 @@
 			showRootModal() {
 				return state.showRootModal
 			},
-			hasTokens() {
-				return this.addresses.find(address => address.toLowerCase() == this.mintaddress.toLowerCase()) !== undefined
-			},
 		},
 
 		methods: {
 			async mounted() {
-				// let transfers = await web3.eth.getPastLogs({
-				// 	fromBlock: '6775877',
-				// 	toBlock: 'latest',
-				// 	address: emergencyToken_address,
-				// 	topics: [
-				// 		'0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-				// 	],
-				// })
-				// console.log(transfers, "THE TRANSFERS")
-				// let mints = transfers.filter(transfer => transfer.topics[1] == '0x0000000000000000000000000000000000000000000000000000000000000000')
-				// mints = mints.map(mint => mint.topics[2])
-				// let mintCounts = {}
-				// mints.forEach(x => mintCounts[x] = (mintCounts[x] || 0)+1);
-				// let burns = transfers.filter(transfer => transfer.topics[1] != '0x0000000000000000000000000000000000000000000000000000000000000000')
-				// burns = burns.map(burn => burn.topics[1])
-				// let burnCounts = {}
-				// burns.forEach(x => burnCounts[x] = (burnCounts[x] || 0)+1)
-				// Object.keys(mintCounts).map(address => mintCounts[address] -= burnCounts[address] || 0)
-				// Object.keys(mintCounts).map(address => mintCounts[address] == 0 && delete mintCounts[address])
-				// mintCounts = Object.keys(mintCounts).map(key => '0x' + key.slice(26))
-				// this.addresses = mintCounts
-
-				// console.log(tokenManager, "TOKEN MANAGER")
-
-				let tokenholders = await tokenManager._connector.tokenHolders(emergencyToken_address, 1000, 0)
-				this.addresses = tokenholders.map(tokenholder => tokenholder.address)
+				
 			},
 
 			async propose(method, ...params) {
 				this.proposeLoading = method
-
-				let abi = daoabis.tokenmanager_abi.find(abi => abi.name == method)
+				console.log(daoabis.votingescrow_abi, "VOTING ESCROW ABI")
+				let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
+				console.log(abi, "THE ABI", method, "THE METHOD")
 				console.log([...params], "PARAMS")
-				let call = web3.eth.abi.encodeFunctionCall(abi, [...params, 1])
+				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				console.log(abi, call, "ABI CALL")
 
 				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
@@ -169,7 +158,7 @@
 
 				let intent
 				try {
-					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [emergencyTokenManager_address, 0, call])
+					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [daoabis.votingescrow_address, 0, call])
 				}
 				catch(err) {
 					console.error(err)

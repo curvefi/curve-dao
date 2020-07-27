@@ -298,7 +298,7 @@
 
 				this.proposeLoading = false
 
-				state.showRootModal = true
+				this.$emit('showRootModal')
 
 			},
 

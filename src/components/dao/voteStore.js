@@ -13,13 +13,32 @@ ALL_POOLS.push('0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4')
 
 import * as radspec from 'radspec'
 
+const radspecFormat = {
+	userHelpers: {
+		address: () => async (address, prefix) => {
+			if(!prefix) prefix = ''
+			return {
+				type: 'string',
+				value: '<br> ' + prefix + ' ' + shortenAddress(address),
+			}
+		},
+		param: () => async (param, name) => {
+			if(!name) name = ''
+			return {
+				type: 'string',
+				value: '<br> ' + name + ':' + param,
+			}
+		},
+	}
+}
+
 import gql from 'graphql-tag'
 import { GraphQLWrapper } from '@aragon/connect-thegraph'
 
 import { connect, describeScript } from '@aragon/connect'
 import { Voting } from '@aragon/connect-thegraph-voting'
 
-import { groupBy } from '../../utils/helpers'
+import { groupBy, setTimeoutPromise } from '../../utils/helpers'
 
 import BN from 'bignumber.js'
 
@@ -33,6 +52,8 @@ export const OWNERSHIP_AGENT = '0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
 export const PARAMETER_AGENT = '0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
 export const MIN_BALANCE = 2500 * 10 ** 18
 export const MIN_TIME = 15
+
+const CALLSCRIPT_ID = '0x00000001'
 
 export let state = Vue.observable({
 	initialized: false,
@@ -51,6 +72,17 @@ export let state = Vue.observable({
 	showRootModal: false,
 
 	executeVote: false,
+
+
+	customFilter: false,
+	filters: {
+		//1 - open, 2 - closed, 3 - all
+		status: 3,
+		//1 - passed, 2 - rejected, 3 - enacted, 4 - pending, 5 - all
+		outcome: 5,
+		//1 - Voting, 2 - Parameter, 3 - all
+		app: 3,
+	},
 })
 
 export async function init() {
@@ -74,6 +106,8 @@ export async function init() {
 	console.log(state.ownershipVotingApp, "OWNERSHIP VOTING APP")
 
 	state.votingEscrow = new contract.web3.eth.Contract(allabis.votingescrow_abi, allabis.votingescrow_address)
+
+	window.votingEscrow = state.votingEscrow
 
 	state.initialized = true
 	
@@ -111,7 +145,7 @@ export async function getAllVotes() {
 		getUserVotes = null
 
 	const QUERY = gql`
-		query {
+		{
 		  votes(where:{
 		    appAddress_in: ["${OWNERSHIP_APP_ADDRESS}", "${PARAMETER_APP_ADDRESS}"]
 		  }, orderBy: startDate, orderDirection: desc) {
@@ -129,6 +163,7 @@ export async function getAllVotes() {
 	      	nay
 	      	votingPower
 	      	script
+	      	creatorVotingPower
 	      	transactionHash
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
@@ -154,6 +189,7 @@ export async function getAllVotes() {
 	// Invoke the custom query and receive data
 	const results = await Promise.all([wrapper.performQuery(QUERY), wrapper.performQuery(lastCreatedVoteQuery)])
 
+
 	let { votes } = results[0].data
 	let { lastCreated } = results[1].data
 
@@ -169,6 +205,11 @@ export async function getAllVotes() {
 
 	state.votes.map(vote => decodeCall(vote))
 
+	console.log("RESOLVED")
+}
+
+export function changeFilter() {
+	state.customFilter = true
 }
 
 export async function getVote(app, voteId) {
@@ -276,11 +317,27 @@ export function decorateVotes(votes) {
 		vote.totalSupport = +vote.yea + +vote.nay
 		vote.voteNumber = getVoteId(vote)
 		vote.votingAppName = getVotingAppName(vote.appAddress)
+		if(vote.votingAppName == 'Ownership')
+			vote.app = 1
+		if(vote.votingAppName == 'Parameter')
+			vote.app = 2
 		vote.yeap = vote.totalSupport == 0 ? 0 : (+vote.yea / vote.totalSupport * 100).toFixed(1)
 		vote.nop = vote.totalSupport == 0 ? 0 : (+vote.nay / vote.totalSupport * 100).toFixed(1)
 		vote.callAddress = vote.script.substr(90,40).toLowerCase()
 		vote.contractCalled = contractCalled(vote)
 		vote.contractName = contractName(vote)
+		if(isVoteOpen(vote) && !vote.executed)
+			vote.status = 1
+		if(!isVoteOpen(vote) || vote.executed)
+			vote.status = 2
+		if(vote.status == 1)
+			vote.outcome = 4
+		if(vote.executed)
+			vote.outcome = 3
+		if(isRejected(vote))
+			vote.outcome = 2
+		if(!vote.executed && canExecute(vote))
+			vote.outcome = 1
 		return vote
 	})
 }
@@ -331,7 +388,7 @@ export async function decodeCall(vote) {
 				data: '0x' + data,
 			}
 		}
-		desc = await radspec.evaluate(expression, call)
+		desc = await radspec.evaluate(expression, call, radspecFormat)
 	}
 	else if(!vote.metadata) {
 		try {
@@ -374,8 +431,10 @@ export function getVoteId(vote) {
 
 export async function canCreateNewVoteOn(appAddress) {
 	let now = Date.now() / 1000
+	console.log(state.votingEscrow, "VOTING ESCROW")
 	let balance = await state.votingEscrow.methods.balanceOf(contract.default_account).call()
 	balance = BN(balance)
+	console.log(balance, "MY BALANCE")
 	return balance.gt(BN(MIN_BALANCE)) && (now - MIN_TIME) > +state.lastCreated[appAddress.toLowerCase()]
 }
 
@@ -430,7 +489,7 @@ export function canExecute(vote) {
 }
 
 export function isRejected(vote) {
-	return !vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote))
+	return !vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote)) && !canExecute(vote)
 }
 
 export function canVote(vote, voter) {
@@ -455,18 +514,47 @@ export function isVoteOpen(vote) {
 	return vote.startDate > (new Date().getTime() / 1000) - time
 }
 
+export function encodeCallsScript(actions) {
+  return actions.reduce((script, { to, data }) => {
+    const address = web3.eth.abi.encodeParameter('address', to)
+    const dataLength = web3.eth.abi.encodeParameter('uint256', (data.length - 2) / 2).toString('hex')
+
+    return script + address.slice(26) + dataLength.slice(58) + data.slice(2)
+  }, CALLSCRIPT_ID)
+}
+
+
 export let getters = {
 	votes() {
 		return state.votes
 	},
 	openVotes() {
-		return state.votes.filter(vote => isVoteOpen(vote) && !vote.executed)
+		return state.votes.filter(vote => isVoteOpen(vote) && !vote.executed).sort((a, b) => b.creatorVotingPower - a.creatorVotingPower)
 	},
 	closedVotes() {
 		return state.votes.filter(vote => !isVoteOpen(vote) || vote.executed)
-	}
+	},
+	customFilter() {
+		return state.customFilter
+	},
+	customFilterVotes() {
+		let filteredVotes = state.votes
+		if(state.filters.status < 3)
+			filteredVotes = filteredVotes.filter(vote => vote.status == state.filters.status)
+		if(state.filters.outcome < 5)
+			filteredVotes = filteredVotes.filter(vote => vote.outcome == state.filters.outcome)
+		if(state.filters.app < 3)
+			filteredVotes = filteredVotes.filter(vote => vote.app == state.filters.app)
+		console.log(filteredVotes, "FILTERED VOTES")
+		return filteredVotes
+	},
 }
 
 export let helpers = {
-	isVoteOpen, canExecute, isRejected, canCreateNewVote, canCreateNewVoteOn,
+	isVoteOpen, canExecute, isRejected, canCreateNewVote, canCreateNewVoteOn, encodeCallsScript,
+}
+
+export function shortenAddress(address) {
+	if(!address) return ''
+	return address.slice(0,6) + '...' + address.slice(-6)
 }

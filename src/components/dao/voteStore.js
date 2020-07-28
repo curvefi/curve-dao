@@ -63,6 +63,7 @@ export let state = Vue.observable({
 	parameterVotingApp: null,
 	votingApps: [],
 	votes: [],
+	CRV: null,
 	votingEscrow: null,
 	lastCreated: null,
 
@@ -106,8 +107,10 @@ export async function init() {
 	console.log(state.ownershipVotingApp, "OWNERSHIP VOTING APP")
 
 	state.votingEscrow = new contract.web3.eth.Contract(allabis.votingescrow_abi, allabis.votingescrow_address)
+	state.CRV = new contract.web3.eth.Contract(allabis.CRV_abi, allabis.CRV_address)
 
 	window.votingEscrow = state.votingEscrow
+	window.CRV = state.CRV
 
 	state.initialized = true
 	
@@ -310,6 +313,23 @@ export async function getVote(app, voteId) {
 
 }
 
+export async function getCRV() {
+	if(state.votingEscrow === null || state.CRV === null) {
+		state.votingEscrow = new contract.web3.eth.Contract(allabis.votingescrow_abi, allabis.votingescrow_address)
+		state.CRV = new contract.web3.eth.Contract(allabis.CRV_abi, allabis.CRV_address)
+	}
+	let calls = [
+		[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
+		[state.votingEscrow._address, state.votingEscrow.methods.locked__end(contract.default_account).encodeABI()],
+		[state.CRV._address, state.CRV.methods.balanceOf(contract.default_account).encodeABI()],
+	]
+
+	let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+	let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+
+	return decoded
+}
+
 export function decorateVotes(votes) {
 	return votes.map(vote => {
 		let time = OWNERSHIP_VOTE_TIME
@@ -348,6 +368,13 @@ export function decorateVotes(votes) {
 			vote.outcome = 2
 		if(!vote.executed && canExecute(vote))
 			vote.outcome = 1
+		if(isRejected(vote)) {
+			vote.rejectedReason = 3
+			if(!hasSupport(vote))
+				vote.rejectedReason = 1
+			else if(!hasQuorum(vote))
+				vote.rejectedReason = 2
+		}
 		return vote
 	})
 }
@@ -467,11 +494,11 @@ export function isExecuted(vote) {
 }
 
 export function hasSupport(vote) {
-	return isValuePct(vote.yea, vote.votingPower, vote.supportRequiredPct)
+	return isValuePct(vote.yea, +vote.yea + +vote.nay, vote.supportRequiredPct)
 }
 
 export function hasQuorum(vote) {
-	return isValuePct(vote.yea, vote.votingPower, vote.minAcceptQuorumPct)
+	return isValuePct(vote.yea, vote.votingPower, vote.minAcceptQuorum)
 }
 
 export function canExecute(vote) {
@@ -479,7 +506,7 @@ export function canExecute(vote) {
 		return false
 
     // Voting is already decided
-	if(hasSupport(vote))
+	if(isValuePct(vote.yea, vote.votingPower, vote.supportRequiredPct))
 		return true
         
 	// Vote ended?
@@ -492,13 +519,16 @@ export function canExecute(vote) {
         return false;
 
     // Has min quorum?
-    if (!isValuePct(vote.yea, vote.votingPower, vote.minAcceptQuorumPct))
+    if (!isValuePct(vote.yea, vote.votingPower, vote.minAcceptQuorum))
         return false;
 
     return true;
 }
 
 export function isRejected(vote) {
+	console.log(vote, "THE VOTE")
+	console.log(!vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote)) && !canExecute(vote), "IS REJECTED")
+	console.log(!vote.executed, !isVoteOpen(vote), !hasSupport(vote), !hasQuorum(vote), !canExecute(vote), "IS REJECTED")
 	return !vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote)) && !canExecute(vote)
 }
 

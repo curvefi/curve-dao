@@ -61,6 +61,10 @@ export default {
 		},
 		hideRootModal() {
 			this.showRootModal = false
+			if(this.description)
+				this.description = ''
+			state.transactionIntent = null
+			console.log("HIDE ROOT MODAL")
 			state.executeVote = false
 		},
 	},

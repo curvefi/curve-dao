@@ -35,36 +35,48 @@
 			</div>
 		</div>
 
-		<modal>
-			<template v-slot:activate='{ show }'>
-				<div v-show = 'canCreateNewVote' @click='show'>
-					<button class='simplebutton'>New text vote</button>
+		<div v-show='canCreateNewVote'>
+			<modal>
+				<template v-slot:activate='{ show }'>
+					<div @click='show'>
+						<button class='simplebutton'>New text vote</button>
+					</div>
+				</template>
+				<template v-slot:title>
+					Create new vote
+				</template>
+				<div class='content'>
+					<div>
+						<select class='tvision' v-model='selectedApp'>
+							<option v-for='app in apps' :value='app'>
+								{{ app.name }}
+							</option>
+						</select>
+					</div>
+					<div>
+						<label for='newtextvote'>Vote description:</label>
+						<textarea id='newtextvote' v-model='description'></textarea>
+					</div>
 				</div>
-			</template>
-			<template v-slot:title>
-				Create new vote
-			</template>
-			<div class='content'>
-				<div>
-					<select class='tvision' v-model='selectedApp'>
-						<option v-for='app in apps' :value='app'>
-							{{ app.name }}
-						</option>
-					</select>
-				</div>
-				<div>
-					<label for='newtextvote'>Vote description:</label>
-					<textarea id='newtextvote' v-model='description'></textarea>
-				</div>
-			</div>
-			<template v-slot:submit>
-				<span @click='submit'>Submit <span class='loading line' v-show='loading'></span></span>
-			</template>
-		</modal>
-		<!-- <p class='info-message gentle-message createvote'> -->
-		<button class='simplebutton createvotebutton'>
-			<router-link to='/dao/createvote' v-show='canCreateNewVote'> Create Vote </router-link>
-		</button>
+				<template v-slot:submit>
+					<span @click='submit'>Submit <span class='loading line' v-show='loading'></span></span>
+				</template>
+			</modal>
+			<!-- <p class='info-message gentle-message createvote'> -->
+			<button class='simplebutton createvotebutton'>
+				<router-link to='/dao/createvote'> Create Vote </router-link>
+			</button>
+		</div>
+		<div v-show='!canCreateNewVote && canCreateLoaded'>
+			<p class='info-message gentle-message'>
+				You have to have at least the equivalent of 10000CRV locked for a year to be able to create a new vote
+			</p>
+			<voting-escrow :showvelock = 'false' class='votingescrow'>
+				<p>
+					<router-link to='/locker'>Manage locking in Locker</router-link>
+				</p>	
+			</voting-escrow>
+		</div>
 		<!-- </p> -->
 	</div>
 </template>
@@ -80,15 +92,19 @@
 
 	import RootModalMixin from '../common/RootModalMixin'
 
+	import VotingEscrow from '../../minter/VotingEscrow'
+
 	export default {
 
 		components: {
 			Modal,
+			VotingEscrow,
 		},
 
 		mixins: [RootModalMixin],
 
 		data: () => ({
+			canCreateLoaded: false,
 			description: '',
 			loading: false,
 
@@ -127,6 +143,7 @@
 
 		methods: {
 			async created() {
+				this.initialized = true
 				this.app = this.apps[0]
 			},
 			async canCreate() {
@@ -144,6 +161,7 @@
 					})
 				this.selectedApp = this.apps[0]
 				this.canCreateNewVote = canCreateVoteOn.find(v => v)
+				this.canCreateLoaded = true
 			},
 			async submit() {
 				this.loading = true
@@ -205,5 +223,8 @@
 	}
 	.createvotebutton a, .createvotebutton a:visited {
 		color: white;
+	}
+	.votingescrow {
+		margin-top: 0.4em;
 	}
 </style>

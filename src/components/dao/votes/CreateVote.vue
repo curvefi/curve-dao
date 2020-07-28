@@ -12,17 +12,6 @@
 						<div>
 							<span> {{ voteDescription }} </span>
 							<p v-html = 'description'></p>
-							<div class='content' v-if='vote'>
-								<span v-show='vote.contractName'>
-									{{ vote.contractName }}: <span v-html='vote.description'></span>
-								</span>
-								<span v-show='!vote.contractName && vote.metadata'>
-									{{ vote.metadata }}
-								</span>
-								<span v-show='!vote.contractName && vote.description'>
-									<span v-html='vote.description'></span>
-								</span>
-							</div>
 						</div>
 						<hr>
 						<p class='explanation' v-show='!executeVote'>
@@ -179,6 +168,7 @@
 				}, radspecFormat)
 
 				this.description = desc
+				this.showRootModal = true
 			},
 		},
 	}

@@ -200,6 +200,11 @@
 
 		methods: {
 			async mounted() {
+				let calls = [
+					[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
+					[state.votingEscrow._address, state.votingEscrow.methods.locked__end(contract.default_account).encodeABI()],
+					[state.CRV._address, state.CRV.methods.balanceOf(contract.default_account).encodeABI()],
+				]
 				await getAllVotes()
 				this.loadedVotes = true
 			},
@@ -239,5 +244,8 @@
 	}
 	.filter button {
 		box-shadow: none;
+	}
+	p div {
+		margin-top: 0.4em;
 	}
 </style>

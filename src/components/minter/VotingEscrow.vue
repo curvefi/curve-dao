@@ -1,52 +1,63 @@
 <template>
-	<div class='window white'>
+	<div :class="{'window white': showvelock}">
 		<fieldset>
 			<legend>
 				Voting power in DAO
 			</legend>
 			<p v-show='hasvecrv'>
-				Balance in Voting Escrow: {{ vecrvBalanceText }} veCRV
-				<br>
-				<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
+				<div>
+					CRV <img class='icon small' :src="publicPath + 'logo.png'"> balance: {{ crvBalanceText }}
+				</div>
+				<div>
+					Balance in Voting Escrow: {{ vecrvBalanceText }} veCRV
+				</div>
+				<div>
+					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
+				</div>
 			</p>
-			<div class='increaselock' v-show='hasvecrv'>
-				<p class='depositinputs'>
-					<label for='deposit'>Increase amount:</label>
-					<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
-					<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
-					<br>
-					<button @click='increaseAmount'>Add</button>
-				</p>
-				<p class='depositinputs'>
-					<label for='incraselock'>Increase lock:</label>
-					<datepicker 
-						id='increaselock' 
-						name='increaselock' 
-						v-model='increaseLock'
-						:disabled-dates='disabledDates'
-						:open-date='openDate'
-					></datepicker>
-					<br>
-					<button @click='submitIncreaseLock'>Increase lock</button>
-				</p>
+			<div class='velock' v-show='showvelock'>
+				<div class='increaselock' v-show='hasvecrv'>
+					<p class='depositinputs'>
+						<label for='deposit'>Increase amount:</label>
+						<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
+						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
+						<br>
+						<button @click='increaseAmount'>Add</button>
+					</p>
+					<p class='depositinputs'>
+						<label for='incraselock'>Increase lock:</label>
+						<datepicker 
+							id='increaselock' 
+							name='increaselock' 
+							v-model='increaseLock'
+							:disabled-dates='disabledDates'
+							:open-date='openDate'
+						></datepicker>
+						<br>
+						<button @click='submitIncreaseLock'>Increase lock</button>
+					</p>
+				</div>
+				<div class='increaselock' v-show='!hasvecrv'>
+					<p class='depositinputs'>
+						<label for='deposit'>Amount:</label>
+						<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
+						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
+					</p>
+					<p class='depositinputs'>
+						<label for='incraselock'>Lock time:</label>
+						<datepicker 
+							id='increaselock' 
+							name='increaselock' 
+							v-model='increaseLock'
+							:disabled-dates='disabledDates'
+							:open-date='openDate'
+						></datepicker>
+					</p>
+					<button @click='createLock'>Create lock</button>
+				</div>
 			</div>
-			<div class='increaselock' v-show='!hasvecrv'>
-				<p class='depositinputs'>
-					<label for='deposit'>Amount:</label>
-					<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
-					<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
-				</p>
-				<p class='depositinputs'>
-					<label for='incraselock'>Lock time:</label>
-					<datepicker 
-						id='increaselock' 
-						name='increaselock' 
-						v-model='increaseLock'
-						:disabled-dates='disabledDates'
-						:open-date='openDate'
-					></datepicker>
-				</p>
-				<button @click='createLock'>Create lock</button>
+			<div v-show='!showvelock'>
+				<slot></slot>
 			</div>
 		</fieldset>
 	</div>
@@ -66,6 +77,13 @@
 	import BN from 'bignumber.js'
 
 	export default {
+		props: {
+			showvelock: {
+				type: Boolean,
+				default: true,
+			},
+		},
+
 		components: {
 			Datepicker,
 		},

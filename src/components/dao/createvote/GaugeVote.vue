@@ -183,7 +183,7 @@
 
 	import * as daoabis from '../allabis'
 
-	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT } from '../voteStore'
+	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT, helpers as voteHelpers } from '../voteStore'
 
 	export default {
 		data: () => ({
@@ -276,10 +276,9 @@
 				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				console.log(abi, call, "ABI CALL")
 
-				this.$emit('call', method, [...params], call, abi, expression)
 
-				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
+				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.gaugeController._address, 0, call])
 
 				let agent = OWNERSHIP_AGENT
 				let votingApp = OWNERSHIP_APP_ADDRESS
@@ -289,9 +288,11 @@
 				// }
 				agent = agent.toLowerCase()
 
+				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
 				let intent
 				try {
-					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [this.gaugeController._address, 0, call])
+					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
 				}
 				catch(err) {
 					console.error(err)
@@ -304,7 +305,7 @@
 
 				this.proposeLoading = false
 
-				this.$emit('showRootModal')
+				this.$emit('call', method, [...params], call, abi, expression)
 
 			},
 

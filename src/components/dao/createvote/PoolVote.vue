@@ -360,7 +360,6 @@
 				let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
 				console.log(abi, call, "ABI CALL")
 
-				this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
 
 				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
@@ -394,7 +393,7 @@
 
 				this.proposeLoading = false
 
-				this.$emit('showRootModal')
+				this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
 
 			},
 		},

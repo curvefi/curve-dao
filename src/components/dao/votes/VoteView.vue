@@ -133,7 +133,10 @@
 							√ Passed <enact-vote :vote='vote'></enact-vote>
 						</div>
 						<div class='rejected' v-show='isRejected'>
-							X Rejected
+							X Rejected 
+							<span>
+								({{ rejectedReasonText }})
+							</span>
 						</div>
 					</div>
 					<countdown :timestamp = 'vote.startDate' :vote = 'vote' v-show = '!vote.executed' class='countdown'></countdown>
@@ -266,7 +269,7 @@
 				return this.support > this.getSupportRequiredPct
 			},
 			hasQuorum() {
-				return this.support > this.getMinAcceptQuorum
+				return this.quorum > this.getMinAcceptQuorum
 			},
 			balanceOfAtFormat() {
 				if(this.balanceOfAt === null) return 0
@@ -275,6 +278,13 @@
 			votetypeText() {
 				if(this.votetype == 0) return 'No'
 				return 'Yes'
+			},
+			rejectedReasonText() {
+				if(this.vote.rejectedReason == 1)
+					return 'No support'
+				if(this.vote.rejectedReason == 2)
+					return 'No quorum'
+				return ''
 			},
 		},
 

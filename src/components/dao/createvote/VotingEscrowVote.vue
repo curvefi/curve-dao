@@ -138,8 +138,6 @@
 
 			async propose(method, ...params) {
 				this.proposeLoading = method
-
-				this.$emit('call', method, params)
 				
 				console.log(daoabis.votingescrow_abi, "VOTING ESCROW ABI")
 				let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
@@ -151,7 +149,6 @@
 				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				console.log(abi, call, "ABI CALL")
 
-				this.$emit('call', method, [...params], call, abi, expression)
 
 				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
@@ -179,7 +176,7 @@
 
 				this.proposeLoading = false
 
-				this.$emit('showRootModal')
+				this.$emit('call', method, [...params], call, abi, expression)
 
 			},
 

@@ -47,7 +47,7 @@
 				√ Passed <enact-vote :vote='vote'></enact-vote>
 			</div>
 			<div class='rejected' v-show='isRejected'>
-				X Rejected
+				X Rejected ({{ rejectedReasonText }})
 			</div>
 			<div class='createdon'>
 				<img 
@@ -123,6 +123,13 @@
 			},
 			isRejected() {
 				return voteHelpers.isRejected(this.vote)
+			},
+			rejectedReasonText() {
+				if(this.vote.rejectedReason == 1)
+					return 'No support'
+				if(this.vote.rejectedReason == 2)
+					return 'No quorum'
+				return ''
 			},
 			publicPath() {
 				return process.env.BASE_URL

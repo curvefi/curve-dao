@@ -12,7 +12,7 @@ import { notify, notifyHandler } from '../init'
 
 var cBN = (val) => new BigNumber(val);
 
-let requiresResetAllowance = ['0xdAC17F958D2ee523a2206206994597C13D831ec7']
+let requiresResetAllowance = ['0xdAC17F958D2ee523a2206206994597C13D831ec7', '0xBac5700EF97F3938A9193ad88E30D886eF83dC8A']
 
 export function approve(contract, amount, account, toContract) {
     if(!toContract) toContract = currentContract.swap_address

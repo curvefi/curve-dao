@@ -288,6 +288,18 @@ let routes = [
     ],
   },
   {
+    path: '/locker',
+    name: 'Locker',
+    component: RootApp,
+    children: [
+      {
+        path: '',
+        name: 'VotingEscrow',
+        component: VotingEscrow,
+      },
+    ],
+  },
+  {
     path: '/:pool(compound|usdt|y|iearn|busd|susdv2|pax|tbtc|ren|sbtc)/',
     name: 'Index',
     component: PoolApp,

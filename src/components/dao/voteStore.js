@@ -198,7 +198,11 @@ export async function getAllVotes() {
 	state.votes = decorateVotes(votes)
 
 	lastCreated = groupBy(lastCreated.sort((a,b) => a.startDate - b.startDate), 'appAddress')
-	lastCreated = Object.fromEntries(Object.entries(lastCreated).map(([k, v]) => [k, v[0].startDate])) 
+	lastCreated = Object.fromEntries(Object.entries(lastCreated).map(([k, v]) => [k, v[0].startDate]))
+	if(!lastCreated[OWNERSHIP_APP_ADDRESS.toLowerCase()])
+		lastCreated[OWNERSHIP_APP_ADDRESS.toLowerCase()] = 0
+	if(!lastCreated[PARAMETER_APP_ADDRESS.toLowerCase()])
+		lastCreated[PARAMETER_APP_ADDRESS.toLowerCase()] = 0
 	state.lastCreated = lastCreated
 
 	console.log(state.lastCreated, "LAST CREATED")

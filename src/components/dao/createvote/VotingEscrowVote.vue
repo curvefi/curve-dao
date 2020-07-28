@@ -145,8 +145,13 @@
 				let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
 				console.log(abi, "THE ABI", method, "THE METHOD")
 				console.log([...params], "PARAMS")
+				let natspeckey = Object.keys(daoabis.votingescrow_natspec.methods).find(key => key.includes(method))
+				console.log(natspeckey, "NATSPECKEY")
+				let expression = daoabis.votingescrow_natspec.methods[natspeckey].notice
 				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				console.log(abi, call, "ABI CALL")
+
+				this.$emit('call', method, [...params], call, abi, expression)
 
 				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])

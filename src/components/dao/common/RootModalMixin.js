@@ -30,7 +30,7 @@ export default {
     	},
     	voteDescription() {
     		console.log(this.transactionPath, "TRANSACTION PATH DESCRIPTION")
-    		return this.transactionPath.transactions[0].description
+    		return this.transactionPath.transactions[this.transactionPath.transactions.length-1].description
     	},
     	executeVote() {
     		return state.executeVote

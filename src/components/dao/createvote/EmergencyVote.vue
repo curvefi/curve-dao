@@ -43,7 +43,7 @@
 								<div class='input'>
 									<label for='param1'>address:</label>
 									<select class='tvision' v-model='burnaddress'>
-										<option v-for='(address, i) in addresses' :value='i'>
+										<option v-for='(address, i) in addresses' :value='address'>
 											{{ shortenAddress(address) }}
 										</option>
 									</select>
@@ -151,7 +151,7 @@
 			async propose(method, ...params) {
 				this.proposeLoading = method
 
-				this.$emit('call', method, params)
+				//this.$emit('call', method, params)
 
 				let abi = daoabis.tokenmanager_abi.find(abi => abi.name == method)
 				console.log([...params], "PARAMS")

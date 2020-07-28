@@ -4,7 +4,7 @@
 			<legend>
 				Voting power in DAO
 			</legend>
-			<p>
+			<p v-show='hasvecrv'>
 				Balance in Voting Escrow: {{ vecrvBalanceText }} veCRV
 				<br>
 				<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
@@ -12,7 +12,7 @@
 			<div class='increaselock' v-show='hasvecrv'>
 				<p class='depositinputs'>
 					<label for='deposit'>Increase amount:</label>
-					<input id='deposit' type='text' v-model='deposit'>
+					<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
 					<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
 					<br>
 					<button @click='increaseAmount'>Add</button>
@@ -33,7 +33,7 @@
 			<div class='increaselock' v-show='!hasvecrv'>
 				<p class='depositinputs'>
 					<label for='deposit'>Amount:</label>
-					<input id='deposit' type='text' v-model='deposit'>
+					<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
 					<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
 				</p>
 				<p class='depositinputs'>
@@ -53,12 +53,13 @@
 </template>
 
 <script>
+    import * as common from '../../utils/common.js'
+
 	import Datepicker from 'vuejs-datepicker';
 
 	import { contract } from '../../contract'
 
 	import daoabis from '../dao/allabis'
-	console.log(daoabis, "DAO ABIS")
 
 	import * as helpers from '../../utils/helpers'
 
@@ -102,20 +103,23 @@
 			},
 			disabledDates() {
 				return {
-					to: new Date(this.lockTime * 1000) 
+					to: new Date((this.lockTime + 604800) * 1000),
+					from: new Date(Date.now() + 126144000000),
 				}
 			},
 			openDate() {
-				return new Date(this.lockTime * 1000)
+				return new Date((this.lockTime + 604800) * 1000)
 			},
 			hasvecrv() {
 				return this.vecrvBalance.gt(0)
+			},
+			isInvalidAmount() {
+				return this.deposit <= 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
 			},
 		},
 
 		methods: {
 			async mounted() {
-				console.log("HERE ")
 				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
 				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, daoabis.CRV_address)
 
@@ -128,10 +132,13 @@
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				this.vecrvBalance = BN(decoded[0])
 				this.lockTime = +decoded[1]
-				this.increaseLock = new Date(this.lockTime * 1000)
-				if(this.lockTime == 0)
-					this.lockTime = Date.now()
+				this.increaseLock = new Date((this.lockTime + 604800)* 1000)
+				if(this.lockTime == 0) {
+					this.lockTime = Date.now() / 1000
+					this.increaseLock = Date.now()
+				}
 				this.crvBalance = BN(decoded[2])
+				this.deposit = this.crvBalance.div(1e18).toFixed(0,1)
 			},
 
 			setMaxBalance() {
@@ -139,28 +146,37 @@
 			},
 
 			async increaseAmount() {
-				let deposit = BN(this.deposit).times(1e18).toFixed(0,1)
-				await this.votingEscrow.methods.increase_amount(deposit).send({
+				let deposit = BN(this.deposit).times(1e18)
+				if(deposit.gt(this.crvBalance))
+					deposit = this.crvBalance
+				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
+				await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
 					from: contract.default_account,
 					gas: 400000,
 				})
+				this.mounted()
 			},
 
 			async submitIncreaseLock() {
-				let lockTime = BN(this.increaseLock).toFixed(0,1)
+				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
 					from: contract.default_account,
 					gas: 4000000,
 				})
+				this.mounted()
 			},
 
 			async createLock() {
-				let deposit = BN(this.deposit).times(1e18).toFixed(0,1)
-				let lockTime = BN(this.increaseLock).toFixed(0,1)
-				await this.votingEscrow.methods.create_lock(deposit, lockTime).send({
+				let deposit = BN(this.deposit).times(1e18)
+				if(deposit.gt(this.crvBalance))
+					deposit = this.crvBalance
+				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
+				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
+				await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
 					from: contract.default_account,
 					gas: 400000,
 				})
+				this.mounted()
 			},
 		},
 	}
@@ -184,6 +200,12 @@
 		display: inline-block;
 	}
 	button {
-		margin-top: 1em;
+		margin-top: 0.8em;
+	}
+	.depositinputs label {
+		margin-right: 0.4em;
+	}
+	.depositinputs input.invalid {
+		background: red;
 	}
 </style>

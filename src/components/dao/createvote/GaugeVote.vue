@@ -84,11 +84,11 @@
 								</div>
 								<div class='input'>
 									<label for='param1'>gauge_weight:</label>
-									<input id='param1' type='text' v-model='gauge_weight'>
+									<input id='param1' type='text' v-model='add_gauge_weight'>
 								</div>
-								<button @click="propose('add_gauge', gauge_addr, selectedGaugeType, gauge_weight)" class='simplebutton'>
+								<button @click="propose('add_gauge', gauge_addr, selectedGaugeType, add_gauge_weight)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'add_type'"></span>
+									<span class='loading line' v-show="proposeLoading == 'add_gauge'"></span>
 								</button>
 							</div>
 						</fieldset>
@@ -114,11 +114,11 @@
 								</div>
 								<div class='input'>
 									<label for='param1'>gauge_weight:</label>
-									<input id='param1' type='text' v-model='gauge_weight'>
+									<input id='param1' type='text' v-model='change_type_gauge_weight'>
 								</div>
-								<button @click="propose('change_type_weight', selectedGaugeTypeId, gauge_weight)" class='simplebutton'>
+								<button @click="propose('change_type_weight', selectedGaugeTypeId, change_type_gauge_weight)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'add_type'"></span>
+									<span class='loading line' v-show="proposeLoading == 'change_type_weight'"></span>
 								</button>
 							</div>
 						</fieldset>
@@ -144,11 +144,11 @@
 								</div>
 								<div class='input'>
 									<label for='param1'>gauge_weight:</label>
-									<input id='param1' type='text' v-model='gauge_weight'>
+									<input id='param1' type='text' v-model='change_gauge_weight'>
 								</div>
-								<button @click="propose('change_gauge_weight', selectedGaugeAddress, gauge_weight)" class='simplebutton'>
+								<button @click="propose('change_gauge_weight', selectedGaugeAddress, change_gauge_weight)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'add_type'"></span>
+									<span class='loading line' v-show="proposeLoading == 'change_gauge_weight'"></span>
 								</button>
 							</div>
 						</fieldset>
@@ -206,7 +206,9 @@
 
 			gauge_addr: '',
 			gauge_type: '',
-			gauge_weight: '',
+			add_gauge_weight: '',
+			change_type_gauge_weight: '',
+			change_gauge_weight: '',
 
 			proposeLoading: false,
 		}),
@@ -267,12 +269,14 @@
 			async propose(method, ...params) {
 				this.proposeLoading = method
 
-				this.$emit('call', method, params)
 
 				let abi = daoabis.gaugecontroller_abi.find(abi => abi.name == method)
-				console.log([...params], "PARAMS")
+				let natspeckey = Object.keys(daoabis.gaugecontroller_natspec.methods).find(key => key.includes(method))
+				let expression = daoabis.gaugecontroller_natspec.methods[natspeckey].notice
 				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				console.log(abi, call, "ABI CALL")
+
+				this.$emit('call', method, [...params], call, abi, expression)
 
 				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
 				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])

@@ -344,7 +344,7 @@
 
 		methods: {
 			async mounted() {
-				this.selectedPool = this.allPools[0]
+				this.selectedPool = this.allPools[6]
 
 				this.poolProxy = new web3.eth.Contract(daoabis.poolproxy_abi, daoabis.poolproxy_address)
 			},

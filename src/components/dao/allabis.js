@@ -1,9 +1,13 @@
 export let poolproxy_abi = [{"name":"CommitAdmins","inputs":[{"type":"address","name":"ownership_admin","indexed":false},{"type":"address","name":"parameter_admin","indexed":false},{"type":"address","name":"emergency_admin","indexed":false}],"anonymous":false,"type":"event"},{"name":"ApplyAdmins","inputs":[{"type":"address","name":"ownership_admin","indexed":false},{"type":"address","name":"parameter_admin","indexed":false},{"type":"address","name":"emergency_admin","indexed":false}],"anonymous":false,"type":"event"},{"name":"AddBurner","inputs":[{"type":"address","name":"burner","indexed":false}],"anonymous":false,"type":"event"},{"outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"name":"commit_set_admins","outputs":[],"inputs":[{"type":"address","name":"_o_admin"},{"type":"address","name":"_p_admin"},{"type":"address","name":"_e_admin"}],"stateMutability":"nonpayable","type":"function","gas":108937},{"name":"apply_set_admins","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":111286},{"name":"set_burner","outputs":[],"inputs":[{"type":"address","name":"_token"},{"type":"address","name":"_burner"}],"stateMutability":"nonpayable","type":"function","gas":96865},{"name":"withdraw_admin_fees","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":57985},{"name":"burn","outputs":[],"inputs":[{"type":"address","name":"_burner"}],"stateMutability":"nonpayable","type":"function","gas":57330},{"name":"burn_coin","outputs":[],"inputs":[{"type":"address","name":"_coin"}],"stateMutability":"nonpayable","type":"function","gas":58287},{"name":"burn_eth","outputs":[],"inputs":[],"stateMutability":"payable","type":"function","gas":92172},{"name":"kill_me","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59060},{"name":"unkill_me","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59937},{"name":"commit_transfer_ownership","outputs":[],"inputs":[{"type":"address","name":"_pool"},{"type":"address","name":"new_owner"}],"stateMutability":"nonpayable","type":"function","gas":59174},{"name":"apply_transfer_ownership","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":58195},{"name":"revert_transfer_ownership","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59180},{"name":"commit_new_parameters","outputs":[],"inputs":[{"type":"address","name":"_pool"},{"type":"uint256","name":"amplification"},{"type":"uint256","name":"new_fee"},{"type":"uint256","name":"new_admin_fee"}],"stateMutability":"nonpayable","type":"function","gas":59255},{"name":"apply_new_parameters","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":58285},{"name":"revert_new_parameters","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59270},{"name":"commit_new_fee","outputs":[],"inputs":[{"type":"address","name":"_pool"},{"type":"uint256","name":"new_fee"},{"type":"uint256","name":"new_admin_fee"}],"stateMutability":"nonpayable","type":"function","gas":59330},{"name":"apply_new_fee","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":58375},{"name":"ramp_A","outputs":[],"inputs":[{"type":"address","name":"_pool"},{"type":"uint256","name":"_future_A"},{"type":"uint256","name":"_future_time"}],"stateMutability":"nonpayable","type":"function","gas":59390},{"name":"stop_ramp_A","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59390},{"name":"set_aave_referral","outputs":[],"inputs":[{"type":"address","name":"_pool"},{"type":"uint256","name":"referral_code"}],"stateMutability":"nonpayable","type":"function","gas":59435},{"name":"donate_admin_fees","outputs":[],"inputs":[{"type":"address","name":"_pool"}],"stateMutability":"nonpayable","type":"function","gas":59450},{"name":"ownership_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1781},{"name":"parameter_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1811},{"name":"emergency_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1841},{"name":"future_ownership_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1871},{"name":"future_parameter_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1901},{"name":"future_emergency_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1931},{"name":"burners","outputs":[{"type":"address","name":""}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":2115}]
 export let poolproxy_natspec = {
   "methods": {
-    "set_admins(address,address,address)": {
+    "commit_set_admins(address,address,address)": {
       "notice": "Set ownership admin `@address(_o_admin, 'to')`, parameter admin `@address(_p_admin, 'to')` and emergency admin `@address(_e_admin, 'to')`",
-      "signature": "0x91315e91"
+      "signature": "0x8cb16c8a"
+    },
+    "apply_set_admins()": {
+      "notice": "Apply set admins",
+      "signature": "0x5dc409d9",
     },
     "set_burner(address,address)": {
       "notice": "Set burner of `_token` `@address(_burner, 'to')` address",
@@ -88,9 +92,21 @@ export let poolproxy_address = '0x57ECf8e21BD855Bd18B7b37211945d7ccd4f3493'
 export let votingescrow_abi = [{"name":"Deposit","inputs":[{"type":"address","name":"provider","indexed":true},{"type":"uint256","name":"value","indexed":false},{"type":"uint256","name":"locktime","indexed":true}],"anonymous":false,"type":"event"},{"name":"Withdraw","inputs":[{"type":"address","name":"provider","indexed":true},{"type":"uint256","name":"value","indexed":false}],"anonymous":false,"type":"event"},{"outputs":[],"inputs":[{"type":"address","name":"token_addr"},{"type":"string","name":"_name"},{"type":"string","name":"_symbol"},{"type":"string","name":"_version"}],"stateMutability":"nonpayable","type":"constructor"},{"name":"commit_transfer_ownership","outputs":[],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"nonpayable","type":"function","gas":36247},{"name":"apply_transfer_ownership","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":37035},{"name":"commit_smart_wallet_cheker","outputs":[],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"nonpayable","type":"function","gas":36307},{"name":"apply_smart_wallet_cheker","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":37095},{"name":"get_last_user_slope","outputs":[{"type":"int128","name":""}],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"view","type":"function","gas":2569},{"name":"user_point_history__ts","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"_addr"},{"type":"uint256","name":"_idx"}],"stateMutability":"view","type":"function","gas":1672},{"name":"locked__end","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"_addr"}],"stateMutability":"view","type":"function","gas":1593},{"name":"checkpoint","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":37052342},{"name":"deposit_for","outputs":[],"inputs":[{"type":"address","name":"_addr"},{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":74276426},{"name":"create_lock","outputs":[],"inputs":[{"type":"uint256","name":"_value"},{"type":"uint256","name":"_unlock_time"}],"stateMutability":"nonpayable","type":"function","gas":74278001},{"name":"increase_amount","outputs":[],"inputs":[{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":74277366},{"name":"increase_unlock_time","outputs":[],"inputs":[{"type":"uint256","name":"_unlock_time"}],"stateMutability":"nonpayable","type":"function","gas":74278114},{"name":"withdraw","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":37220817},{"name":"balanceOf","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"view","type":"function","gas":6330},{"name":"balanceOfAt","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"},{"type":"uint256","name":"_block"}],"stateMutability":"view","type":"function","gas":514333},{"name":"totalSupply","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":559259},{"name":"totalSupplyAt","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"uint256","name":"_block"}],"stateMutability":"view","type":"function","gas":812560},{"name":"changeController","outputs":[],"inputs":[{"type":"address","name":"_newController"}],"stateMutability":"nonpayable","type":"function","gas":36907},{"name":"token","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1841},{"name":"supply","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1871},{"name":"locked","outputs":[{"type":"tuple","name":"","components":[{"type":"int128","name":"amount"},{"type":"uint256","name":"end"}]}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":3359},{"name":"epoch","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1931},{"name":"point_history","outputs":[{"type":"tuple","name":"","components":[{"type":"int128","name":"bias"},{"type":"int128","name":"slope"},{"type":"uint256","name":"ts"},{"type":"uint256","name":"blk"}]}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":5550},{"name":"user_point_history","outputs":[{"type":"tuple","name":"","components":[{"type":"int128","name":"bias"},{"type":"int128","name":"slope"},{"type":"uint256","name":"ts"},{"type":"uint256","name":"blk"}]}],"inputs":[{"type":"address","name":"arg0"},{"type":"uint256","name":"arg1"}],"stateMutability":"view","type":"function","gas":6079},{"name":"user_point_epoch","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":2175},{"name":"slope_changes","outputs":[{"type":"int128","name":""}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":2166},{"name":"controller","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2081},{"name":"transfersEnabled","outputs":[{"type":"bool","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2111},{"name":"name","outputs":[{"type":"string","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":8543},{"name":"symbol","outputs":[{"type":"string","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":7596},{"name":"version","outputs":[{"type":"string","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":7626},{"name":"decimals","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2231},{"name":"future_smart_wallet_checker","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2261},{"name":"smart_wallet_checker","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2291},{"name":"admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2321},{"name":"future_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2351}]
 export let votingescrow_natspec = {
   "methods": {
-    "transfer_ownership(address)": {
-      "notice": "Transfer ownership of VotingEscrow contract `@address(addr, 'to')`",
-      "signature": "0xf0350c04"
+    "commit_transfer_ownership(address)": {
+      "notice": "Commit transfer ownership of VotingEscrow contract `@address(addr, 'to')`",
+      "signature": "0x6b441a40"
+    },
+    "apply_transfer_ownership()": {
+      "notice": "Apply transfer ownership of VotingEscrow contract",
+      "signature": "0x6a1c05ae"
+    },
+    "commit_smart_wallet_cheker(address)": {
+      "notice": "Commit VotingEscrow smart wallet checker to be `@address(addr, 'to')`",
+      "signature": "0x57e55c32"
+    },
+    "apply_smart_wallet_cheker()": {
+      "notice": "Apply VotingEscrow smart wallet checker",
+      "signature": "0x8c2fa83b"
     },
     "add_to_whitelist(address)": {
       "notice": "Add address to whitelist smart contract depositors `@address(addr)`",
@@ -116,28 +132,846 @@ export let votingescrow_natspec = {
 }
 export let votingescrow_address = '0x17b3b360979cf2FecfFE7B0c3AfdDD8d8671a5AD'
 
-export let gaugecontroller_abi = [{"name":"CommitOwnership","inputs":[{"type":"address","name":"admin","indexed":false}],"anonymous":false,"type":"event"},{"name":"ApplyOwnership","inputs":[{"type":"address","name":"admin","indexed":false}],"anonymous":false,"type":"event"},{"name":"NewTypeWeight","inputs":[{"type":"int128","name":"type_id","indexed":false},{"type":"uint256","name":"time","indexed":false},{"type":"uint256","name":"weight","indexed":false},{"type":"uint256","name":"total_weight","indexed":false}],"anonymous":false,"type":"event"},{"name":"NewGaugeWeight","inputs":[{"type":"address","name":"gauge_address","indexed":false},{"type":"uint256","name":"time","indexed":false},{"type":"uint256","name":"weight","indexed":false},{"type":"uint256","name":"total_weight","indexed":false}],"anonymous":false,"type":"event"},{"name":"VoteForGauge","inputs":[{"type":"uint256","name":"time","indexed":false},{"type":"address","name":"user","indexed":false},{"type":"address","name":"gauge_addr","indexed":false},{"type":"uint256","name":"weight","indexed":false}],"anonymous":false,"type":"event"},{"name":"NewGauge","inputs":[{"type":"address","name":"addr","indexed":false},{"type":"int128","name":"gauge_type","indexed":false},{"type":"uint256","name":"weight","indexed":false}],"anonymous":false,"type":"event"},{"outputs":[],"inputs":[{"type":"address","name":"_token"},{"type":"address","name":"_voting_escrow"}],"stateMutability":"nonpayable","type":"constructor"},{"name":"commit_transfer_ownership","outputs":[],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"nonpayable","type":"function","gas":37597},{"name":"apply_transfer_ownership","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":38400},{"name":"gauge_types","outputs":[{"type":"int128","name":""}],"inputs":[{"type":"address","name":"_addr"}],"stateMutability":"view","type":"function","gas":1625},{"name":"add_gauge","outputs":[],"inputs":[{"type":"address","name":"addr"},{"type":"int128","name":"gauge_type"}],"stateMutability":"nonpayable","type":"function"},{"name":"add_gauge","outputs":[],"inputs":[{"type":"address","name":"addr"},{"type":"int128","name":"gauge_type"},{"type":"uint256","name":"weight"}],"stateMutability":"nonpayable","type":"function"},{"name":"checkpoint","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":18033784416},{"name":"checkpoint_gauge","outputs":[],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"nonpayable","type":"function","gas":18087678795},{"name":"gauge_relative_weight_write","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"nonpayable","type":"function"},{"name":"gauge_relative_weight_write","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"},{"type":"uint256","name":"time"}],"stateMutability":"nonpayable","type":"function"},{"name":"gauge_relative_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"view","type":"function"},{"name":"gauge_relative_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"},{"type":"uint256","name":"time"}],"stateMutability":"view","type":"function"},{"name":"add_type","outputs":[],"inputs":[{"type":"string","name":"_name"}],"stateMutability":"nonpayable","type":"function"},{"name":"add_type","outputs":[],"inputs":[{"type":"string","name":"_name"},{"type":"uint256","name":"weight"}],"stateMutability":"nonpayable","type":"function"},{"name":"change_type_weight","outputs":[],"inputs":[{"type":"int128","name":"type_id"},{"type":"uint256","name":"weight"}],"stateMutability":"nonpayable","type":"function","gas":36246310050},{"name":"change_gauge_weight","outputs":[],"inputs":[{"type":"address","name":"addr"},{"type":"uint256","name":"weight"}],"stateMutability":"nonpayable","type":"function","gas":36354170809},{"name":"vote_for_gauge_weights","outputs":[],"inputs":[{"type":"address","name":"_gauge_addr"},{"type":"uint256","name":"_user_weight"}],"stateMutability":"nonpayable","type":"function","gas":18142052127},{"name":"get_gauge_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"addr"}],"stateMutability":"view","type":"function","gas":2974},{"name":"get_type_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"int128","name":"type_id"}],"stateMutability":"view","type":"function","gas":2977},{"name":"get_total_weight","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2693},{"name":"get_weights_sum_per_type","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"int128","name":"type_id"}],"stateMutability":"view","type":"function","gas":3109},{"name":"admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1841},{"name":"future_admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1871},{"name":"token","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1901},{"name":"voting_escrow","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1931},{"name":"n_gauge_types","outputs":[{"type":"int128","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1961},{"name":"n_gauges","outputs":[{"type":"int128","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1991},{"name":"gauge_type_names","outputs":[{"type":"string","name":""}],"inputs":[{"type":"int128","name":"arg0"}],"stateMutability":"view","type":"function","gas":8628},{"name":"gauges","outputs":[{"type":"address","name":""}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":2160},{"name":"vote_user_slopes","outputs":[{"type":"tuple","name":"","components":[{"type":"uint256","name":"slope"},{"type":"uint256","name":"power"},{"type":"uint256","name":"end"}]}],"inputs":[{"type":"address","name":"arg0"},{"type":"address","name":"arg1"}],"stateMutability":"view","type":"function","gas":5020},{"name":"vote_user_power","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":2265},{"name":"last_user_vote","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"arg0"},{"type":"address","name":"arg1"}],"stateMutability":"view","type":"function","gas":2449},{"name":"points_weight","outputs":[{"type":"tuple","name":"","components":[{"type":"uint256","name":"bias"},{"type":"uint256","name":"slope"}]}],"inputs":[{"type":"address","name":"arg0"},{"type":"uint256","name":"arg1"}],"stateMutability":"view","type":"function","gas":3859},{"name":"time_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":2355},{"name":"points_sum","outputs":[{"type":"tuple","name":"","components":[{"type":"uint256","name":"bias"},{"type":"uint256","name":"slope"}]}],"inputs":[{"type":"int128","name":"arg0"},{"type":"uint256","name":"arg1"}],"stateMutability":"view","type":"function","gas":3970},{"name":"time_sum","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":2370},{"name":"points_total","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":2406},{"name":"time_total","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":2321},{"name":"points_type_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"int128","name":"arg0"},{"type":"uint256","name":"arg1"}],"stateMutability":"view","type":"function","gas":2671},{"name":"time_type_weight","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"uint256","name":"arg0"}],"stateMutability":"view","type":"function","gas":2490}]
+export let gaugecontroller_abi = [
+  {
+    "name": "CommitOwnership",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "admin",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "name": "ApplyOwnership",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "admin",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "name": "NewTypeWeight",
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "type_id",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "time",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "weight",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "total_weight",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "name": "NewGaugeWeight",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "gauge_address",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "time",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "weight",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "total_weight",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "name": "VoteForGauge",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "time",
+        "indexed": false
+      },
+      {
+        "type": "address",
+        "name": "user",
+        "indexed": false
+      },
+      {
+        "type": "address",
+        "name": "gauge_addr",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "weight",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "name": "NewGauge",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr",
+        "indexed": false
+      },
+      {
+        "type": "int128",
+        "name": "gauge_type",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "weight",
+        "indexed": false
+      }
+    ],
+    "anonymous": false,
+    "type": "event"
+  },
+  {
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_token"
+      },
+      {
+        "type": "address",
+        "name": "_voting_escrow"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "name": "commit_transfer_ownership",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 37597
+  },
+  {
+    "name": "apply_transfer_ownership",
+    "outputs": [],
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 38400
+  },
+  {
+    "name": "gauge_types",
+    "outputs": [
+      {
+        "type": "int128",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_addr"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1625
+  },
+  {
+    "name": "add_gauge",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      },
+      {
+        "type": "int128",
+        "name": "gauge_type"
+      },
+      {
+        "type": "uint256",
+        "name": "weight"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "name": "checkpoint",
+    "outputs": [],
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 18033784416
+  },
+  {
+    "name": "checkpoint_gauge",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 18087678795
+  },
+  {
+    "name": "gauge_relative_weight_write",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "name": "gauge_relative_weight_write",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      },
+      {
+        "type": "uint256",
+        "name": "time"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "name": "gauge_relative_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "name": "gauge_relative_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      },
+      {
+        "type": "uint256",
+        "name": "time"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "name": "add_type",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "string",
+        "name": "_name"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "name": "add_type",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "string",
+        "name": "_name"
+      },
+      {
+        "type": "uint256",
+        "name": "weight"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "name": "change_type_weight",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "type_id"
+      },
+      {
+        "type": "uint256",
+        "name": "weight"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 36246310050
+  },
+  {
+    "name": "change_gauge_weight",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      },
+      {
+        "type": "uint256",
+        "name": "weight"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 36354170809
+  },
+  {
+    "name": "vote_for_gauge_weights",
+    "outputs": [],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "_gauge_addr"
+      },
+      {
+        "type": "uint256",
+        "name": "_user_weight"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function",
+    "gas": 18142052127
+  },
+  {
+    "name": "get_gauge_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "addr"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2974
+  },
+  {
+    "name": "get_type_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "type_id"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2977
+  },
+  {
+    "name": "get_total_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2693
+  },
+  {
+    "name": "get_weights_sum_per_type",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "type_id"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 3109
+  },
+  {
+    "name": "admin",
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1841
+  },
+  {
+    "name": "future_admin",
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1871
+  },
+  {
+    "name": "token",
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1901
+  },
+  {
+    "name": "voting_escrow",
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1931
+  },
+  {
+    "name": "n_gauge_types",
+    "outputs": [
+      {
+        "type": "int128",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1961
+  },
+  {
+    "name": "n_gauges",
+    "outputs": [
+      {
+        "type": "int128",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 1991
+  },
+  {
+    "name": "gauge_type_names",
+    "outputs": [
+      {
+        "type": "string",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 8628
+  },
+  {
+    "name": "gauges",
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2160
+  },
+  {
+    "name": "vote_user_slopes",
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "slope"
+          },
+          {
+            "type": "uint256",
+            "name": "power"
+          },
+          {
+            "type": "uint256",
+            "name": "end"
+          }
+        ]
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "arg0"
+      },
+      {
+        "type": "address",
+        "name": "arg1"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 5020
+  },
+  {
+    "name": "vote_user_power",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2265
+  },
+  {
+    "name": "last_user_vote",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "arg0"
+      },
+      {
+        "type": "address",
+        "name": "arg1"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2449
+  },
+  {
+    "name": "points_weight",
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "bias"
+          },
+          {
+            "type": "uint256",
+            "name": "slope"
+          }
+        ]
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "arg0"
+      },
+      {
+        "type": "uint256",
+        "name": "arg1"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 3859
+  },
+  {
+    "name": "time_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "address",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2355
+  },
+  {
+    "name": "points_sum",
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "bias"
+          },
+          {
+            "type": "uint256",
+            "name": "slope"
+          }
+        ]
+      }
+    ],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "arg0"
+      },
+      {
+        "type": "uint256",
+        "name": "arg1"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 3970
+  },
+  {
+    "name": "time_sum",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2370
+  },
+  {
+    "name": "points_total",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2406
+  },
+  {
+    "name": "time_total",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2321
+  },
+  {
+    "name": "points_type_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "int128",
+        "name": "arg0"
+      },
+      {
+        "type": "uint256",
+        "name": "arg1"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2671
+  },
+  {
+    "name": "time_type_weight",
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ],
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "arg0"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "gas": 2490
+  }
+]
 export let gaugecontroller_natspec = {
   "methods": {
-    "transfer_ownership(address)": {
-      "notice": "Transfer ownership of GaugeController `@address(addr, 'to')`",
+    "commit_transfer_ownership(address)": {
+      "notice": "Commit transfer ownership of GaugeController `@address(addr, 'to')`",
       "signature": "0xf0350c04"
     },
-    "add_gauge(address,int128)": {
+    "apply_transfer_ownership()": {
+      "notice": "Apply transfer ownership of GaugeController",
+      "signature": "0x5f608d1e"
+    },
+    "add_gauge(address,int128,uint256)": {
       "notice": "Add gauge `@address(addr, '')` of `@param(gauge_type, 'gauge_type')` with `@param(weight, 'weight')`",
       "signature": "0x3a04f900"
     },
+    // "add_type(address,int128)": {
+    //   "notice": "Add gauge `@address(addr, '')` of `@param(gauge_type, 'gauge_type')` with `@param(weight, 'weight')`",
+    //   "signature": "0x0fbb8bfb"
+    // },
     "gauge_relative_weight_write(address)": {
       "notice": "Same as gauge_relative_weight(), but also fill all the unfilled values for type and gauge records",
       "signature": "0x95cfcec3"
     },
-    "add_type(string)": {
+    "add_type(string,uint256)": {
       "notice": "Add gauge type with `@param(_name, 'name')` and `@param(weight, 'weight')`",
       "signature": "0x26e56d5e"
     },
     "change_type_weight(int128,uint256)": {
       "notice": "Change gauge `@param(type_id, 'type')` `@param(weight, 'weight to')`",
       "signature": "0xdb1ca260"
+    },
+    "change_gauge_weight(int128,uint256)": {
+      "notice": "Change gauge `@param(type_id, 'type')` `@param(weight, 'weight to')`",
+      "signature": "0x52372603"
     },
     "vote_for_gauge_weights(int128,int128)": {
       "notice": "Allocate voting power for changing pool weights",

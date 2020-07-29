@@ -168,7 +168,7 @@
 				this.description = desc
 				this.showRootModal = true
 			},
-			async makeCall(abiname, method, params, contractAddress, agent, voteApp) {
+			async makeCall(abiname, method, params, contractAddress, agent, voteApp, ipfshash = '') {
 				state.proposeLoading = method
 
 				let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
@@ -193,7 +193,7 @@
 
 				let intent
 				try {
-					intent = await state.org.appIntent(voteApp, 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
+					intent = await state.org.appIntent(voteApp, 'newVote(bytes,string,bool,bool)', [calldata, ipfshash, false, false])
 				}
 				catch(err) {
 					console.error(err)

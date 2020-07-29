@@ -1,5 +1,21 @@
 <template>
 	<div>
+		<div id='modal' class='modal rootmodal' v-if='showDescriptionModal' @click.self='showDescriptionModal = false'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='showDescriptionModal = false'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Add description</legend>
+					<div class='content'>
+						<label for='textdescription'>Description:</label>
+						<textarea id='textdescription' v-model='textdescription'></textarea>
+					</div>
+					<button @click='proposeVote'>Create Vote</button>
+				</fieldset>
+			</div>
+		</div>
+
 		<fieldset>
 			<legend>Vote on pool</legend>
 			<div>
@@ -314,6 +330,12 @@
 			future_A: '',
 			future_time: '',
 
+			callMethod: '',
+			callParams: [],
+
+			showDescriptionModal: false,
+			textdescription: '',
+
 		}),
 
 		async created() {
@@ -351,15 +373,38 @@
 				this.poolProxy = new web3.eth.Contract(daoabis.poolproxy_abi, daoabis.poolproxy_address)
 			},
 
-			async propose(method, ...params) {
+			async proposeVote(method, ...params) {
+
+				let ipfshash = await fetch('http://localhost:3000/pinipfs', {
+					method: 'POST',
+					headers: {
+						'Content-type': 'application/json',
+					},
+					body: JSON.stringify({
+						text: this.textdescription,
+					})
+				})
+
+				ipfshash = await ipfshash.json()
+				ipfshash = ipfshash.ipfsHash
+
+				this.showDescriptionModal = false
+
 				let agent = OWNERSHIP_AGENT
 				let votingApp = OWNERSHIP_APP_ADDRESS
-				if(parameter_actions.includes(method)) {
+				if(parameter_actions.includes(this.callMethod)) {
 					agent = PARAMETER_AGENT
 					votingApp = PARAMETER_APP_ADDRESS
 				}
 
-				this.$emit('makeCall', 'poolproxy', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], this.poolProxy._address, agent, votingApp)
+				this.$emit('makeCall', 'poolproxy', this.callMethod, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...this.callParams], this.poolProxy._address, agent, votingApp, 'ipfs:' + ipfshash)
+			},
+
+			async propose(method, ...params) {
+				this.showDescriptionModal = true
+
+				this.callMethod = method
+				this.callParams = params
 
 
 				// let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
@@ -427,5 +472,9 @@
 	}
 	.actions > div button {
 		margin-top: 1em;
+	}
+	.modal-content .content {
+		text-align: left;
+		color: black;
 	}
 </style>

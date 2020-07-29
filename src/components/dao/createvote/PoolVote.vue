@@ -314,7 +314,6 @@
 			future_A: '',
 			future_time: '',
 
-			proposeLoading: false,
 		}),
 
 		async created() {
@@ -340,6 +339,9 @@
 			showRootModal() {
 				return state.showRootModal
 			},
+			proposeLoading() {
+				return state.proposeLoading
+			},
 		},
 
 		methods: {
@@ -350,50 +352,51 @@
 			},
 
 			async propose(method, ...params) {
-				this.proposeLoading = method
-
-
-				let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
-				let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
-				let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
-				console.log(['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], "PARAMS")
-				let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
-				console.log(abi, call, "ABI CALL")
-
-
-				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
-
-
 				let agent = OWNERSHIP_AGENT
 				let votingApp = OWNERSHIP_APP_ADDRESS
 				if(parameter_actions.includes(method)) {
 					agent = PARAMETER_AGENT
 					votingApp = PARAMETER_APP_ADDRESS
 				}
-				agent = agent.toLowerCase()
 
-				console.log(agent, "THE AGENT")
-				console.log(this.poolProxy._address, call, "POOL PROXY ADDRESS CALL DATA")
+				this.$emit('makeCall', 'poolproxy', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], this.poolProxy._address, agent, votingApp)
 
-				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
 
-				let intent
-				try {
-					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
-				}
-				catch(err) {
-					console.error(err)
-				}
-				let paths = await intent.paths(contract.default_account)
+				// let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
+				// let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
+				// let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
+				// console.log(['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], "PARAMS")
+				// let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
+				// console.log(abi, call, "ABI CALL")
 
-				console.log(paths, "THE PATHS")
 
-				state.transactionIntent = paths
+				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
 
-				this.proposeLoading = false
 
-				this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
+				// agent = agent.toLowerCase()
+
+				// console.log(agent, "THE AGENT")
+				// console.log(this.poolProxy._address, call, "POOL PROXY ADDRESS CALL DATA")
+
+				// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
+				// let intent
+				// try {
+				// 	intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
+				// }
+				// catch(err) {
+				// 	console.error(err)
+				// }
+				// let paths = await intent.paths(contract.default_account)
+
+				// console.log(paths, "THE PATHS")
+
+				// state.transactionIntent = paths
+
+				// this.proposeLoading = false
+
+				// this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
 
 			},
 		},

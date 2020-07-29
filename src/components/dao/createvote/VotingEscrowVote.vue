@@ -103,7 +103,6 @@
 			owner_addr: '',
 			checker_addr: '',
 
-			proposeLoading: false,
 		}),
 
 		async created() {
@@ -129,6 +128,9 @@
 			showRootModal() {
 				return state.showRootModal
 			},
+			proposeLoading() {
+				return state.proposeLoading
+			},
 		},
 
 		methods: {
@@ -137,46 +139,47 @@
 			},
 
 			async propose(method, ...params) {
-				this.proposeLoading = method
+
+				this.$emit('makeCall', 'votingescrow', method, params, daoabis.votingescrow_address, OWNERSHIP_AGENT, OWNERSHIP_APP_ADDRESS)
 				
-				console.log(daoabis.votingescrow_abi, "VOTING ESCROW ABI")
-				let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
-				console.log(abi, "THE ABI", method, "THE METHOD")
-				console.log([...params], "PARAMS")
-				let natspeckey = Object.keys(daoabis.votingescrow_natspec.methods).find(key => key.includes(method))
-				console.log(natspeckey, "NATSPECKEY")
-				let expression = daoabis.votingescrow_natspec.methods[natspeckey].notice
-				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
-				console.log(abi, call, "ABI CALL")
+				// console.log(daoabis.votingescrow_abi, "VOTING ESCROW ABI")
+				// let abi = daoabis.votingescrow_abi.find(abi => abi.name == method)
+				// console.log(abi, "THE ABI", method, "THE METHOD")
+				// console.log([...params], "PARAMS")
+				// let natspeckey = Object.keys(daoabis.votingescrow_natspec.methods).find(key => key.includes(method))
+				// console.log(natspeckey, "NATSPECKEY")
+				// let expression = daoabis.votingescrow_natspec.methods[natspeckey].notice
+				// let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
+				// console.log(abi, call, "ABI CALL")
 
 
-				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
+				// // let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				// // let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
 
-				let agent = OWNERSHIP_AGENT
-				let votingApp = OWNERSHIP_APP_ADDRESS
-				// if(parameter_actions.includes(method)) {
-				// 	agent = PARAMETER_AGENT
-				// 	votingApp = PARAMETER_APP_ADDRESS
+				// let agent = OWNERSHIP_AGENT
+				// let votingApp = OWNERSHIP_APP_ADDRESS
+				// // if(parameter_actions.includes(method)) {
+				// // 	agent = PARAMETER_AGENT
+				// // 	votingApp = PARAMETER_APP_ADDRESS
+				// // }
+				// agent = agent.toLowerCase()
+
+				// let intent
+				// try {
+				// 	intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [daoabis.votingescrow_address, 0, call])
 				// }
-				agent = agent.toLowerCase()
+				// catch(err) {
+				// 	console.error(err)
+				// }
+				// let paths = await intent.paths(contract.default_account)
 
-				let intent
-				try {
-					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [daoabis.votingescrow_address, 0, call])
-				}
-				catch(err) {
-					console.error(err)
-				}
-				let paths = await intent.paths(contract.default_account)
+				// console.log(paths, "THE PATHS")
 
-				console.log(paths, "THE PATHS")
+				// state.transactionIntent = paths
 
-				state.transactionIntent = paths
+				// this.proposeLoading = false
 
-				this.proposeLoading = false
-
-				this.$emit('call', method, [...params], call, abi, expression)
+				// this.$emit('call', method, [...params], call, abi, expression)
 
 			},
 

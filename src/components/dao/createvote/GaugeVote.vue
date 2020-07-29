@@ -210,7 +210,6 @@
 			change_type_gauge_weight: '',
 			change_gauge_weight: '',
 
-			proposeLoading: false,
 		}),
 
 		async created() {
@@ -235,6 +234,9 @@
 			},
 			showRootModal() {
 				return state.showRootModal
+			},
+			proposeLoading() {
+				return state.proposeLoading
 			},
 		},
 
@@ -267,45 +269,45 @@
 			},
 
 			async propose(method, ...params) {
-				this.proposeLoading = method
+
+				// let abi = daoabis.gaugecontroller_abi.find(abi => abi.name == method)
+				// let natspeckey = Object.keys(daoabis.gaugecontroller_natspec.methods).find(key => key.includes(method))
+				// let expression = daoabis.gaugecontroller_natspec.methods[natspeckey].notice
+				// let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
+				// console.log(abi, call, "ABI CALL")
+
+				this.$emit('makeCall', 'gaugecontroller', method, params, this.gaugeController._address, OWNERSHIP_AGENT, OWNERSHIP_APP_ADDRESS)
 
 
-				let abi = daoabis.gaugecontroller_abi.find(abi => abi.name == method)
-				let natspeckey = Object.keys(daoabis.gaugecontroller_natspec.methods).find(key => key.includes(method))
-				let expression = daoabis.gaugecontroller_natspec.methods[natspeckey].notice
-				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
-				console.log(abi, call, "ABI CALL")
+				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.gaugeController._address, 0, call])
 
+				// let agent = OWNERSHIP_AGENT
+				// let votingApp = OWNERSHIP_APP_ADDRESS
+				// // if(parameter_actions.includes(method)) {
+				// // 	agent = PARAMETER_AGENT
+				// // 	votingApp = PARAMETER_APP_ADDRESS
+				// // }
+				// agent = agent.toLowerCase()
 
-				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.gaugeController._address, 0, call])
+				// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
 
-				let agent = OWNERSHIP_AGENT
-				let votingApp = OWNERSHIP_APP_ADDRESS
-				// if(parameter_actions.includes(method)) {
-				// 	agent = PARAMETER_AGENT
-				// 	votingApp = PARAMETER_APP_ADDRESS
+				// let intent
+				// try {
+				// 	intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
 				// }
-				agent = agent.toLowerCase()
+				// catch(err) {
+				// 	console.error(err)
+				// }
+				// let paths = await intent.paths(contract.default_account)
 
-				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+				// console.log(paths, "THE PATHS")
 
-				let intent
-				try {
-					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
-				}
-				catch(err) {
-					console.error(err)
-				}
-				let paths = await intent.paths(contract.default_account)
+				// state.transactionIntent = paths
 
-				console.log(paths, "THE PATHS")
+				// this.proposeLoading = false
 
-				state.transactionIntent = paths
-
-				this.proposeLoading = false
-
-				this.$emit('call', method, [...params], call, abi, expression)
+				// this.$emit('call', method, [...params], call, abi, expression)
 
 			},
 

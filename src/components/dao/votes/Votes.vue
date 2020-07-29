@@ -58,6 +58,7 @@
 					</div>
 				</fieldset>
 			</div>
+			<pagination></pagination>
 		</fieldset>
 	</div>
 </template>
@@ -79,11 +80,14 @@
 
 	import RootModal from '../common/RootModal'
 
+	import Pagination from './Pagination'
+
 	export default {
 		components: {
 			Vote,
 			NewTextVote,
 			RootModal,
+			Pagination,
 		},
 
 		async created() {

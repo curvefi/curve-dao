@@ -74,6 +74,8 @@ export let state = Vue.observable({
 
 	executeVote: false,
 
+	proposeLoading: null,
+
 
 	customFilter: false,
 	filters: {
@@ -83,6 +85,11 @@ export let state = Vue.observable({
 		outcome: 5,
 		//1 - Voting, 2 - Parameter, 3 - all
 		app: 3,
+	},
+
+	pagination: {
+		page: 0,
+		perPage: 10,
 	},
 })
 
@@ -345,12 +352,10 @@ export function decorateVotes(votes) {
 			vote.app = 1
 		if(vote.votingAppName == 'Parameter')
 			vote.app = 2
-		console.log(vote.app, "VOTE APP")
 		if(vote.app == 1)
 			vote.voteTime = OWNERSHIP_VOTE_TIME
 		if(vote.app == 2)
 			vote.voteTime = PARAMETER_VOTE_TIME
-		console.log(vote.voteTime, "VOTE TIME")
 		vote.yeap = vote.totalSupport == 0 ? 0 : (+vote.yea / vote.totalSupport * 100).toFixed(1)
 		vote.nop = vote.totalSupport == 0 ? 0 : (+vote.nay / vote.totalSupport * 100).toFixed(1)
 		vote.callAddress = vote.script.substr(90,40).toLowerCase()
@@ -526,9 +531,6 @@ export function canExecute(vote) {
 }
 
 export function isRejected(vote) {
-	console.log(vote, "THE VOTE")
-	console.log(!vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote)) && !canExecute(vote), "IS REJECTED")
-	console.log(!vote.executed, !isVoteOpen(vote), !hasSupport(vote), !hasQuorum(vote), !canExecute(vote), "IS REJECTED")
 	return !vote.executed && !isVoteOpen(vote) && (!hasSupport(vote) || !hasQuorum(vote)) && !canExecute(vote)
 }
 
@@ -566,19 +568,19 @@ export function encodeCallsScript(actions) {
 
 export let getters = {
 	votes() {
-		return state.votes
+		return state.votes.slice(state.pagination.page*state.pagination.perPage, state.pagination.page*state.pagination.perPage + state.pagination.perPage)
 	},
 	openVotes() {
-		return state.votes.filter(vote => isVoteOpen(vote) && !vote.executed).sort((a, b) => b.creatorVotingPower - a.creatorVotingPower)
+		return this.votes.filter(vote => isVoteOpen(vote) && !vote.executed).sort((a, b) => b.creatorVotingPower - a.creatorVotingPower)
 	},
 	closedVotes() {
-		return state.votes.filter(vote => !isVoteOpen(vote) || vote.executed)
+		return this.votes.filter(vote => !isVoteOpen(vote) || vote.executed)
 	},
 	customFilter() {
 		return state.customFilter
 	},
 	customFilterVotes() {
-		let filteredVotes = state.votes
+		let filteredVotes = this.votes
 		if(state.filters.status < 3)
 			filteredVotes = filteredVotes.filter(vote => vote.status == state.filters.status)
 		if(state.filters.outcome < 5)

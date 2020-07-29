@@ -37,7 +37,7 @@
 			<button @click='type=4' :class="{'simplebutton': type==4}">PoolProxy</button>
 		</div>
 
-		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal' @call='describeCall'></component>
+		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal' @call='describeCall' @makeCall='makeCall'></component>
 
 	</div>
 </template>
@@ -155,8 +155,6 @@
 				this.showRootModal = true
 			},
 			async describeCall(method, params, calldata, abi, expression) {
-				this.describeMethod = method
-				this.describeParams = params
 
 				console.log(abi, calldata, expression, "RADSPEC")
 
@@ -169,6 +167,55 @@
 
 				this.description = desc
 				this.showRootModal = true
+			},
+			async makeCall(abiname, method, params, contractAddress, agent, voteApp) {
+				state.proposeLoading = method
+
+				let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
+				let natspeckey = Object.keys(daoabis[abiname+'_natspec'].methods).find(key => key.includes(method))
+				let expression = daoabis[abiname+'_natspec'].methods[natspeckey].notice
+				console.log(params, "PARAMS")
+				let call = web3.eth.abi.encodeFunctionCall(abi, params)
+				console.log(abi, call, "ABI CALL")
+
+
+				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [contractAddress, 0, call])
+
+
+				agent = agent.toLowerCase()
+				voteApp = voteApp.toLowerCase()
+
+				console.log(agent, "THE AGENT")
+				console.log(contractAddress, call, "CONTRACT ADDRESS CALL DATA")
+
+				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
+				let intent
+				try {
+					intent = await state.org.appIntent(voteApp, 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
+				}
+				catch(err) {
+					console.error(err)
+				}
+				let paths = await intent.paths(contract.default_account)
+
+				state.transactionIntent = paths
+
+				let desc = await radspec.evaluate(expression, {
+					abi: [abi],
+					transaction: {
+						data: call,
+					},
+				}, radspecFormat)
+
+				this.description = desc
+				this.showRootModal = true
+
+				state.proposeLoading = null
+
+
+				console.log(paths, "THE PATHS")
 			},
 		},
 	}

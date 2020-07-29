@@ -112,6 +112,14 @@
 								<button @click='voteno'> No <span class='loading line' v-show='loadingno'></span></button>
 							</div>
 						</div>
+						<div class='myvote info-message gentle-message' v-show='hadNoBalanceAt'>
+							You didn't have enough veCRV balance({{ balanceOfAtFormat}} / {{ MIN_BALANCE }} required) when vote was created on block snapshot 
+							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
+							<p>
+								Lock CRV to be able to vote on next proposals in <router-link to='/locker'>Locker page</router-link>
+							</p>
+
+						</div>
 					</div>
 				</div>
 			</fieldset>
@@ -185,7 +193,7 @@
 
 	import Countdown from '../common/Countdown.vue'
 
-	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap } from '../voteStore'
+	import { helpers as voteHelpers, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, contractMap, MIN_BALANCE } from '../voteStore'
 	import * as helpers from '../../../utils/helpers'
 
 	import RootModalMixin from '../common/RootModalMixin'
@@ -205,6 +213,8 @@
 				id: null,
 			},
 			balanceOfAt: null,
+			balanceOf: null,
+			CRVbalance: null,
 
 			loadingyes: false,
 			loadingno: false,
@@ -213,7 +223,7 @@
 		}),
 
 		async created() {
-			this.$watch(() => state.initialized, val => {
+			this.$watch(() => state.initialized && contract.multicall, val => {
 				if(val) this.mounted()
 			}, {
 				immediate: true,
@@ -286,6 +296,20 @@
 					return 'No quorum'
 				return ''
 			},
+			hadNoBalanceAt() {
+				return this.balanceOfAt && this.balanceOfAt.lt(BN(MIN_BALANCE))
+			},
+			hasCRV() {
+				return this.CRVbalance && this.CRVbalance.gt(0)
+			},
+			canLockToVote() {
+				if(this.balanceOf === null) return false
+				if(this.balanceOf.eq(0) && this.CRVbalance.gt(0))
+					return true
+			},
+			MIN_BALANCE() {
+				return (MIN_BALANCE / 1e18).toFixed(0)
+			},
 		},
 
 		methods: {
@@ -293,8 +317,17 @@
 				let app = this.$route.params.app
 				let id = this.$route.params.id
 				this.vote = await getVote(app, id)
-				if(this.isVoteOpen)
-					this.balanceOfAt = BN(await state.votingEscrow.methods.balanceOfAt(contract.default_account, this.vote.snapshotBlock).call())
+				let calls = [
+					[state.votingEscrow._address, state.votingEscrow.methods.balanceOfAt(contract.default_account, this.vote.snapshotBlock).encodeABI()],
+					[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
+					[state.CRV._address, state.CRV.methods.balanceOf(contract.default_account).encodeABI()],
+				]
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				//if(this.isVoteOpen)
+				this.balanceOfAt = BN(decoded[0])
+				this.balanceOf = BN(decoded[1])
+				this.CRVbalance = BN(decoded[2])
 			},
 			shortenAddress(address) {
 				if(!address) return ''

@@ -101,7 +101,6 @@
 			set_burner_token: '',
 			set_burner_address: '',
 
-			proposeLoading: false,
 		}),
 
 		async created() {
@@ -127,6 +126,9 @@
 			showRootModal() {
 				return state.showRootModal
 			},
+			proposeLoading() {
+				return state.proposeLoading
+			},
 		},
 
 		methods: {
@@ -135,46 +137,46 @@
 			},
 
 			async propose(method, ...params) {
-				this.proposeLoading = method
+				this.$emit('makeCall', 'poolproxy', method, params, daoabis.poolproxy_address, OWNERSHIP_AGENT, OWNERSHIP_APP_ADDRESS)
 
-				let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
-				console.log([...params], "PARAMS")
-				console.log(abi, "THE ABI")
-				let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
-				let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
-				let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
-				console.log(abi, call, "ABI CALL")
+				// let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
+				// console.log([...params], "PARAMS")
+				// console.log(abi, "THE ABI")
+				// let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
+				// let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
+				// let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
+				// console.log(abi, call, "ABI CALL")
 
 
-				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [daoabis.poolproxy_address, 0, call])
+				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [daoabis.poolproxy_address, 0, call])
 
-				let agent = OWNERSHIP_AGENT
-				let votingApp = OWNERSHIP_APP_ADDRESS
-				// if(parameter_actions.includes(method)) {
-				// 	agent = PARAMETER_AGENT
-				// 	votingApp = PARAMETER_APP_ADDRESS
+				// let agent = OWNERSHIP_AGENT
+				// let votingApp = OWNERSHIP_APP_ADDRESS
+				// // if(parameter_actions.includes(method)) {
+				// // 	agent = PARAMETER_AGENT
+				// // 	votingApp = PARAMETER_APP_ADDRESS
+				// // }
+				// agent = agent.toLowerCase()
+
+				// console.log([daoabis.poolproxy_address, 0, call], "EXECUTE PARAMS")
+
+				// let intent
+				// try {
+				// 	intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [daoabis.poolproxy_address, 0, call])
 				// }
-				agent = agent.toLowerCase()
+				// catch(err) {
+				// 	console.error(err)
+				// }
+				// let paths = await intent.paths(contract.default_account)
 
-				console.log([daoabis.poolproxy_address, 0, call], "EXECUTE PARAMS")
+				// console.log(paths, "THE PATHS")
 
-				let intent
-				try {
-					intent = await state.org.appIntent(agent, 'execute(address,uint256,bytes)', [daoabis.poolproxy_address, 0, call])
-				}
-				catch(err) {
-					console.error(err)
-				}
-				let paths = await intent.paths(contract.default_account)
+				// state.transactionIntent = paths
 
-				console.log(paths, "THE PATHS")
+				// this.proposeLoading = false
 
-				state.transactionIntent = paths
-
-				this.proposeLoading = false
-
-				this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
+				// this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
 
 			},
 		},

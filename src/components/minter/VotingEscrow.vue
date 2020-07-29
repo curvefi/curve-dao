@@ -1,5 +1,21 @@
 <template>
 	<div :class="{'window white': showvelock}">
+
+		<div id='modal' class='rootmodal modal' v-show='showModal' @click.self='showModal = false'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='showModal = false'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Confirm lock</legend>
+					<div class='content'>
+						Confirm locking {{ deposit }} CRV until {{ increaseLockText }}
+					</div>
+					<button @click='submitModal'> OK </button>
+				</fieldset>
+			</div>
+		</div>
+
 		<fieldset>
 			<legend>
 				Voting power in DAO
@@ -22,7 +38,7 @@
 						<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
 						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
 						<br>
-						<button @click='increaseAmount'>Add</button>
+						<button @click="confirmModal('increaseAmount')">Add</button>
 					</p>
 					<p class='depositinputs'>
 						<label for='incraselock'>Increase lock:</label>
@@ -34,7 +50,7 @@
 							:open-date='openDate'
 						></datepicker>
 						<br>
-						<button @click='submitIncreaseLock'>Increase lock</button>
+						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
 					</p>
 				</div>
 				<div class='increaselock' v-show='!hasvecrv'>
@@ -53,8 +69,11 @@
 							:open-date='openDate'
 						></datepicker>
 					</p>
-					<button @click='createLock'>Create lock</button>
+					<button @click="confirmModal('createLock')">Create lock</button>
 				</div>
+				<p>
+					Your starting voting power will be: {{ newVotingPower() }} veCRV
+				</p>
 			</div>
 			<div v-show='!showvelock'>
 				<slot></slot>
@@ -65,6 +84,8 @@
 
 <script>
     import * as common from '../../utils/common.js'
+
+	const { setIntervalAsync, clearIntervalAsync } = require('set-interval-async/dynamic')
 
 	import Datepicker from 'vuejs-datepicker';
 
@@ -96,6 +117,12 @@
 			lockTime: 0,
 			deposit: 0,
 			increaseLock: Date.now(),
+
+			interval: null,
+
+			showModal: false,
+
+			method: null,
 
 		}),
 
@@ -134,6 +161,9 @@
 			isInvalidAmount() {
 				return this.deposit <= 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
 			},
+			increaseLockText() {
+				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000)
+			},
 		},
 
 		methods: {
@@ -157,6 +187,10 @@
 				}
 				this.crvBalance = BN(decoded[2])
 				this.deposit = this.crvBalance.div(1e18).toFixed(0,1)
+
+				if(this.crvBalance.gt(0)) {
+					this.interval = setIntervalAsync(this.newVotingPower, 10000)
+				}
 			},
 
 			setMaxBalance() {
@@ -196,6 +230,26 @@
 				})
 				this.mounted()
 			},
+
+			async confirmModal(method) {
+				this.method = method
+				this.showModal = true
+			},
+
+			async submitModal(method) {
+				this[this.method]()
+			},
+
+			newVotingPower() {
+				let lockTime = Date.parse(this.increaseLock)
+				let deposit = BN(this.deposit)
+
+				return deposit.times((lockTime - Date.now()) / 1000).div(86400 * 365).div(4).toFixed(0,2)
+			},
+
+			beforeDestroy() {
+				this.interval && clearIntervalAsync(this.interval)
+			},
 		},
 	}
 </script>
@@ -225,5 +279,8 @@
 	}
 	.depositinputs input.invalid {
 		background: red;
+	}
+	.modal-content .content {
+		color: black;
 	}
 </style>

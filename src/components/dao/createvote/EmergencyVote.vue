@@ -66,6 +66,8 @@
 	import allabis from '../../../allabis'
 
 	import * as daoabis from '../allabis'
+	console.log(daoabis, "DAOABIS")
+
 
 	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT, helpers as voteHelpers } from '../voteStore'
 
@@ -86,8 +88,7 @@
 			addresses: [],
 			mintaddress: '',
 			burnaddress:'',
-
-			proposeLoading: false,
+			
 		}),
 
 		async created() {
@@ -115,6 +116,9 @@
 			},
 			hasTokens() {
 				return this.addresses.find(address => address.toLowerCase() == this.mintaddress.toLowerCase()) !== undefined
+			},
+			proposeLoading() {
+				return state.proposeLoading
 			},
 		},
 
@@ -149,44 +153,46 @@
 			},
 
 			async propose(method, ...params) {
-				this.proposeLoading = method
-
 				//this.$emit('call', method, params)
+				this.$emit('makeCall', 'tokenmanager', method, [...params, 1], emergencyToken_address, OWNERSHIP_AGENT, OWNERSHIP_APP_ADDRESS)
 
-				let abi = daoabis.tokenmanager_abi.find(abi => abi.name == method)
-				console.log([...params], "PARAMS")
-				let call = web3.eth.abi.encodeFunctionCall(abi, [...params, 1])
-				console.log(abi, call, "ABI CALL")
+				// let abi = daoabis.tokenmanager_abi.find(abi => abi.name == method)
+				// console.log(daoabis, "NATSPEC")
+				// let natspeckey = Object.keys(daoabis.tokenmanager_natspec.methods).find(key => key.includes(method))
+				// let expression = daoabis.tokenmanager_natspec.methods[natspeckey].notice
+				// console.log([...params], "PARAMS")
+				// let call = web3.eth.abi.encodeFunctionCall(abi, [...params, 1])
+				// console.log(abi, call, "ABI CALL")
 
-				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [emergencyToken_address, 0, call])
+				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [emergencyToken_address, 0, call])
 
-				let agent = OWNERSHIP_AGENT
-				let votingApp = OWNERSHIP_APP_ADDRESS
-				// if(parameter_actions.includes(method)) {
-				// 	agent = PARAMETER_AGENT
-				// 	votingApp = PARAMETER_APP_ADDRESS
+				// let agent = OWNERSHIP_AGENT
+				// let votingApp = OWNERSHIP_APP_ADDRESS
+				// // if(parameter_actions.includes(method)) {
+				// // 	agent = PARAMETER_AGENT
+				// // 	votingApp = PARAMETER_APP_ADDRESS
+				// // }
+				// agent = agent.toLowerCase()
+
+				// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
+				// let intent
+				// try {
+				// 	intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
 				// }
-				agent = agent.toLowerCase()
+				// catch(err) {
+				// 	console.error(err)
+				// }
+				// let paths = await intent.paths(contract.default_account)
 
-				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+				// console.log(paths, "THE PATHS")
 
-				let intent
-				try {
-					intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
-				}
-				catch(err) {
-					console.error(err)
-				}
-				let paths = await intent.paths(contract.default_account)
+				// state.transactionIntent = paths
 
-				console.log(paths, "THE PATHS")
+				// this.proposeLoading = false
 
-				state.transactionIntent = paths
-
-				this.proposeLoading = false
-
-				this.$emit('showRootModal')
+				// this.$emit('call', method, params, call, abi, expression)
 
 			},
 

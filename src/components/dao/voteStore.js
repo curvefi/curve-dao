@@ -305,6 +305,13 @@ export async function getVote(app, voteId) {
 	let { lastUserVote } = results[1].data
 
 	console.log(votes, "THE VOTE")
+	
+	if(votes[0].metadata.includes('ipfs:')) {
+		let getText = await fetch('https://gateway.pinata.cloud/ipfs/' + votes[0].metadata.slice(5))
+		let ipfsText = await getText.json()
+		ipfsText = ipfsText.text
+		votes[0].metadata = ipfsText
+	}
 
 	let vote = state.votes.length && state.votes.find(vote => vote.id == votes[0].id)
 	if(vote === undefined || vote == 0) {

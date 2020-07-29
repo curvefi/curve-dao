@@ -375,7 +375,7 @@
 
 			async proposeVote(method, ...params) {
 
-				let ipfshash = await fetch('http://localhost:3000/pinipfs', {
+				let ipfshash = await fetch('http://pushservice.curve.fi/pinipfs', {
 					method: 'POST',
 					headers: {
 						'Content-type': 'application/json',

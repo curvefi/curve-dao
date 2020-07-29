@@ -62,6 +62,14 @@
 						<div class='content'>
 							<span v-show='vote.contractName'>
 								{{ vote.contractName }}: <span v-html='vote.description'></span>
+								<p>
+									<div>
+										<b> Description text: </b>
+									</div>
+									<p>
+										{{ vote.metadata }}
+									</p>
+								</p>
 							</span>
 							<span v-show='!vote.contractName && vote.metadata'>
 								{{ vote.metadata }}

@@ -23,17 +23,17 @@
 			<legend>
 				Voting power in DAO
 			</legend>
-			<p v-show='hasvecrv'>
-				<div>
-					CRV <img class='icon small' :src="publicPath + 'logo.png'"> balance: {{ crvBalanceText }}
-				</div>
+			<div>
+				CRV <img class='icon small' :src="publicPath + 'logo.png'"> balance: {{ crvBalanceText }}
+			</div>
+			<div v-show='hasvecrv'>
 				<div>
 					Balance in Voting Escrow: {{ vecrvBalanceText }} veCRV
 				</div>
 				<div>
 					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
 				</div>
-			</p>
+			</div>
 			<div class='velock' v-show='showvelock'>
 				<div class='increaselock' v-show='hasvecrv'>
 					<p class='depositinputs'>
@@ -76,6 +76,9 @@
 				</div>
 				<p>
 					Your starting voting power will be: {{ newVotingPower() }} veCRV
+				</p>
+				<p class='info-message gentle-message' v-show='newVotingPower() < 2500'>
+					You need at least 2500 veCRV to be able to create a vote
 				</p>
 			</div>
 			<div v-show='!showvelock'>
@@ -187,7 +190,7 @@
 				this.increaseLock = new Date((this.lockTime + 604800)* 1000)
 				if(this.lockTime == 0) {
 					this.lockTime = Date.now() / 1000
-					this.increaseLock = Date.now()
+					this.increaseLock = new Date(Date.now() + 604800 * 1000)
 				}
 				this.crvBalance = BN(decoded[2])
 				this.deposit = this.crvBalance.div(1e18).toFixed(0,1)
@@ -211,7 +214,7 @@
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
 							from: contract.default_account,
-							gas: 400000,
+							gas: 1000000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -230,7 +233,7 @@
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
 							from: contract.default_account,
-							gas: 4000000,
+							gas: 10000000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -244,6 +247,7 @@
 
 			async createLock() {
 				this.showConfirmMessage = true;
+				console.log("INCREASE LOCK")
 
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
@@ -253,7 +257,7 @@
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
 							from: contract.default_account,
-							gas: 400000,
+							gas: 1000000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -276,7 +280,7 @@
 
 			newVotingPower() {
 				let lockTime = Date.parse(this.increaseLock)
-				let deposit = BN(this.deposit)
+				let deposit = BN(this.deposit).plus(this.vecrvBalance / 1e18)
 
 				return deposit.times((lockTime - Date.now()) / 1000).div(86400 * 365).div(4).toFixed(0,2)
 			},

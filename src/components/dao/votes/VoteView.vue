@@ -62,18 +62,32 @@
 						<div class='content'>
 							<span v-show='vote.contractName'>
 								{{ vote.contractName }}: <span v-html='vote.description'></span>
-								<p>
+								<div>
 									<div v-show='formattedMetadata && formattedMetadata.length'>
 										<b> Description text: </b>
 									</div>
-									<p>
+									<p v-show='!showMore'>
 										{{ formattedMetadata }}
 									</p>
+									<div v-show = 'formattedMetadata && vote.metadata.length > formattedMetadata.length'>
+										<p v-show='showMore'>
+											{{ vote.metadata }}
+										</p>
+										<button class='simplebutton showmore' @click='showMore = !showMore'>{{ showMore ? 'Hide' : 'Show more' }}</button>
+									</div>
+								</div>
+							</span>
+							<div v-show='!vote.contractName && vote.metadata'>
+								<p v-show='!showMore'>
+									{{ formattedMetadata }}
 								</p>
-							</span>
-							<span v-show='!vote.contractName && vote.metadata'>
-								{{ formattedMetadata }}
-							</span>
+								<div v-show = 'formattedMetadata && vote.metadata.length > formattedMetadata.length'>
+									<p v-show='showMore'>
+										{{ vote.metadata }}
+									</p>
+									<button class='simplebutton showmore' @click='showMore = !showMore'>{{ showMore ? 'Hide' : 'Show more' }}</button>
+								</div>
+							</div>
 							<span v-show='!vote.contractName && vote.description'>
 								<span v-html='vote.description'></span>
 							</span>
@@ -240,6 +254,8 @@
 			loadingno: false,
 
 			votetype: null,
+
+			showMore: false,
 		}),
 
 		async created() {

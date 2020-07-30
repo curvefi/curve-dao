@@ -9,10 +9,10 @@
 					<b> #{{ vote.voteNumber }} </b>
 				</router-link> 
 				<span class='userCastVote tooltip'>
-					<span v-show='vote.casts.length && vote.casts[0].supports' class='userVotedYes'>√</span>
-					<span v-show='vote.casts.length && !vote.casts[0].supports' class='userVotedNo'>X</span>
+					<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports' class='userVotedYes'>√</span>
+					<span v-show='vote.casts && vote.casts.length && !vote.casts[0].supports' class='userVotedNo'>X</span>
 					<span class='tooltiptext'>
-						You voted {{vote.casts.length && vote.casts[0].supports ? 'Yes' : 'No'}}
+						You voted {{vote.casts && vote.casts.length && vote.casts[0].supports ? 'Yes' : 'No'}}
 					</span>
 				</span>
 			</div>
@@ -22,7 +22,7 @@
 						{{ vote.contractName }}: <span v-html='vote.description'></span>
 					</span>
 					<span v-show='!vote.contractName && vote.metadata'>
-						{{ vote.metadata }}
+						{{ formattedMetadata }}
 					</span>
 					<span v-show='!vote.contractName && vote.description'>
 						<span v-html='vote.description'></span>
@@ -133,6 +133,9 @@
 			},
 			publicPath() {
 				return process.env.BASE_URL
+			},
+			formattedMetadata() {
+				return this.vote.metadata && helpers.truncate(this.vote.metadata, 100, true)
 			},
 		},
 

@@ -26,6 +26,7 @@
 		}),
 
 		computed: {
+			...getters,
 			perPage: {
 				get() {
 					return state.pagination.perPage
@@ -35,13 +36,13 @@
 				},
 			},
 			votesLength() {
-				return state.votes.length
+				return this.customFilterVotes.length
 			},
 			page() {
 				return state.pagination.page
 			},
 			pages() {
-				return state.votes.length && Math.ceil(state.votes.length / state.pagination.perPage) - 1
+				return this.customFilterVotes.length && Math.ceil(this.customFilterVotes.length / state.pagination.perPage) - 1
 			},
 		},
 

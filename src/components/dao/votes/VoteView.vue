@@ -63,16 +63,16 @@
 							<span v-show='vote.contractName'>
 								{{ vote.contractName }}: <span v-html='vote.description'></span>
 								<p>
-									<div>
+									<div v-show='formattedMetadata && formattedMetadata.length'>
 										<b> Description text: </b>
 									</div>
 									<p>
-										{{ vote.metadata }}
+										{{ formattedMetadata }}
 									</p>
 								</p>
 							</span>
 							<span v-show='!vote.contractName && vote.metadata'>
-								{{ vote.metadata }}
+								{{ formattedMetadata }}
 							</span>
 							<span v-show='!vote.contractName && vote.description'>
 								<span v-html='vote.description'></span>
@@ -95,6 +95,9 @@
 						</div>
 						<div>
 							{{ yeas }}
+							<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports == true'>
+								({{voterStake}})
+							</span>
 						</div>
 						<div class="tui-progress-bar">
 							<span class='notext'>No:</span>
@@ -103,15 +106,24 @@
 						</div>
 						<div>
 							{{ nays }}
+							<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports == false'>
+								({{voterStake}})
+							</span>
+						</div>
+						<div class='totalvotes'>
+							Total votes: {{ vote.castCount }}
 						</div>
 
 						<div class='myvote' v-if='vote.casts && vote.casts.length'>
-							You voted with: <b> {{ voterStake }} </b> veCRV
+							You voted 
+							<b>
+								<a :href="'https://etherscan.io/tx/' + vote.casts[0].transactionHash"> {{ vote.casts[0].supports ? 'Yes' : 'No'}}</a> 
+							</b> with: <b> {{ voterStake }} </b> veCRV
 							at snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
 						</div>
 
-						<div class='myvote info-message gentle-message' v-if='canVote() && !vote.casts.length'>
+						<div class='myvote info-message gentle-message' v-if='canVote() && vote.casts && !vote.casts.length'>
 							Voting with {{ currentVotingPowerFormat() }} veCRV, you had {{ balanceOfAtFormat }} veCRV
 							at vote creation on snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
@@ -182,7 +194,7 @@
 			</fieldset>
 
 			<fieldset>
-				<legend>Minumum approval</legend>
+				<legend>Minimum approval</legend>
 				<div>
 					<span :class="{'passed': hasQuorum, 'rejected': !hasQuorum}">
 						{{ quorum }}%
@@ -252,7 +264,7 @@
 				return (this.vote.nay / 1e18).toFixed(2)
 			},
 			voterStake() {
-				if(!this.vote.casts.length) return 0
+				if(!this.vote.casts || !this.vote.casts.length) return 0
 				return (this.vote.casts[0].voterStake / 1e18).toFixed(2)
 			},
 			isVoteOpen() {
@@ -317,6 +329,10 @@
 			},
 			MIN_BALANCE() {
 				return (MIN_BALANCE / 1e18).toFixed(0)
+			},
+			formattedMetadata() {
+				if(!this.vote.metadata) return ''
+				return this.vote.metadata && helpers.truncate(this.vote.metadata, 100, true)
 			},
 		},
 
@@ -491,5 +507,8 @@
 	}
 	.loading.matrix {
 		flex: 1;
+	}
+	.totalvotes {
+		margin-top: 0.4em;
 	}
 </style>

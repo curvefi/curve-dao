@@ -10,6 +10,9 @@
 					<div class='content'>
 						<div>
 							<span> {{ voteDescription }} </span>
+							<div>
+								<span> {{ description }} </span>
+							</div>
 							<div class='content' v-if='vote'>
 								<span v-show='vote.contractName'>
 									{{ vote.contractName }}: <span v-html='vote.description'></span>
@@ -143,17 +146,16 @@
 
 		methods: {
 			async created() {
-				this.initialized = true
 				this.app = this.apps[0]
 			},
 			async canCreate() {
 				let canCreateVoteOn = await Promise.all([voteHelpers.canCreateNewVoteOn(OWNERSHIP_APP_ADDRESS), voteHelpers.canCreateNewVoteOn(PARAMETER_APP_ADDRESS)])
 				console.log(canCreateVoteOn, "CAN CREATE NEW VOTE ON")
-				if(canCreateVoteOn[0])
-					this.apps.push({
-						address: OWNERSHIP_APP_ADDRESS,
-						name: 'Ownership'
-					})
+				// if(canCreateVoteOn[0])
+				// 	this.apps.push({
+				// 		address: OWNERSHIP_APP_ADDRESS,
+				// 		name: 'Ownership'
+				// 	})
 				if(canCreateVoteOn[1])
 					this.apps.push({
 						address: PARAMETER_APP_ADDRESS,
@@ -165,9 +167,25 @@
 			},
 			async submit() {
 				this.loading = true
+
+				let ipfshash = await fetch('https://pushservice.curve.fi/pinipfs', {
+					method: 'POST',
+					headers: {
+						'Content-type': 'application/json',
+					},
+					body: JSON.stringify({
+						text: this.description,
+					})
+				})
+
+				ipfshash = await ipfshash.json()
+				ipfshash = 'ipfs:' + ipfshash.ipfsHash
+
+				console.log(ipfshash, "IPFS HASH")
+
 				let intent
 				try {
-					intent = await state.org.appIntent(this.selectedApp.address.toLowerCase(), 'newVote(bytes,string,bool,bool)', ['0x00000001', this.description, false, false])
+					intent = await state.org.appIntent(this.selectedApp.address.toLowerCase(), 'newVote(bytes,string,bool,bool)', ['0x00000001', ipfshash, false, false])
 				}
 				catch(err) {
 					console.error(err)

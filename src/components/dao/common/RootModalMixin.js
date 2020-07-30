@@ -57,12 +57,18 @@ export default {
 					.on('error', reject)
 			)
 
+			if(this.textdescription)
+				this.textdescription = ''
+			if(this.description)
+				this.description = ''
 			this.showRootModal = false
 		},
 		hideRootModal() {
 			this.showRootModal = false
 			if(this.description)
 				this.description = ''
+			if(this.textdescription)
+				this.textdescription = ''
 			state.transactionIntent = null
 			console.log("HIDE ROOT MODAL")
 			state.executeVote = false

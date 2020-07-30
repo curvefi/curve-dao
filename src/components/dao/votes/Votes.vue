@@ -27,7 +27,7 @@
 								{{ app.text }}
 							</option>
 						</select>
-						<button @click='changeFilter'>Select</button>
+						<!-- <button @click='changeFilter'>Select</button> -->
 					</div>
 				</fieldset>
 			</div>
@@ -54,7 +54,7 @@
 					<span class='loading matrix' v-show='!loadedVotes'></span>
 					<legend>{{ customFilterText }} ({{ customFilterVotes.length }})</legend>
 					<div class='votes closed'>
-						<vote v-for='vote in customFilterVotes' :key='vote.id' :vote='vote' class='vote'></vote>
+						<vote v-for='vote in filterPagination' :key='vote.id' :vote='vote' class='vote'></vote>
 					</div>
 				</fieldset>
 			</div>
@@ -100,6 +100,7 @@
 
 		watch: {
 			changedFilter() {
+				state.pagination.page = 0
 				this.changeFilter()
 			},
 		},
@@ -204,10 +205,11 @@
 
 		methods: {
 			async mounted() {
+				let account = contract.default_account || '0x0000000000000000000000000000000000000000'
 				let calls = [
-					[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
-					[state.votingEscrow._address, state.votingEscrow.methods.locked__end(contract.default_account).encodeABI()],
-					[state.CRV._address, state.CRV.methods.balanceOf(contract.default_account).encodeABI()],
+					[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(account).encodeABI()],
+					[state.votingEscrow._address, state.votingEscrow.methods.locked__end(account).encodeABI()],
+					[state.CRV._address, state.CRV.methods.balanceOf(account).encodeABI()],
 				]
 				await getAllVotes()
 				this.loadedVotes = true

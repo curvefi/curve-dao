@@ -1,21 +1,5 @@
 <template>
 	<div>
-		<div id='modal' class='modal rootmodal' v-if='showDescriptionModal' @click.self='showDescriptionModal = false'>
-			<div class='modal-content window white'>
-				<fieldset>
-					<div class='legend2 hoverpointer' @click='showDescriptionModal = false'>
-						[<span class='greentext'>■</span>]
-					</div>
-					<legend>Add description</legend>
-					<div class='content'>
-						<label for='textdescription'>Description:</label>
-						<textarea id='textdescription' v-model='textdescription'></textarea>
-					</div>
-					<button @click='proposeVote'>Create Vote</button>
-				</fieldset>
-			</div>
-		</div>
-
 		<fieldset>
 			<legend>Vote on pool</legend>
 			<div>
@@ -102,7 +86,7 @@
 									<label for='param1'>future_time:</label>
 									<input id='param1' type='text' v-model='future_time'>
 								</div>
-								<button @click="propose('ramp_A', future_A, future_time)" class='simplebutton'>
+								<button @click="propose('rafmp_A', future_A, future_time)" class='simplebutton'>
 									Submit
 									<span class='loading line' v-show="proposeLoading == 'ramp_A'"></span>
 								</button>
@@ -373,20 +357,20 @@
 				this.poolProxy = new web3.eth.Contract(daoabis.poolproxy_abi, daoabis.poolproxy_address)
 			},
 
-			async proposeVote(method, ...params) {
+			async propose(method, ...params) {
 
-				let ipfshash = await fetch('http://pushservice.curve.fi/pinipfs', {
-					method: 'POST',
-					headers: {
-						'Content-type': 'application/json',
-					},
-					body: JSON.stringify({
-						text: this.textdescription,
-					})
-				})
+				// let ipfshash = await fetch('http://pushservice.curve.fi/pinipfs', {
+				// 	method: 'POST',
+				// 	headers: {
+				// 		'Content-type': 'application/json',
+				// 	},
+				// 	body: JSON.stringify({
+				// 		text: this.textdescription,
+				// 	})
+				// })
 
-				ipfshash = await ipfshash.json()
-				ipfshash = ipfshash.ipfsHash
+				// ipfshash = await ipfshash.json()
+				// ipfshash = ipfshash.ipfsHash
 
 				this.showDescriptionModal = false
 
@@ -397,53 +381,53 @@
 					votingApp = PARAMETER_APP_ADDRESS
 				}
 
-				this.$emit('makeCall', 'poolproxy', this.callMethod, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...this.callParams], this.poolProxy._address, agent, votingApp, 'ipfs:' + ipfshash)
+				this.$emit('makeCall', 'poolproxy', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], this.poolProxy._address, agent, votingApp)
 			},
 
-			async propose(method, ...params) {
-				this.showDescriptionModal = true
+			// async propose(method, ...params) {
+			// 	this.showDescriptionModal = true
 
-				this.callMethod = method
-				this.callParams = params
-
-
-				// let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
-				// let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
-				// let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
-				// console.log(['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], "PARAMS")
-				// let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
-				// console.log(abi, call, "ABI CALL")
+			// 	this.callMethod = method
+			// 	this.callParams = params
 
 
-				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
+			// 	// let abi = daoabis.poolproxy_abi.find(abi => abi.name == method)
+			// 	// let natspeckey = Object.keys(daoabis.poolproxy_natspec.methods).find(key => key.includes(method))
+			// 	// let expression = daoabis.poolproxy_natspec.methods[natspeckey].notice
+			// 	// console.log(['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], "PARAMS")
+			// 	// let call = web3.eth.abi.encodeFunctionCall(abi, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params])
+			// 	// console.log(abi, call, "ABI CALL")
 
 
-				// agent = agent.toLowerCase()
+			// 	// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+			// 	// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [this.poolProxy._address, 0, call])
 
-				// console.log(agent, "THE AGENT")
-				// console.log(this.poolProxy._address, call, "POOL PROXY ADDRESS CALL DATA")
 
-				// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+			// 	// agent = agent.toLowerCase()
 
-				// let intent
-				// try {
-				// 	intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
-				// }
-				// catch(err) {
-				// 	console.error(err)
-				// }
-				// let paths = await intent.paths(contract.default_account)
+			// 	// console.log(agent, "THE AGENT")
+			// 	// console.log(this.poolProxy._address, call, "POOL PROXY ADDRESS CALL DATA")
 
-				// console.log(paths, "THE PATHS")
+			// 	// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
 
-				// state.transactionIntent = paths
+			// 	// let intent
+			// 	// try {
+			// 	// 	intent = await state.org.appIntent(votingApp.toLowerCase(), 'newVote(bytes,string,bool,bool)', [calldata, 'ipfs:hash', false, false])
+			// 	// }
+			// 	// catch(err) {
+			// 	// 	console.error(err)
+			// 	// }
+			// 	// let paths = await intent.paths(contract.default_account)
 
-				// this.proposeLoading = false
+			// 	// console.log(paths, "THE PATHS")
 
-				// this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
+			// 	// state.transactionIntent = paths
 
-			},
+			// 	// this.proposeLoading = false
+
+			// 	// this.$emit('call', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], call, abi, expression)
+
+			// },
 		},
 	}
 </script>

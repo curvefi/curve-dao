@@ -175,6 +175,7 @@ export async function getAllVotes() {
 	      	script
 	      	creatorVotingPower
 	      	transactionHash
+	      	castCount
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}
@@ -223,7 +224,10 @@ export async function getAllVotes() {
 }
 
 export function changeFilter() {
-	state.customFilter = true
+	if(state.filters.status == 3 && state.filters.outcome == 5 && state.filters.app == 3)
+		state.customFilter = false
+	else
+		state.customFilter = true
 }
 
 export async function getVote(app, voteId) {
@@ -240,9 +244,11 @@ export async function getVote(app, voteId) {
 
 	console.log(contract.default_account, "DEFAULT ACCOUNT")
 
+	let account = contract.default_account || '0x0000000000000000000000000000000000000000'
+
 	let getUserVotes = gql`
 		fragment vote_cast on Vote {
-			casts(where: { voter: "${contract.default_account}"}) {
+			casts(where: { voter: "${account}"}) {
 		      id
 		      voteId
 		      voteNum
@@ -255,7 +261,7 @@ export async function getVote(app, voteId) {
 
 	let getLastUserVote = gql`
 		query {
-			lastUserVote: votes(where: { id: "${voteId}", creator: "${contract.default_account}"}, orderBy: startDate, orderDirection: desc, first:1) {
+			lastUserVote: votes(where: { id: "${voteId}", creator: "${account}"}, orderBy: startDate, orderDirection: desc, first:1) {
 			    startDate
 		  	}
 	  	}
@@ -288,6 +294,7 @@ export async function getVote(app, voteId) {
 	      	votingPower
 	      	script
 	      	transactionHash
+	      	castCount
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}
@@ -297,27 +304,42 @@ export async function getVote(app, voteId) {
 	const wrapper = new GraphQLWrapper(VOTING_SUBGRAPH_URL)
 
 	// Invoke the custom query and receive data
-	const results = await Promise.all([wrapper.performQuery(QUERY), wrapper.performQuery(getLastUserVote)])
+	let queries = [wrapper.performQuery(QUERY)]
+	// if(contract.default_account)
+	// 	queries.push(wrapper.performQuery(getLastUserVote))
+	const results = await Promise.all(queries)
 
 	let { votes } = results[0].data
 
 
-	let { lastUserVote } = results[1].data
+	//let { lastUserVote } = results[1].data
 
 	console.log(votes, "THE VOTE")
-	
-	if(votes[0].metadata.includes('ipfs:')) {
-		let getText = await fetch('https://gateway.pinata.cloud/ipfs/' + votes[0].metadata.slice(5))
-		let ipfsText = await getText.json()
-		ipfsText = ipfsText.text
-		votes[0].metadata = ipfsText
-	}
 
 	let vote = state.votes.length && state.votes.find(vote => vote.id == votes[0].id)
 	if(vote === undefined || vote == 0) {
 		state.votes.push(vote)
 		vote = votes[0]
 	}
+
+	console.log(vote, "THE VOTE HERE")
+	
+	if(vote.metadata.startsWith('ipfs:')) {
+		let hash = vote.metadata.slice(5)
+		console.log(hash, "THE HASH")
+		if(hash.startsWith('Qm')) {
+			try {
+				let getText = await fetch('https://gateway.pinata.cloud/ipfs/' + hash)
+				let ipfsText = await getText.json()
+				ipfsText = ipfsText.text
+				vote.metadata = ipfsText
+			}
+			catch(err) {
+				console.error(err)
+			}
+		}
+	}
+
 
 	decorateVotes([vote])
 
@@ -587,16 +609,18 @@ export let getters = {
 		return state.customFilter
 	},
 	customFilterVotes() {
-		let filteredVotes = this.votes
+		let filteredVotes = state.votes
 		if(state.filters.status < 3)
 			filteredVotes = filteredVotes.filter(vote => vote.status == state.filters.status)
 		if(state.filters.outcome < 5)
 			filteredVotes = filteredVotes.filter(vote => vote.outcome == state.filters.outcome)
 		if(state.filters.app < 3)
 			filteredVotes = filteredVotes.filter(vote => vote.app == state.filters.app)
-		console.log(filteredVotes, "FILTERED VOTES")
 		return filteredVotes
 	},
+	filterPagination() {
+		return this.customFilterVotes.slice(state.pagination.page*state.pagination.perPage, state.pagination.page*state.pagination.perPage + state.pagination.perPage)
+	}
 }
 
 export let helpers = {

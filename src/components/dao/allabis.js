@@ -1114,6 +1114,80 @@ export let tokenmanager_natspec = {
 export let CRV_abi = [{"name":"Transfer","inputs":[{"type":"address","name":"_from","indexed":true},{"type":"address","name":"_to","indexed":true},{"type":"uint256","name":"_value","indexed":false}],"anonymous":false,"type":"event"},{"name":"Approval","inputs":[{"type":"address","name":"_owner","indexed":true},{"type":"address","name":"_spender","indexed":true},{"type":"uint256","name":"_value","indexed":false}],"anonymous":false,"type":"event"},{"name":"UpdateMiningParameters","inputs":[{"type":"uint256","name":"time","indexed":false},{"type":"uint256","name":"rate","indexed":false},{"type":"uint256","name":"supply","indexed":false}],"anonymous":false,"type":"event"},{"name":"SetMinter","inputs":[{"type":"address","name":"minter","indexed":false}],"anonymous":false,"type":"event"},{"name":"SetAdmin","inputs":[{"type":"address","name":"admin","indexed":false}],"anonymous":false,"type":"event"},{"outputs":[],"inputs":[{"type":"string","name":"_name"},{"type":"string","name":"_symbol"},{"type":"uint256","name":"_decimals"}],"stateMutability":"nonpayable","type":"constructor"},{"name":"update_mining_parameters","outputs":[],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":148701},{"name":"start_epoch_time_write","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"nonpayable","type":"function","gas":149556},{"name":"available_supply","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":3958},{"name":"mintable_in_timeframe","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"uint256","name":"start"},{"type":"uint256","name":"end"}],"stateMutability":"view","type":"function","gas":2216111},{"name":"set_minter","outputs":[],"inputs":[{"type":"address","name":"_minter"}],"stateMutability":"nonpayable","type":"function","gas":38668},{"name":"set_admin","outputs":[],"inputs":[{"type":"address","name":"_admin"}],"stateMutability":"nonpayable","type":"function","gas":37807},{"name":"totalSupply","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1391},{"name":"allowance","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"_owner"},{"type":"address","name":"_spender"}],"stateMutability":"view","type":"function","gas":1729},{"name":"transfer","outputs":[{"type":"bool","name":""}],"inputs":[{"type":"address","name":"_to"},{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":75109},{"name":"transferFrom","outputs":[{"type":"bool","name":""}],"inputs":[{"type":"address","name":"_from"},{"type":"address","name":"_to"},{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":111403},{"name":"approve","outputs":[{"type":"bool","name":""}],"inputs":[{"type":"address","name":"_spender"},{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":39258},{"name":"mint","outputs":[{"type":"bool","name":""}],"inputs":[{"type":"address","name":"_to"},{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":227923},{"name":"burn","outputs":[{"type":"bool","name":""}],"inputs":[{"type":"uint256","name":"_value"}],"stateMutability":"nonpayable","type":"function","gas":74969},{"name":"set_name","outputs":[],"inputs":[{"type":"string","name":"_name"},{"type":"string","name":"_symbol"}],"stateMutability":"nonpayable","type":"function","gas":178240},{"name":"name","outputs":[{"type":"string","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":8033},{"name":"symbol","outputs":[{"type":"string","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":7086},{"name":"decimals","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1691},{"name":"balanceOf","outputs":[{"type":"uint256","name":""}],"inputs":[{"type":"address","name":"arg0"}],"stateMutability":"view","type":"function","gas":1875},{"name":"minter","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1751},{"name":"admin","outputs":[{"type":"address","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1781},{"name":"mining_epoch","outputs":[{"type":"int128","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1811},{"name":"start_epoch_time","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1841},{"name":"rate","outputs":[{"type":"uint256","name":""}],"inputs":[],"stateMutability":"view","type":"function","gas":1871}]
 export let CRV_address = '0xBac5700EF97F3938A9193ad88E30D886eF83dC8A'
 
+export let registry_abi = [{"name": "CommitNewAdmin", "inputs": [{"type": "uint256", "name": "deadline", "indexed": true}, {"type": "address", "name": "admin", "indexed": true}], "anonymous": false, "type": "event"}, {"name": "NewAdmin", "inputs": [{"type": "address", "name": "admin", "indexed": true}], "anonymous": false, "type": "event"}, {"name": "TokenExchange", "inputs": [{"type": "address", "name": "buyer", "indexed": true}, {"type": "address", "name": "pool", "indexed": true}, {"type": "address", "name": "token_sold", "indexed": false}, {"type": "address", "name": "token_bought", "indexed": false}, {"type": "uint256", "name": "amount_sold", "indexed": false}, {"type": "uint256", "name": "amount_bought", "indexed": false}], "anonymous": false, "type": "event"}, {"name": "PoolAdded", "inputs": [{"type": "address", "name": "pool", "indexed": true}, {"type": "bytes", "name": "rate_method_id", "indexed": false}], "anonymous": false, "type": "event"}, {"name": "PoolRemoved", "inputs": [{"type": "address", "name": "pool", "indexed": true}], "anonymous": false, "type": "event"}, {"outputs": [], "inputs": [], "stateMutability": "nonpayable", "type": "constructor"}, {"stateMutability": "payable", "type": "fallback"}, {"name": "find_pool_for_coins", "outputs": [{"type": "address", "name": ""}], "inputs": [{"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}], "stateMutability": "view", "type": "function"}, {"name": "find_pool_for_coins", "outputs": [{"type": "address", "name": ""}], "inputs": [{"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}, {"type": "uint256", "name": "i"}], "stateMutability": "view", "type": "function"}, {"name": "get_pool_coins", "outputs": [{"type": "tuple", "name": "", "components": [{"type": "address[8]", "name": "coins"}, {"type": "address[8]", "name": "underlying_coins"}, {"type": "uint256[8]", "name": "decimals"}, {"type": "uint256[8]", "name": "underlying_decimals"}]}], "inputs": [{"type": "address", "name": "_pool"}], "stateMutability": "view", "type": "function", "gas": 45137}, {"name": "get_pool_info", "outputs": [{"type": "tuple", "name": "", "components": [{"type": "uint256[8]", "name": "balances"}, {"type": "uint256[8]", "name": "underlying_balances"}, {"type": "uint256[8]", "name": "decimals"}, {"type": "uint256[8]", "name": "underlying_decimals"}, {"type": "address", "name": "lp_token"}, {"type": "uint256", "name": "A"}, {"type": "uint256", "name": "future_A"}, {"type": "uint256", "name": "fee"}, {"type": "uint256", "name": "future_fee"}, {"type": "uint256", "name": "future_admin_fee"}, {"type": "address", "name": "future_owner"}, {"type": "uint256", "name": "initial_A"}, {"type": "uint256", "name": "initial_A_time"}, {"type": "uint256", "name": "future_A_time"}]}], "inputs": [{"type": "address", "name": "_pool"}], "stateMutability": "view", "type": "function", "gas": 78550}, {"name": "get_pool_rates", "outputs": [{"type": "uint256[8]", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}], "stateMutability": "view", "type": "function", "gas": 39622}, {"name": "estimate_gas_used", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}], "stateMutability": "view", "type": "function", "gas": 49357}, {"name": "get_exchange_amount", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}, {"type": "uint256", "name": "_amount"}], "stateMutability": "view", "type": "function", "gas": 44386}, {"name": "exchange", "outputs": [{"type": "bool", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}, {"type": "uint256", "name": "_amount"}, {"type": "uint256", "name": "_expected"}], "stateMutability": "payable", "type": "function", "gas": 199155}, {"name": "get_input_amount", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}, {"type": "uint256", "name": "_amount"}], "stateMutability": "nonpayable", "type": "function", "gas": 125103}, {"name": "get_exchange_amounts", "outputs": [{"type": "uint256[100]", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_from"}, {"type": "address", "name": "_to"}, {"type": "uint256[100]", "name": "_amounts"}], "stateMutability": "nonpayable", "type": "function", "gas": 128329}, {"name": "add_pool", "outputs": [], "inputs": [{"type": "address", "name": "_pool"}, {"type": "int128", "name": "_n_coins"}, {"type": "address", "name": "_lp_token"}, {"type": "address", "name": "_calculator"}, {"type": "bytes32", "name": "_rate_method_id"}, {"type": "bytes32", "name": "_decimals"}, {"type": "bytes32", "name": "_underlying_decimals"}, {"type": "bool", "name": "_has_initial_A"}], "stateMutability": "nonpayable", "type": "function", "gas": 10332537}, {"name": "add_pool_without_underlying", "outputs": [], "inputs": [{"type": "address", "name": "_pool"}, {"type": "int128", "name": "_n_coins"}, {"type": "address", "name": "_lp_token"}, {"type": "address", "name": "_calculator"}, {"type": "bytes32", "name": "_rate_method_id"}, {"type": "bytes32", "name": "_decimals"}, {"type": "bytes32", "name": "_use_rates"}, {"type": "bool", "name": "_has_initial_A"}], "stateMutability": "nonpayable", "type": "function", "gas": 10305285}, {"name": "remove_pool", "outputs": [], "inputs": [{"type": "address", "name": "_pool"}], "stateMutability": "nonpayable", "type": "function", "gas": 317792223380}, {"name": "set_pool_gas_estimates", "outputs": [], "inputs": [{"type": "address[5]", "name": "_addr"}, {"type": "uint256[2][5]", "name": "_amount"}], "stateMutability": "nonpayable", "type": "function", "gas": 354697}, {"name": "set_coin_gas_estimates", "outputs": [], "inputs": [{"type": "address[10]", "name": "_addr"}, {"type": "uint256[10]", "name": "_amount"}], "stateMutability": "nonpayable", "type": "function", "gas": 356693}, {"name": "set_gas_estimate_contract", "outputs": [], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_estimator"}], "stateMutability": "nonpayable", "type": "function", "gas": 36881}, {"name": "set_calculator", "outputs": [], "inputs": [{"type": "address", "name": "_pool"}, {"type": "address", "name": "_calculator"}], "stateMutability": "nonpayable", "type": "function", "gas": 36989}, {"name": "get_calculator", "outputs": [{"type": "address", "name": ""}], "inputs": [{"type": "address", "name": "_pool"}], "stateMutability": "view", "type": "function", "gas": 1923}, {"name": "commit_transfer_ownership", "outputs": [], "inputs": [{"type": "address", "name": "_new_admin"}], "stateMutability": "nonpayable", "type": "function", "gas": 74422}, {"name": "apply_transfer_ownership", "outputs": [], "inputs": [], "stateMutability": "nonpayable", "type": "function", "gas": 60560}, {"name": "revert_transfer_ownership", "outputs": [], "inputs": [], "stateMutability": "nonpayable", "type": "function", "gas": 21835}, {"name": "claim_token_balance", "outputs": [], "inputs": [{"type": "address", "name": "_token"}], "stateMutability": "nonpayable", "type": "function", "gas": 6290}, {"name": "claim_eth_balance", "outputs": [], "inputs": [], "stateMutability": "nonpayable", "type": "function", "gas": 36696}, {"name": "admin", "outputs": [{"type": "address", "name": ""}], "inputs": [], "stateMutability": "view", "type": "function", "gas": 1871}, {"name": "pool_list", "outputs": [{"type": "address", "name": ""}], "inputs": [{"type": "uint256", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 2010}, {"name": "pool_count", "outputs": [{"type": "uint256", "name": ""}], "inputs": [], "stateMutability": "view", "type": "function", "gas": 1931}]
+export let registry_natspec = {
+  "methods": {
+    "__init__()": {
+      "notice": "Constructor function"
+    },
+    "find_pool_for_coins(address,address)": {
+      "notice": "Find an available pool for exchanging two coins"
+    },
+    "get_pool_coins(address)": {
+      "notice": "Get information on coins in a pool"
+    },
+    "get_pool_info(address)": {
+      "notice": "Get information on a pool"
+    },
+    "get_pool_rates(address)": {
+      "notice": "Get rates between coins and underlying coins"
+    },
+    "estimate_gas_used(address,address,address)": {
+      "notice": "Estimate the gas used in an exchange."
+    },
+    "get_exchange_amount(address,address,address,uint256)": {
+      "notice": "Get the current number of coins received in an exchange"
+    },
+    "exchange(address,address,address,uint256,uint256)": {
+      "notice": "Perform an exchange."
+    },
+    "get_input_amount(address,address,address,uint256)": {
+      "notice": "Get the current number of coins required to receive the given amount in an exchange"
+    },
+    "get_exchange_amounts(address,address,address,uint256[100])": {
+      "notice": "Get the current number of coins received in exchanges of varying amounts"
+    },
+    "add_pool(address,int128,address,address,bytes32,bytes32,bytes32,bool)": {
+      "notice": "Add a pool to the registry"
+    },
+    "add_pool_without_underlying(address,int128,address,address,bytes32,bytes32,bytes32,bool)": {
+      "notice": "Add a pool to the registry"
+    },
+    "remove_pool(address)": {
+      "notice": "Remove a pool to the registry"
+    },
+    "set_pool_gas_estimates(address[5],uint256[2][5])": {
+      "notice": "Set gas estimate amounts"
+    },
+    "set_coin_gas_estimates(address[10],uint256[10])": {
+      "notice": "Set gas estimate amounts"
+    },
+    "set_gas_estimate_contract(address,address)": {
+      "notice": "Set gas estimate contract"
+    },
+    "set_calculator(address,address)": {
+      "notice": "Set calculator contract"
+    },
+    "commit_transfer_ownership(address)": {
+      "notice": "Initiate a transfer of contract ownership"
+    },
+    "apply_transfer_ownership()": {
+      "notice": "Finalize a transfer of contract ownership"
+    },
+    "revert_transfer_ownership()": {
+      "notice": "Revert a transfer of contract ownership"
+    },
+    "claim_token_balance(address)": {
+      "notice": "Transfer any ERC20 balance held by this contract"
+    },
+    "claim_eth_balance()": {
+      "notice": "Transfer ether balance held by this contract"
+    }
+  }
+}
+
+export let registry_address = '0x7002B727Ef8F5571Cb5F9D70D13DBEEb4dFAe9d1'
+
 export default {
 	poolproxy_abi,
 	poolproxy_address,
@@ -1137,4 +1211,8 @@ export default {
 
   tokenmanager_abi,
   tokenmanager_natspec,
+
+  registry_abi,
+  registry_natspec,
+  registry_address,
 }

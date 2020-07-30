@@ -11,6 +11,9 @@
 					<div class='content'>
 						Confirm locking {{ deposit }} CRV until {{ increaseLockText }}
 					</div>
+					<p class='info-message gentle-message' v-show='showConfirmMessage'>
+						Please confirm the transaction in your wallet
+					</p>
 					<button @click='submitModal'> OK </button>
 				</fieldset>
 			</div>
@@ -121,6 +124,7 @@
 			interval: null,
 
 			showModal: false,
+			showConfirmMessage: false,
 
 			method: null,
 
@@ -198,37 +202,67 @@
 			},
 
 			async increaseAmount() {
+				this.showConfirmMessage = true;
+
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
 				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
-				await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
-					from: contract.default_account,
-					gas: 400000,
+				await new Promise(async (resolve, reject) => {
+						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
+							from: contract.default_account,
+							gas: 400000,
+						})
+						.once('transactionHash', () => resolve())
+						.on('error', err => reject(err))
+						.on('receipt', receipt => {
+							this.mounted()
+						})
 				})
-				this.mounted()
+				this.showConfirmMessage = false
+				this.showModal = false
 			},
 
 			async submitIncreaseLock() {
+				this.showConfirmMessage = true;
+
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
-				await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
-					from: contract.default_account,
-					gas: 4000000,
+				await new Promise(async (resolve, reject) => {
+						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
+							from: contract.default_account,
+							gas: 4000000,
+						})
+						.once('transactionHash', () => resolve())
+						.on('error', err => reject(err))
+						.on('receipt', receipt => {
+							this.mounted()
+						})
 				})
-				this.mounted()
+				this.showConfirmMessage = false
+				this.showModal = false
 			},
 
 			async createLock() {
+				this.showConfirmMessage = true;
+
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
 				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
-				await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
-					from: contract.default_account,
-					gas: 400000,
+				await new Promise(async (resolve, reject) => {
+						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
+							from: contract.default_account,
+							gas: 400000,
+						})
+						.once('transactionHash', () => resolve())
+						.on('error', err => reject(err))
+						.on('receipt', receipt => {
+							this.mounted()
+						})
 				})
-				this.mounted()
+				this.showConfirmMessage = false
+				this.showModal = false
 			},
 
 			async confirmModal(method) {

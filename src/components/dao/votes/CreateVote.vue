@@ -1,6 +1,7 @@
 <template>
 	<div class='window white'>
 		<div id='modal' class='modal rootmodal' v-if='showRootModal' @click.self='hideRootModal'>
+
 			<div class='modal-content window white'>
 				<fieldset>
 					<div class='legend2 hoverpointer' @click='hideRootModal'>
@@ -11,6 +12,9 @@
 					<div class='content'>
 						<div>
 							<span> {{ voteDescription }} </span>
+							<div>
+								{{ textdescription }}
+							</div>
 							<p v-html = 'description'></p>
 						</div>
 						<hr>
@@ -27,6 +31,22 @@
 			</div>
 		</div>
 
+		<div id='modal' class='modal rootmodal' v-if='showDescriptionModal' @click.self='hideDescriptionModal'>
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='hideDescriptionModal'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Add description</legend>
+					<div class='content'>
+						<label for='textdescription'>Description:</label>
+						<textarea id='textdescription' v-model='textdescription'></textarea>
+						<button @click='submitVote'>Create Vote <span class='loading line' v-show='loadingVote'></span></button>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+
 		<router-link to='/dao'>← Back</router-link>
 
 		<div class='votetypes'>
@@ -35,9 +55,10 @@
 			<button @click='type=2' :class="{'simplebutton': type==2}">Emergency Member</button>
 			<button @click='type=3' :class="{'simplebutton': type==3}">VotingEscrow</button>
 			<button @click='type=4' :class="{'simplebutton': type==4}">PoolProxy</button>
+			<button @click='type=5' :class="{'simplebutton': type==5}">Registry</button>
 		</div>
 
-		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal' @call='describeCall' @makeCall='makeCall'></component>
+		<component :is='voteComponent' class='votecomponent' @showRootModal='emitShowRootModal' @makeCall='makeCall'></component>
 
 	</div>
 </template>
@@ -82,6 +103,7 @@
 	import EmergencyVote from '../createvote/EmergencyVote'
 	import VotingEscrowVote from '../createvote/VotingEscrowVote'
 	import PoolProxyVote from '../createvote/PoolProxyVote'
+	import RegistryVote from '../createvote/RegistryVote'
 
 	let ownership_actions = ['unkill_me', 'commit_transfer_ownership', 'revert_transfer_ownership', 'set_aave_referral', 'donate_admin_fees']
 
@@ -98,6 +120,7 @@
 			EmergencyVote,
 			VotingEscrowVote,
 			PoolProxyVote,
+			RegistryVote,
 		},
 
 		mixins: [RootModalMixin],
@@ -110,6 +133,13 @@
 			type: 0,
 
 			description: '',
+
+			call: {},
+
+			showDescriptionModal: false,
+			textdescription: '',
+
+			loadingVote: false,
 
 		}),
 
@@ -139,6 +169,7 @@
 				if(this.type == 2) return 'EmergencyVote'
 				if(this.type == 3) return 'VotingEscrowVote'
 				if(this.type == 4) return 'PoolProxyVote'
+				if(this.type == 5) return 'RegistryVote'
 				return 'PoolVote'
 			},
 		},
@@ -168,8 +199,30 @@
 				this.description = desc
 				this.showRootModal = true
 			},
-			async makeCall(abiname, method, params, contractAddress, agent, voteApp, ipfshash = '') {
+			async hideDescriptionModal() {
+				this.showDescriptionModal = false
+				this.textdescription = ''
+			},
+			async submitVote() {
+				this.loadingVote = true
+
 				state.proposeLoading = method
+
+
+				let ipfshash = await fetch('https://pushservice.curve.fi/pinipfs', {
+					method: 'POST',
+					headers: {
+						'Content-type': 'application/json',
+					},
+					body: JSON.stringify({
+						text: this.textdescription,
+					})
+				})
+
+				ipfshash = await ipfshash.json()
+				ipfshash = 'ipfs:' + ipfshash.ipfsHash
+
+				let { abiname, method, params, contractAddress, agent, voteApp } = this.call
 
 				let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
 				let natspeckey = Object.keys(daoabis[abiname+'_natspec'].methods).find(key => key.includes(method))
@@ -200,6 +253,8 @@
 				}
 				let paths = await intent.paths(contract.default_account)
 
+				this.loadingVote = false
+				this.showDescriptionModal = false
 				state.transactionIntent = paths
 
 				let desc = await radspec.evaluate(expression, {
@@ -217,6 +272,18 @@
 
 				console.log(paths, "THE PATHS")
 			},
+			async makeCall(abiname, method, params, contractAddress, agent, voteApp, ipfshash = '') {
+				this.call = {
+					abiname,
+					method,
+					params,
+					contractAddress,
+					agent,
+					voteApp,
+					ipfshash,
+				}
+				this.showDescriptionModal = true
+			},
 		},
 	}
 </script>
@@ -228,5 +295,9 @@
 	}
 	.votecomponent {
 		margin-top: 1em;
+	}
+	.modal-content .content {
+		text-align: left;
+		color: black;
 	}
 </style>

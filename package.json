@@ -23,6 +23,7 @@
     "break_infinity.js": "^1.1.0",
     "comlink": "^4.2.0",
     "core-js": "^3.6.4",
+    "dayjs": "^1.8.31",
     "eth-sig-util": "^2.5.3",
     "firebase": "^7.14.2",
     "graphql-tag": "^2.10.3",
@@ -36,6 +37,7 @@
     "vue-fragment": "^1.5.1",
     "vue-meta": "^2.3.3",
     "vue-router": "^3.1.5",
+    "vue2-datepicker": "^3.6.1",
     "vuejs-datepicker": "^1.6.2",
     "web3": "^1.2.6"
   },

@@ -154,6 +154,16 @@ export function formatDayTimeToHuman(timestamp) {
           .join(':');
 }
 
+export function formatDateOnlyToHuman(timestamp) {
+  //convert to UTC
+  let d = new Date(timestamp*1000+(new Date).getTimezoneOffset() * 60 * 1000)
+  return [
+            d.getDate(),
+            `${(d.getMonth()+1).toString().padStart(2, '0')}`,
+            d.getFullYear()
+          ].join('/')
+}
+
 export function urlBase64ToUint8Array(base64String) {
   var padding = '='.repeat((4 - base64String.length % 4) % 4);
   var base64 = (base64String + padding)

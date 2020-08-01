@@ -43,7 +43,11 @@
 									<label for='param1'>_underlying_decimals:</label>
 									<input id='param1' type='text' v-model='add_underlying_decimals'>
 								</div>
-								<button @click="propose('commit_set_admins', add_pool, add_n_coins, add_lp_token, add_calculator, add_rate_method_id, add_decimals, add_underlying_decimals)" class='simplebutton'>
+								<div class='input'>
+									<input id='add_has_initial_A' type='checkbox' v-model='add_has_initial_A'>
+									<label for='add_has_initial_A'>_has_initial_A:</label>
+								</div>
+								<button @click="propose('commit_set_admins', add_pool, add_n_coins, add_lp_token, add_calculator, add_rate_method_id, add_decimals, add_underlying_decimals, add_has_initial_A)" class='simplebutton'>
 									Submit
 									<span class='loading line' v-show="proposeLoading == 'add_pool'"></span>
 								</button>
@@ -89,7 +93,11 @@
 									<label for='param1'>_use_rates:</label>
 									<input id='param1' type='text' v-model='add_pool_use_rates'>
 								</div>
-								<button @click="propose('add_pool_without_underlying', add_pool_pool, add_pool_n_coins, add_pool_lp_token, add_pool_calculator, add_pool_rate_method_id, add_pool_decimals, add_pool_use_rates)" class='simplebutton'>
+								<div class='input'>
+									<label for='param1'>_has_initial_A:</label>
+									<input id='param1' type='text' v-model='add_pool_has_initial_A'>
+								</div>
+								<button @click="propose('add_pool_without_underlying', add_pool_pool, add_pool_n_coins, add_pool_lp_token, add_pool_calculator, add_pool_rate_method_id, add_pool_decimals, add_pool_use_rates, add_pool_has_initial_A)" class='simplebutton'>
 									Submit
 									<span class='loading line' v-show="proposeLoading == 'add_pool'"></span>
 								</button>
@@ -361,6 +369,7 @@
 			add_rate_method_id: '',
 			add_decimals: '',
 			add_underlying_decimals: '',
+			add_has_initial_A: false,
 			add_pool_pool: '',
 			add_pool_n_coins: '',
 			add_pool_lp_token: '',
@@ -368,6 +377,7 @@
 			add_pool_rate_method_id: '',
 			add_pool_decimals: '',
 			add_pool_use_rates: '',
+			add_pool_has_initial_A: false,
 			remove_pool: '',
 			set_returns_addr: '',
 			set_is_returns_none: '',

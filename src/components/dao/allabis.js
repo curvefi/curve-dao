@@ -1188,6 +1188,22 @@ export let registry_natspec = {
 
 export let registry_address = '0x7002B727Ef8F5571Cb5F9D70D13DBEEb4dFAe9d1'
 
+export let vesting_abi = [{"outputs": [], "inputs": [{"type": "address", "name": "_token"}, {"type": "uint256", "name": "_start_time"}], "stateMutability": "nonpayable", "type": "constructor"}, {"name": "fund", "outputs": [], "inputs": [{"type": "address[10]", "name": "_recipients"}, {"type": "uint256[10]", "name": "_amounts"}, {"type": "uint256[10]", "name": "_times"}], "stateMutability": "nonpayable", "type": "function", "gas": 1124471}, {"name": "fund_individual", "outputs": [], "inputs": [{"type": "address", "name": "_recipient"}, {"type": "uint256", "name": "_amount"}, {"type": "uint256", "name": "_start_time"}, {"type": "uint256", "name": "_time"}, {"type": "bool", "name": "_can_disable"}], "stateMutability": "nonpayable", "type": "function", "gas": 200793}, {"name": "toggle_disable", "outputs": [], "inputs": [{"type": "address", "name": "_recipient"}], "stateMutability": "nonpayable", "type": "function", "gas": 38304}, {"name": "disable_can_disable", "outputs": [], "inputs": [{"type": "address", "name": "_recipient"}], "stateMutability": "nonpayable", "type": "function", "gas": 21449}, {"name": "vestedOf", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_recipient"}], "stateMutability": "view", "type": "function", "gas": 4674}, {"name": "balanceOf", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_recipient"}], "stateMutability": "view", "type": "function", "gas": 5786}, {"name": "lockedOf", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "_recipient"}], "stateMutability": "view", "type": "function", "gas": 5816}, {"name": "claim", "outputs": [], "inputs": [], "stateMutability": "nonpayable", "type": "function", "gas": 101721}, {"name": "token", "outputs": [{"type": "address", "name": ""}], "inputs": [], "stateMutability": "view", "type": "function", "gas": 1421}, {"name": "default_start_time", "outputs": [{"type": "uint256", "name": ""}], "inputs": [], "stateMutability": "view", "type": "function", "gas": 1451}, {"name": "start_time", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1635}, {"name": "end_time", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1665}, {"name": "initial_locked", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1695}, {"name": "total_claimed", "outputs": [{"type": "uint256", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1725}, {"name": "can_disable", "outputs": [{"type": "bool", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1755}, {"name": "disabled", "outputs": [{"type": "bool", "name": ""}], "inputs": [{"type": "address", "name": "arg0"}], "stateMutability": "view", "type": "function", "gas": 1785}, {"name": "admin", "outputs": [{"type": "address", "name": ""}], "inputs": [], "stateMutability": "view", "type": "function", "gas": 1661}]
+export let vesting_natspec = {
+  methods: {
+    "fund_individual(address,uint256,uint256,uint256,bool)": {
+      notice: "Fund recepient `@address(_recipient)` with `@param(_amount)` starting from `@param(_start_time)` until `@param(_time)` `@param(_can_disable)`",
+    },
+    "toggle_disable(address)": {
+      notice: "Toggle disabling vesting for `@address(_recipient)`",
+    },
+    "disable_can_disable()": {
+      notice: "Disable disabling vesting for `@address(_recipient)`",
+    },
+  }
+}
+export let vesting_address = '0xffffffffffffffffffffffffffffffffffffffff'
+
 export default {
 	poolproxy_abi,
 	poolproxy_address,
@@ -1215,4 +1231,8 @@ export default {
   registry_abi,
   registry_natspec,
   registry_address,
+
+  vesting_abi,
+  vesting_natspec,
+  vesting_address,
 }

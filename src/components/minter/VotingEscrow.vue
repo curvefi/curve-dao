@@ -34,6 +34,13 @@
 					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
 				</div>
 			</div>
+			<div>
+				<p>
+					<input id='showend' type='checkbox' v-model='showend'>
+					<label for='showend'>Show until end</label>
+				</p>
+				<highcharts v-show='hasvecrv && showvelock' :constructor-type="'stockChart'" :options="chartdata" ref='highcharts' class='lockchart'></highcharts>
+			</div>
 			<div class='velock' v-show='showvelock'>
 				<div class='increaselock' v-show='hasvecrv'>
 					<p class='depositinputs'>
@@ -90,12 +97,28 @@
 
 <script>
     import * as common from '../../utils/common.js'
+	import gql from 'graphql-tag'
+	import { GraphQLWrapper } from '@aragon/connect-thegraph'
+    import Highcharts from 'highcharts'
+    import HC_exporting from 'highcharts/modules/exporting';
+	import HC_exporting_data from 'highcharts/modules/export-data';
+	HC_exporting(Highcharts);
+	HC_exporting_data(Highcharts)
+	import {Chart} from 'highcharts-vue'
+	import stockInit from 'highcharts/modules/stock'
+	stockInit(Highcharts)
+
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+		}
+	})
 
 	const { setIntervalAsync, clearIntervalAsync } = require('set-interval-async/dynamic')
 
 	import Datepicker from 'vuejs-datepicker';
 
-	import { contract } from '../../contract'
+	import { contract, getters } from '../../contract'
 
 	import daoabis from '../dao/allabis'
 
@@ -104,6 +127,11 @@
 	import BN from 'bignumber.js'
 
 	export default {
+		components: {
+			Datepicker,
+			highcharts: Chart,
+		},
+
 		props: {
 			showvelock: {
 				type: Boolean,
@@ -111,33 +139,161 @@
 			},
 		},
 
-		components: {
-			Datepicker,
+		data() {
+			return {
+				CRV: null,
+				crvBalance: BN(0),
+				votingEscrow: null,
+				vecrvBalance: BN(0),
+				lockTime: 0,
+				deposit: 0,
+				increaseLock: Date.now(),
+
+				interval: null,
+
+				showModal: false,
+				showConfirmMessage: false,
+
+				method: null,
+
+				wrapper: null,
+
+				loaded: false,
+
+				chartdata: {
+					chart: {
+				        type: 'line'
+				    },
+				    title: {
+				        text: 'veCRV Voting Power'
+				    },
+				    rangeSelector: {
+				    	selected: 4,
+				    },
+				    xAxis: {
+				    	//ordinal: false,
+				    	//type: 'datetime',
+		            	labels: {	
+			            	style: {
+			            		color: 'black'
+			            	}
+		            	},
+		            	dateTimeLabelFormats: {
+				            second: '%Y-%m-%d<br/>%H:%M:%S',
+				            minute: '%Y-%m-%d<br/>%H:%M',
+				            hour: '%Y-%m-%d<br/>%H:%M',
+				            day: '%Y<br/>%m-%d',
+				            week: '%Y<br/>%m-%d',
+				            month: '%Y-%m',
+				            year: '%Y'
+				        },
+		            },
+				    yAxis: {
+				    	type: 'linear',
+				    	opposite: false,
+				        title: {
+				            text: 'Amount locked'
+				        }
+				    },
+				    plotOptions: {
+				    	series: {
+				    		dataGrouping: {
+							  //forced: true,
+							  units: [
+							  	// ['day', [1]],
+							  	// ['hour', [1]],
+							    ['week', [1,2,3,4,5,6,7,8,9,10]],
+							  	['month', [1,2,3,4,5,6,7,8]],
+							  	['year', [1,2,3]],
+							  ]
+							},
+				    	},
+				        line: {
+				            dataLabels: {
+				                enabled: true,
+				                formatter: (function(self) {
+				                	return function() {
+				            			let event = self.events.find(e => e.timestamp == this.x / 1000)
+				            			if(event !== undefined && event.type !== 'decrease')
+				            				return this.y.toFixed(0)
+			            			}
+			            		})(this)
+				            },
+				        }
+				    },
+				    tooltip: {
+				    	pointFormatter: (function(self) {
+				    		return function() {
+				    			let value = this.y.toFixed(2)
+				    			let event = self.events.find(e => e.timestamp == this.x / 1000)
+				    			//this is the period end
+				    			if(event === undefined)
+				    				return `
+				    					<div>
+				    						Voting lock end
+				    					</div>
+				    					<br>
+				    					<div>
+				    						Voting power: 0
+			    						</div>
+				    				`
+				    			else {
+				    				let titleHTML = `
+				    							<div>
+					    							${event.type == 'create_lock' ? '<b> Create lock </b>' : ''}
+					    							${event.type == 'increase_amount' ? '<b> Increase amount </b>' : ''}
+					    							${event.type == 'increase_unlock_time' ? '<b> Increase unlock time </b>' : ''}
+					    							${event.type == 'withdraw' ? '<b> Withdraw </b>' : ''}
+					    						</div>
+					    			`
+
+					    			let contentHTML = `
+					    						
+					    						<br>
+					    						<div>
+					    							${this.series.name}: <b>${value}</b><br/>
+				    							</div>
+					    						<br>
+					    						<div>Locked until: ${helpers.formatDateOnlyToHuman(event.locktime)}</div>
+				    						`
+
+					    			return event.type !== 'decrease' ? titleHTML + contentHTML : contentHTML
+				    			}
+				    		}
+				    	})(this),
+				    },
+				    series: []
+				},
+
+				chart: null,
+				
+				events: [],
+
+				chartData: [],
+
+				showend: false,
+			}
+
 		},
 
-		data: () => ({
-			CRV: null,
-			crvBalance: BN(0),
-			votingEscrow: null,
-			vecrvBalance: BN(0),
-			lockTime: 0,
-			deposit: 0,
-			increaseLock: Date.now(),
-
-			interval: null,
-
-			showModal: false,
-			showConfirmMessage: false,
-
-			method: null,
-
-		}),
-
 		async created() {
-			this.$watch(() => contract.default_account && contract.multicall, val => {
-				if(val)
+			this.$watch(() => contract.default_account, (val, oldval) => {
+				if(!val || !oldval)
+					return
+				if(oldval.toLowerCase() != val.toLowerCase() || !this.loaded)
 					this.mounted()
 			})
+		},
+
+		async mounted() {
+			if(contract.default_account)
+				this.mounted()
+		},
+
+		watch: {
+			showend(val) {
+				this.showEnd()
+			},
 		},
 
 		computed: {
@@ -175,13 +331,24 @@
 
 		methods: {
 			async mounted() {
+				this.loaded = true
+				this.chart = this.$refs.highcharts.chart
+				this.chart.showLoading()
+				this.chart.series[0] && this.chart.series[0].remove()
+
+				this.loadBalances()
+				this.loadChart()
+
+			},
+
+			async loadBalances() {
 				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
 				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, daoabis.CRV_address)
 
 				let calls = [
-					[this.votingEscrow._address, this.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
-					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(contract.default_account).encodeABI()],
-					[this.CRV._address, this.CRV.methods.balanceOf(contract.default_account).encodeABI()],
+					[this.votingEscrow._address, this.votingEscrow.methods.balanceOf(getters.default_account()).encodeABI()],
+					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(getters.default_account()).encodeABI()],
+					[this.CRV._address, this.CRV.methods.balanceOf(getters.default_account()).encodeABI()],
 				]
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
@@ -200,6 +367,95 @@
 				}
 			},
 
+			async loadChart() {
+
+				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-rinkeby')
+				let QUERY = gql`
+					{
+						votingEscrows(where: { provider: "${getters.default_account()}" }, orderBy: timestamp, orderDirection: asc) {
+							id
+							provider
+							value
+							locktime
+							type
+							totalPower
+							timestamp
+						}
+					}
+				`
+				let results = await this.wrapper.performQuery(QUERY)
+				let events = results.data.votingEscrows
+				this.events = events
+				events = events.map(event => {
+					event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
+					return event
+				})
+				let chartData = events.map((event, i) => [event.timestamp * 1000, event.votingPower])
+				let lastEvent = events[events.length - 1]
+				let lastData = [lastEvent.locktime * 1000, 0]
+				chartData.push(lastData)
+				this.chartData = chartData = this.interpolateVotingPower(chartData)
+				this.chart.addSeries({
+					name: 'Voting Power',
+					data: chartData.slice(0, chartData.length - 11),
+				})
+
+				this.chart.hideLoading()
+			},
+
+			interpolateVotingPower(chartData) {
+				let origEvents = this.events.slice()
+				let newChartData = []
+				for(let j = 1; j < chartData.length; j++) {
+					let v = chartData[j]
+					let prev = chartData[j-1]
+					//if(v.length == 1) continue
+					newChartData.push(prev)
+					let startTimestamp = prev[0]
+					let startAmount = prev[1]
+					let endTimestamp = v[0]
+					let endAmount = v[1]
+					let diff = endTimestamp - startTimestamp
+					let diffAmount = endAmount - startAmount
+					let amountLocked = origEvents[j-1].totalPower
+					let numPoints = 10
+					for(let i = 0; i < numPoints; i++) {
+						let currentTimestamp = startTimestamp + i * (diff / numPoints)
+						let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j].locktime * 1000)
+						if(this.events.find(e=>e.timestamp == currentTimestamp / 1000) === undefined) {
+							this.events.splice(j, 0, {
+								type: 'decrease',
+								timestamp: currentTimestamp / 1000,
+								locktime: this.events[j].locktime,
+							})
+						}
+						newChartData.push([currentTimestamp, amount])
+					}
+					newChartData.push(v)
+				}
+				newChartData.push(chartData[chartData.length - 1])
+				return newChartData
+			},
+
+			calcVotingPower(amount, time, locktime) {
+				return amount / 1e18 * ((locktime - time) / 1000) / (86400 * 365) / 4
+			},
+
+			showEnd() {
+				let chartData = this.chartData.slice()
+				if(!this.showend) {
+					chartData = chartData.slice(0, chartData.length - 11)
+				}
+				console.log(chartData, "THE CHART DATA")
+				this.chart.series[0].setData(chartData, true, false)
+				if(this.showend) {
+					this.chart.rangeSelector.clickButton(4, false, false)
+					this.chart.xAxis[0].update({
+						ordinal: false,
+					})
+				}
+			},
+
 			setMaxBalance() {
 				this.deposit = this.crvBalance.div(1e18).toString()
 			},
@@ -210,10 +466,10 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
+				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
-							from: contract.default_account,
+							from: getters.default_account(),
 							gas: 1000000,
 						})
 						.once('transactionHash', () => resolve())
@@ -232,7 +488,7 @@
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
-							from: contract.default_account,
+							from: getters.default_account(),
 							gas: 10000000,
 						})
 						.once('transactionHash', () => resolve())
@@ -252,11 +508,11 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await common.approveAmount(this.CRV, deposit, contract.default_account, this.votingEscrow._address)
+				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
-							from: contract.default_account,
+							from: getters.default_account(),
 							gas: 1000000,
 						})
 						.once('transactionHash', () => resolve())
@@ -285,9 +541,19 @@
 				return deposit.times((lockTime - Date.now()) / 1000).div(86400 * 365).div(4).toFixed(0,2)
 			},
 
-			beforeDestroy() {
-				this.interval && clearIntervalAsync(this.interval)
+			getEventType(event) {
+				if(event.type.startsWith('0x65fc3873'))
+					return 'create_lock'
+				if(event.type.startsWith('0x4957677c'))
+					return 'increase_amount'
+				if(event.type.startsWith('increase_unlock_time'))
+					return 'increase_unlock_time'
 			},
+
+		},
+
+		beforeDestroy() {
+			this.interval && clearIntervalAsync(this.interval)
 		},
 	}
 </script>
@@ -320,5 +586,8 @@
 	}
 	.modal-content .content {
 		color: black;
+	}
+	.lockchart {
+		margin-top: 1em;
 	}
 </style>

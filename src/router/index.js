@@ -48,6 +48,7 @@ const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
+const Gauges = () => import('../components/minter/Gauges.vue')
 
 import Index from '../components/Index.vue'
 
@@ -284,6 +285,11 @@ let routes = [
         path: '',
         name: 'VotingEscrow',
         component: VotingEscrow,
+      },
+      {
+        path: 'gauges',
+        name: 'Gauges',
+        component: Gauges,
       },
     ],
   },

@@ -38,6 +38,14 @@
 				<p>
 					<input id='showend' type='checkbox' v-model='showend'>
 					<label for='showend'>Show until end</label>
+
+					<div class='chartoptions'>
+						<input id='showmypower' type='checkbox' v-model='showmypower'>
+						<label for='showmypower'>Show my voting power</label>
+
+						<input id='showdaopower' type='checkbox' v-model='showdaopower'>
+						<label for='showdaopower'>Show DAO voting power</label>
+					</div>
 				</p>
 				<highcharts v-show='hasvecrv && showvelock' :constructor-type="'stockChart'" :options="chartdata" ref='highcharts' class='lockchart'></highcharts>
 			</div>
@@ -96,7 +104,7 @@
 </template>
 
 <script>
-    import * as common from '../../utils/common.js'
+    import * as common from '../../utils/common'
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
     import Highcharts from 'highcharts'
@@ -162,7 +170,10 @@
 
 				chartdata: {
 					chart: {
-				        type: 'line'
+						panning: true,
+						zoomType: 'x',
+				        panKey: 'ctrl',
+				        type: 'line',
 				    },
 				    title: {
 				        text: 'veCRV Voting Power'
@@ -225,44 +236,52 @@
 				    	pointFormatter: (function(self) {
 				    		return function() {
 				    			let value = this.y.toFixed(2)
-				    			let event = self.events.find(e => e.timestamp == this.x / 1000)
-				    			//this is the period end
-				    			if(event === undefined)
-				    				return `
-				    					<div>
-				    						Voting lock end
-				    					</div>
-				    					<br>
-				    					<div>
-				    						Voting power: 0
-			    						</div>
-				    				`
-				    			else {
-				    				let titleHTML = `
-				    							<div>
-					    							${event.type == 'create_lock' ? '<b> Create lock </b>' : ''}
-					    							${event.type == 'increase_amount' ? '<b> Increase amount </b>' : ''}
-					    							${event.type == 'increase_unlock_time' ? '<b> Increase unlock time </b>' : ''}
-					    							${event.type == 'withdraw' ? '<b> Withdraw </b>' : ''}
-					    						</div>
-					    			`
+				    			if(this.series.name == 'My Voting Power') {
+					    			let event = self.events.find(e => e.timestamp == this.x / 1000)
+					    			//this is the period end
+					    			if(event === undefined)
+					    				return `
+					    					<div>
+					    						Voting lock end
+					    					</div>
+					    					<br>
+					    					<div>
+					    						Voting power: 0
+				    						</div>
+					    				`
+					    			else {
+					    				let titleHTML = `
+					    							<div>
+						    							${event.type == 'create_lock' ? '<b> Create lock </b>' : ''}
+						    							${event.type == 'increase_amount' ? '<b> Increase amount </b>' : ''}
+						    							${event.type == 'increase_unlock_time' ? '<b> Increase unlock time </b>' : ''}
+						    							${event.type == 'withdraw' ? '<b> Withdraw </b>' : ''}
+						    						</div>
+						    			`
 
-					    			let contentHTML = `
-					    						
-					    						<br>
-					    						<div>
-					    							${this.series.name}: <b>${value}</b><br/>
-				    							</div>
-					    						<br>
-					    						<div>Locked until: ${helpers.formatDateOnlyToHuman(event.locktime)}</div>
-				    						`
+						    			let contentHTML = `
+						    						
+						    						<br>
+						    						<div>
+						    							${this.series.name}: <b>${value}</b><br/>
+					    							</div>
+						    						<br>
+						    						<div>Locked until: ${helpers.formatDateOnlyToHuman(event.locktime)}</div>
+					    						`
 
-					    			return event.type !== 'decrease' ? titleHTML + contentHTML : contentHTML
+						    			return event.type !== 'decrease' ? titleHTML + contentHTML : contentHTML
+						    		}
 				    			}
+					    		if(this.series.name = 'DAO Voting Power') {
+					    			return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+					    		}
 				    		}
 				    	})(this),
 				    },
-				    series: []
+				    series: [],
+				    legend: {
+				    	enabled: true
+				    },
 				},
 
 				chart: null,
@@ -272,27 +291,43 @@
 				chartData: [],
 
 				showend: false,
+
+				showmypower: true,
+				showdaopower: false,
 			}
 
 		},
 
 		async created() {
-			this.$watch(() => contract.default_account, (val, oldval) => {
-				if(!val || !oldval)
-					return
-				if(oldval.toLowerCase() != val.toLowerCase() || !this.loaded)
+			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
+				if(val != null && oldval != null)
 					this.mounted()
 			})
 		},
 
 		async mounted() {
-			if(contract.default_account)
+			if(contract.default_account && contract.multicall)
 				this.mounted()
 		},
 
 		watch: {
 			showend(val) {
 				this.showEnd()
+			},
+
+			showmypower(val) {
+				if(val == false && !this.showdaopower) return;
+				let toggle = 'show'
+				if(!val) {
+					toggle = 'hide'
+				}
+				this.chart.series[0][toggle]()
+			},
+			showdaopower(val) {
+				if(val == false && !this.showmypower) return
+				let toggle = 'show'
+				if(!val) toggle = 'hide'
+				this.chart.series[1][toggle]()
 			},
 		},
 
@@ -345,6 +380,7 @@
 				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
 				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, daoabis.CRV_address)
 
+
 				let calls = [
 					[this.votingEscrow._address, this.votingEscrow.methods.balanceOf(getters.default_account()).encodeABI()],
 					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(getters.default_account()).encodeABI()],
@@ -383,8 +419,20 @@
 						}
 					}
 				`
-				let results = await this.wrapper.performQuery(QUERY)
-				let events = results.data.votingEscrows
+
+				let DAOPowerQUERY = gql`
+					{
+					  daopowers(orderBy: block, orderDirection: asc) {
+					    id
+					    block
+					    timestamp
+					    totalPower
+					  }
+					}
+				`
+
+				let results = await Promise.all([this.wrapper.performQuery(QUERY), this.wrapper.performQuery(DAOPowerQUERY)])
+				let events = results[0].data.votingEscrows
 				this.events = events
 				events = events.map(event => {
 					event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
@@ -396,15 +444,26 @@
 				chartData.push(lastData)
 				this.chartData = chartData = this.interpolateVotingPower(chartData)
 				this.chart.addSeries({
-					name: 'Voting Power',
+					name: 'My Voting Power',
 					data: chartData.slice(0, chartData.length - 11),
 				})
+
+				let daopower = results[1].data.daopowers
+
+				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
+				this.chart.addSeries({
+					name: 'DAO Voting Power',
+					data: daopowerdata,
+				})
+
+				this.chart.series[1].hide()
 
 				this.chart.hideLoading()
 			},
 
 			interpolateVotingPower(chartData) {
 				let origEvents = this.events.slice()
+				console.log(origEvents, "ORIG EVENTS")
 				let newChartData = []
 				for(let j = 1; j < chartData.length; j++) {
 					let v = chartData[j]
@@ -420,8 +479,11 @@
 					let amountLocked = origEvents[j-1].totalPower
 					let numPoints = 10
 					for(let i = 0; i < numPoints; i++) {
+						console.log(origEvents[j-1].totalPower, i, "TOTAL POWER")
 						let currentTimestamp = startTimestamp + i * (diff / numPoints)
-						let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j].locktime * 1000)
+						console.log(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000, "AMOUNTS")
+						let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000)
+						console.log(amount, "THE AMOUNT")
 						if(this.events.find(e=>e.timestamp == currentTimestamp / 1000) === undefined) {
 							this.events.splice(j, 0, {
 								type: 'decrease',
@@ -429,6 +491,7 @@
 								locktime: this.events[j].locktime,
 							})
 						}
+						//console.log(amount, "THE AMOUNT")
 						newChartData.push([currentTimestamp, amount])
 					}
 					newChartData.push(v)
@@ -446,7 +509,6 @@
 				if(!this.showend) {
 					chartData = chartData.slice(0, chartData.length - 11)
 				}
-				console.log(chartData, "THE CHART DATA")
 				this.chart.series[0].setData(chartData, true, false)
 				if(this.showend) {
 					this.chart.rangeSelector.clickButton(4, false, false)

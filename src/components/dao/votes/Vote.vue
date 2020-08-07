@@ -6,7 +6,7 @@
 			</legend>
 			<div class='voteTitle'>
 				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
-					<b> #{{ vote.voteNumber }} </b>
+					<b> #{{ vote.voteCountSeq }} </b>
 				</router-link> 
 				<span class='userCastVote tooltip'>
 					<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports' class='userVotedYes'>√</span>

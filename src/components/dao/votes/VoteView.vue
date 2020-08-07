@@ -52,7 +52,7 @@
 							{{ vote.votingAppName }} ({{getSupportRequiredPct}}% / {{ getMinAcceptQuorum }}%)
 						</div>
 						<div class='votenum'>
-							<b> Vote #{{ vote.voteNumber }} </b>
+							<b> Vote #{{ vote.voteCountSeq }} </b>
 						</div> 
 					</div>
 					<div class='description'>
@@ -138,7 +138,7 @@
 						</div>
 
 						<div class='myvote info-message gentle-message' v-if='canVote() && vote.casts && !vote.casts.length'>
-							Voting with {{ currentVotingPowerFormat() }} veCRV, you had {{ balanceOfAtFormat }} veCRV
+							Voting with {{ currentVotingPowerFormat() }} veCRV ({{ myVotingPowerPct }}% of total voting power), you had {{ balanceOfAtFormat }} veCRV
 							at vote creation on snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
 							<div class='castvote'>
@@ -349,6 +349,12 @@
 			formattedMetadata() {
 				if(!this.vote.metadata) return ''
 				return this.vote.metadata && helpers.truncate(this.vote.metadata, 100, true)
+			},
+			totalVotingPowerFormat() {
+				return this.vote.votingPower / 1e18
+			},
+			myVotingPowerPct() {
+				return (this.currentVotingPower() * 100 / this.vote.votingPower).toFixed(2)
 			},
 		},
 

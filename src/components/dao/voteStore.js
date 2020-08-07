@@ -176,6 +176,7 @@ export async function getAllVotes() {
 	      	creatorVotingPower
 	      	transactionHash
 	      	castCount
+	      	voteCountSeq
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}
@@ -295,6 +296,7 @@ export async function getVote(app, voteId) {
 	      	script
 	      	transactionHash
 	      	castCount
+	      	voteCountSeq
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
 		}

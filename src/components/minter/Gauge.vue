@@ -41,6 +41,8 @@
 					</div>
 					<button @click='withdraw'>Withdraw</button>
 					<button @click='claim' v-show='claimableTokens !== null'>Claim {{ claimableTokensFormat }}</button>
+
+					<!-- <button @click='update_liquidity_limit'>Update liquidity limit</button> -->
 				</div>
 			</div>
 		</fieldset>
@@ -55,8 +57,11 @@
 	import daoabis from '../dao/allabis'
 
 	import * as gaugeStore from './gaugeStore'
+	import * as veStore from './veStore'
 
 	import BN from 'bignumber.js'
+
+	import * as helpers from '../../utils/helpers'
 
 	export default {
 		props: ['i'],
@@ -72,6 +77,10 @@
 
 			claimableTokens: null,
 			minted: null,
+
+			loaded: false,
+
+			promise: helpers.makeCancelable(Promise.resolve()),
 		}),
 
 		computed: {
@@ -96,6 +105,9 @@
 			mintedFormat() {
 				return (this.minted / 1e18).toFixed(2)
 			},
+			triggerUpdateLimit() {
+				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, Date.now()
+			},
 
 		},
 
@@ -118,6 +130,13 @@
 
 				this.withdrawSlider = (Math.min(withdrawVal, 100)).toFixed(0)
 			},
+			async triggerUpdateLimit() {
+				if(!this.loaded) return;
+				this.promise.cancel()
+				this.promise = helpers.makeCancelable(this.update_liquidity_limit(this.depositAmount, veStore.newVotingPower()))
+				let newLimit = await this.promise
+
+			},
 		},
 
 		mounted() {
@@ -127,14 +146,16 @@
 		methods: {
 			async mounted() {
 				this.depositAmount = this.poolBalanceFormat
-				console.log(this.poolBalanceFormat, " POOL BALANCE FORMAT ")
 				this.withdrawAmount = this.gaugeBalanceFormat
 
 				this.gaugeContract = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
 				this.swap_token = new contract.web3.eth.Contract(ERC20_abi, this.gauge.swap_token)
 
+				setTimeout(() => this.loaded = true, 1000)
+
 				this.claimableTokens = await this.gaugeContract.methods.claimable_tokens().call()
 				this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.gauge.gauge).call()
+
 			},
 
 			async deposit() {
@@ -175,7 +196,6 @@
 			onDepositSlider(event) {
 				let val = event.target.value
 				this.depositSlider = val
-				//console.log(val, "THE VAL")
 				this.depositAmount = ((this.gauge.balance / 1e18) * val/100).toFixed(2)
 			},
 
@@ -185,19 +205,22 @@
 				this.withdrawAmount = ((this.gauge.gaugeBalance / 1e18) * val/100).toFixed(2)
 			},
 
-			async update_liquidity_limit() {
+			async update_liquidity_limit(new_l = null, new_voting_balance = null) {
+				console.log(+new_voting_balance, "Voting balance")
 				let l = +this.gauge.gaugeBalance
+				if(new_l)
+					l = new_l * 1e18
 				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
 
 				let calls = [
-					[state.votingEscrow._address, state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
-					[state.votingEscrow._address, state.votingEscrow.methods.totalSupply().encodeABI()],
+					[gaugeStore.state.votingEscrow._address, gaugeStore.state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
+					[gaugeStore.state.votingEscrow._address, gaugeStore.state.votingEscrow.methods.totalSupply().encodeABI()],
 					[this.gauge.gauge, example_gauge.methods.period_timestamp(0).encodeABI()],
 					[this.gauge.gauge, example_gauge.methods.working_balances(contract.default_account).encodeABI()],
 					[this.gauge.gauge, example_gauge.methods.working_supply().encodeABI()],
 					[this.gauge.gauge, example_gauge.methods.totalSupply().encodeABI()],
 				]
-				let aggcalls = await contract.multicall.methods.aggcalls(calls).call()
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				let voting_balance = +decoded[0]
 				let voting_total = +decoded[1]
@@ -206,18 +229,32 @@
 				let working_supply = +decoded[4]
 				let L = +decoded[5]
 
+				L = 1e18
+
+
+				if(new_voting_balance) {
+					voting_balance = new_voting_balance * 1e18
+				}
+
+
 				let TOKENLESS_PRODUCTION = 40
 				let BOOST_WARMUP = 2 * 7 * 86400
 
 				let lim = l * TOKENLESS_PRODUCTION / 100
-				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + BOOST_WARMUP))
+				console.log(lim, "lim initial")
+				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + 0))
 					lim += L * voting_balance / voting_total * (100 - TOKENLESS_PRODUCTION) / 100
+				console.log(lim, "lim after")
 
 				lim = Math.min(l, lim)
+				console.log('voting_balance: ', voting_balance, 'voting_total: ', voting_total, 'period_timestamp: ',
+								period_timestamp, 'working_balances: ', working_balances, 'working_supply: ', working_supply,
+								'l: ', l,'L: ', L,'lim: ', lim)
 				let old_bal = working_balances
 				let _working_supply = working_supply + lim - old_bal
 
-				return _working_supply
+				console.log(_working_supply, "working supply")
+				return [_working_supply, (lim / _working_supply) / (l / L)]
 
 			},
 

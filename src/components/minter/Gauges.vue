@@ -3,7 +3,9 @@
 		<div class='window white'>
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
-
+		<div class='window white'>
+			<voting-escrow :showchart='false'></voting-escrow>
+		</div>
 		<gauge v-for='(pool, i) in mypools' :key = 'i' :i = 'i'></gauge>
 	</div>
 </template>
@@ -30,9 +32,12 @@
 
 	import Gauge from './Gauge'
 
+	import VotingEscrow from './VotingEscrow'
+
 	export default {
 		components: {
 			Gauge,
+			VotingEscrow,
 			Highcharts: Chart,
 		},
 

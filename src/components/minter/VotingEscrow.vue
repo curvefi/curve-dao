@@ -1,5 +1,5 @@
 <template>
-	<div :class="{'window white': showvelock}">
+	<div :class="{'window white': (showvelock && showchart)}">
 
 		<div id='modal' class='rootmodal modal' v-show='showModal' @click.self='showModal = false'>
 			<div class='modal-content window white'>
@@ -34,7 +34,7 @@
 					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
 				</div>
 			</div>
-			<div>
+			<div v-show='showchart'>
 				<p>
 					<input id='showend' type='checkbox' v-model='showend'>
 					<label for='showend'>Show until end</label>
@@ -130,6 +130,8 @@
 
 	import daoabis from '../dao/allabis'
 
+	import * as veStore from './veStore'
+
 	import * as helpers from '../../utils/helpers'
 
 	import BN from 'bignumber.js'
@@ -145,6 +147,10 @@
 				type: Boolean,
 				default: true,
 			},
+			showchart: {
+				type: Boolean,
+				default: true,
+			},
 		},
 
 		data() {
@@ -152,10 +158,8 @@
 				CRV: null,
 				crvBalance: BN(0),
 				votingEscrow: null,
-				vecrvBalance: BN(0),
+				
 				lockTime: 0,
-				deposit: 0,
-				increaseLock: Date.now(),
 
 				interval: null,
 
@@ -332,6 +336,14 @@
 		},
 
 		computed: {
+			vecrvBalance: {
+				get() {
+					return veStore.state.vecrvBalance
+				},
+				set(val) {
+					veStore.state.vecrvBalance = val
+				},
+			},
 			crvBalanceText() {
 				return this.crvBalance.div(1e18).toFixed(2,1)
 			},
@@ -361,6 +373,22 @@
 			},
 			increaseLockText() {
 				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000)
+			},
+			deposit: {
+				get() {
+					return veStore.state.deposit
+				},
+				set(val) {
+					veStore.state.deposit = val
+				},
+			},
+			increaseLock: {
+				get() {
+					return veStore.state.increaseLock
+				},
+				set(val) {
+					veStore.state.increaseLock = val
+				},
 			},
 		},
 
@@ -597,10 +625,7 @@
 			},
 
 			newVotingPower() {
-				let lockTime = Date.parse(this.increaseLock)
-				let deposit = BN(this.deposit).plus(this.vecrvBalance / 1e18)
-
-				return deposit.times((lockTime - Date.now()) / 1000).div(86400 * 365).div(4).toFixed(0,2)
+				return veStore.newVotingPower().toFixed(2,0)
 			},
 
 			getEventType(event) {

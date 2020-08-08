@@ -1,12 +1,12 @@
 <template>
-	<div class='window white'>
+	<div>
 		<ul>
 			<li>Initial locked: {{ initialLockedFormat }}</li>
 			<li>Start lock time: {{ startTimeFormat }}</li>
 			<li>End lock time: {{ endTimeFormat }}</li>
 			<br>
-			<li>Vested tokens: {{ vestedFormat }}</li>
-			<li>Claimable tokens: {{ balanceFormat }}</li>
+			<li>Claimed + unvested tokens: {{ vestedFormat }}</li>
+			<li>Unvested tokens: {{ balanceFormat }}</li>
 			<li>Locked tokens: {{ lockedFormat }}</li>
 		</ul>
 		<div class='vestingchart'>
@@ -48,6 +48,8 @@
 			Highcharts: Chart,
 		},
 
+		props: ['address'],
+
 		data: () => ({
 			vesting: null,
 			vestedOf: null,
@@ -65,7 +67,7 @@
 				        type: 'line',
 				    },
 				    title: {
-				        text: 'Vested tokens'
+				        text: 'Unvested tokens'
 				    },
 				    rangeSelector: {
 				    	selected: 4,
@@ -110,12 +112,16 @@
 				    	},
 				        line: {
 				            dataLabels: {
-				                enabled: true,
+				                enabled: false,
 				            },
 				        }
 				    },
 				    tooltip: {
-				    	
+				    	pointFormatter() {
+				    		let value = this.y.toFixed(2)
+
+				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
+				    	},
 				    },
 				    series: [],
 				    legend: {
@@ -126,6 +132,15 @@
 				chart: null,
 
 		}),
+
+		watch: {
+			address(val, oldval) {
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
+				this.mounted()
+			},
+		},
 
 		async created() {
 			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
@@ -165,7 +180,6 @@
 		methods: {
 			async mounted() {
 				this.chart = this.$refs.highcharts.chart
-				console.log(this.chart, "THIS CHART")
 				this.chart.showLoading()
 
 				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, daoabis.vesting_address)
@@ -191,8 +205,23 @@
 				this.end_time = decoded[5]
 
 				let vestedTime = +this.end_time - +this.start_time
-				console.log(vestedTime, "VESTED TIME")
-				console.log(this.initial_locked, "INITIAL LOCKED")
+				let vestedData = []
+				let releasedAmount = this.initial_locked / 1e18 / (vestedTime / 86400)
+				for(let i = 0; i < vestedTime / 86400; i++) {
+					vestedData.push([(+this.start_time + i*86400) * 1000, i*releasedAmount])
+				}
+
+				this.chart.addSeries({
+					name: "Unvested tokens",
+					data: vestedData,
+				})
+
+				this.chart.addSeries({
+					name: "Vested tokens",
+					data: vestedData.map(([k, v]) => [k, this.initial_locked / 1e18 - v])
+				})
+
+				this.chart.hideLoading()
 			},
 
 			async claim() {
@@ -208,6 +237,9 @@
 
 <style scoped>
 	.buttons {
+		margin-top: 1em;
+	}
+	.vestingchart {
 		margin-top: 1em;
 	}
 </style>

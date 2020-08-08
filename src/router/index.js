@@ -49,7 +49,7 @@ const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
 const Gauges = () => import('../components/minter/Gauges.vue')
-const Vesting = () => import('../components/minter/Vesting.vue')
+const VestingView = () => import('../components/minter/VestingView.vue')
 
 import Index from '../components/Index.vue'
 
@@ -294,8 +294,8 @@ let routes = [
       },
       {
         path: 'vesting',
-        name: 'Vesting',
-        component: Vesting,
+        name: 'VestingView',
+        component: VestingView,
       },
     ],
   },

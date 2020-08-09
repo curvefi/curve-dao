@@ -34,7 +34,7 @@
 					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
 				</div>
 			</div>
-			<div v-show='showchart'>
+			<div v-show='showchart && events && events.length > 0'>
 				<p>
 					<input id='showend' type='checkbox' v-model='showend'>
 					<label for='showend'>Show until end</label>
@@ -67,6 +67,13 @@
 							:disabled-dates='disabledDates'
 							:open-date='openDate'
 						></datepicker>
+						<div class='increaseLockButtons'>
+							<button>Lock 1 week</button>
+							<button>Lock 1 month</button>
+							<button>Lock 6 months</button>
+							<button>Lock 1 year</button>
+							<button>Lock 4 years</button>
+						</div>
 						<br>
 						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
 					</p>
@@ -86,6 +93,13 @@
 							:disabled-dates='disabledDates'
 							:open-date='openDate'
 						></datepicker>
+						<div class='increaseLockButtons'>
+							<button>Lock 1 week</button>
+							<button>Lock 1 month</button>
+							<button>Lock 6 months</button>
+							<button>Lock 1 year</button>
+							<button>Lock 4 years</button>
+						</div>
 					</p>
 					<button @click="confirmModal('createLock')">Create lock</button>
 				</div>
@@ -369,7 +383,7 @@
 				return this.vecrvBalance.gt(0)
 			},
 			isInvalidAmount() {
-				return this.deposit <= 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
+				return this.deposit < 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
 			},
 			increaseLockText() {
 				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000)
@@ -406,8 +420,8 @@
 			},
 
 			async loadBalances() {
-				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
-				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, daoabis.CRV_address)
+				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, '0x7477FFEc941d1b8251Ef2d0216AfE7daf2Cf74Ab')
+				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, '0xC6bfF6CC1B890cAF4c3CA9cCCE25963EC4A22348')
 
 
 				let calls = [
@@ -426,6 +440,7 @@
 				}
 				this.crvBalance = BN(decoded[2])
 				this.deposit = this.crvBalance.div(1e18).toFixed(0,1)
+				this.deposit = 0
 
 				if(this.crvBalance.gt(0)) {
 					this.interval = setIntervalAsync(this.newVotingPower, 10000)
@@ -434,7 +449,7 @@
 
 			async loadChart() {
 
-				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-rinkeby')
+				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-rinkeby2')
 				let QUERY = gql`
 					{
 						votingEscrows(where: { provider: "${getters.default_account()}" }, orderBy: timestamp, orderDirection: asc) {
@@ -461,6 +476,7 @@
 				`
 
 				let results = await Promise.all([this.wrapper.performQuery(QUERY), this.wrapper.performQuery(DAOPowerQUERY)])
+				console.log(results, "THE RESULTS")
 				let events = results[0].data.votingEscrows
 				this.events = events
 				events = events.map(event => {
@@ -471,6 +487,7 @@
 				let lastEvent = events[events.length - 1]
 				let lastData = [lastEvent.locktime * 1000, 0]
 				chartData.push(lastData)
+				this.events.push({...this.events[this.events.length - 1], value: 0, votingPower: 0})
 				this.chartData = chartData = this.interpolateVotingPower(chartData)
 				this.chart.addSeries({
 					name: 'My Voting Power',
@@ -495,6 +512,7 @@
 				let origEvents = this.events.slice()
 				console.log(origEvents, "ORIG EVENTS")
 				let newChartData = []
+				console.log(chartData.slice(), "CHARTDATA LENGTH")
 				for(let j = 1; j < chartData.length; j++) {
 					let v = chartData[j]
 					let prev = chartData[j-1]
@@ -508,21 +526,23 @@
 					let diffAmount = endAmount - startAmount
 					let amountLocked = origEvents[j-1].totalPower
 					let numPoints = 10
-					for(let i = 0; i < numPoints; i++) {
-						console.log(origEvents[j-1].totalPower, i, "TOTAL POWER")
-						let currentTimestamp = startTimestamp + i * (diff / numPoints)
-						console.log(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000, "AMOUNTS")
-						let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000)
-						console.log(amount, "THE AMOUNT")
-						if(this.events.find(e=>e.timestamp == currentTimestamp / 1000) === undefined) {
-							this.events.splice(j, 0, {
-								type: 'decrease',
-								timestamp: currentTimestamp / 1000,
-								locktime: this.events[j].locktime,
-							})
+					if(chartData.length > 1) {
+						for(let i = 0; i < numPoints; i++) {
+							console.log(origEvents[j-1].totalPower, i, "TOTAL POWER")
+							let currentTimestamp = startTimestamp + i * (diff / numPoints)
+							console.log(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000, "AMOUNTS")
+							let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000)
+							console.log(amount, "THE AMOUNT")
+							if(this.events.find(e=>e.timestamp == currentTimestamp / 1000) === undefined) {
+								this.events.splice(j, 0, {
+									type: 'decrease',
+									timestamp: currentTimestamp / 1000,
+									locktime: this.events[j].locktime,
+								})
+							}
+							//console.log(amount, "THE AMOUNT")
+							newChartData.push([currentTimestamp, amount])
 						}
-						//console.log(amount, "THE AMOUNT")
-						newChartData.push([currentTimestamp, amount])
 					}
 					newChartData.push(v)
 				}
@@ -678,5 +698,8 @@
 	}
 	.lockchart {
 		margin-top: 1em;
+	}
+	.increaseLockButtons button {
+		margin-right: 0.6em;
 	}
 </style>

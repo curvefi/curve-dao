@@ -400,7 +400,8 @@
 				this.chart.series[0] && this.chart.series[0].remove()
 
 				this.loadBalances()
-				this.loadChart()
+				if(this.showvelock && this.showchart)
+					this.loadChart()
 
 			},
 
@@ -482,6 +483,7 @@
 				this.chart.addSeries({
 					name: 'DAO Voting Power',
 					data: daopowerdata,
+					color: '#0b0a57',
 				})
 
 				this.chart.series[1].hide()

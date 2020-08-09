@@ -87,7 +87,7 @@
 
 		async created() {
 			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
-				if(val != null && oldval != null)
+				//if(val != null && oldval != null)
 					this.mounted()
 			}, {
 				immediate: true
@@ -108,9 +108,9 @@
 				this.pools = gaugeStore.state.pools
 				this.mypools = gaugeStore.state.mypools
 
-				let total = this.mypools.reduce((a,b) => +a + +b.balance, 0)
+				let total = this.mypools.reduce((a,b) => +a + +b.gaugeBalance, 0)
 
-				let piedata = this.mypools.map(pool => ({ name: pool.name, y: pool.balance / total}))
+				let piedata = this.mypools.map(pool => ({ name: pool.name, y: pool.gaugeBalance / total}))
 
 				this.piechart.addSeries({
 					name: 'Gauge Allocation',

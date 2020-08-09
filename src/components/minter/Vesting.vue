@@ -144,7 +144,7 @@
 
 		async created() {
 			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
-				if(val != null && oldval != null)
+				//if(val != null && oldval != null)
 					this.mounted()
 			}, {
 				immediate: true
@@ -214,11 +214,13 @@
 				this.chart.addSeries({
 					name: "Unvested tokens",
 					data: vestedData,
+					color: '#0b0a57',
 				})
 
 				this.chart.addSeries({
 					name: "Vested tokens",
-					data: vestedData.map(([k, v]) => [k, this.initial_locked / 1e18 - v])
+					data: vestedData.map(([k, v]) => [k, this.initial_locked / 1e18 - v]),
+					color: '#7bb5ec',
 				})
 
 				this.chart.hideLoading()

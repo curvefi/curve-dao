@@ -9,6 +9,10 @@
 					Minted CRV from this gauge: {{ mintedFormat }}
 				</div>
 				<div class='flex-break'></div>
+				<div v-show='boost !== null && !isNaN(boost)'>
+					Boost: {{ boost && boost.toFixed(4) }}
+				</div>
+				<div class='flex-break'></div>
 				<div class='pool'>
 					<div>Balance: <span class='hoverpointer' @click='setMaxPool'>{{ poolBalanceFormat }}</span> {{ gauge.name }} LP token</div>
 					<div class='input'>
@@ -78,6 +82,8 @@
 			claimableTokens: null,
 			minted: null,
 
+			boost: null,
+
 			loaded: false,
 
 			promise: helpers.makeCancelable(Promise.resolve()),
@@ -135,6 +141,9 @@
 				this.promise.cancel()
 				this.promise = helpers.makeCancelable(this.update_liquidity_limit(this.depositAmount, veStore.newVotingPower()))
 				let newLimit = await this.promise
+				console.log(newLimit, "new limit")
+
+				this.boost = newLimit[1]
 
 			},
 		},
@@ -223,38 +232,47 @@
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				let voting_balance = +decoded[0]
-				let voting_total = +decoded[1]
+				let voting_total = +decoded[1] - +voting_balance
 				let period_timestamp = +decoded[2]
 				let working_balances = +decoded[3]
 				let working_supply = +decoded[4]
-				let L = +decoded[5]
+				let L = +decoded[5] + l
 
-				L = 1e18
+				console.log(L, "TOTAL SUPPLY")
 
 
 				if(new_voting_balance) {
 					voting_balance = new_voting_balance * 1e18
 				}
 
+				voting_total += voting_balance
+
 
 				let TOKENLESS_PRODUCTION = 40
 				let BOOST_WARMUP = 2 * 7 * 86400
+				BOOST_WARMUP = 0
 
 				let lim = l * TOKENLESS_PRODUCTION / 100
 				console.log(lim, "lim initial")
-				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + 0))
+				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + BOOST_WARMUP))
 					lim += L * voting_balance / voting_total * (100 - TOKENLESS_PRODUCTION) / 100
 				console.log(lim, "lim after")
 
+				console.log(l, lim, Math.min(l, lim))
 				lim = Math.min(l, lim)
 				console.log('voting_balance: ', voting_balance, 'voting_total: ', voting_total, 'period_timestamp: ',
 								period_timestamp, 'working_balances: ', working_balances, 'working_supply: ', working_supply,
 								'l: ', l,'L: ', L,'lim: ', lim)
 				let old_bal = working_balances
+				let noboost_lim = TOKENLESS_PRODUCTION * l / 100
+				let noboost_supply = working_supply + noboost_lim - old_bal
 				let _working_supply = working_supply + lim - old_bal
 
+				console.log(noboost_lim, noboost_supply, 'noboost')
+
 				console.log(_working_supply, "working supply")
-				return [_working_supply, (lim / _working_supply) / (l / L)]
+				console.log(this.gauge.name, "GAUGE NAME")
+				return [_working_supply, (lim / _working_supply) / (noboost_lim / noboost_supply)]
 
 			},
 
@@ -291,6 +309,9 @@
 		width: 6em;
 	}
 	.pools .input {
+		margin-top: 1em;
+	}
+	.range {
 		margin-top: 1em;
 	}
 	.range label {

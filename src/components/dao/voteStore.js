@@ -538,6 +538,10 @@ export function hasQuorum(vote) {
 }
 
 export function canExecute(vote) {
+
+	if(!isVoteOpen(vote))
+		return false
+
 	if(vote.executed)
 		return false
 

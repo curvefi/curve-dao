@@ -11,7 +11,7 @@
     "@aragon/connect-core": "0.4.2",
     "@aragon/connect-ethereum": "0.4.2",
     "@aragon/connect-thegraph": "0.4.2",
-    "@aragon/connect-thegraph-tokens": "0.4.2",
+    "@aragon/connect-thegraph-tokens": "^0.4.2",
     "@aragon/connect-thegraph-voting": "0.4.2",
     "@biconomy/mexa": "^1.5.12",
     "@chenfengyuan/vue-qrcode": "^1.0.2",

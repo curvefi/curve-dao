@@ -1,20 +1,25 @@
 <template>
 	<div>
-		<ul>
-			<li>Initial locked: {{ initialLockedFormat }}</li>
-			<li>Start lock time: {{ startTimeFormat }}</li>
-			<li>End lock time: {{ endTimeFormat }}</li>
-			<br>
-			<li>Claimed + unvested tokens: {{ vestedFormat }}</li>
-			<li>Unvested tokens: {{ balanceFormat }}</li>
-			<li>Locked tokens: {{ lockedFormat }}</li>
-		</ul>
-		<div class='vestingchart'>
-			<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+		<div v-show='!notVested'>
+			<ul>
+				<li>Initial locked: {{ initialLockedFormat }}</li>
+				<li>Start lock time: {{ startTimeFormat }}</li>
+				<li>End lock time: {{ endTimeFormat }}</li>
+				<br>
+				<li>Claimed + unvested tokens: {{ vestedFormat }}</li>
+				<li>Unvested tokens: {{ balanceFormat }}</li>
+				<li>Locked tokens: {{ lockedFormat }}</li>
+			</ul>
+			<div class='vestingchart'>
+				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+			</div>
+			<div class='buttons'>
+				<button @click='claim'>Claim {{ balanceFormat }} CRV</button>
+			</div>
 		</div>
-		<div class='buttons'>
-			<button @click='claim'>Claim {{ balanceFormat }} CRV</button>
-		</div>
+		<p class='info-message gentle-message' v-show='notVested'>
+			You don't have vested tokens
+		</p>
 	</div>
 </template>
 
@@ -131,6 +136,8 @@
 
 				chart: null,
 
+				notVested: false,
+
 		}),
 
 		watch: {
@@ -180,9 +187,12 @@
 		methods: {
 			async mounted() {
 				this.chart = this.$refs.highcharts.chart
+				while(this.chart.series.length) {
+					this.chart.series[0].remove()
+				}
 				this.chart.showLoading()
 
-				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, daoabis.vesting_address)
+				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, '0x5F4dd3ab1d050De2C269Db090449d9B33CCC053f')
 
 				let calls = [
 					[this.vesting._address, this.vesting.methods.vestedOf(contract.default_account).encodeABI()],
@@ -197,12 +207,19 @@
 
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 
+				console.log(decoded, "DECODED")
+
 				this.vestedOf = decoded[0]
 				this.balanceOf = decoded[1]
 				this.lockedOf = decoded[2]
 				this.initial_locked = decoded[3]
 				this.start_time = decoded[4]
 				this.end_time = decoded[5]
+
+				if(+this.initial_locked == 0) {
+					this.notVested = true
+					return;
+				}
 
 				let vestedTime = +this.end_time - +this.start_time
 				let vestedData = []

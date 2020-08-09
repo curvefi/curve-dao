@@ -68,11 +68,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button>Lock 1 week</button>
-							<button>Lock 1 month</button>
-							<button>Lock 6 months</button>
-							<button>Lock 1 year</button>
-							<button>Lock 4 years</button>
+							<button @click='lockButton(604800, 0)'>Lock 1 week</button>
+							<button @click='lockButton(2678400, 0)'>Lock 1 month</button>
+							<button @click='lockButton(16070400, 0)'>Lock 6 months</button>
+							<button @click='lockButton(31536000, 0)'>Lock 1 year</button>
+							<button @click='lockButton(126144000, 0)'>Lock 4 years</button>
 						</div>
 						<br>
 						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
@@ -94,11 +94,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button>Lock 1 week</button>
-							<button>Lock 1 month</button>
-							<button>Lock 6 months</button>
-							<button>Lock 1 year</button>
-							<button>Lock 4 years</button>
+							<button @click='lockButton(604800, 1)'>Lock 1 week</button>
+							<button @click='lockButton(2678400, 1)'>Lock 1 month</button>
+							<button @click='lockButton(16070400, 1)'>Lock 6 months</button>
+							<button @click='lockButton(31536000, 1)'>Lock 1 year</button>
+							<button @click='lockButton(126144000, 1)'>Lock 4 years</button>
 						</div>
 					</p>
 					<button @click="confirmModal('createLock')">Create lock</button>
@@ -658,6 +658,16 @@
 				if(event.type.startsWith('increase_unlock_time'))
 					return 'increase_unlock_time'
 			},
+
+			lockButton(period, type) {
+				//0 increase lock
+				//1 create lock
+
+				let start = this.lockTime
+				let newtime = this.lockTime + 604800 + period
+
+				this.increaseLock = new Date(newtime * 1000)
+			}
 
 		},
 

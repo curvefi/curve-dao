@@ -13,28 +13,30 @@ export let state = Vue.observable({
 
 	votingEscrow: null,
 	minter: null,
+
+	totalClaimableCRV: null,
 })
 
 export async function getState() {
 	state.pools = {
 		curvepool1: {
-			swap: '0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4',
-			swap_token: '0x82220b3195B3390fAEf002f8B415Ce4Bf7bB4fF8',
+			swap: '0xbbe6874b45eFd4E44396F6aE619663067424b218',
+			swap_token: '0x1796E153ce80fCf2015E19035DcecFb005bc017D',
 			name: 'curvepool1'
 		},
-		curvepool2: {
-			swap: '0x755eAb732bF116b38e73b88DACf58c5E7001c2Cb',
-			swap_token: '0x5c9aE8d5D6e55ECDbc627dA9959A2a285860d3BF',
-			name: 'curvepool2'
-		},
-		curvepool3: {
-			swap: '0x787A2950251E6513AA73EdF8646A656cF2d04168',
-			swap_token: '0x06Ec5D01d7A0245A7ABdC01aB1d21b801a43a554',
-			name: 'curvepool3'
-		},
+		// curvepool2: {
+		// 	swap: '0x755eAb732bF116b38e73b88DACf58c5E7001c2Cb',
+		// 	swap_token: '0x5c9aE8d5D6e55ECDbc627dA9959A2a285860d3BF',
+		// 	name: 'curvepool2'
+		// },
+		// curvepool3: {
+		// 	swap: '0x787A2950251E6513AA73EdF8646A656cF2d04168',
+		// 	swap_token: '0x06Ec5D01d7A0245A7ABdC01aB1d21b801a43a554',
+		// 	name: 'curvepool3'
+		// },
 	}
 
-	state.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, daoabis.gaugecontroller_address)
+	state.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0xb1226B7bF0eB746cCC22960F3292410C3b04ef4e')
 	state.n_gauges = +(await state.gaugeController.methods.n_gauges().call())
 	console.log(state.n_gauges, "N GAUGES")
 
@@ -78,6 +80,7 @@ export async function getState() {
 		let poolgauge = Object.values(state.pools).find(pool => pool.swap_token.toLowerCase() == gauge.swap_token.toLowerCase())
 		poolgauge.gauge = gauge.gauge
 		poolgauge.type = gauge.type
+		poolgauge.typeName = gauge.typeName
 	})
 
 	console.log(decodedBalances)
@@ -91,7 +94,9 @@ export async function getState() {
 
 
 	state.mypools = decodedBalances.map(v => {
+		console.log(v.swap_token, "THE SWAP TOKEN")
 		let poolInfo = Object.values(state.pools).find(pool => pool.swap_token.toLowerCase() == v.swap_token.toLowerCase())
+		console.log(poolInfo, "THE POOL INFO")
 		return {
 			...poolInfo, 
 			balance: v.balance,
@@ -101,6 +106,6 @@ export async function getState() {
 	
 	console.log(state.mypools)
 
-	state.votingEscrow = new contract.web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
-	state.minter = new contract.web3.eth.Contract(daoabis.minter_abi, daoabis.minter_address)
+	state.votingEscrow = new contract.web3.eth.Contract(daoabis.votingescrow_abi, '0x7477FFEc941d1b8251Ef2d0216AfE7daf2Cf74Ab')
+	state.minter = new contract.web3.eth.Contract(daoabis.minter_abi, '0xbE45e0E4a72aEbF9D08F93E64701964d2CC4cF96')
 }

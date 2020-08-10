@@ -2,7 +2,7 @@
 	<div class='window white'>
 		<fieldset>
 			<legend>
-				{{ gauge.name }}
+				{{ gauge.name }} {{ gauge.typeName }} gauge
 			</legend>
 			<div class='pools'>
 				<div>
@@ -44,9 +44,14 @@
 						</div>
 					</div>
 					<button @click='withdraw'>Withdraw</button>
-					<button @click='claim' v-show='claimableTokens !== null'>Claim {{ claimableTokensFormat }}</button>
 
 					<!-- <button @click='update_liquidity_limit'>Update liquidity limit</button> -->
+				</div>
+				<div class='flex-break'></div>
+				<div>
+
+					<button @click='claim' v-show='claimableTokens !== null' class='claimtokens'>Claim {{ claimableTokensFormat }} CRV</button>
+					<button @click='claimRewards' v-show='claimableReward !== null' class='claimrewards'>Claim {{ claimableRewardFormat }} SNX</button>
 				</div>
 			</div>
 		</fieldset>
@@ -80,6 +85,7 @@
 			withdrawSlider: 100,
 
 			claimableTokens: null,
+			claimableReward: null,
 			minted: null,
 
 			boost: null,
@@ -113,6 +119,9 @@
 			},
 			triggerUpdateLimit() {
 				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, Date.now()
+			},
+			claimableRewardFormat() {
+				return (this.claimableReward / 1e18).toFixed(2)
 			},
 
 		},
@@ -158,11 +167,19 @@
 				this.withdrawAmount = this.gaugeBalanceFormat
 
 				this.gaugeContract = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
+
 				this.swap_token = new contract.web3.eth.Contract(ERC20_abi, this.gauge.swap_token)
 
 				setTimeout(() => this.loaded = true, 1000)
 
-				this.claimableTokens = await this.gaugeContract.methods.claimable_tokens().call()
+				this.claimableTokens = await this.gaugeContract.methods.claimable_tokens(contract.default_account).call()
+				if(gaugeStore.state.totalClaimableCRV === null)
+					gaugeStore.state.totalClaimableCRV = this.claimableTokens
+				else
+					gaugeStore.state.totalClaimableCRV += this.claimableTokens
+				if(this.gauge.typeName.toLowerCase().includes('rewards'))
+					this.claimableReward = await this.gaugeContract.methods.claimable_reward(contract.default_account).call()
+				
 				this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.gauge.gauge).call()
 
 			},
@@ -281,6 +298,12 @@
 					from: contract.default_account,
 				})
 			},
+
+			async claimRewards() {
+				await this.gaugeContract.methods.claim_rewards().send({
+					from: contract.default_account,
+				})
+			},
 		},
 	}
 </script>
@@ -322,5 +345,8 @@
 	}
 	.range div.label {
 		width: 3em;
+	}
+	.claimtokens {
+		margin-right: 1em;
 	}
 </style>

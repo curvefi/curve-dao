@@ -1,10 +1,15 @@
 <template>
 	<div>
-		<div class='window white'>
+		<div class='window white' v-if='showChart'>
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
 		<div class='window white'>
 			<voting-escrow :showchart='false'></voting-escrow>
+		</div>
+		<div class='window white'>
+			All claimable CRV from gauges: {{ totalClaimableCRVFormat }}
+
+			<button @click='claim'>Claim all</button>
 		</div>
 		<gauge v-for='(pool, i) in mypools' :key = 'i' :i = 'i'></gauge>
 	</div>
@@ -83,14 +88,14 @@
 			},
 
 			piechart: null,
+
+			showChart: true,
 		}),
 
 		async created() {
 			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
 				//if(val != null && oldval != null)
 					this.mounted()
-			}, {
-				immediate: true
 			})
 		},
 
@@ -99,8 +104,18 @@
 				this.mounted()
 		},
 
+		computed: {
+			totalClaimableCRV() {
+				return gaugeStore.state.totalClaimableCRV
+			},
+			totalClaimableCRVFormat() {
+				return (this.totalClaimableCRV / 1e18).toFixed(2)
+			},
+		},
+
 		methods: {
 			async mounted() {
+				console.log(this.$refs, "THE REFS")
 				this.piechart = this.$refs.piecharts.chart
 				this.piechart.showLoading()
 
@@ -110,15 +125,30 @@
 
 				let total = this.mypools.reduce((a,b) => +a + +b.gaugeBalance, 0)
 
-				let piedata = this.mypools.map(pool => ({ name: pool.name, y: pool.gaugeBalance / total}))
+				if(total == 0) {
+					this.showChart = false
+					return;
+				}
+
+				let piedata = this.mypools.map(pool => ({ name: pool.name, y: total == 0 ? 0 : pool.gaugeBalance / total}))
 
 				this.piechart.addSeries({
 					name: 'Gauge Allocation',
 					data: piedata,
 				})
 
+
 				this.piechart.hideLoading()
 
+			},
+
+			async claim() {
+				let gauges = gaugeStore.state.mypools.map(gauge => gauge.gauge)
+				let fillarray = new Array(8-gauges.length).fill('0x0000000000000000000000000000000000000000')
+				gauges.push(...fillarray)
+				await gaugeStore.state.minter.methods.mint_many(gauges).send({
+					from: contract.default_account,
+				})
 			},
 		},
 	}

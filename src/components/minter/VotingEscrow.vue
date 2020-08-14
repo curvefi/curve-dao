@@ -514,15 +514,20 @@
 
 
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
+
+				let now = (Date.now() / 1000) | 0
+				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
+
+				daopowerdata.push(...decoded)
 				this.daopowerdata = daopowerdata
-				console.log(daopowerdata, "DAO POWER DATA")
 				this.chart.addSeries({
 					name: 'DAO Voting Power',
 					data: daopowerdata,
 					color: '#0b0a57',
 				})
 
-				console.log("ADD TO CHART")
 
 				this.chart.series[1].hide()
 

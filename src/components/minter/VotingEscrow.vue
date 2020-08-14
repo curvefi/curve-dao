@@ -40,12 +40,12 @@
 					<img :src="publicPath + 'lock-solid.svg'" class='icon small'> Locked until: {{ lockTimeText }}
 				</div>
 			</div>
-			<div v-show='showchart && events && events.length > 0'>
+			<div v-show='showchart'>
 				<p>
 					<input id='showend' type='checkbox' v-model='showend'>
 					<label for='showend'>Show until end</label>
 
-					<div class='chartoptions'>
+					<div class='chartoptions' v-show='hasvecrv'>
 						<input id='showmypower' type='checkbox' v-model='showmypower'>
 						<label for='showmypower'>Show my voting power</label>
 
@@ -53,7 +53,7 @@
 						<label for='showdaopower'>Show DAO voting power</label>
 					</div>
 				</p>
-				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
+				<highcharts v-show='showvelock' :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 			</div>
 			<div class='velock' v-show='showvelock'>
 				<div class='increaselock' v-show='hasvecrv'>
@@ -313,6 +313,8 @@
 				
 				events: [],
 
+				daopowerdata: [],
+
 				chartData: [],
 
 				showend: false,
@@ -512,6 +514,7 @@
 
 
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
+				this.daopowerdata = daopowerdata
 				console.log(daopowerdata, "DAO POWER DATA")
 				this.chart.addSeries({
 					name: 'DAO Voting Power',

@@ -382,6 +382,8 @@
 
 			async claim() {
 				let gas = await gaugeStore.state.minter.methods.mint(this.gauge.gauge).estimateGas()
+				if(['susdv2', 'sbtc'].includes(this.gauge.name))
+					gas = 1000000
 				await gaugeStore.state.minter.methods.mint(this.gauge.gauge).send({
 					from: contract.default_account,
 					gas: gas * 1.5 | 0,
@@ -390,6 +392,8 @@
 
 			async claimRewards() {
 				let gas = await this.gaugeContract.methods.claim_rewards().estimateGas()
+				if(['susdv2', 'sbtc'].includes(this.gauge.name))
+					gas = 1000000
 				await this.gaugeContract.methods.claim_rewards().send({
 					from: contract.default_account,
 					gas: gas * 1.5 | 0,

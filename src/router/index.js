@@ -45,6 +45,7 @@ const Gateway = () => import('../components/ren/Gateway.vue')
 const Votes = () => import('../components/dao/votes/Votes.vue')
 const VoteView = () => import('../components/dao/votes/VoteView.vue')
 const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
+const DAOAudits = () => import('../components/dao/DAOAudits.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
@@ -282,6 +283,11 @@ let routes = [
         name: 'CreateVote',
         component: CreateVote,
       },
+      {
+        path: 'audits',
+        name: 'DAOAudits',
+        component: DAOAudits,
+      },  
     ],
   },
   {

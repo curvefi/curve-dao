@@ -1,5 +1,5 @@
 <template>
-	<div class='window white' v-show='gauge.balance > 0 || gauge.gaugeBalance > 0'>
+	<div class='window white' v-show='gauge.balance > 0 || gauge.gaugeBalance > 0 || stakedBalance > 0'>
 		<fieldset>
 			<legend>
 				{{ gauge.name }} {{ gauge.typeName }} gauge
@@ -15,7 +15,10 @@
 			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
 				<div class='flex-break'></div>
 				<div class='pool'>
-					<div>Balance: <span class='hoverpointer' @click='setMaxPool'>{{ poolBalanceFormat }}</span> {{ gauge.name }} LP token</div>
+					<p v-show="['susdv2','sbtc'].includes(gauge.name) && stakedBalance > 0" class='info-message gentle-message'>
+						<a :href="'https://curve.fi/'+gauge.name+'/withdraw'">Unstake rewards</a>
+					</p>
+					<div class='poolBalance'>Balance: <span class='hoverpointer' @click='setMaxPool'>{{ poolBalanceFormat }}</span> {{ gauge.name }} LP token</div>
 					<div class='input'>
 						<label for='deposit'>Amount:</label>
 						<input id='deposit' type='text' v-model='depositAmount'>
@@ -74,6 +77,8 @@
 
 	let staking = ['0xC25a3A3b969415c80451098fa907EC722572917F', '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3'].map(a => a.toLowerCase())
 
+    import * as gasPriceStore from '../common/gasPriceStore'
+
 	export default {
 		props: ['i'],
 
@@ -130,6 +135,12 @@
 			claimableRewardFormat() {
 				return (this.claimableReward / 1e18).toFixed(2)
 			},
+			gasPrice() {
+                return gasPriceStore.state.gasPrice
+            },
+            gasPriceWei() {
+                return gasPriceStore.state.gasPriceWei
+            },
 
 		},
 
@@ -187,7 +198,8 @@
 					let curveRewards = new web3.eth.Contract(allabis[this.gauge.name].sCurveRewards_abi, allabis[this.gauge.name].sCurveRewards_address)
 					this.stakedBalance = await curveRewards.methods.balanceOf(contract.default_account).call()
 
-					gaugeStore.state.mypools[this.i].balance += +this.stakedBalance
+					// gaugeStore.state.mypools[this.i].balance = 0
+					// gaugeStore.state.mypools[this.i].balance = +gaugeStore.state.mypools[this.i].balance + +this.stakedBalance
 
 					this.claimableReward = await this.gaugeContract.methods.claimable_reward(contract.default_account).call()
 				}
@@ -202,24 +214,31 @@
 			async deposit() {
 				let deposit = BN(this.depositAmount).times(1e18)
 				let balance = BN(await this.swap_token.methods.balanceOf(contract.default_account).call())
-				if(balance.div(1e18).minus(deposit.times(BN(1e18))).abs().lt(BN(0.0001)))
+				if(deposit.gt(BN(this.gauge.balance)))
 					deposit = balance
 
 				let gas = 500000
 
+				// if(['susdv2', 'sbtc'].includes(this.gauge.name) && deposit.gt(BN(this.gauge.origBalance))) {
+				// 	let curveRewards = new web3.eth.Contract(allabis[this.gauge.name].sCurveRewards_abi, allabis[this.gauge.name].sCurveRewards_address)
+				// 	let stakedBalance = BN(await curveRewards.methods.balanceOf(contract.default_account).call())
+				// 	let withdraw = deposit
+				// 	if(withdraw.gt(stakedBalance))
+				// 		withdraw = stakedBalance
+
+				// 	await new Promise((resolve, reject) => {
+    // 					curveRewards.methods.withdraw(withdraw.toFixed(0,1))
+    // 						.send({
+    // 							from: contract.default_account,
+    // 							gas: 125000,
+    // 						})
+    // 						.once('transactionHash', resolve)
+    //                         .catch(err => reject(err))
+    // 				})
+
+				// }
+
 				if(['susdv2', 'sbtc'].includes(this.gauge.name)) {
-					let curveRewards = new web3.eth.Contract(allabis[this.gauge.name].sCurveRewards_abi, allabis[this.gauge.name].sCurveRewards_address)
-
-					await new Promise((resolve, reject) => {
-    					curveRewards.methods.withdraw(deposit.toFixed(0,1))
-    						.send({
-    							from: contract.default_account,
-    							gas: 125000,
-    						})
-    						.once('transactionHash', resolve)
-                            .catch(err => reject(err))
-    				})
-
 					gas = 1000000
 				}
 
@@ -229,6 +248,7 @@
 
 				await this.gaugeContract.methods.deposit(deposit.toFixed(0,1)).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: gas,
 				})
 
@@ -241,11 +261,17 @@
 				let balance = BN(await this.gaugeContract.methods.balanceOf(contract.default_account).call())
 				if(withdraw.gt(balance))
 					withdraw = balance
-
-				let gas = await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).estimateGas()
+				let gas = 1000000
+				try {
+					gas = await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).estimateGas()
+				}
+				catch(err) {
+					console.error(err)
+				}
 
 				await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
 				})
 
@@ -431,5 +457,8 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-around;
+	}
+	.poolBalance {
+		margin-top: 1em;
 	}
 </style>

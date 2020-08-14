@@ -53,7 +53,7 @@
 						<label for='showdaopower'>Show DAO voting power</label>
 					</div>
 				</p>
-				<highcharts v-show='hasvecrv && showvelock' :constructor-type="'stockChart'" :options="chartdata" ref='highcharts' class='lockchart'></highcharts>
+				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 			</div>
 			<div class='velock' v-show='showvelock'>
 				<div class='increaselock' v-show='hasvecrv'>
@@ -490,30 +490,36 @@
 				let results = await Promise.all([this.wrapper.performQuery(QUERY), this.wrapper.performQuery(DAOPowerQUERY)])
 				console.log(results, "THE RESULTS")
 				let events = results[0].data.votingEscrows
-				this.events = events
-				events = events.map(event => {
-					event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
-					return event
-				})
-				let chartData = events.map((event, i) => [event.timestamp * 1000, event.votingPower])
-				let lastEvent = events[events.length - 1]
-				let lastData = [lastEvent.locktime * 1000, 0]
-				chartData.push(lastData)
-				this.events.push({...this.events[this.events.length - 1], value: 0, votingPower: 0})
-				this.chartData = chartData = this.interpolateVotingPower(chartData)
-				this.chart.addSeries({
-					name: 'My Voting Power',
-					data: chartData.slice(0, chartData.length - 11),
-				})
+				if(events.length) {
+					this.events = events
+					events = events.map(event => {
+						event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
+						return event
+					})
+					let chartData = events.map((event, i) => [event.timestamp * 1000, event.votingPower])
+					let lastEvent = events[events.length - 1]
+					let lastData = [lastEvent.locktime * 1000, 0]
+					chartData.push(lastData)
+					this.events.push({...this.events[this.events.length - 1], value: 0, votingPower: 0})
+					this.chartData = chartData = this.interpolateVotingPower(chartData)
+					this.chart.addSeries({
+						name: 'My Voting Power',
+						data: chartData.slice(0, chartData.length - 11),
+					})
+				}
 
 				let daopower = results[1].data.daopowers
 
+
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
+				console.log(daopowerdata, "DAO POWER DATA")
 				this.chart.addSeries({
 					name: 'DAO Voting Power',
 					data: daopowerdata,
 					color: '#0b0a57',
 				})
+
+				console.log("ADD TO CHART")
 
 				this.chart.series[1].hide()
 

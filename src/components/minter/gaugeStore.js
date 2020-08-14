@@ -130,6 +130,7 @@ export async function getState() {
 		return {
 			...poolInfo, 
 			balance: v.balance,
+			origBalance: v.balance,
 			gaugeBalance: gaugeBalances.find(pool => pool.gauge.toLowerCase() == poolInfo.gauge.toLowerCase()).balance
 		}
 	})

@@ -53,7 +53,7 @@
           <a href="https://github.com/pengiundev/curve-vue">git@UI</a>
         </div>
       </div>
-      <router-link to="/dao" class='showmobile'>DAO</router-link>
+      <router-link to="/dao" class='showmobile'>Rinkeby DAO preview</router-link>
       <router-link to="/locker" class='showmobile'>Locker</router-link>
       <router-link to="/minter/gauges" class='showmobile'>Minter</router-link>
       <router-link to="/minter/vesting" class='showmobile'>Vesting</router-link>
@@ -80,6 +80,16 @@
         </div>
         <div class='info-message gentle-message window half-width gentle-message' v-if='hasConnectedWallet'>
           You haven't connected a wallet. <button @click='changeWallets'>Connect wallet</button>
+        </div>
+        <div class='info-message gentle-message window half-width gentle-message CRV'>
+          <div>
+            <a href='https://etherscan.io/address/0xD533a949740bb3306d119CC777fa900bA034cd52'>CRV: 0xD533a949740bb3306d119CC777fa900bA034cd52</a>
+          </div>
+          <div>
+            Voting in mainnet DAO is not yet enabled to prevent a malicious actor while DAO is new.
+            <div>We added a Rinkeby DAO preview for now while we're working on migrating to mainnet DAO.</div>
+          </div>
+
         </div>
         <router-view/>
     </div>
@@ -168,5 +178,8 @@
   }
   h1 > img {
     height: 52.125px;
+  }
+  .CRV div:nth-child(n+2) {
+    margin-top: 1em;
   }
 </style>

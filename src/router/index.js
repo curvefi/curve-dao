@@ -267,11 +267,11 @@ let routes = [
         name: 'Gauges',
         component: Gauges,
       },
-      // {
-      //   path: '',
-      //   name: 'Votes',
-      //   component: Votes,
-      // },
+      {
+        path: 'dao',
+        name: 'Votes',
+        component: Votes,
+      },
       {
         path: 'vote/:app/:id',
         name: 'Vote',

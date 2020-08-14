@@ -56,13 +56,13 @@
                 return state.gasPriceInfo && state.gasPriceInfo.slow || 15
             },
 			gasPriceMedium() {
-                return state.gasPriceInfo && state.gasPriceInfo.medium || 20
+                return state.gasPriceInfo && state.gasPriceInfo.standard || 20
             },
             gasPriceFast() {
                 return state.gasPriceInfo && state.gasPriceInfo.fast || 25
             },
             gasPriceFastest() {
-                return state.gasPriceInfo && state.gasPriceInfo.fastest || 30
+                return state.gasPriceInfo && state.gasPriceInfo.instant || 30
             },
             gasPrice: {
             	get() {
@@ -86,7 +86,7 @@
             !state.fetched && this.getGasPrice()
             state.gasPriceInterval && clearIntervalAsync(state.gasPriceInterval)
             if(!state.gasPriceInterval || state.gasPriceInterval.stopped) {
-                state.gasPriceInterval = setIntervalAsync(() => this.getGasPrice(), 3000)
+                state.gasPriceInterval = setIntervalAsync(() => this.getGasPrice(), 10000)
             }
 			this.$watch(() => state.gasPrice, val => {
 				state.gasPriceWei = BN(val).times(1e9).toFixed(0,1)
@@ -98,9 +98,9 @@
         methods: {
             async getGasPrice() {
                 try {
-                    let gasPriceInfo = await retry(fetch('https://fees.upvest.co/estimate_eth_fees'))
+                    let gasPriceInfo = await retry(fetch('https://gasprice.poa.network/'))
                     gasPriceInfo = await gasPriceInfo.json()
-                    state.gasPriceInfo = gasPriceInfo.estimates
+                    state.gasPriceInfo = gasPriceInfo
                 }
                 catch(err) {
                     let gasPrice = (await web3.eth.getGasPrice()) / 1e9;

@@ -13,6 +13,7 @@
 			<div class='vestingchart'>
 				<highcharts :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 			</div>
+			<gas-price></gas-price>
 			<div class='buttons'>
 				<button @click='claim'>Claim {{ balanceFormat }} CRV</button>
 			</div>
@@ -43,6 +44,9 @@
 		}
 	})
 
+	import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
 	import * as helpers from '../../utils/helpers'
 
 	import BN from 'bignumber.js'
@@ -51,6 +55,7 @@
 	export default {
 		components: {
 			Highcharts: Chart,
+			GasPrice,
 		},
 
 		props: ['address'],
@@ -182,6 +187,12 @@
 			endTimeFormat() {
 				return helpers.formatDateToHuman(this.end_time)
 			},
+			gasPrice() {
+                return gasPriceStore.state.gasPrice
+            },
+            gasPriceWei() {
+                return gasPriceStore.state.gasPriceWei
+            },
 		},
 
 		methods: {
@@ -247,6 +258,7 @@
 				let gas = await this.vesting.methods.claim(contract.default_account).estimateGas()
 				await this.vesting.methods.claim(contract.default_account).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
 				})
 

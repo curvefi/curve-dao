@@ -25,6 +25,9 @@
 				You don't have any Curve pool LP tokens
 			</div>
 		</div>
+		<div class='window white'>
+			<gas-price></gas-price>
+		</div>
 		<gauge v-for='(pool, i) in mypools' :key = 'i' :i = 'i'></gauge>
 	</div>
 </template>
@@ -53,11 +56,15 @@
 
 	import VotingEscrow from './VotingEscrow'
 
+	import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
+
 	export default {
 		components: {
 			Gauge,
 			VotingEscrow,
 			Highcharts: Chart,
+			GasPrice,
 		},
 
 		data: () => ({
@@ -141,6 +148,12 @@
 			totalGaugeBalance() {
 				return gaugeStore.state.totalGaugeBalance
 			},
+			gasPrice() {
+                return gasPriceStore.state.gasPrice
+            },
+            gasPriceWei() {
+                return gasPriceStore.state.gasPriceWei
+            },
 		},
 
 		methods: {
@@ -182,6 +195,7 @@
 				let gas = await gaugeStore.state.minter.methods.mint_many(gauges).estimateGas()
 				await gaugeStore.state.minter.methods.mint_many(gauges).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
 				})
 			},

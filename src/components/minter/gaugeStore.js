@@ -15,35 +15,66 @@ export let state = Vue.observable({
 	minter: null,
 
 	totalClaimableCRV: null,
+	totalMintedCRV: null,
+
+	totalBalance: null,
+	totalGaugeBalance: null,
 })
 
 export async function getState() {
 	state.pools = {
-		curvepool1: {
-			swap: '0xbbe6874b45eFd4E44396F6aE619663067424b218',
-			swap_token: '0x1796E153ce80fCf2015E19035DcecFb005bc017D',
-			name: 'curvepool1'
+		compound: {
+			swap: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
+			swap_token: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
+			name: 'compound',
 		},
-		// curvepool2: {
-		// 	swap: '0x755eAb732bF116b38e73b88DACf58c5E7001c2Cb',
-		// 	swap_token: '0x5c9aE8d5D6e55ECDbc627dA9959A2a285860d3BF',
-		// 	name: 'curvepool2'
-		// },
-		// curvepool3: {
-		// 	swap: '0x787A2950251E6513AA73EdF8646A656cF2d04168',
-		// 	swap_token: '0x06Ec5D01d7A0245A7ABdC01aB1d21b801a43a554',
-		// 	name: 'curvepool3'
-		// },
+		usdt: {
+			swap: '0x52EA46506B9CC5Ef470C5bf89f17Dc28bB35D85C',
+			swap_token: '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23',
+			name: 'usdt',
+		},
+		y: {
+			swap: '0x45F783CCE6B7FF23B2ab2D70e416cdb7D6055f51',
+			swap_token: '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8',
+			name: 'y',
+		},
+		busd: {
+			swap: '0x79a8C46DeA5aDa233ABaFFD40F3A0A2B1e5A4F27',
+			swap_token: '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B',
+			name: 'busd',
+		},
+		susdv2: {
+			swap: '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD',
+			swap_token: '0xC25a3A3b969415c80451098fa907EC722572917F',
+			name: 'susdv2',
+		},
+		pax: {
+			swap: '0x06364f10B501e868329afBc005b3492902d6C763',
+			swap_token: '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8',
+			name: 'pax',
+		},
+		ren: {
+			swap: '0x93054188d876f558f4a66B2EF1d97d16eDf0895B',
+			swap_token: '0x49849C98ae39Fff122806C06791Fa73784FB3675',
+			name: 'ren',
+		},
+		sbtc: {
+			swap: '0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714',
+			swap_token: '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3',
+			name: 'sbtc',
+		},
 	}
 
-	state.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0xb1226B7bF0eB746cCC22960F3292410C3b04ef4e')
-	state.n_gauges = +(await state.gaugeController.methods.n_gauges().call())
-	console.log(state.n_gauges, "N GAUGES")
+	state.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB')
+	state.votingEscrow = new contract.web3.eth.Contract(daoabis.votingescrow_abi, '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2')
+	state.minter = new contract.web3.eth.Contract(daoabis.minter_abi, '0xd061D61a4d941c39E5453435B6345Dc261C2fcE0')
 
-	let swap_token = new contract.web3.eth.Contract(ERC20_abi, state.pools.curvepool1.swap_token)
+
+	state.n_gauges = +(await state.gaugeController.methods.n_gauges().call())
+
+	let swap_token = new contract.web3.eth.Contract(ERC20_abi, state.pools.susdv2.swap_token)
 
 	let calls = Array.from(Array(state.n_gauges), (_, i) => [state.gaugeController._address, state.gaugeController.methods.gauges(i).encodeABI()])
-	console.log(Object.values(state.pools).map(v => v.swap_token))
 	calls = calls.concat(Object.values(state.pools).map(v => v.swap_token).map(v => [v, swap_token.methods.balanceOf(contract.default_account).encodeABI()]))
 
 	let aggcalls = await contract.multicall.methods.aggregate(calls).call()
@@ -56,47 +87,46 @@ export async function getState() {
 		[gauge, example_gauge.methods.lp_token().encodeABI()],
 		[state.gaugeController._address, state.gaugeController.methods.gauge_types(gauge).encodeABI()],
 		[gauge, example_gauge.methods.balanceOf(contract.default_account).encodeABI()],
+		[gauge, example_gauge.methods.claimable_tokens(contract.default_account).encodeABI()],
+		[state.minter._address, state.minter.methods.minted(contract.default_account, gauge).encodeABI()],
+
 	])
 	let aggcalls1 = await contract.multicall.methods.aggregate(calls1).call()
 
-	console.log(aggcalls1[1])
-
-	let gaugeTypes = aggcalls1[1].filter((_, i) => i % 3 == 1).map(hex => +web3.eth.abi.decodeParameter('uint256', hex))
+	let gaugeTypes = aggcalls1[1].filter((_, i) => i % 5 == 1).map(hex => +web3.eth.abi.decodeParameter('uint256', hex))
 	gaugeTypes = [...new Set(gaugeTypes)]
 	
 	calls = gaugeTypes.map(type => [state.gaugeController._address, state.gaugeController.methods.gauge_type_names(type).encodeABI()])
 	aggcalls = await contract.multicall.methods.aggregate(calls).call()
 	let gaugeTypesNames = aggcalls[1].map((hex, i) => ({type: gaugeTypes[i], name: web3.eth.abi.decodeParameter('string', hex)}))
-	console.log(...gaugeTypesNames, "HERE")
 
-	let decodedGaugeLP = aggcalls1[1].filter((_, i) => i % 3 == 0).map((hex, i) => ({
+	let decodedGaugeLP = aggcalls1[1].filter((_, i) => i % 5 == 0).map((hex, i) => ({
 		gauge: decodedGauges[i], 
 		swap_token: web3.eth.abi.decodeParameter('address', hex), 
-		type: web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*3+1]),
-		typeName: Object.values(gaugeTypesNames).find(v => v.type == +web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*3+1])).name
+		type: web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*5+1]),
+		typeName: Object.values(gaugeTypesNames).find(v => v.type == +web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*5+1])).name,
+		claimable_tokens: web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*5+3]),
+		minted: web3.eth.abi.decodeParameter('uint256', aggcalls1[1][i*5+4]),
 	}))
-	console.log(decodedGaugeLP, "decoded GAUGE LP")
 	Object.values(decodedGaugeLP).forEach((gauge, i) => {
 		let poolgauge = Object.values(state.pools).find(pool => pool.swap_token.toLowerCase() == gauge.swap_token.toLowerCase())
 		poolgauge.gauge = gauge.gauge
 		poolgauge.type = gauge.type
 		poolgauge.typeName = gauge.typeName
+		poolgauge.claimable_tokens = gauge.claimable_tokens
+		poolgauge.minted = gauge.minted
 	})
 
-	console.log(decodedBalances)
 
-	let gaugeBalances = aggcalls1[1].filter((_, i) => i % 3 == 2).map((hex, i) => ({
-		gauge: calls1[i*3+2][0],
+	let gaugeBalances = aggcalls1[1].filter((_, i) => i % 5 == 2).map((hex, i) => ({
+		gauge: calls1[i*5+2][0],
 		balance: web3.eth.abi.decodeParameter('uint256', hex),
 	}))
 
-	console.log(gaugeBalances, "GAUGE BALANCES")
 
 
 	state.mypools = decodedBalances.map(v => {
-		console.log(v.swap_token, "THE SWAP TOKEN")
 		let poolInfo = Object.values(state.pools).find(pool => pool.swap_token.toLowerCase() == v.swap_token.toLowerCase())
-		console.log(poolInfo, "THE POOL INFO")
 		return {
 			...poolInfo, 
 			balance: v.balance,
@@ -104,8 +134,8 @@ export async function getState() {
 		}
 	})
 	
-	console.log(state.mypools)
+	state.totalBalance = state.mypools.reduce((a, b) => +a + +b.balance, 0)
+	state.totalGaugeBalance = state.mypools.reduce((a, b) => +a + +b.gaugeBalance, 0)
 
-	state.votingEscrow = new contract.web3.eth.Contract(daoabis.votingescrow_abi, '0x7477FFEc941d1b8251Ef2d0216AfE7daf2Cf74Ab')
-	state.minter = new contract.web3.eth.Contract(daoabis.minter_abi, '0xbE45e0E4a72aEbF9D08F93E64701964d2CC4cF96')
+
 }

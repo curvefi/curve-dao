@@ -1,18 +1,17 @@
 <template>
-	<div class='window white' v-show='gauge.balance > 0 || gauge.gaugeBalance > 0'>
+	<div class='window white'>
 		<fieldset>
 			<legend>
 				{{ gauge.name }} {{ gauge.typeName }} gauge
 			</legend>
-			<div class='pool-info'>
+			<div class='pools'>
 				<div>
 					Minted CRV from this gauge: {{ mintedFormat }}
 				</div>
-				<div class='boost' v-show='boost !== null && !isNaN(boost)'>
+				<div class='flex-break'></div>
+				<div v-show='boost !== null && !isNaN(boost)'>
 					Boost: {{ boost && boost.toFixed(4) }}
 				</div>
-			</div>
-			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
 				<div class='flex-break'></div>
 				<div class='pool'>
 					<div>Balance: <span class='hoverpointer' @click='setMaxPool'>{{ poolBalanceFormat }}</span> {{ gauge.name }} LP token</div>
@@ -30,7 +29,7 @@
 					</div>
 					<button @click='deposit'>Deposit</button>
 				</div>
-				<div class='gauge' v-show='gaugeBalance > 0'>
+				<div class='gauge'>
 					<div>Balance: <span class='hoverpointer' @click='setMaxGauge'>{{ gaugeBalanceFormat }}</span> in gauge</div>
 					<div class='input'>
 						<label for='withdraw'>Amount:</label>
@@ -49,9 +48,9 @@
 					<!-- <button @click='update_liquidity_limit'>Update liquidity limit</button> -->
 				</div>
 				<div class='flex-break'></div>
-				<div class='claimButtons'>
-					<button @click='claim' v-show='claimableTokens > 0' class='claimtokens'>Claim {{ claimableTokensFormat }} CRV</button>
-					<button @click='claimRewards' v-show='claimableReward > 0' class='claimrewards'>Claim {{ claimableRewardFormat }} SNX</button>
+				<div>
+					<button @click='claim' v-show='claimableTokens !== null' class='claimtokens'>Claim {{ claimableTokensFormat }} CRV</button>
+					<button @click='claimRewards' v-show='claimableReward !== null' class='claimrewards'>Claim {{ claimableRewardFormat }} SNX</button>
 				</div>
 			</div>
 		</fieldset>
@@ -71,8 +70,6 @@
 	import BN from 'bignumber.js'
 
 	import * as helpers from '../../utils/helpers'
-
-	let staking = ['0xC25a3A3b969415c80451098fa907EC722572917F', '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3'].map(a => a.toLowerCase())
 
 	export default {
 		props: ['i'],
@@ -96,21 +93,27 @@
 
 			promise: helpers.makeCancelable(Promise.resolve()),
 
-			stakedBalance: 0,
+			thegauge: {
+				balance: 0,
+				gauge: '0xd13BBE09C4532CdbBC42bf9205CaED3587F25789',
+				gaugeBalance: 0,
+				name: 'curvepool1',
+				swap: '0xbbe6874b45eFd4E44396F6aE619663067424b218',
+				swap_token: '0x1796E153ce80fCf2015E19035DcecFb005bc017D',
+				type: 0,
+				typeName: 'Liquidity'
+			}
 		}),
 
 		computed: {
 			gauge() {
 				return gaugeStore.state.mypools[this.i]
 			},
-			gaugeBalance() {
-				return +this.gauge.gaugeBalance
-			},
 			poolBalanceFormat() {
-				return (this.gauge.balance / 1e18).toFixed(2)
+				return (this.thegauge.balance / 1e18).toFixed(2)
 			},
 			gaugeBalanceFormat() {
-				return (this.gauge.gaugeBalance / 1e18).toFixed(2)
+				return (this.thegauge.gaugeBalance / 1e18).toFixed(2)
 			},
 			// depositSlider() {
 			// 	return (Math.min(this.depositAmount / (this.gauge.balance / 1e18), 1)).toFixed(2)
@@ -170,154 +173,104 @@
 
 		methods: {
 			async mounted() {
+
+
+				this.gaugeContract = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.thegauge.gauge)
+
+				console.log(this.gaugeContract._address, "THE ADDRESS")
+
+				this.swap_token = new contract.web3.eth.Contract(ERC20_abi, this.thegauge.swap_token)
+				//just for test
+
+				this.thegauge.balance = this.gauge.balance
+
+				this.thegauge.gaugeBalance = await this.gaugeContract.methods.balanceOf(contract.default_account).call()
+
+				console.log(this.thegauge.gaugeBalance, "GAUGE BALANCE")
+
+				//just for test
+
 				this.depositAmount = this.poolBalanceFormat
 				this.withdrawAmount = this.gaugeBalanceFormat
 
-				this.gaugeContract = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
-
-				this.swap_token = new contract.web3.eth.Contract(ERC20_abi, this.gauge.swap_token)
-
 				setTimeout(() => this.loaded = true, 1000)
 
-				//this.claimableTokens = await this.gaugeContract.methods.claimable_tokens(contract.default_account).call()
-				this.claimableTokens = this.gauge.claimable_tokens
-				
-				gaugeStore.state.totalClaimableCRV += +this.claimableTokens
-				if(['susdv2', 'sbtc'].includes(this.gauge.name)) {
-					let curveRewards = new web3.eth.Contract(allabis[this.gauge.name].sCurveRewards_abi, allabis[this.gauge.name].sCurveRewards_address)
-					this.stakedBalance = await curveRewards.methods.balanceOf(contract.default_account).call()
-
-					gaugeStore.state.mypools[this.i].balance += +this.stakedBalance
-
+				console.log(this.gaugeContract, "GAUGE CONTRACT")
+				console.log(this.gauge, "THE GAUGE")
+				this.claimableTokens = await this.gaugeContract.methods.claimable_tokens(contract.default_account).call()
+				console.log(this.claimableTokens, "CLAIMABLE TOKENS")
+				if(gaugeStore.state.totalClaimableCRV === null)
+					gaugeStore.state.totalClaimableCRV = this.claimableTokens
+				else
+					gaugeStore.state.totalClaimableCRV += this.claimableTokens
+				if(this.thegauge.typeName.toLowerCase().includes('rewards'))
 					this.claimableReward = await this.gaugeContract.methods.claimable_reward(contract.default_account).call()
-				}
 				
-				//this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.gauge.gauge).call()
-				this.minted = this.gauge.minted
-
-				gaugeStore.state.totalMintedCRV += +this.minted
+				this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.thegauge.gauge).call()
 
 			},
 
 			async deposit() {
 				let deposit = BN(this.depositAmount).times(1e18)
-				let balance = BN(await this.swap_token.methods.balanceOf(contract.default_account).call())
-				if(balance.div(1e18).minus(deposit.times(BN(1e18))).abs().lt(BN(0.0001)))
-					deposit = balance
+				// let balance = BN(await this.swap_token.methods.balanceOf(contract.default_account).call())
+				// if(balance.div(1e18).minus(deposit.times(BN(1e18))).abs().lt(BN(0.0001)))
+				// 	deposit = balance
 
-				let gas = 500000
-
-				if(['susdv2', 'sbtc'].includes(this.gauge.name)) {
-					let curveRewards = new web3.eth.Contract(allabis[this.gauge.name].sCurveRewards_abi, allabis[this.gauge.name].sCurveRewards_address)
-
-					await new Promise((resolve, reject) => {
-    					curveRewards.methods.withdraw(deposit.toFixed(0,1))
-    						.send({
-    							from: contract.default_account,
-    							gas: 125000,
-    						})
-    						.once('transactionHash', resolve)
-                            .catch(err => reject(err))
-    				})
-
-					gas = 1000000
-				}
-
-
-				await common.approveAmount(this.swap_token, deposit, contract.default_account, this.gauge.gauge)
-
+				await common.approveAmount(this.swap_token, deposit, contract.default_account, this.thegauge.gauge)
 
 				await this.gaugeContract.methods.deposit(deposit.toFixed(0,1)).send({
 					from: contract.default_account,
-					gas: gas,
+					gas: 1000000,
 				})
-
-				this.updateBalances()
 
 			},
 
 			async withdraw() {
 				let withdraw = BN(this.withdrawAmount).times(1e18)
-				let balance = BN(await this.gaugeContract.methods.balanceOf(contract.default_account).call())
-				if(withdraw.gt(balance))
-					withdraw = balance
-
-				let gas = await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).estimateGas()
+				// let balance = BN(await this.gaugeContract.methods.balanceOf(contract.default_account).call())
+				// if(balance.div(1e18).minus(withdraw.times(BN(1e18))).abs().lt(BN(0.0001)))
+				// 	deposit = balance
 
 				await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).send({
 					from: contract.default_account,
-					gas: gas * 1.5 | 0,
+					gas: 1000000,
 				})
-
-				// try {
-				// 	await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).estimateGas()
-				// }
-				// catch(err) {
-				// 	if(err && err.message.includes('gas required exceeds allowance')) {
-				// 		await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1), false).send({
-				// 			from: contract.default_account,
-				// 			gas: 1000000,
-				// 		})
-				// 	}
-				// 	else {
-				// 		await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).send({
-				// 			from: contract.default_account,
-				// 			gas: 1000000,
-				// 		})
-				// 	}
-				// }
-
-				this.updateBalances()
-			},
-
-			async updateBalances() {
-				let calls = [
-					//balanceOf
-					[this.gauge.swap_token, '0x70a08231000000000000000000000000' + contract.default_account.slice(2)],
-					[this.gaugeContract._address, this.gaugeContract.methods.balanceOf(contract.default_account).encodeABI()],
-				]
-
-				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-
-				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-
-				gaugeStore.state.mypools[this.i].balance = decoded[0]
-				gaugeStore.state.mypools[this.i].gaugeBalance = decoded[1]
 			},
 
 			setMaxPool() {
-				this.depositAmount = this.gauge.balance / 1e18
+				this.depositAmount = this.thegauge.balance / 1e18
 			},
 
 			setMaxGauge() {
-				this.withdrawAmount = this.gauge.gaugeBalance / 1e18
+				this.withdrawAmount = this.thegauge.gaugeBalance / 1e18
 			},
 
 			onDepositSlider(event) {
 				let val = event.target.value
 				this.depositSlider = val
-				this.depositAmount = ((this.gauge.balance / 1e18) * val/100).toFixed(2)
+				this.depositAmount = ((this.thegauge.balance / 1e18) * val/100).toFixed(2)
 			},
 
 			onWithdrawSlider(event) {
 				let val = event.target.value
 				this.withdrawSlider = val
-				this.withdrawAmount = ((this.gauge.gaugeBalance / 1e18) * val/100).toFixed(2)
+				this.withdrawAmount = ((this.thegauge.gaugeBalance / 1e18) * val/100).toFixed(2)
 			},
 
 			async update_liquidity_limit(new_l = null, new_voting_balance = null) {
-				let l = +this.gauge.gaugeBalance
+				console.log(+new_voting_balance, "Voting balance")
+				let l = +this.thegauge.gaugeBalance
 				if(new_l)
 					l = new_l * 1e18
-				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
+				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.thegauge.gauge)
 
 				let calls = [
 					[gaugeStore.state.votingEscrow._address, gaugeStore.state.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
 					[gaugeStore.state.votingEscrow._address, gaugeStore.state.votingEscrow.methods.totalSupply().encodeABI()],
-					[this.gauge.gauge, example_gauge.methods.period_timestamp(0).encodeABI()],
-					[this.gauge.gauge, example_gauge.methods.working_balances(contract.default_account).encodeABI()],
-					[this.gauge.gauge, example_gauge.methods.working_supply().encodeABI()],
-					[this.gauge.gauge, example_gauge.methods.totalSupply().encodeABI()],
+					[this.thegauge.gauge, example_gauge.methods.period_timestamp(0).encodeABI()],
+					[this.thegauge.gauge, example_gauge.methods.working_balances(contract.default_account).encodeABI()],
+					[this.thegauge.gauge, example_gauge.methods.working_supply().encodeABI()],
+					[this.thegauge.gauge, example_gauge.methods.totalSupply().encodeABI()],
 				]
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
@@ -327,6 +280,8 @@
 				let working_balances = +decoded[3]
 				let working_supply = +decoded[4]
 				let L = +decoded[5] + l
+
+				console.log(L, "TOTAL SUPPLY")
 
 
 				if(new_voting_balance) {
@@ -338,35 +293,41 @@
 
 				let TOKENLESS_PRODUCTION = 40
 				let BOOST_WARMUP = 2 * 7 * 86400
+				BOOST_WARMUP = 0
 
 				let lim = l * TOKENLESS_PRODUCTION / 100
+				console.log(lim, "lim initial")
 				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + BOOST_WARMUP))
 					lim += L * voting_balance / voting_total * (100 - TOKENLESS_PRODUCTION) / 100
+				console.log(lim, "lim after")
 
+				console.log(l, lim, Math.min(l, lim))
 				lim = Math.min(l, lim)
-				
+				console.log('voting_balance: ', voting_balance, 'voting_total: ', voting_total, 'period_timestamp: ',
+								period_timestamp, 'working_balances: ', working_balances, 'working_supply: ', working_supply,
+								'l: ', l,'L: ', L,'lim: ', lim)
 				let old_bal = working_balances
 				let noboost_lim = TOKENLESS_PRODUCTION * l / 100
 				let noboost_supply = working_supply + noboost_lim - old_bal
 				let _working_supply = working_supply + lim - old_bal
 
+				console.log(noboost_lim, noboost_supply, 'noboost')
+
+				console.log(_working_supply, "working supply")
+				console.log(this.thegauge.name, "GAUGE NAME")
 				return [_working_supply, (lim / _working_supply) / (noboost_lim / noboost_supply)]
 
 			},
 
 			async claim() {
-				let gas = await gaugeStore.state.minter.methods.mint(this.gauge.gauge).estimateGas()
-				await gaugeStore.state.minter.methods.mint(this.gauge.gauge).send({
+				await gaugeStore.state.minter.methods.mint(this.thegauge.gauge).send({
 					from: contract.default_account,
-					gas: gas * 1.5 | 0,
 				})
 			},
 
 			async claimRewards() {
-				let gas = await this.gaugeContract.methods.claim_rewards().estimateGas()
 				await this.gaugeContract.methods.claim_rewards().send({
 					from: contract.default_account,
-					gas: gas * 1.5 | 0,
 				})
 			},
 		},
@@ -380,12 +341,6 @@
 	.pools {
 		display: flex;
 		flex-wrap: wrap;
-		width: 80%;
-		margin: 0 auto;
-	}
-	.pools.justifySpaceAround {
-		width: 100%;
-		margin: 0;
 		justify-content: space-around;
 	}
 	.pools .hoverpointer {
@@ -419,17 +374,5 @@
 	}
 	.claimtokens {
 		margin-right: 1em;
-	}
-	.pool-info {
-		text-align: center;
-	}
-	.pool-info .boost {
-		margin-top: 1em;
-	}
-	.claimButtons {
-		width: 100%;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-around;
 	}
 </style>

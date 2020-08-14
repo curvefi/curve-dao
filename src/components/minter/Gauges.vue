@@ -6,10 +6,24 @@
 		<div class='window white'>
 			<voting-escrow :showchart='false'></voting-escrow>
 		</div>
-		<div class='window white'>
-			All claimable CRV from gauges: {{ totalClaimableCRVFormat }}
+		<div class='window white' v-show='loading'>
+			<span class='loading matrix'></span>
+		</div>
+		<div class='window white' v-show='totalClaimableCRV > 0 || totalMintedCRV > 0'>
+			<div v-show='totalMintedCRV > 0'>
+				Total minted CRV from gauges: {{ totalMintedCRVFormat }}
+			</div>
 
-			<button @click='claim'>Claim all</button>
+			<div v-show='totalClaimableCRV > 0' class='totalClaimableCRV'>
+				All claimable CRV from gauges: {{ totalClaimableCRVFormat }}
+
+				<button @click='claim'>Claim all</button>
+			</div>
+		</div>
+		<div class='window white' v-show='totalBalance == 0 && totalGaugeBalance == 0'>
+			<div class='info-message gentle-message'>
+				You don't have any Curve pool LP tokens
+			</div>
 		</div>
 		<gauge v-for='(pool, i) in mypools' :key = 'i' :i = 'i'></gauge>
 	</div>
@@ -90,6 +104,8 @@
 			piechart: null,
 
 			showChart: true,
+
+			loading: true,
 		}),
 
 		async created() {
@@ -111,15 +127,30 @@
 			totalClaimableCRVFormat() {
 				return (this.totalClaimableCRV / 1e18).toFixed(2)
 			},
+
+			totalMintedCRV() {
+				return gaugeStore.state.totalMintedCRV
+			},
+			totalMintedCRVFormat() {
+				return (this.totalMintedCRV / 1e18).toFixed(2)
+			},
+
+			totalBalance() {
+				return gaugeStore.state.totalBalance
+			},
+			totalGaugeBalance() {
+				return gaugeStore.state.totalGaugeBalance
+			},
 		},
 
 		methods: {
 			async mounted() {
-				console.log(this.$refs, "THE REFS")
 				this.piechart = this.$refs.piecharts.chart
 				this.piechart.showLoading()
 
 				await gaugeStore.getState()
+				this.loading = false
+
 				this.pools = gaugeStore.state.pools
 				this.mypools = gaugeStore.state.mypools
 
@@ -143,11 +174,15 @@
 			},
 
 			async claim() {
-				let gauges = gaugeStore.state.mypools.map(gauge => gauge.gauge)
+				console.log(gaugeStore.state.mypools, "MY POOLS")
+				let gauges = gaugeStore.state.mypools.filter(gauge=>+gauge.claimable_tokens > 0).map(gauge => gauge.gauge)
 				let fillarray = new Array(8-gauges.length).fill('0x0000000000000000000000000000000000000000')
 				gauges.push(...fillarray)
+				console.log(gauges, "ALL GAUGES")
+				let gas = await gaugeStore.state.minter.methods.mint_many(gauges).estimateGas()
 				await gaugeStore.state.minter.methods.mint_many(gauges).send({
 					from: contract.default_account,
+					gas: gas * 1.5 | 0,
 				})
 			},
 		},
@@ -155,5 +190,10 @@
 </script>
 
 <style scoped>
-	
+	.totalClaimableCRV {
+		margin-top: 1em;
+	}
+	.info-message.gentle-message {
+		margin-top: 0;
+	}
 </style>

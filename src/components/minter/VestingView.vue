@@ -2,7 +2,7 @@
 	<div class='window white'>
 		<div class='buttons'>
 			<button @click='showLP' :class="{'simplebutton': showvesting == 1}">LP vesting</button>
-			<button @click='showEmployee' :class="{'simplebutton': showvesting == 2}">Employee vesting</button>
+			<button @click='showEmployee' v-show='evbalance > 0' :class="{'simplebutton': showvesting == 2}">Employee vesting</button>
 		</div>
 		<vesting :address='address' class='vesting'></vesting>
 	</div>
@@ -49,14 +49,14 @@
 			},
 
 			evaddress() {
-				return daoabis.vesting_address
+				return '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67'
 			},
 		},
 
 		methods: {
 			async mounted() {
 				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, daoabis.vesting_address)
-				this.evesting = new web3.eth.Contract(daoabis.vesting_abi, daoabis.vesting_address)
+				this.evesting = new web3.eth.Contract(daoabis.vesting_abi, '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67')
 
 				let calls = [
 					[this.vesting._address, this.vesting.methods.vestedOf(contract.default_account).encodeABI()],
@@ -78,7 +78,7 @@
 
 			showEmployee() {
 				this.showvesting = 2
-				this.address = daoabis.vesting_address + "1"
+				this.address = '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67'
 			},
 		},
 	}

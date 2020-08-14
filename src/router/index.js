@@ -51,6 +51,8 @@ const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
 const Gauges = () => import('../components/minter/Gauges.vue')
 const VestingView = () => import('../components/minter/VestingView.vue')
 
+const DAOApp = () => import('../components/dao/DAOApp.vue')
+
 import Index from '../components/Index.vue'
 
 import init from '../init'
@@ -60,118 +62,118 @@ import * as common from '../utils/common.js'
 Vue.use(VueRouter)
 
 let routes = [
-  {
-    path: '/',
-    name: 'Root',
-    component: RootApp,
-    children: [
-      {
-        name: 'RootIndex',
-        path: '',
-        component: Root
-      },
-      {
-        path: '/basictrade',
-        name: 'BasicTrade',
-        component: BasicTrade,
-      },
-      {
-        path: '/exchange/:params(.*)?',
-        name: 'Exchange',
-        component: ChartGraph,
-      },
-      {
-        path: '/trade/:params(.*)?',
-        name: 'Trade',
-        component: ChartGraph,
-      },
-      {
-        name: 'CombinedStats',
-        path: 'combinedstats',
-        component: CombinedStats,
-      },
-      {
-        name: 'Donate',
-        path: 'donate',
-        component: Donate,
-      },
-      {
-        name: 'StatsDaily',
-        path: 'dailystats',
-        component: StatsDaily,
-      },
-      {
-        name: 'Audits',
-        path: 'audits',
-        component: Audits,
-      },
-      {
-        name: 'RootFAQ',
-        path: '/rootfaq',
-        component: RootFAQ,
-      },
-      {
-        name: 'Contracts',
-        path: '/contracts',
-        component: Contracts,
-      },
-      {
-        path: 'curvepay/:pool?',
-        name: 'CurvePay',
-        component: CurvePay,
-      },
-      {
-        path: 'events/:params(.*)?',
-        name: 'Events',
-        component: Events,
-      },
-      {
-        path: 'volumepercoin',
-        name: 'VolumePerCoin',
-        component: VolumePerCoin,
-      },
-      {
-        path: 'volumeperpair',
-        name: 'VolumePerPair',
-        component: VolumePerPair,
-      },
-      {
-        path: 'totaldeposits',
-        name: 'TotalDeposits',
-        component: TotalDeposits,
-      },
-      {
-        path: 'yctokens',
-        name: 'ycTokens',
-        component: ycTokens,
-      },
-      {
-        path: 'estimategas',
-        name: 'EstimateGas',
-        component: EstimateGas,
-      },
-      {
-        path: 'registry',
-        name: 'Registry',
-        component: Registry,
-      },
-      {
-        path: 'integrations',
-        name: 'Integrations',
-        component: Integrations,
-      },
-      {
-        path: 'risks',
-        name: 'Risks',
-        component: Risks,
-      },
-      {
-        path: 'bugbounty',
-        name: 'BugBounty',
-        component: BugBounty,
-      },
-    ]
-  },
+  // {
+  //   path: '/',
+  //   name: 'Root',
+  //   component: RootApp,
+  //   children: [
+  //     {
+  //       name: 'RootIndex',
+  //       path: '',
+  //       component: Root
+  //     },
+  //     {
+  //       path: '/basictrade',
+  //       name: 'BasicTrade',
+  //       component: BasicTrade,
+  //     },
+  //     {
+  //       path: '/exchange/:params(.*)?',
+  //       name: 'Exchange',
+  //       component: ChartGraph,
+  //     },
+  //     {
+  //       path: '/trade/:params(.*)?',
+  //       name: 'Trade',
+  //       component: ChartGraph,
+  //     },
+  //     {
+  //       name: 'CombinedStats',
+  //       path: 'combinedstats',
+  //       component: CombinedStats,
+  //     },
+  //     {
+  //       name: 'Donate',
+  //       path: 'donate',
+  //       component: Donate,
+  //     },
+  //     {
+  //       name: 'StatsDaily',
+  //       path: 'dailystats',
+  //       component: StatsDaily,
+  //     },
+  //     {
+  //       name: 'Audits',
+  //       path: 'audits',
+  //       component: Audits,
+  //     },
+  //     {
+  //       name: 'RootFAQ',
+  //       path: '/rootfaq',
+  //       component: RootFAQ,
+  //     },
+  //     {
+  //       name: 'Contracts',
+  //       path: '/contracts',
+  //       component: Contracts,
+  //     },
+  //     {
+  //       path: 'curvepay/:pool?',
+  //       name: 'CurvePay',
+  //       component: CurvePay,
+  //     },
+  //     {
+  //       path: 'events/:params(.*)?',
+  //       name: 'Events',
+  //       component: Events,
+  //     },
+  //     {
+  //       path: 'volumepercoin',
+  //       name: 'VolumePerCoin',
+  //       component: VolumePerCoin,
+  //     },
+  //     {
+  //       path: 'volumeperpair',
+  //       name: 'VolumePerPair',
+  //       component: VolumePerPair,
+  //     },
+  //     {
+  //       path: 'totaldeposits',
+  //       name: 'TotalDeposits',
+  //       component: TotalDeposits,
+  //     },
+  //     {
+  //       path: 'yctokens',
+  //       name: 'ycTokens',
+  //       component: ycTokens,
+  //     },
+  //     {
+  //       path: 'estimategas',
+  //       name: 'EstimateGas',
+  //       component: EstimateGas,
+  //     },
+  //     {
+  //       path: 'registry',
+  //       name: 'Registry',
+  //       component: Registry,
+  //     },
+  //     {
+  //       path: 'integrations',
+  //       name: 'Integrations',
+  //       component: Integrations,
+  //     },
+  //     {
+  //       path: 'risks',
+  //       name: 'Risks',
+  //       component: Risks,
+  //     },
+  //     {
+  //       path: 'bugbounty',
+  //       name: 'BugBounty',
+  //       component: BugBounty,
+  //     },
+  //   ]
+  // },
   {
     path: '/compound/withdraw_old',
     component: PoolApp,
@@ -256,15 +258,20 @@ let routes = [
     ]
   },
   {
-    path: '/dao',
+    path: '/',
     name: 'DAO',
-    component: RootApp,
+    component: DAOApp,
     children: [
       {
         path: '',
-        name: 'Votes',
-        component: Votes,
+        name: 'Gauges',
+        component: Gauges,
       },
+      // {
+      //   path: '',
+      //   name: 'Votes',
+      //   component: Votes,
+      // },
       {
         path: 'vote/:app/:id',
         name: 'Vote',
@@ -280,7 +287,7 @@ let routes = [
   {
     path: '/minter',
     name: 'Minter',
-    component: RootApp,
+    component: DAOApp,
     children: [
       {
         path: '',
@@ -302,7 +309,7 @@ let routes = [
   {
     path: '/locker',
     name: 'Locker',
-    component: RootApp,
+    component: DAOApp,
     children: [
       {
         path: '',

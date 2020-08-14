@@ -66,7 +66,6 @@
 	import allabis from '../../../allabis'
 
 	import * as daoabis from '../allabis'
-	console.log(daoabis, "DAOABIS")
 
 
 	import { getVote, state, getters, OWNERSHIP_APP_ADDRESS, PARAMETER_APP_ADDRESS, OWNERSHIP_AGENT, PARAMETER_AGENT, helpers as voteHelpers } from '../voteStore'
@@ -108,7 +107,6 @@
 			doesRampUp() {
 				if(!this.selectedPool)
 					return false
-				console.log(Object.values(this.selectedPool.abi).map(abi => abi.name), "ABI")
 				return Object.values(this.selectedPool.abi).map(abi => abi.name).includes('ramp_A')
 			},
 			showRootModal() {

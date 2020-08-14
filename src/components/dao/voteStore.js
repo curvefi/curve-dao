@@ -46,10 +46,10 @@ export const VOTING_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/peng
 
 export const OWNERSHIP_VOTE_TIME = 3600
 export const PARAMETER_VOTE_TIME = 3600
-export const OWNERSHIP_APP_ADDRESS = '0x96B58C29c74fce0aBFE7c0C62225095f47A91A6D'
-export const PARAMETER_APP_ADDRESS = '0x3ef19f1EA214DF368Eb8a612dd1Aca45caC3c756'
-export const OWNERSHIP_AGENT = '0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
-export const PARAMETER_AGENT = '0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
+export const OWNERSHIP_APP_ADDRESS = '0x02c51B720C4A969C6daB22f5179218C339d9267F' //'0x96B58C29c74fce0aBFE7c0C62225095f47A91A6D'
+export const PARAMETER_APP_ADDRESS = '0x571D59b73Bb23F4f2A61703933Dec05CE6cd9cC2' //'0x3ef19f1EA214DF368Eb8a612dd1Aca45caC3c756'
+export const OWNERSHIP_AGENT = '0x22D61abd46F14D40Ca9bF8eDD9445DCF29208589' //'0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
+export const PARAMETER_AGENT = '0xFe6307fC37ad088c8F09bCC6Fc0F9E95Bf368EB4' //'0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
 export const MIN_BALANCE = 2500 * 10 ** 18
 export const MIN_TIME = 15
 
@@ -95,7 +95,8 @@ export let state = Vue.observable({
 
 export async function init() {
 	// Initiates the connection to an organization
-	let org = await connect('0xDcbd15991f5F6107150F4c6132849B9a26758e74', 'thegraph', { chainId: 4 })
+	//0xDcbd15991f5F6107150F4c6132849B9a26758e74
+	let org = await connect('0xcA80e3B174e6429648794b57F6d291aB532572d6', 'thegraph', { chainId: 4 })
 
 	state.org = org
 
@@ -323,8 +324,6 @@ export async function getVote(app, voteId) {
 		state.votes.push(vote)
 		vote = votes[0]
 	}
-
-	console.log(vote, "THE VOTE HERE")
 	
 	if(vote.metadata.startsWith('ipfs:')) {
 		let hash = vote.metadata.slice(5)

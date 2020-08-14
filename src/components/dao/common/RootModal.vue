@@ -69,7 +69,6 @@
         		return this.transactionIntent
         	},
         	appName() {
-        		console.log(this.transactionPath.destination, "THE TX PATH DESTINATION")
         		return getVotingAppName(this.transactionPath.destination.address)
         	},
         	getSupportText() {
@@ -91,7 +90,6 @@
 			async createVote() {
 				let data = this.transactionPath.transactions[0]
 
-				console.log(data, "THE TX DATA")
 
 				try {
 					await web3.eth.estimateGas(data)

@@ -150,16 +150,16 @@
 		},
 
 		async created() {
-			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
-				//if(val != null && oldval != null)
-					this.mounted()
+			this.$watch(() => contract.default_account, (val, oldval) => {
+				if(!val || !oldval) return;
+                this.mounted()
 			}, {
 				immediate: true
 			})
 		},
 
 		async mounted() {
-			if(contract.default_account && contract.multicall)
+			if(contract.default_account)
 				this.mounted()
 		},
 
@@ -192,7 +192,7 @@
 				}
 				this.chart.showLoading()
 
-				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, '0x5F4dd3ab1d050De2C269Db090449d9B33CCC053f')
+				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, this.address)
 
 				let calls = [
 					[this.vesting._address, this.vesting.methods.vestedOf(contract.default_account).encodeABI()],
@@ -217,8 +217,8 @@
 				this.end_time = decoded[5]
 
 				if(+this.initial_locked == 0) {
-					this.notVested = true
-					return;
+					//this.notVested = true
+					//return;
 				}
 
 				let vestedTime = +this.end_time - +this.start_time
@@ -244,8 +244,10 @@
 			},
 
 			async claim() {
+				let gas = await this.vesting.methods.claim(contract.default_account).estimateGas()
 				await this.vesting.methods.claim(contract.default_account).send({
-					from: contract.default_account
+					from: contract.default_account,
+					gas: gas * 1.5 | 0,
 				})
 
 				this.mounted()

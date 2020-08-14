@@ -8,8 +8,14 @@
 						[<span class='greentext'>■</span>]
 					</div>
 					<legend>Confirm lock</legend>
-					<div class='content'>
+					<div class='content' v-show='showModalType == 0'>
+						Confirm creating lock with {{ deposit }} CRV until {{ increaseLockText }}
+					</div>
+					<div class='content' v-show='showModalType == 1'>
 						Confirm locking {{ deposit }} CRV until {{ increaseLockText }}
+					</div>
+					<div class='content' v-show='showModalType == 2'>
+						Confirm increasing lock time until {{ increaseLockText }}
 					</div>
 					<p class='info-message gentle-message' v-show='showConfirmMessage'>
 						Please confirm the transaction in your wallet
@@ -68,11 +74,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button @click='lockButton(604800, 0)'>Lock 1 week</button>
-							<button @click='lockButton(2678400, 0)'>Lock 1 month</button>
-							<button @click='lockButton(16070400, 0)'>Lock 6 months</button>
-							<button @click='lockButton(31536000, 0)'>Lock 1 year</button>
-							<button @click='lockButton(126144000, 0)'>Lock 4 years</button>
+							<button @click='lockButton(604800, 0)'>1 week</button>
+							<button @click='lockButton(2678400, 0)'>1 month</button>
+							<button @click='lockButton(16070400, 0)'>6 months</button>
+							<button @click='lockButton(31536000, 0)'>1 year</button>
+							<button @click='lockButton(126144000, 0)'>4 years</button>
 						</div>
 						<br>
 						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
@@ -94,11 +100,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button @click='lockButton(604800, 1)'>Lock 1 week</button>
-							<button @click='lockButton(2678400, 1)'>Lock 1 month</button>
-							<button @click='lockButton(16070400, 1)'>Lock 6 months</button>
-							<button @click='lockButton(31536000, 1)'>Lock 1 year</button>
-							<button @click='lockButton(126144000, 1)'>Lock 4 years</button>
+							<button @click='lockButton(604800, 1)'>1 week</button>
+							<button @click='lockButton(2678400, 1)'>1 month</button>
+							<button @click='lockButton(16070400, 1)'>6 months</button>
+							<button @click='lockButton(31536000, 1)'>1 year</button>
+							<button @click='lockButton(126144000, 1)'>4 years</button>
 						</div>
 					</p>
 					<button @click="confirmModal('createLock')">Create lock</button>
@@ -178,6 +184,7 @@
 				interval: null,
 
 				showModal: false,
+				showModalType: 0,
 				showConfirmMessage: false,
 
 				method: null,
@@ -317,15 +324,16 @@
 		},
 
 		async created() {
-			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
-				if(val != null && oldval != null)
-					this.mounted()
+			this.$watch(() => contract.initializedContracts, (val, oldval) => {
+				console.log(val, "THE VAL")
+			 	if(val) this.mounted()
 			})
 		},
 
 		async mounted() {
-			if(contract.default_account && contract.multicall)
+			if(contract.multicall) {
 				this.mounted()
+			}
 		},
 
 		watch: {
@@ -411,7 +419,6 @@
 				this.loaded = true
 				this.chart = this.$refs.highcharts.chart
 				this.chart.showLoading()
-				this.chart.series[0] && this.chart.series[0].remove()
 
 				this.loadBalances()
 				if(this.showvelock && this.showchart)
@@ -420,8 +427,8 @@
 			},
 
 			async loadBalances() {
-				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, '0x7477FFEc941d1b8251Ef2d0216AfE7daf2Cf74Ab')
-				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, '0xC6bfF6CC1B890cAF4c3CA9cCCE25963EC4A22348')
+				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2')
+				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, '0xD533a949740bb3306d119CC777fa900bA034cd52')
 
 
 				let calls = [
@@ -449,7 +456,12 @@
 
 			async loadChart() {
 
-				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-rinkeby2')
+				while(this.chart.series[0])
+					this.chart.series[0].remove()
+
+				console.log("LOAD CHART")
+
+				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				let QUERY = gql`
 					{
 						votingEscrows(where: { provider: "${getters.default_account()}" }, orderBy: timestamp, orderDirection: asc) {
@@ -639,6 +651,12 @@
 
 			async confirmModal(method) {
 				this.method = method
+				if(method == 'createLock')
+					this.showModalType = 0
+				if(method == 'increaseAmount')
+					this.showModalType = 1
+				if(method == 'submitIncreaseLock')
+					this.showModalType = 2
 				this.showModal = true
 			},
 

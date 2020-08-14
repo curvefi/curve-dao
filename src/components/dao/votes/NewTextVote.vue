@@ -72,7 +72,7 @@
 		</div>
 		<div v-show='!canCreateNewVote && canCreateLoaded'>
 			<p class='info-message gentle-message'>
-				You have to have at least the equivalent of 10000CRV locked for a year to be able to create a new vote
+				You have to have at least 2500veCRV(the equivalent of 10000CRV locked for a year) to be able to create a new vote
 			</p>
 			<voting-escrow :showvelock = 'false' class='votingescrow'>
 				<p>

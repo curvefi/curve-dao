@@ -143,9 +143,10 @@ export async function approveAmount(contract, amount, account, toContract, infin
     let current_allowance = cBN(await contract.methods.allowance(account, toContract).call())
     console.log(currentContract.max_allowance)
     console.log(current_allowance.toString(), amount.toString(), current_allowance.lt(amount))
+    console.log(requiresResetAllowance, contract._address)
     if(!infinite) {
         if(current_allowance.lt(amount) && amount.gt(0)) {
-            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address)) {
+            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address.toLowerCase())) {
                 await approve(contract, 0, account, toContract)
             }
             await approve(contract, amount, account, toContract)
@@ -153,7 +154,7 @@ export async function approveAmount(contract, amount, account, toContract, infin
     }
     else {
         if(current_allowance.lt(currentContract.max_allowance.div(cBN(2))) && cBN(amount).gt(0)) {
-            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address))
+            if(current_allowance > 0 && requiresResetAllowance.includes(contract._address.toLowerCase()))
                 await approve(contract, 0, account, toContract)
             await approve(contract, currentContract.max_allowance, account, toContract)
         }

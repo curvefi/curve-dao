@@ -12,17 +12,19 @@ import { notify, notifyHandler } from '../init'
 
 var cBN = (val) => new BigNumber(val);
 
-let requiresResetAllowance = ['0xdAC17F958D2ee523a2206206994597C13D831ec7',
-                                //Curve LP tokens
-                                '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
-                                '0x9fC689CCaDa600B6DF723D9E47D84d76664a1F23',
-                                '0xdF5e0e81Dff6FAF3A7e52BA697820c5e32D806A8',
-                                '0x3B3Ac5386837Dc563660FB6a0937DFAa5924333B',
-                                '0xC25a3A3b969415c80451098fa907EC722572917F',
-                                '0xD905e2eaeBe188fc92179b6350807D8bd91Db0D8',
-                                '0x49849C98ae39Fff122806C06791Fa73784FB3675',
-                                '0x075b1bb99792c9E1041bA13afEf80C91a1e70fB3',
-                            ]
+let requiresResetAllowance = [
+  "0xdac17f958d2ee523a2206206994597c13d831ec7",
+
+  //Curve LP tokens
+  "0x845838df265dcd2c412a1dc9e959c7d08537f8a2",
+  "0x9fc689ccada600b6df723d9e47d84d76664a1f23",
+  "0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8",
+  "0x3b3ac5386837dc563660fb6a0937dfaa5924333b",
+  "0xc25a3a3b969415c80451098fa907ec722572917f",
+  "0xd905e2eaebe188fc92179b6350807d8bd91db0d8",
+  "0x49849c98ae39fff122806c06791fa73784fb3675",
+  "0x075b1bb99792c9e1041ba13afef80c91a1e70fb3"
+]
 
 export function approve(contract, amount, account, toContract) {
     if(!toContract) toContract = currentContract.swap_address
@@ -102,7 +104,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
         // Non-infinite
         for (let i=0; i < N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(cBN(amounts[i])) && cBN(amounts[i]).gt(0)) {
-                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address))
+                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address.toLowerCase()))
                     await approve(coins[i], 0, default_account, swap);
                 await approve(coins[i], amounts[i], default_account, swap);
             }
@@ -112,7 +114,7 @@ export async function ensure_allowance(amounts, plain = false, contractName, N_C
         // Infinite
         for (let i=0; i < N_COINS; i++) {
             if (cBN(allowances[i]).isLessThan(cont.max_allowance.div(cBN(2))) && cBN(amounts[i]).gt(0)) {
-                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address))
+                if (allowances[i] > 0 && requiresResetAllowance.includes(coins[i]._address.toLowerCase()))
                     await approve(coins[i], 0, default_account, swap);
                 await approve(coins[i], cont.max_allowance, default_account, swap);
             }

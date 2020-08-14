@@ -240,12 +240,14 @@
 				}
 
 				this.chart.addSeries({
+					id: 'unvested',
 					name: "Unvested tokens",
 					data: vestedData,
 					color: '#0b0a57',
 				})
 
 				this.chart.addSeries({
+					id: 'vested',
 					name: "Vested tokens",
 					data: vestedData.map(([k, v]) => [k, this.initial_locked / 1e18 - v]),
 					color: '#7bb5ec',

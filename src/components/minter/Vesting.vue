@@ -80,7 +80,7 @@
 				        text: 'Unvested tokens'
 				    },
 				    rangeSelector: {
-				    	selected: 4,
+				    	selected: 6,
 				    },
 				    xAxis: {
 				    	//ordinal: false,

@@ -31,7 +31,21 @@
 							<input type='range' min='0' max='100' step='1' id='zoom' :value='depositSlider' @input='onDepositSlider'/>
 						</div>
 					</div>
-					<button @click='deposit'>Deposit</button>
+					<div>
+						<p>
+							<input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
+		                    <label for="inf-approval">Infinite approval 
+		                    	<span class='tooltip'>[?]
+		                    		<span class='tooltiptext long'>
+		                    			Preapprove the contract to to be able to spend any amount of your coins. You will not need to approve again.
+		                    		</span>
+		                    	</span>
+		                    </label>
+	                	</p>
+						<div>
+							<button @click='deposit'>Deposit</button>
+						</div>
+					</div>
 				</div>
 				<div class='gauge' v-show='gaugeBalance > 0'>
 					<div>Balance: <span class='hoverpointer' @click='setMaxGauge'>{{ gaugeBalanceFormat }}</span> in gauge</div>
@@ -102,6 +116,8 @@
 			promise: helpers.makeCancelable(Promise.resolve()),
 
 			stakedBalance: 0,
+
+			inf_approval: true,
 		}),
 
 		computed: {
@@ -209,6 +225,11 @@
 
 				gaugeStore.state.totalMintedCRV += +this.minted
 
+				let allowance = BN(await this.swap_token.methods.allowance(contract.default_account, this.gauge.gauge).call())
+
+				if(allowance.lte(contract.max_allowance.div(BN(2))))
+					this.inf_approval = false
+
 			},
 
 			async deposit() {
@@ -243,7 +264,7 @@
 				}
 
 
-				await common.approveAmount(this.swap_token, deposit, contract.default_account, this.gauge.gauge)
+				await common.approveAmount(this.swap_token, deposit, contract.default_account, this.gauge.gauge, this.inf_approval)
 
 
 				await this.gaugeContract.methods.deposit(deposit.toFixed(0,1)).send({
@@ -463,6 +484,9 @@
 		justify-content: space-around;
 	}
 	.poolBalance {
+		margin-top: 1em;
+	}
+	label[for='inf-approval'] {
 		margin-top: 1em;
 	}
 </style>

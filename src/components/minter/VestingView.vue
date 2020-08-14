@@ -4,7 +4,7 @@
 			<button @click='showOwner' v-show='obalance > 0' :class="{'simplebutton': showvesting == 1}">Founder vesting</button>
 			<button @click='showInvestor' v-show='ibalance > 0' :class="{'simplebutton': showvesting == 2}">Investor vesting</button>
 			<button @click='showAdvisor' v-show='abalance > 0' :class="{'simplebutton': showvesting == 3}">LP vesting</button>
-			<button @click='showLP' :class="{'simplebutton': showvesting == 4}">LP vesting</button>
+			<button @click='showLP' v-show='vbalance > 0' :class="{'simplebutton': showvesting == 4}">LP vesting</button>
 			<button @click='showEmployee' v-show='evbalance > 0' :class="{'simplebutton': showvesting == 5}">Employee vesting</button>
 		</div>
 		<vesting :address='address' class='vesting'></vesting>

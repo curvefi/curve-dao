@@ -176,6 +176,7 @@
 				}
 
 				let piedata = this.mypools.map(pool => ({ name: pool.name, y: total == 0 ? 0 : pool.gaugeBalance / total}))
+				piedata = piedata.filter(pool => pool.y > 0)
 
 				this.piechart.addSeries({
 					name: 'Gauge Allocation',

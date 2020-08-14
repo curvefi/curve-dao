@@ -33,10 +33,11 @@
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>
+      <router-link to="/audits">Audits</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
         <div class='dropdown'>
-          <a href="https://curve.fi/audits">Audits</a>
+          <router-link to="/audits">Audits</router-link>
           <a href="https://curve.fi/events">Events</a>
           <a href="https://curve.fi/contracts">Contracts</a>
           <a href="https://curve.fi/bugbounty">Bug</a>
@@ -57,12 +58,12 @@
       <router-link to="/locker" class='showmobile'>Locker</router-link>
       <router-link to="/minter/gauges" class='showmobile'>Minter</router-link>
       <router-link to="/minter/vesting" class='showmobile'>Vesting</router-link>
-      <router-link to="https://curve.fi/audits" class='showmobile'>Audits</router-link>
-      <router-link to="https://curve.fi/events" class='showmobile'>Events</router-link>
-      <router-link to="https://curve.fi/bugbounty" class='showmobile'>Bug Bounty</router-link>
-      <router-link to="https://curve.fi/rootfaq" class='showmobile'>FAQ</router-link>
-      <router-link to="https://curve.fi/integrations" class='showmobile'>Integrations</router-link>
-      <router-link to="https://curve.fi/donate" class='showmobile'>Donate</router-link>
+      <router-link to="/audits" class='showmobile'>Audits</router-link>
+      <a href="https://curve.fi/events" class='showmobile'>Events</a>
+      <a href="https://curve.fi/bugbounty" class='showmobile'>Bug Bounty</a>
+      <a href="https://curve.fi/rootfaq" class='showmobile'>FAQ</a>
+      <a href="https://curve.fi/integrations" class='showmobile'>Integrations</a>
+      <a href="https://curve.fi/donate" class='showmobile'>Donate</a>
       <a href='https://guides.curve.fi' rel='noopener noreferrer' class='showmobile'>Guides</a>
       <a href="https://twitter.com/CurveFinance" class='showmobile' rel='noopener noreferrer'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile' rel='noopener noreferrer'>@Telegram</a>

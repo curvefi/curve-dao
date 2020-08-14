@@ -33,6 +33,7 @@
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>
+      <router-link to="/daocontracts">Contracts</router-link>
       <router-link to="/audits">Audits</router-link>
       <div class='poolsdropdown right'>
         <span>?</span>
@@ -58,6 +59,7 @@
       <router-link to="/locker" class='showmobile'>Locker</router-link>
       <router-link to="/minter/gauges" class='showmobile'>Minter</router-link>
       <router-link to="/minter/vesting" class='showmobile'>Vesting</router-link>
+      <router-link to="/daocontracts" class='showmobile'>DAO Contracts</router-link>
       <router-link to="/audits" class='showmobile'>Audits</router-link>
       <a href="https://curve.fi/events" class='showmobile'>Events</a>
       <a href="https://curve.fi/bugbounty" class='showmobile'>Bug Bounty</a>

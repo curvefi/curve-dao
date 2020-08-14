@@ -158,6 +158,7 @@
 
 		methods: {
 			async mounted() {
+				gaugeStore.state.totalClaimableCRV = null
 				this.piechart = this.$refs.piecharts.chart
 				this.piechart.showLoading()
 

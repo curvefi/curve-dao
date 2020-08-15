@@ -1,16 +1,27 @@
 <template>
-	<div class='window white' v-show='gauge.balance > 0 || gauge.gaugeBalance > 0 || stakedBalance > 0'>
+	<div class='window white'>
 		<fieldset>
 			<legend>
-				{{ gauge.name }} {{ gauge.typeName }} gauge 
+				{{ gauge.name }} {{ gauge.typeName }} gauge
 				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ apy.toFixed(2) }}%
 			</legend>
 			<div class='pool-info'>
-				<div>
+				<div class='gaugeRelativeWeight'>
+					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}
+				</div>
+				<div class='mintedCRVFrom'>
 					Minted CRV from this gauge: {{ mintedFormat }}
 				</div>
 				<div class='boost' v-show='boost !== null && !isNaN(boost)'>
 					Boost: {{ boost && boost.toFixed(4) }}
+					<input :id="'boost' + gauge.name" type='checkbox' v-model='WARMUP'>
+					<label :for="'boost' + gauge.name"></label>
+					<span class='tooltip'>[?]
+						<span class='tooltiptext long'>
+							<div>Enable/disable Boost warmup period</div>
+							<div>Boost starts in 2 weeks</div>
+						</span>
+					</span>
 				</div>
 			</div>
 			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
@@ -126,6 +137,10 @@
 			stakedBalance: 0,
 
 			inf_approval: true,
+
+			BOOST_WARMUP: 2 * 7 * 86400,
+
+			WARMUP: true,
 		}),
 
 		computed: {
@@ -144,6 +159,9 @@
 			apy() {
 				return gaugeStore.state.APYs[this.gauge.name]
 			},
+			gaugeRelativeWeight() {
+				return this.gauge.gauge_relative_weight * 100
+			},
 			// depositSlider() {
 			// 	return (Math.min(this.depositAmount / (this.gauge.balance / 1e18), 1)).toFixed(2)
 			// },
@@ -157,7 +175,7 @@
 				return (this.minted / 1e18).toFixed(2)
 			},
 			triggerUpdateLimit() {
-				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, Date.now()
+				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, this.WARMUP, Date.now()
 			},
 			claimableRewardFormat() {
 				return (this.claimableReward / 1e18).toFixed(2)
@@ -405,7 +423,10 @@
 
 
 				let TOKENLESS_PRODUCTION = 40
-				let BOOST_WARMUP = 2 * 7 * 86400
+
+				let BOOST_WARMUP = this.BOOST_WARMUP
+				if(!this.WARMUP)
+					BOOST_WARMUP = 0
 
 				let lim = l * TOKENLESS_PRODUCTION / 100
 				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + BOOST_WARMUP))
@@ -512,6 +533,9 @@
 	}
 	.gauge .unstake {
 		visibility: hidden;
+	}
+	.mintedCRVFrom, .gaugeRelativeWeight {
+		margin-top: 0.4em;
 	}
 	@media only screen and (max-device-width: 730px) {
 		.gauge .unstake {

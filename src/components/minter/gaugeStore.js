@@ -156,6 +156,8 @@ export async function getState() {
 	let aggCallsWeights = await contract.multicall.methods.aggregate(weightCalls).call()
 	let decodedWeights = aggCallsWeights[1].map((hex, i) => [weightCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
+	console.log(decodedWeights, "DECODED WEIGHTS")
+
 	let ratesCalls = decodedGauges.map(gauge => [
 		[gauge, example_gauge.methods.inflation_rate().encodeABI()],
 		[gauge, example_gauge.methods.working_supply().encodeABI()],
@@ -181,6 +183,9 @@ export async function getState() {
 			_working_supply *= btcPrice
 		let rate = (gaugeRates[i] * w[1] * 31536000 / _working_supply * 0.4) / virtual_price
 		let apy = rate * CRVprice * 100
+		if(isNaN(apy))
+			apy = 0
+		state.mypools.find(v => v.name == pool).gauge_relative_weight = w[1]
 		Vue.set(state.APYs, pool, apy)
 	})
 	

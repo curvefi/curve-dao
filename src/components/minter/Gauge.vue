@@ -357,13 +357,13 @@
 			onDepositSlider(event) {
 				let val = event.target.value
 				this.depositSlider = val
-				this.depositAmount = ((this.gauge.balance / 1e18) * val/100).toFixed(2)
+				this.depositAmount = this.toFixed((this.gauge.balance / 1e18) * val/100)
 			},
 
 			onWithdrawSlider(event) {
 				let val = event.target.value
 				this.withdrawSlider = val
-				this.withdrawAmount = ((this.gauge.gaugeBalance / 1e18) * val/100).toFixed(2)
+				this.withdrawAmount = this.toFixed((this.gauge.gaugeBalance / 1e18) * val/100)
 			},
 
 			async update_liquidity_limit(new_l = null, new_voting_balance = null) {

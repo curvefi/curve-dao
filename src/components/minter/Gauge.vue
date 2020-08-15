@@ -2,7 +2,8 @@
 	<div class='window white' v-show='gauge.balance > 0 || gauge.gaugeBalance > 0 || stakedBalance > 0'>
 		<fieldset>
 			<legend>
-				{{ gauge.name }} {{ gauge.typeName }} gauge
+				{{ gauge.name }} {{ gauge.typeName }} gauge 
+				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ apy.toFixed(2) }}%
 			</legend>
 			<div class='pool-info'>
 				<div>
@@ -140,6 +141,9 @@
 			gaugeBalanceFormat() {
 				return (this.gauge.gaugeBalance / 1e18).toFixed(2)
 			},
+			apy() {
+				return gaugeStore.state.APYs[this.gauge.name]
+			},
 			// depositSlider() {
 			// 	return (Math.min(this.depositAmount / (this.gauge.balance / 1e18), 1)).toFixed(2)
 			// },
@@ -163,6 +167,9 @@
             },
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
+            },
+            publicPath() {
+                return process.env.BASE_URL
             },
 
 		},

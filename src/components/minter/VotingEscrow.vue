@@ -516,7 +516,7 @@
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
 
 				let now = (Date.now() / 1000) | 0
-				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
+				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**2*86400).encodeABI()])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 

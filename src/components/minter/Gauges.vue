@@ -59,6 +59,8 @@
 	import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
 
+    import { getBTCPrice } from '../common/priceStore'
+
 	export default {
 		components: {
 			Gauge,
@@ -168,14 +170,29 @@
 				this.pools = gaugeStore.state.pools
 				this.mypools = gaugeStore.state.mypools
 
-				let total = this.mypools.reduce((a,b) => +a + +b.gaugeBalance, 0)
+				let btcPrice = await getBTCPrice()
+
+				let total = this.mypools.reduce((a,b,i) => {
+					let balance = +b.gaugeBalance
+					if(['ren','sbtc'].includes(this.mypools[i].name))
+						balance *= btcPrice
+					return +a + balance
+				}, 0)
 
 				if(total == 0) {
 					this.showChart = false
 					return;
 				}
 
-				let piedata = this.mypools.map(pool => ({ name: pool.name, y: total == 0 ? 0 : pool.gaugeBalance / total}))
+				let piedata = this.mypools.map(pool => {
+					let balance = pool.gaugeBalance
+					if(['ren','sbtc'].includes(pool.name))
+						balance = pool.gaugeBalance * btcPrice
+					return { 
+						name: pool.name,
+				 		y: total == 0 ? 0 : balance / total
+				 	}
+				})
 				piedata = piedata.filter(pool => pool.y > 0)
 
 				this.piechart.addSeries({

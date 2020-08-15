@@ -48,7 +48,10 @@
 					</div>
 				</div>
 				<div class='gauge' v-show='gaugeBalance > 0'>
-					<div>Balance: <span class='hoverpointer' @click='setMaxGauge'>{{ gaugeBalanceFormat }}</span> in gauge</div>
+					<p v-show="['susdv2','sbtc'].includes(gauge.name) && stakedBalance > 0" class='info-message gentle-message unstake'>
+						<a :href="'https://curve.fi/'+gauge.name+'/withdraw'">Unstake rewards</a>
+					</p>
+					<div class='gaugeBalance'>Balance: <span class='hoverpointer' @click='setMaxGauge'>{{ gaugeBalanceFormat }}</span> in gauge</div>
 					<div class='input'>
 						<label for='withdraw'>Amount:</label>
 						<input id='withdraw' type='text' v-model='withdrawAmount'>
@@ -494,10 +497,18 @@
 		flex-wrap: wrap;
 		justify-content: space-around;
 	}
-	.poolBalance {
+	.poolBalance, .gaugeBalance {
 		margin-top: 1em;
 	}
 	label[for='inf-approval'] {
 		margin-top: 1em;
+	}
+	.gauge .unstake {
+		visibility: hidden;
+	}
+	@media only screen and (max-device-width: 730px) {
+		.gauge .unstake {
+			display: none;
+		}
 	}
 </style>

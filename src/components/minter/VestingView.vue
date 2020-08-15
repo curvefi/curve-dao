@@ -3,9 +3,11 @@
 		<div class='buttons'>
 			<button @click='showOwner' v-show='obalance > 0' :class="{'simplebutton': showvesting == 1}">Founder vesting</button>
 			<button @click='showInvestor' v-show='ibalance > 0' :class="{'simplebutton': showvesting == 2}">Investor vesting</button>
-			<button @click='showAdvisor' v-show='abalance > 0' :class="{'simplebutton': showvesting == 3}">LP vesting</button>
+			<button @click='showAdvisor' v-show='abalance > 0' :class="{'simplebutton': showvesting == 3}">Advisor vesting</button>
 			<button @click='showLP' v-show='vbalance > 0' :class="{'simplebutton': showvesting == 4}">LP vesting</button>
 			<button @click='showEmployee' v-show='evbalance > 0' :class="{'simplebutton': showvesting == 5}">Employee vesting</button>
+
+			<button @click='showFactory' v-show='factorybalance > 0' :class="{'simplebutton': showvesting == 6}">Advisor vesting</button>
 		</div>
 		<vesting :address='address' class='vesting'></vesting>
 	</div>
@@ -28,6 +30,8 @@
 			abalance: 0,
 			vbalance: 0,
 			evbalance: 0,
+
+			factorybalance: 0,
 
 			address: null,
 			showvesting: 1,
@@ -67,12 +71,15 @@
 				this.vesting = new web3.eth.Contract(daoabis.vesting_abi, daoabis.vesting_address)
 				this.evesting = new web3.eth.Contract(daoabis.vesting_abi, '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67')
 
+				this.factoryvesting = new web3.eth.Contract(daoabis.vesting_abi, '0x81930d767a75269dc0e9b83938884e342c1fa5f6')
+
 				let calls = [
 					[this.ovesting._address, this.ovesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.ivesting._address, this.ivesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.avesting._address, this.avesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.vesting._address, this.vesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.evesting._address, this.evesting.methods.vestedOf(contract.default_account).encodeABI()],
+					[this.factoryvesting._address, this.factoryvesting.methods.vestedOf(contract.default_account).encodeABI()],
 				]
 
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
@@ -85,13 +92,16 @@
 				this.vbalance = decoded[3]
 				this.evbalance = decoded[4]
 
-				let vestings = [this.obalance, this.ibalance, this.abalance, this.vbalance, this.evbalance]
+				this.factorybalance = decoded[5]
+
+				let vestings = [this.obalance, this.ibalance, this.abalance, this.vbalance, this.evbalance, this.factorybalance]
 				let vestingAddresses = [
 					this.ovesting._address,
 					this.ivesting._address,
 					this.avesting._address,
 					this.vesting._address,
 					this.evesting._address,
+					this.factoryvesting._address,
 				]
 				this.address = vestingAddresses[vestings.findIndex(v => v > 0)]
 				//test
@@ -120,6 +130,11 @@
 			showEmployee() {
 				this.showvesting = 5
 				this.address = '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67'
+			},
+
+			showFactory() {
+				this.showvesting = 6
+				this.address = '0x81930d767a75269dc0e9b83938884e342c1fa5f6'
 			},
 
 		},

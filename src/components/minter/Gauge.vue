@@ -33,8 +33,8 @@
 					</div>
 					<div>
 						<p>
-							<input id="inf-approval" type="checkbox" name="inf-approval" checked v-model='inf_approval'>
-		                    <label for="inf-approval">Infinite approval 
+							<input :id="'inf-approval-'+gauge.name" type="checkbox" name="inf-approval" v-model='inf_approval'>
+		                    <label :for="'inf-approval-'+gauge.name" class='inf-approval-label'>Infinite approval 
 		                    	<span class='tooltip'>[?]
 		                    		<span class='tooltiptext long'>
 		                    			Preapprove the contract to to be able to spend any amount of your coins. You will not need to approve again.
@@ -500,7 +500,7 @@
 	.poolBalance, .gaugeBalance {
 		margin-top: 1em;
 	}
-	label[for='inf-approval'] {
+	.inf-approval-label {
 		margin-top: 1em;
 	}
 	.gauge .unstake {

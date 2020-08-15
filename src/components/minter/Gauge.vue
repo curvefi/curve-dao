@@ -68,7 +68,11 @@
 				<div class='flex-break'></div>
 				<div class='claimButtons'>
 					<button @click='claim' v-show='claimableTokens > 0' class='claimtokens'>Claim {{ claimableTokensFormat }} CRV</button>
-					<button @click='claimRewards' v-show='claimableReward > 0' class='claimrewards'>Claim {{ claimableRewardFormat }} SNX</button>
+					<button @click='claimRewards' v-show='claimableReward > 0' class='claimrewards'>
+						Claim {{ claimableRewardFormat }} 
+						<span v-show="gauge.name == 'susdv2'">SNX</span>
+						<span v-show="gauge.name == 'sbtc'">BPT</span>
+					</button>
 				</div>
 			</div>
 		</fieldset>
@@ -128,7 +132,7 @@
 				return +this.gauge.gaugeBalance
 			},
 			poolBalanceFormat() {
-				return (this.gauge.balance / 1e18).toFixed(2)
+				return this.toFixed(this.gauge.balance / 1e18)
 			},
 			gaugeBalanceFormat() {
 				return (this.gauge.gaugeBalance / 1e18).toFixed(2)
@@ -140,7 +144,7 @@
 			// 	return (Math.min(this.withdrawAmount / (this.gauge.gaugeBalance / 1e18), 1)).toFixed(2)
 			// },
 			claimableTokensFormat() {
-				return (this.claimableTokens / 1e18).toFixed(2)
+				return this.toFixed(this.claimableTokens / 1e18)
 			},
 			mintedFormat() {
 				return (this.minted / 1e18).toFixed(2)
@@ -331,6 +335,13 @@
 				gaugeStore.state.mypools[this.i].balance = decoded[0]
 				gaugeStore.state.mypools[this.i].gaugeBalance = decoded[1]
 			},
+
+			toFixed(num) {
+                if(num == '' || num == undefined || +num == 0) return '0.00'
+                if(!BN.isBigNumber(num)) num = +num
+                if(['ren', 'sbtc'].includes(this.gauge.name)) return num.toFixed(8)
+                return num.toFixed(2)
+            },
 
 			setMaxPool() {
 				this.depositAmount = this.gauge.balance / 1e18

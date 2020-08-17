@@ -8,6 +8,7 @@
 			<button @click='showEmployee' v-show='evbalance > 0' :class="{'simplebutton': showvesting == 5}">Employee vesting</button>
 
 			<button @click='showFactory' v-show='factorybalance > 0' :class="{'simplebutton': showvesting == 6}">Advisor vesting</button>
+			<button @click='showFactory2' v-show='factorybalance2 > 0' :class="{'simplebutton': showvesting == 7}">Advisor vesting</button>
 		</div>
 		<vesting :address='address' class='vesting'></vesting>
 	</div>
@@ -72,6 +73,7 @@
 				this.evesting = new web3.eth.Contract(daoabis.vesting_abi, '0x679FCB9b33Fc4AE10Ff4f96caeF49c1ae3F8fA67')
 
 				this.factoryvesting = new web3.eth.Contract(daoabis.vesting_abi, '0x81930d767a75269dc0e9b83938884e342c1fa5f6')
+				this.factoryvesting2 = new web3.eth.Contract(daoabis.vesting_abi, '0x629347824016530fcd9a1990a30658ed9a04c834')
 
 				let calls = [
 					[this.ovesting._address, this.ovesting.methods.vestedOf(contract.default_account).encodeABI()],
@@ -80,6 +82,7 @@
 					[this.vesting._address, this.vesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.evesting._address, this.evesting.methods.vestedOf(contract.default_account).encodeABI()],
 					[this.factoryvesting._address, this.factoryvesting.methods.vestedOf(contract.default_account).encodeABI()],
+					[this.factoryvesting2._address, this.factoryvesting2.methods.vestedOf(contract.default_account).encodeABI()],
 				]
 
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
@@ -93,8 +96,9 @@
 				this.evbalance = decoded[4]
 
 				this.factorybalance = decoded[5]
+				this.factorybalance2 = decoded[6]
 
-				let vestings = [this.obalance, this.ibalance, this.abalance, this.vbalance, this.evbalance, this.factorybalance]
+				let vestings = [this.obalance, this.ibalance, this.abalance, this.vbalance, this.evbalance, this.factorybalance, this.factorybalance2]
 				let vestingAddresses = [
 					this.ovesting._address,
 					this.ivesting._address,
@@ -102,6 +106,7 @@
 					this.vesting._address,
 					this.evesting._address,
 					this.factoryvesting._address,
+					this.factoryvesting2._address,
 				]
 				this.address = vestingAddresses[vestings.findIndex(v => v > 0)]
 				//test
@@ -136,6 +141,12 @@
 				this.showvesting = 6
 				this.address = '0x81930d767a75269dc0e9b83938884e342c1fa5f6'
 			},
+
+			showFactory2() {
+				this.showvesting = 7
+				this.address = '0x629347824016530fcd9a1990a30658ed9a04c834'
+			},
+
 
 		},
 	}

@@ -598,17 +598,56 @@
 				this.deposit = this.crvBalance.div(1e18).toString()
 			},
 
+			async checkpoint() {
+				let gauges = [
+				  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575",
+				  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53",
+				  "0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1",
+				  "0x69Fb7c45726cfE2baDeE8317005d3F94bE838840",
+				  "0x64E3C23bfc40722d3B649844055F1D51c1ac041d",
+				  "0xB1F2cdeC61db658F091671F5f199635aEF202CAC",
+				  "0xA90996896660DEcC6E997655E065b23788857849",
+				  "0x705350c4BcD35c9441419DdD5d2f097d7a55410F"
+				]
+
+				let balanceOfCall = '0x70a08231000000000000000000000000'
+
+				let balancesCalls = gauges.map(gauge => [gauge, balanceOfCall + contract.default_account.slice(2)])
+				let aggBalancesCalls = await contract.multicall.methods.aggregate(balancesCalls).call()
+				let decodedBalances = aggBalancesCalls[1].map(hex => +web3.eth.abi.decodeParameter('uint256', hex))
+
+				decodedBalances = decodedBalances.map((balance, i) => balance > 0 ? gauges[i] : 0)
+
+				let gaugesNeedCheckpoint = decodedBalances.filter(v => v > 0)
+
+				console.log(gaugesNeedCheckpoint, "GAUGES NEED CHECKPOINT")
+
+				for(let gauge of gaugesNeedCheckpoint) {
+					let gaugeContract = new web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
+					await new Promise((resolve, reject) => {
+						gaugeContract.methods.user_checkpoint(contract.default_account).send({
+							from: contract.default_account,
+							gas: 400000,
+						})
+						.once('transactionHash', hash => {
+							resolve()
+						})
+					})
+				}
+			},
+
 			async increaseAmount() {
 				this.showConfirmMessage = true;
 
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
+				await this.checkpoint()
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
 							from: getters.default_account(),
-							gas: 1000000,
+							gas: 600000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -623,11 +662,12 @@
 			async submitIncreaseLock() {
 				this.showConfirmMessage = true;
 
+				await this.checkpoint()
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
 							from: getters.default_account(),
-							gas: 10000000,
+							gas: 600000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -646,12 +686,13 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
+				await this.checkpoint()
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
 							from: getters.default_account(),
-							gas: 1000000,
+							gas: 600000,
 						})
 						.once('transactionHash', () => resolve())
 						.on('error', err => reject(err))
@@ -696,7 +737,7 @@
 				//1 create lock
 
 				let start = this.lockTime
-				let newtime = this.lockTime + 604800 + period
+				let newtime = this.lockTime + period
 
 				this.increaseLock = new Date(newtime * 1000)
 			}

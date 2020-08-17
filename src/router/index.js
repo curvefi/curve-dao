@@ -47,6 +47,7 @@ const VoteView = () => import('../components/dao/votes/VoteView.vue')
 const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
 const DAOAudits = () => import('../components/dao/DAOAudits.vue')
 const DAOContracts = () => import('../components/dao/Contracts.vue')
+const Inflation = () => import('../components/dao/distribution/Inflation.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
@@ -293,6 +294,11 @@ let routes = [
         path: 'daocontracts',
         name: 'DAOContracts',
         component: DAOContracts,
+      },
+      {
+        path: 'inflation',
+        name: 'Inflation',
+        component: Inflation,
       },
     ],
   },

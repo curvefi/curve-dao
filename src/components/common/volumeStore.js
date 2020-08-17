@@ -50,6 +50,7 @@ export async function fetchVolumeData(pools, refresh = false, period = 5) {
 		if(p == 'sbtc') p = 'rens'
 		return fetch(`${window.domain}/raw-stats/${p}-${period}m.json`)
 	})
+
 	//will work for 17 days on 5 minutes chart
 	if(pools.includes('tbtc') || pools.includes('ren') || pools.includes('sbtc'))
 		requests.push(fetch(`

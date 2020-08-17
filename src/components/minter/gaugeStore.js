@@ -163,6 +163,8 @@ export async function getState() {
 		[gauge, example_gauge.methods.working_supply().encodeABI()],
 	])
 
+	console.log(ratesCalls, "RATES CALLS")
+
 	let aggRates = await contract.multicall.methods.aggregate(ratesCalls.flat()).call()
 	let decodedRate = aggRates[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 	let gaugeRates = decodedRate.filter((_, i) => i % 2 == 0).map(v => v / 1e18)
@@ -171,6 +173,7 @@ export async function getState() {
 	let example_pool = new web3.eth.Contract(swap_abi, '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD')
 
 	let virtualPriceCalls = Object.values(state.pools).map(v => [v.swap, example_pool.methods.get_virtual_price().encodeABI()])
+	console.log(virtualPriceCalls, "VIRTUAL PRICE CALLS")
 	let aggVirtualPrices = await contract.multicall.methods.aggregate(virtualPriceCalls).call()
 	let decodedVirtualPrices = aggVirtualPrices[1].map((hex, i) => [virtualPriceCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
@@ -188,6 +191,8 @@ export async function getState() {
 		state.mypools.find(v => v.name == pool).gauge_relative_weight = w[1]
 		Vue.set(state.APYs, pool, apy)
 	})
+
+	console.log(state.mypools, "STATE MY POOLS")
 	
 	state.totalBalance = state.mypools.reduce((a, b) => +a + +b.balance, 0)
 	state.totalGaugeBalance = state.mypools.reduce((a, b) => +a + +b.gaugeBalance, 0)

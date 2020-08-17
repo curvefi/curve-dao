@@ -1,5 +1,5 @@
 <template>
-	<div class='window white'>
+	<div class='window white' v-show="gauge.name != 'usdt'">
 		<fieldset>
 			<legend>
 				{{ gauge.name }} {{ gauge.typeName }} gauge
@@ -7,10 +7,15 @@
 			</legend>
 			<div class='pool-info'>
 				<div class='gaugeRelativeWeight'>
-					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}
+					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}%
 				</div>
 				<div class='mintedCRVFrom'>
 					Minted CRV from this gauge: {{ mintedFormat }}
+				</div>
+				<div v-show="['susdv2', 'sbtc'].includes(gauge.name) && claimedRewards > 0" class='claimedRewards'>
+					Claimed 
+					<span v-show="gauge.name == 'susdv2'">SNX</span>
+					<span v-show="gauge.name == 'sbtc'">BPT</span>: {{ claimedRewardsFormat }}
 				</div>
 				<div class='boost' v-show='boost !== null && !isNaN(boost)'>
 					Boost: {{ boost && boost.toFixed(4) }}
@@ -55,7 +60,10 @@
 		                    </label>
 	                	</p>
 						<div>
-							<button @click='deposit'>Deposit</button>
+							<button @click='deposit'>
+								Deposit
+								<span v-show="['susdv2', 'sbtc'].includes(gauge.name)"> and stake</span>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -126,6 +134,7 @@
 
 			claimableTokens: null,
 			claimableReward: null,
+			claimedRewards: null,
 			minted: null,
 
 			boost: null,
@@ -178,7 +187,10 @@
 				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, this.WARMUP, Date.now()
 			},
 			claimableRewardFormat() {
-				return (this.claimableReward / 1e18).toFixed(2)
+				return this.toFixed(this.claimableReward / 1e18)
+			},
+			claimedRewardsFormat() {
+				return this.toFixed(this.claimedRewards / 1e18)
 			},
 			gasPrice() {
                 return gasPriceStore.state.gasPrice
@@ -250,6 +262,7 @@
 					// gaugeStore.state.mypools[this.i].balance = +gaugeStore.state.mypools[this.i].balance + +this.stakedBalance
 
 					this.claimableReward = await this.gaugeContract.methods.claimable_reward(contract.default_account).call()
+					this.claimedRewards = await this.gaugeContract.methods.claimed_rewards_for(contract.default_account).call()
 				}
 				
 				//this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.gauge.gauge).call()
@@ -534,7 +547,7 @@
 	.gauge .unstake {
 		visibility: hidden;
 	}
-	.mintedCRVFrom, .gaugeRelativeWeight {
+	.mintedCRVFrom, .gaugeRelativeWeight, .claimedRewards {
 		margin-top: 0.4em;
 	}
 	@media only screen and (max-device-width: 730px) {

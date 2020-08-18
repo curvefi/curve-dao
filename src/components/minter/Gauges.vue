@@ -34,6 +34,8 @@
 
 <script>
 	import { contract, getters } from '../../contract'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
+
 	import allabis from '../../allabis'
 	import daoabis from '../dao/allabis'
 
@@ -212,10 +214,17 @@
 				gauges.push(...fillarray)
 				console.log(gauges, "ALL GAUGES")
 				let gas = await gaugeStore.state.minter.methods.mint_many(gauges).estimateGas()
+
+				var { dismiss } = notifyNotification(`Please confirm claiming CRV from all gauges you've deposited to`)
+
 				await gaugeStore.state.minter.methods.mint_many(gauges).send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
 				})
 			},
 		},

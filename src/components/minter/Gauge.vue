@@ -104,6 +104,8 @@
 
 <script>
 	import { contract, getters } from '../../contract'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
+
 	import * as common from '../../utils/common'
 
 	import allabis, { ERC20_abi } from '../../allabis'
@@ -311,11 +313,16 @@
 
 				await common.approveAmount(this.swap_token, deposit, contract.default_account, this.gauge.gauge, this.inf_approval)
 
+				var { dismiss } = notifyNotification(`Please confirm depositing into ${this.gauge.name} gauge`)
 
 				await this.gaugeContract.methods.deposit(deposit.toFixed(0,1)).send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
 				})
 
 				this.updateBalances()
@@ -335,10 +342,16 @@
 					console.error(err)
 				}
 
+				var { dismiss } = notifyNotification(`Please confirm withdrawing from ${this.gauge.name} gauge`)
+
 				await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
 				})
 
 				// try {
@@ -460,19 +473,33 @@
 				let gas = await gaugeStore.state.minter.methods.mint(this.gauge.gauge).estimateGas()
 				if(['susdv2', 'sbtc'].includes(this.gauge.name))
 					gas = 1000000
+
+				var { dismiss } = notifyNotification(`Please confirm claiming CRV from ${this.gauge.name} gauge`)
+
 				await gaugeStore.state.minter.methods.mint(this.gauge.gauge).send({
 					from: contract.default_account,
 					gas: gas * 1.5 | 0,
 				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
+				})
 			},
 
 			async claimRewards() {
-				let gas = await this.gaugeContract.methods.claim_rewards().estimateGas()
-				if(['susdv2', 'sbtc'].includes(this.gauge.name))
-					gas = 1000000
-				await this.gaugeContract.methods.claim_rewards().send({
+				let gas = await this.gaugeContract.methods.claim_rewards(contract.default_account).estimateGas()
+				// if(['susdv2', 'sbtc'].includes(this.gauge.name))
+				// 	gas = 1000000
+
+				var { dismiss } = notifyNotification(`Please confirm claiming ${this.gauge.name == 'susdv2' ? 'SNX' : 'BPT'}`)
+
+				await this.gaugeContract.methods.claim_rewards(contract.default_account).send({
 					from: contract.default_account,
-					gas: gas * 1.5 | 0,
+					gas: 500000,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
 				})
 			},
 		},

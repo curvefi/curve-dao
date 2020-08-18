@@ -6,8 +6,8 @@
 				<li>Start lock time: {{ startTimeFormat }}</li>
 				<li>End lock time: {{ endTimeFormat }}</li>
 				<br>
-				<li>Claimed + unvested tokens: {{ vestedFormat }}</li>
-				<li>Unvested tokens: {{ balanceFormat }}</li>
+				<li>Claimed + available tokens: {{ vestedFormat }}</li>
+				<li>Available tokens: {{ balanceFormat }}</li>
 				<li>Locked tokens: {{ lockedFormat }}</li>
 			</ul>
 			<div class='vestingchart'>
@@ -26,6 +26,8 @@
 
 <script>
 	import { contract, getters } from '../../contract'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
+    
 	import allabis from '../../allabis'
 	import daoabis from '../dao/allabis'
 
@@ -43,6 +45,7 @@
 			loading: '',
 		}
 	})
+
 
 	import * as gasPriceStore from '../common/gasPriceStore'
     import GasPrice from '../common/GasPrice.vue'
@@ -257,11 +260,16 @@
 			},
 
 			async claim() {
+				var { dismiss } = notifyNotification(`Confirm claiming ${this.balanceFormat} tokens`)
 				let gas = await this.vesting.methods.claim(contract.default_account).estimateGas()
 				await this.vesting.methods.claim(contract.default_account).send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
 				})
 
 				this.mounted()

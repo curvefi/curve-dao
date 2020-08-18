@@ -189,9 +189,9 @@
         let data = await Promise.all(jsons.map(json => fetch(`https://www.curve.fi/raw-stats/${json}.json`)))
         data = await Promise.all(data.map(r => r.json()))
         this.founder = data[0]
-        this.earlyusers = data[1]
+        this.investors = data[1]
         this.employees = data[2]
-        this.investors = data[3]
+        this.earlyusers = data[3]
         this.inflation = data[4]
         this.dates = data[5]
 

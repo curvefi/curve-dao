@@ -8,6 +8,9 @@
 						[<span class='greentext'>■</span>]
 					</div>
 					<legend>Confirm lock</legend>
+					<div class='content' v-show='gaugesNeedCheckpoint && gaugesNeedCheckpoint.length > 0'>
+						You need to checkpoint into {{ gaugesNeedCheckpointText }} gauge before locking
+					</div>
 					<div class='content' v-show='showModalType == 0'>
 						Confirm creating lock with {{ deposit }} CRV until {{ increaseLockText }}
 					</div>
@@ -125,6 +128,8 @@
 
 <script>
     import * as common from '../../utils/common'
+    import { notify, notifyHandler, notifyNotification } from '../../init'
+
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
     import Highcharts from 'highcharts'
@@ -321,6 +326,19 @@
 
 				showmypower: true,
 				showdaopower: false,
+
+				gaugesNeedCheckpoint: null,
+
+				gaugesNames: {
+				  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575": 'compound',
+				  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53": 'usdt',
+				  "0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1": 'y',
+				  "0x69Fb7c45726cfE2baDeE8317005d3F94bE838840": 'busd',
+				  "0x64E3C23bfc40722d3B649844055F1D51c1ac041d": 'pax',
+				  "0xB1F2cdeC61db658F091671F5f199635aEF202CAC": 'ren',
+				  "0xA90996896660DEcC6E997655E065b23788857849": 'susdv2',
+				  "0x705350c4BcD35c9441419DdD5d2f097d7a55410F": 'sbtc',
+				},
 			}
 
 		},
@@ -393,7 +411,7 @@
 				return this.vecrvBalance.gt(0)
 			},
 			isInvalidAmount() {
-				return this.deposit < 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
+				return this.deposit <= 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
 			},
 			increaseLockText() {
 				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000)
@@ -413,6 +431,12 @@
 				set(val) {
 					veStore.state.increaseLock = val
 				},
+			},
+			gaugesNeedCheckpointText() {
+				if(!this.gaugesNeedCheckpoint || this.gaugesNeedCheckpoint.length == 0) return ''
+				return Object.keys(this.gaugesNames)
+						.filter(gauge => this.gaugesNeedCheckpoint.map(address => address.toLowerCase()).includes(gauge.toLowerCase()))
+						.map(gauge => this.gaugesNames[gauge]).join(',')
 			},
 		},
 
@@ -516,7 +540,7 @@
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
 
 				let now = (Date.now() / 1000) | 0
-				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**2*86400).encodeABI()])
+				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
@@ -598,7 +622,7 @@
 				this.deposit = this.crvBalance.div(1e18).toString()
 			},
 
-			async checkpoint() {
+			async checkpoint(doCheckpoint = false) {
 				let gauges = [
 				  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575",
 				  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53",
@@ -614,42 +638,82 @@
 
 				let balancesCalls = gauges.map(gauge => [gauge, balanceOfCall + contract.default_account.slice(2)])
 				let aggBalancesCalls = await contract.multicall.methods.aggregate(balancesCalls).call()
-				let decodedBalances = aggBalancesCalls[1].map(hex => +web3.eth.abi.decodeParameter('uint256', hex))
+				let decodedBalances = aggBalancesCalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 
-				decodedBalances = decodedBalances.map((balance, i) => balance > 0 ? gauges[i] : 0)
+				let gaugesNeedCheckpoint = {}
+				decodedBalances.forEach((balance, i) => gaugesNeedCheckpoint[gauges[i].toLowerCase()] = BN(balance))
 
-				let gaugesNeedCheckpoint = decodedBalances.filter(v => v > 0)
+				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/id/QmbcwNZfcCC3XDRwJmc9s1d6cED8sBUh2UNDnEpSGLPnNM')
+				let QUERY = gql`
+					{
+						gauges(where: { user: "${contract.default_account}" }) {
+							id
+							user
+							gauge
+							originalBalance
+						}
+					}
+				`
+
+				let results = await wrapper.performQuery(QUERY)
+				let lastCheckpointed = results.data.gauges
+
+				if(lastCheckpointed.length) {
+					lastCheckpointed.forEach(v => {
+						console.log(v.gauge, gaugesNeedCheckpoint[v.gauge.toLowerCase()].toString(), v.originalBalance.toString(), "BALANCE NOW", "ORIGINAL BALANCE")
+						gaugesNeedCheckpoint[v.gauge.toLowerCase()] = gaugesNeedCheckpoint[v.gauge.toLowerCase()].minus(BN(v.originalBalance))
+					})
+				}
+
+				gaugesNeedCheckpoint = Object.keys(gaugesNeedCheckpoint).filter(k => gaugesNeedCheckpoint[k].gt(0))
 
 				console.log(gaugesNeedCheckpoint, "GAUGES NEED CHECKPOINT")
 
-				for(let gauge of gaugesNeedCheckpoint) {
-					let gaugeContract = new web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
-					await new Promise((resolve, reject) => {
-						gaugeContract.methods.user_checkpoint(contract.default_account).send({
-							from: contract.default_account,
-							gas: 400000,
+				this.gaugesNeedCheckpoint = gaugesNeedCheckpoint
+
+
+
+				if(doCheckpoint) {
+
+					for(let gauge of gaugesNeedCheckpoint) {
+						console.log(gauge, this.gaugesNames)
+						let gaugeContract = new web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
+						let gaugeAddress = Object.keys(this.gaugesNames).find(address => address.toLowerCase() == gauge.toLowerCase())
+						let { dismiss } = notifyNotification(`Please confirm checkpointing from ${this.gaugesNames[gaugeAddress]} gauge`)
+						await new Promise((resolve, reject) => {
+							gaugeContract.methods.user_checkpoint(contract.default_account).send({
+								from: contract.default_account,
+								gas: 400000,
+							})
+							.once('transactionHash', hash => {
+								resolve()
+								dismiss()
+								notifyHandler(hash)
+							})
 						})
-						.once('transactionHash', hash => {
-							resolve()
-						})
-					})
+					}
 				}
 			},
 
 			async increaseAmount() {
+				await this.checkpoint(true)
 				this.showConfirmMessage = true;
 
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await this.checkpoint()
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
+				var { dismiss } = notifyNotification(`Please confirm increasing amount of lock`)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
 							from: getters.default_account(),
 							gas: 600000,
 						})
-						.once('transactionHash', () => resolve())
+						.once('transactionHash', hash => {
+							resolve()
+							dismiss()
+							notifyHandler(hash)
+						})
 						.on('error', err => reject(err))
 						.on('receipt', receipt => {
 							this.mounted()
@@ -660,16 +724,21 @@
 			},
 
 			async submitIncreaseLock() {
+				await this.checkpoint(true)
 				this.showConfirmMessage = true;
 
-				await this.checkpoint()
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
+				var { dismiss } = notifyNotification('Please confirm increasing lock time')
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
 							from: getters.default_account(),
 							gas: 600000,
 						})
-						.once('transactionHash', () => resolve())
+						.once('transactionHash', hash => {
+							resolve()
+							dismiss()
+							notifyHandler(hash)
+						})
 						.on('error', err => reject(err))
 						.on('receipt', receipt => {
 							this.mounted()
@@ -686,15 +755,20 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await this.checkpoint()
+				await this.checkpoint(true)
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
+				var { dismiss } = notifyNotification('Please confirm creating lock')
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
 							from: getters.default_account(),
 							gas: 600000,
 						})
-						.once('transactionHash', () => resolve())
+						.once('transactionHash', hash => {
+							resolve()
+							dismiss()
+							notifyHandler(hash)
+						})
 						.on('error', err => reject(err))
 						.on('receipt', receipt => {
 							this.mounted()
@@ -712,6 +786,7 @@
 					this.showModalType = 1
 				if(method == 'submitIncreaseLock')
 					this.showModalType = 2
+				await this.checkpoint()
 				this.showModal = true
 			},
 

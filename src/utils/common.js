@@ -23,7 +23,10 @@ let requiresResetAllowance = [
   "0xc25a3a3b969415c80451098fa907ec722572917f",
   "0xd905e2eaebe188fc92179b6350807d8bd91db0d8",
   "0x49849c98ae39fff122806c06791fa73784fb3675",
-  "0x075b1bb99792c9e1041ba13afef80c91a1e70fb3"
+  "0x075b1bb99792c9e1041ba13afef80c91a1e70fb3",
+
+  //CRV token
+  "0xD533a949740bb3306d119CC777fa900bA034cd52",
 ]
 
 export function approve(contract, amount, account, toContract) {

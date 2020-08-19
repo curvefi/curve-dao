@@ -9,7 +9,7 @@
 					</div>
 					<legend>Confirm lock</legend>
 					<div class='content' v-show='gaugesNeedCheckpoint && gaugesNeedCheckpoint.length > 0'>
-						You need to checkpoint into {{ gaugesNeedCheckpointText }} gauge before locking
+						You need to checkpoint into {{ gaugesNeedCheckpoint && gaugesNeedCheckpoint.length }} gauges: {{ gaugesNeedCheckpointText }} gauge before locking
 					</div>
 					<div class='content' v-show='showModalType == 0'>
 						Confirm creating lock with {{ deposit }} CRV until {{ increaseLockText }}
@@ -45,8 +45,10 @@
 			</div>
 			<div v-show='showchart'>
 				<p>
-					<input id='showend' type='checkbox' v-model='showend'>
-					<label for='showend'>Show until end</label>
+					<div v-show='hasvecrv'>
+						<input id='showend' type='checkbox' v-model='showend'>
+						<label for='showend'>Show until end</label>
+					</div>
 
 					<div class='chartoptions' v-show='hasvecrv'>
 						<input id='showmypower' type='checkbox' v-model='showmypower'>
@@ -113,12 +115,23 @@
 					<button @click="confirmModal('createLock')">Create lock</button>
 				</div>
 				<p>
+					<input id="inf-approval" type="checkbox" name="inf-approval" v-model='inf_approval'>
+	                <label for="inf-approval" class='inf-approval-label'>Infinite approval 
+	                	<span class='tooltip'>[?]
+	                		<span class='tooltiptext long'>
+	                			Preapprove the contract to to be able to spend any amount of your coins. You will not need to approve again.
+	                		</span>
+	                	</span>
+	                </label>
+            	</p>
+				<p>
 					Your starting voting power will be: {{ newVotingPower() }} veCRV
 				</p>
 				<p class='info-message gentle-message' v-show='newVotingPower() < 2500'>
 					You need at least 2500 veCRV to be able to create a vote
 				</p>
 			</div>
+			<gas-price></gas-price>
 			<div v-show='!showvelock'>
 				<slot></slot>
 			</div>
@@ -153,9 +166,13 @@
 
 	import { contract, getters } from '../../contract'
 
+	import allabis, { ERC20_abi } from '../../allabis'
 	import daoabis from '../dao/allabis'
 
 	import * as veStore from './veStore'
+
+	import * as gasPriceStore from '../common/gasPriceStore'
+    import GasPrice from '../common/GasPrice.vue'
 
 	import * as helpers from '../../utils/helpers'
 
@@ -165,6 +182,7 @@
 		components: {
 			Datepicker,
 			highcharts: Chart,
+			GasPrice,
 		},
 
 		props: {
@@ -339,6 +357,8 @@
 				  "0xA90996896660DEcC6E997655E065b23788857849": 'susdv2',
 				  "0x705350c4BcD35c9441419DdD5d2f097d7a55410F": 'sbtc',
 				},
+
+				inf_approval: true,
 			}
 
 		},
@@ -438,6 +458,12 @@
 						.filter(gauge => this.gaugesNeedCheckpoint.map(address => address.toLowerCase()).includes(gauge.toLowerCase()))
 						.map(gauge => this.gaugesNames[gauge]).join(',')
 			},
+			gasPrice() {
+                return gasPriceStore.state.gasPrice
+            },
+            gasPriceWei() {
+                return gasPriceStore.state.gasPriceWei
+            },
 		},
 
 		methods: {
@@ -445,6 +471,13 @@
 				this.loaded = true
 				this.chart = this.$refs.highcharts.chart
 				this.chart.showLoading()
+
+				let CRV = new web3.eth.Contract(ERC20_abi, daoabis.CRV_address)
+
+				let allowance = BN(await CRV.methods.allowance(contract.default_account, daoabis.votingescrow_address).call())
+
+				if(allowance.lte(contract.max_allowance.div(BN(2))))
+					this.inf_approval = false
 
 				this.loadBalances()
 				if(this.showvelock && this.showchart)
@@ -683,6 +716,7 @@
 						await new Promise((resolve, reject) => {
 							gaugeContract.methods.user_checkpoint(contract.default_account).send({
 								from: contract.default_account,
+								gasPrice: this.gasPriceWei,
 								gas: 400000,
 							})
 							.once('transactionHash', hash => {
@@ -702,11 +736,12 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
+				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address, this.inf_approval)
 				var { dismiss } = notifyNotification(`Please confirm increasing amount of lock`)
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_amount(deposit.toFixed(0,1)).send({
 							from: getters.default_account(),
+							gasPrice: this.gasPriceWei,
 							gas: 600000,
 						})
 						.once('transactionHash', hash => {
@@ -732,6 +767,7 @@
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.increase_unlock_time(lockTime).send({
 							from: getters.default_account(),
+							gasPrice: this.gasPriceWei,
 							gas: 600000,
 						})
 						.once('transactionHash', hash => {
@@ -756,12 +792,14 @@
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
 				await this.checkpoint(true)
-				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address)
+				console.log(this.inf_approval, "INF APPROVAL")
+				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address, this.inf_approval)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				var { dismiss } = notifyNotification('Please confirm creating lock')
 				await new Promise(async (resolve, reject) => {
 						await this.votingEscrow.methods.create_lock(deposit.toFixed(0,1), lockTime).send({
 							from: getters.default_account(),
+							gasPrice: this.gasPriceWei,
 							gas: 600000,
 						})
 						.once('transactionHash', hash => {

@@ -42,14 +42,14 @@ import { groupBy, setTimeoutPromise } from '../../utils/helpers'
 
 import BN from 'bignumber.js'
 
-export const VOTING_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/pengiundev/aragon-curvevoting-rinkeby' 
+export const VOTING_SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/pengiundev/aragon-curvevoting-mainnet' 
 
-export const OWNERSHIP_VOTE_TIME = 3600
-export const PARAMETER_VOTE_TIME = 3600
-export const OWNERSHIP_APP_ADDRESS = '0x02c51B720C4A969C6daB22f5179218C339d9267F' //'0x96B58C29c74fce0aBFE7c0C62225095f47A91A6D'
-export const PARAMETER_APP_ADDRESS = '0x571D59b73Bb23F4f2A61703933Dec05CE6cd9cC2' //'0x3ef19f1EA214DF368Eb8a612dd1Aca45caC3c756'
-export const OWNERSHIP_AGENT = '0x22D61abd46F14D40Ca9bF8eDD9445DCF29208589' //'0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
-export const PARAMETER_AGENT = '0xFe6307fC37ad088c8F09bCC6Fc0F9E95Bf368EB4' //'0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
+export const OWNERSHIP_VOTE_TIME = 604800
+export const PARAMETER_VOTE_TIME = 604800
+export const OWNERSHIP_APP_ADDRESS = '0xE478de485ad2fe566d49342Cbd03E49ed7DB3356' //'0x96B58C29c74fce0aBFE7c0C62225095f47A91A6D'
+export const PARAMETER_APP_ADDRESS = '0xBCfF8B0b9419b9A88c44546519b1e909cF330399' //'0x3ef19f1EA214DF368Eb8a612dd1Aca45caC3c756'
+export const OWNERSHIP_AGENT = '0x40907540d8a6C65c637785e8f8B742ae6b0b9968' //'0x9D82050e8ce9541968b01B0F67CF6aa76c34892B'
+export const PARAMETER_AGENT = '0x4EEb3bA4f221cA16ed4A0cC7254E2E32DF948c5f' //'0x6fF8BA3250d0167Af033Ddc215F89177f09aDF1B'
 export const MIN_BALANCE = 2500 * 10 ** 18
 export const MIN_TIME = 15
 
@@ -96,7 +96,8 @@ export let state = Vue.observable({
 export async function init() {
 	// Initiates the connection to an organization
 	//0xDcbd15991f5F6107150F4c6132849B9a26758e74
-	let org = await connect('0xcA80e3B174e6429648794b57F6d291aB532572d6', 'thegraph', { chainId: 4 })
+	//0xcA80e3B174e6429648794b57F6d291aB532572d6
+	let org = await connect('0xad06868167BC5Ac5cFcbEf2CAFa82bc76961D72d', 'thegraph', { chainId: 1 })
 
 	state.org = org
 

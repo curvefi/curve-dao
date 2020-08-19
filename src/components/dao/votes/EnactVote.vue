@@ -35,7 +35,7 @@
 			</div>
 		</div>
 
-		<button @click='enact'>Enact <span class='loading line' v-show='loading'></span></button>
+		<button v-show='canExecute' @click='enact'>Enact <span class='loading line' v-show='loading'></span></button>
 	</span>
 </template>
 

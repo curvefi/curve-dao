@@ -48,7 +48,7 @@
 			formatTime() {
 				let str = ''
 				if(this.days > 0)
-					str += String(this.days).padStart(2, '0') + ' D:'
+					str += String(this.days).padStart(2, '0') + 'D:'
 				if(this.hours > 0)
 					str += String(this.hours).padStart(2, '0') + 'H:'
 				if(this.minutes >= 0)

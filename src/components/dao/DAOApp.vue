@@ -29,7 +29,7 @@
       </div>
 
       <a href='https://curve.fi'>Curve</a>
-      <router-link to="/dao">Rinkeby DAO preview</router-link>
+      <router-link to="/dao">DAO</router-link>
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>

@@ -5,7 +5,7 @@
 				{{ vote.votingAppName }} ({{getSupportRequiredPct}}% / {{getMinAcceptQuorum}}%)
 			</legend>
 			<div class='voteTitle'>
-				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
+				<router-link :to="'/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
 					<b> #{{ vote.voteCountSeq }} </b>
 				</router-link> 
 				<span class='userCastVote tooltip'>
@@ -17,7 +17,7 @@
 				</span>
 			</div>
 			<div class='description'>
-				<router-link :to="'/dao/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
+				<router-link :to="'/vote/' + vote.votingAppName.toLowerCase() + '/' + vote.voteNumber">
 					<span v-show='vote.contractName'>
 						{{ vote.contractName }}: <span v-html='vote.description'></span>
 					</span>

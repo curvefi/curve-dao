@@ -67,7 +67,7 @@
 			</modal>
 			<!-- <p class='info-message gentle-message createvote'> -->
 			<button class='simplebutton createvotebutton'>
-				<router-link to='/dao/createvote'> Create Vote </router-link>
+				<router-link to='/createvote'> Create Vote </router-link>
 			</button>
 		</div>
 		<div v-show='!canCreateNewVote && canCreateLoaded'>
@@ -151,11 +151,11 @@
 			async canCreate() {
 				let canCreateVoteOn = await Promise.all([voteHelpers.canCreateNewVoteOn(OWNERSHIP_APP_ADDRESS), voteHelpers.canCreateNewVoteOn(PARAMETER_APP_ADDRESS)])
 				console.log(canCreateVoteOn, "CAN CREATE NEW VOTE ON")
-				// if(canCreateVoteOn[0])
-				// 	this.apps.push({
-				// 		address: OWNERSHIP_APP_ADDRESS,
-				// 		name: 'Ownership'
-				// 	})
+				if(canCreateVoteOn[0])
+					this.apps.push({
+						address: OWNERSHIP_APP_ADDRESS,
+						name: 'Ownership'
+					})
 				if(canCreateVoteOn[1])
 					this.apps.push({
 						address: PARAMETER_APP_ADDRESS,

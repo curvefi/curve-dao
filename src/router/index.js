@@ -48,6 +48,7 @@ const CreateVote = () => import('../components/dao/votes/CreateVote.vue')
 const DAOAudits = () => import('../components/dao/DAOAudits.vue')
 const DAOContracts = () => import('../components/dao/Contracts.vue')
 const Inflation = () => import('../components/dao/distribution/Inflation.vue')
+const GaugeWeight = () => import('../components/dao/gaugevote/Index.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
@@ -299,6 +300,11 @@ let routes = [
         path: 'inflation',
         name: 'Inflation',
         component: Inflation,
+      },
+      {
+        path: 'gaugeweight',
+        name: 'GaugeWeight',
+        component: GaugeWeight,
       },
     ],
   },

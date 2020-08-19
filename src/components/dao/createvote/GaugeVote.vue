@@ -210,6 +210,17 @@
 			change_type_gauge_weight: '',
 			change_gauge_weight: '',
 
+			gaugesNames: {
+			  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575": 'compound',
+			  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53": 'usdt',
+			  "0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1": 'y',
+			  "0x69Fb7c45726cfE2baDeE8317005d3F94bE838840": 'busd',
+			  "0x64E3C23bfc40722d3B649844055F1D51c1ac041d": 'pax',
+			  "0xB1F2cdeC61db658F091671F5f199635aEF202CAC": 'ren',
+			  "0xA90996896660DEcC6E997655E065b23788857849": 'susdv2',
+			  "0x705350c4BcD35c9441419DdD5d2f097d7a55410F": 'sbtc',
+			},
+
 		}),
 
 		async created() {
@@ -312,7 +323,7 @@
 
 			shortenAddress(address) {
 				if(!address) return ''
-				return address.slice(0,6) + '...' + address.slice(-6)
+				return this.gaugesNames[address] + ' ' + address.slice(0,6) + '...' + address.slice(-6)
 			},
 		},
 	}

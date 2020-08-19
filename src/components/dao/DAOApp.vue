@@ -30,6 +30,7 @@
 
       <a href='https://curve.fi'>Curve</a>
       <router-link to="/dao">DAO</router-link>
+      <router-link to="/gaugeweight">Gauge weight vote</router-link>
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>
@@ -57,6 +58,7 @@
         </div>
       </div>
       <router-link to="/dao" class='showmobile'>Rinkeby DAO preview</router-link>
+      <router-link to="/gaugeweight" class='showmobile'>Gauge weight vote</router-link>
       <router-link to="/locker" class='showmobile'>Locker</router-link>
       <router-link to="/minter/gauges" class='showmobile'>Minter</router-link>
       <router-link to="/minter/vesting" class='showmobile'>Vesting</router-link>
@@ -186,5 +188,8 @@
   }
   .CRV div:nth-child(n+2) {
     margin-top: 1em;
+  }
+  .CRV a, .CRV a:hover, .CRV a:visited {
+    color: white;
   }
 </style>

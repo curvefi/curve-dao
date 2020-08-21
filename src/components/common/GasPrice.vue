@@ -53,7 +53,7 @@
 
 		computed: {
             gasPriceSlow() {
-                return state.gasPriceInfo && state.gasPriceInfo.slow || 15
+                return state.gasPriceInfo && state.gasPriceInfo.low || 15
             },
 			gasPriceMedium() {
                 return state.gasPriceInfo && state.gasPriceInfo.standard || 20
@@ -100,16 +100,31 @@
                 try {
                     let gasPriceInfo = await retry(fetch('https://gasprice.poa.network/'))
                     gasPriceInfo = await gasPriceInfo.json()
+                    state.gasPriceInfo.low = state.gasPriceInfo.slow
                     state.gasPriceInfo = gasPriceInfo
+                    if(state.gasPriceInfo.fast > 1000) throw new Error('too high!')
                 }
                 catch(err) {
-                    let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
-                    state.gasPriceInfo = {
-                        slow: gasPrice -2,
-                        medium: gasPrice,
-                        fast: gasPrice + 2,
-                        fastest: gasPrice + 4,
-                    } 
+                    try {
+                        let gasPriceInfo = await retry(fetch('https://fees.upvest.co/estimate_eth_fees'))
+                        gasPriceInfo = await gasPriceInfo.json()
+                        state.gasPriceInfo = gasPriceInfo.estimates
+                        state.gasPriceInfo.low = state.gasPriceInfo.slow
+                        state.gasPriceInfo.standard = state.gasPriceInfo.medium
+                        state.gasPriceInfo.fast = state.gasPriceInfo.fast
+                        state.gasPriceInfo.instant = state.gasPriceInfo.fastest
+                        if(state.gasPriceInfo.fast > 1000) throw new Error('too high!')
+                    }
+                    catch(err) {
+                        console.error(err)
+                        let gasPrice = (await web3.eth.getGasPrice()) / 1e9;
+                        state.gasPriceInfo = {
+                            low: gasPrice -2,
+                            standard: gasPrice,
+                            fast: gasPrice + 2,
+                            instant: gasPrice + 4,
+                        }
+                    }
                 }
                 if(!state.fetched) {
                     state.gasPrice = state.gasPriceInfo.fast

@@ -2,6 +2,9 @@
 	<div class='window white'>
 		<fieldset>
 			<legend>Gauge Weight Voting</legend>
+			<p class='info-message gentle-message'>
+				You can vote for gauge weight with your veCRV tokens(locked CRV tokens in <router-link to="/locker">Locker</router-link>). Gauge weights are used to determine how much CRV does each pool get
+			</p>
 			<p class='info-message gentle-message' v-show='+balance == 0'>
 				You need to have CRV locked in <router-link to="/locker">Locker</router-link> in order to vote for gauge weights
 			</p>

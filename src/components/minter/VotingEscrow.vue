@@ -32,10 +32,17 @@
 			<legend>
 				Voting power in DAO
 			</legend>
-			<div>
-				CRV <img class='icon small' :src="publicPath + 'logo.png'"> balance: {{ crvBalanceText }}
+			<div class='totalCRVlocked'>
+				Total <img class='icon small' :src="publicPath + 'logo.png'"> CRV vote-locked: 
+				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} </span>
 			</div>
-			<div v-show='hasvecrv'>
+			<div class='myCRV'>
+				<img class='icon small' :src="publicPath + 'logo.png'"> CRV balance: {{ crvBalanceText }}
+			</div>
+			<div>
+				<img class='icon small' :src="publicPath + 'logo.png'"> My CRV Locked: {{ myLockedCRVFormat }}
+			</div>
+			<div class='veCRVBalance' v-show='hasvecrv'>
 				<div>
 					Balance in Voting Escrow: {{ vecrvBalanceText }} veCRV
 				</div>
@@ -359,6 +366,10 @@
 				},
 
 				inf_approval: true,
+
+				CRVLocked: null,
+
+				myLockedCRV: null,
 			}
 
 		},
@@ -464,6 +475,12 @@
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
             },
+            CRVLockedFormat() {
+            	return helpers.formatNumber(this.CRVLocked / 1e18)
+            },
+            myLockedCRVFormat() {
+            	return helpers.formatNumber(this.myLockedCRV / 1e18)
+            },
 		},
 
 		methods: {
@@ -532,24 +549,24 @@
 							totalPower
 							timestamp
 						}
+						daopowers(orderBy: block, orderDirection: asc) {
+						    id
+						    block
+						    timestamp
+						    totalPower
+						  }
+						crvlockeds {
+							CRV
+						}
 					}
 				`
 
-				let DAOPowerQUERY = gql`
-					{
-					  daopowers(orderBy: block, orderDirection: asc) {
-					    id
-					    block
-					    timestamp
-					    totalPower
-					  }
-					}
-				`
-
-				let results = await Promise.all([this.wrapper.performQuery(QUERY), this.wrapper.performQuery(DAOPowerQUERY)])
+				let results = await this.wrapper.performQuery(QUERY)
 				console.log(results, "THE RESULTS")
-				let events = results[0].data.votingEscrows
+				let events = results.data.votingEscrows
+				this.CRVLocked = results.data.crvlockeds[0].CRV
 				if(events.length) {
+					this.myLockedCRV = results.data.votingEscrows[results.data.votingEscrows.length-1].value
 					this.events = events
 					events = events.map(event => {
 						event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
@@ -567,7 +584,7 @@
 					})
 				}
 
-				let daopower = results[1].data.daopowers
+				let daopower = results.data.daopowers
 
 
 				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
@@ -897,5 +914,8 @@
 	}
 	.increaseLockButtons button {
 		margin-right: 0.6em;
+	}
+	.myCRV, .veCRVBalance {
+		margin-top: 1em;
 	}
 </style>

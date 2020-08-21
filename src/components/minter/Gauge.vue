@@ -265,6 +265,8 @@
 
 					this.claimableReward = await this.gaugeContract.methods.claimable_reward(contract.default_account).call()
 					this.claimedRewards = await this.gaugeContract.methods.claimed_rewards_for(contract.default_account).call()
+
+					this.claimableReward -= this.claimedRewards
 				}
 				
 				//this.minted = await gaugeStore.state.minter.methods.minted(contract.default_account, this.gauge.gauge).call()

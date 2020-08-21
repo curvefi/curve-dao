@@ -917,7 +917,7 @@ export async function mintThenDeposit({ id, amounts, min_amount, params, utxoAmo
 	}
 	if(receiveRen) {
 		//make the new_min_mint_amount parameter in contract 0 so it always fails and mints renBTC
-		transaction.new_min_amount = 0
+		transaction.new_min_amount = BN("1000000000000000000000000000000000").toFixed(0,1)
 	}
 
 	let adapterContract = adapters.filter(adapter => adapter._address.toLowerCase() == params.contractCalls[0].sendTo.toLowerCase())

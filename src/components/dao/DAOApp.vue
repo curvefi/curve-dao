@@ -34,7 +34,7 @@
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>
-      <router-link to="/inflation">Inflation</router-link>
+      <router-link to="/inflation">Stats</router-link>
       <router-link to="/daocontracts">Contracts</router-link>
       <router-link to="/audits">Audits</router-link>
       <div class='poolsdropdown right'>
@@ -87,16 +87,6 @@
         </div>
         <div class='info-message gentle-message window half-width gentle-message' v-if='hasConnectedWallet'>
           You haven't connected a wallet. <button @click='changeWallets'>Connect wallet</button>
-        </div>
-        <div class='info-message gentle-message window half-width gentle-message CRV'>
-          <div>
-            <a href='https://etherscan.io/address/0xD533a949740bb3306d119CC777fa900bA034cd52'>CRV: 0xD533a949740bb3306d119CC777fa900bA034cd52</a>
-          </div>
-          <div>
-            Voting in mainnet DAO is not yet enabled to prevent a malicious actor while DAO is new.
-            <div>We added a Rinkeby DAO preview for now while we're working on migrating to mainnet DAO.</div>
-          </div>
-
         </div>
         <router-view/>
     </div>

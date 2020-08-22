@@ -130,7 +130,7 @@ export function formatDateToHuman(timestamp) {
   //convert to UTC
   let d = new Date(timestamp*1000+(new Date).getTimezoneOffset() * 60 * 1000)
   return [
-            d.getDate(),
+            d.getDate().toString().padStart(2, '0'),
             `${(d.getMonth()+1).toString().padStart(2, '0')}`,
             d.getFullYear()].join('/')+' '+
             [`${d.getHours()}`.padStart(2, '0'),

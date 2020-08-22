@@ -49,11 +49,13 @@ const DAOAudits = () => import('../components/dao/DAOAudits.vue')
 const DAOContracts = () => import('../components/dao/Contracts.vue')
 const Inflation = () => import('../components/dao/distribution/Inflation.vue')
 const GaugeWeight = () => import('../components/dao/gaugevote/Index.vue')
+const DAOStats = () => import('../components/dao/distribution/Stats.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
 const Gauges = () => import('../components/minter/Gauges.vue')
 const VestingView = () => import('../components/minter/VestingView.vue')
+const Locks = () => import('../components/minter/Locks.vue')
 
 const DAOApp = () => import('../components/dao/DAOApp.vue')
 
@@ -302,9 +304,19 @@ let routes = [
         component: Inflation,
       },
       {
+        path: 'stats',
+        name: 'DAOStats',
+        component: DAOStats,
+      },
+      {
         path: 'gaugeweight',
         name: 'GaugeWeight',
         component: GaugeWeight,
+      },
+      {
+        path: 'locks',
+        name: 'Locks',
+        component: Locks,
       },
     ],
   },

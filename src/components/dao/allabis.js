@@ -985,7 +985,7 @@ export let gaugecontroller_natspec = {
       "signature": "0xdb1ca260"
     },
     "change_gauge_weight(int128,uint256)": {
-      "notice": "Change gauge `@param(type_id, 'type')` `@param(weight, 'weight to')`",
+      "notice": "Change gauge `@address(addr, '')` `@param(weight, 'weight to')`",
       "signature": "0x52372603"
     },
     "vote_for_gauge_weights(int128,int128)": {

@@ -137,7 +137,7 @@
 								<div class='input'>
 									<label for='param1'>addr:</label>
 									<select class='tvision' v-model='selectedGaugeAddress'>
-										<option v-for='(address, i) in gauges' :value='i'>
+										<option v-for='(address, i) in gauges' :value='address'>
 											{{ shortenAddress(address) }}
 										</option>
 									</select>
@@ -224,6 +224,7 @@
 		}),
 
 		async created() {
+			
 			this.$watch(() => contract.default_account && state.initialized, val => {
 				if(val) this.mounted()
 			}, {
@@ -276,6 +277,8 @@
 
 				this.gauge_type_names = decoded.slice(0, this.n_gauge_types)
 				this.gauges = decoded.slice(this.n_gauge_types)
+				
+				this.selectedGaugeAddress = this.gauges[0]
 			},
 
 			async propose(method, ...params) {

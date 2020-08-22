@@ -23,19 +23,6 @@
 			<highcharts class='chart' :constructor-type="'stockChart'" :options="linechartdata" ref='linecharts'></highcharts>
 		</div>
 
-		<div class='window white'>
-			<highcharts class='chart' :constructor-type="'stockChart'" :options='CRVAPYchartdata' ref='CRVAPYcharts'></highcharts>
-		</div>
-
-		<div class='window white'>
-			<highcharts class='chart' :constructor-type="'stockChart'" :options="wschartdata" ref='wscharts'></highcharts>
-		</div>
-
-		<div class='window white'>
-			<highcharts class='chart' :constructor-type="'stockChart'" :options="gwchartdata" ref='gwcharts'></highcharts>
-		</div>
-
-
 	</div>
 </template>
 
@@ -293,306 +280,6 @@
             },
 				},
 
-				wschartdata: {
-					chart: {
-						panning: true,
-						zoomType: 'x',
-				        panKey: 'ctrl',
-				        type: 'line',
-				    },
-				    title: {
-				        text: 'Working supplies'
-				    },
-				    rangeSelector: {
-				    	selected: 6,
-				    },
-				    xAxis: {
-				    	//ordinal: false,
-				    	//type: 'datetime',
-		            	labels: {
-
-			            	style: {
-			            		color: 'black'
-			            	}
-		            	},
-                  //tickInterval: 100,
-		            	dateTimeLabelFormats: {
-				            // second: '%Y-%m-%d<br/>%H:%M:%S',
-				            // minute: '%Y-%m-%d<br/>%H:%M',
-				            // hour: '%Y-%m-%d<br/>%H:%M',
-				            // day: '%Y<br/>%m-%d',
-				            // week: '%Y<br/>%m-%d',
-				            // month: '%Y-%m',
-				            year: '%Y'
-				        },
-				  //       units: [[
-						//     'year',
-						//     [1]
-						// ]],
-						// min: 1597363200000,
-						// max: 1786579200000,
-
-				        categories: [],
-		            },
-				    yAxis: {
-				    	type: 'linear',
-				    	opposite: false,
-				        title: {
-				            text: 'Working supply'
-				        },
-				    },
-				    plotOptions: {
-				    	series: {
-				   //  		dataGrouping: {
-							//   //forced: true,
-							//   units: [
-							//   	// ['day', [1]],
-							//   	// ['hour', [1]],
-							//     ['week', [1,2,3,4,5,6,7,8,9,10]],
-							//   	['month', [1,2,3,4,5,6,7,8]],
-							//   	['year', [1,2,3]],
-							//   ]
-							// },
-				    	},
-				        line: {
-				            dataLabels: {
-				                enabled: false,
-				            },
-				        },
-				        area: {
-				        	stacking: 'normal',
-				        },
-				    },
-				    tooltip: {
-				    	pointFormatter() {
-				    		let value = helpers.formatNumber(this.y)
-
-				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b><br/>`
-				    	},
-				    },
-				    series: [],
-				    legend: {
-				    	enabled: true
-				    },
-		            exporting: {
-		              buttons: {
-		                contextButton: {
-		                  menuItems: ["printChart",
-		                                  "separator",
-		                                  "downloadPNG",
-		                                  "downloadJPEG",
-		                                  "downloadPDF",
-		                                  "downloadSVG",
-		                                  "separator",
-		                                  "downloadCSV",
-		                                  "downloadXLS",
-		                                  //"viewData",
-		                                  "openInCloud"]
-		                }
-		              }
-		            },
-				},
-
-				gwchartdata: {
-					chart: {
-						panning: true,
-						zoomType: 'x',
-				        panKey: 'ctrl',
-				        type: 'area',
-				    },
-				    title: {
-				        text: 'Relative gauge weight'
-				    },
-				    rangeSelector: {
-				    	selected: 6,
-				    },
-				    xAxis: {
-				    	//ordinal: false,
-				    	//type: 'datetime',
-		            	labels: {
-
-			            	style: {
-			            		color: 'black'
-			            	}
-		            	},
-                  //tickInterval: 100,
-		            	dateTimeLabelFormats: {
-				            // second: '%Y-%m-%d<br/>%H:%M:%S',
-				            // minute: '%Y-%m-%d<br/>%H:%M',
-				            // hour: '%Y-%m-%d<br/>%H:%M',
-				            // day: '%Y<br/>%m-%d',
-				            // week: '%Y<br/>%m-%d',
-				            // month: '%Y-%m',
-				            year: '%Y'
-				        },
-				  //       units: [[
-						//     'year',
-						//     [1]
-						// ]],
-						// min: 1597363200000,
-						// max: 1786579200000,
-
-				        categories: [],
-		            },
-				    yAxis: {
-				    	type: 'linear',
-				    	opposite: false,
-				        title: {
-				            text: 'Relative weight %'
-				        },
-				    },
-				    plotOptions: {
-				    	series: {
-				   //  		dataGrouping: {
-							//   //forced: true,
-							//   units: [
-							//   	// ['day', [1]],
-							//   	// ['hour', [1]],
-							//     ['week', [1,2,3,4,5,6,7,8,9,10]],
-							//   	['month', [1,2,3,4,5,6,7,8]],
-							//   	['year', [1,2,3]],
-							//   ]
-							// },
-				    	},
-				        line: {
-				            dataLabels: {
-				                enabled: false,
-				            },
-				        },
-				        area: {
-				        	stacking: 'normal',
-				        },
-				    },
-				    tooltip: {
-				    	pointFormatter() {
-				    		let value = helpers.formatNumber(this.y)
-
-				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}%</b><br/>`
-				    	},
-				    },
-				    series: [],
-				    legend: {
-				    	enabled: true
-				    },
-		            exporting: {
-		              buttons: {
-		                contextButton: {
-		                  menuItems: ["printChart",
-		                                  "separator",
-		                                  "downloadPNG",
-		                                  "downloadJPEG",
-		                                  "downloadPDF",
-		                                  "downloadSVG",
-		                                  "separator",
-		                                  "downloadCSV",
-		                                  "downloadXLS",
-		                                  //"viewData",
-		                                  "openInCloud"]
-		                }
-		              }
-		            },
-				},
-
-				CRVAPYchartdata: {
-					chart: {
-						panning: true,
-						zoomType: 'x',
-				        panKey: 'ctrl',
-				        type: 'line',
-				    },
-				    title: {
-				        text: 'CRV APY'
-				    },
-				    rangeSelector: {
-				    	selected: 6,
-				    },
-				    xAxis: {
-				    	//ordinal: false,
-				    	//type: 'datetime',
-		            	labels: {
-
-			            	style: {
-			            		color: 'black'
-			            	}
-		            	},
-                  //tickInterval: 100,
-		            	dateTimeLabelFormats: {
-				            // second: '%Y-%m-%d<br/>%H:%M:%S',
-				            // minute: '%Y-%m-%d<br/>%H:%M',
-				            // hour: '%Y-%m-%d<br/>%H:%M',
-				            // day: '%Y<br/>%m-%d',
-				            // week: '%Y<br/>%m-%d',
-				            // month: '%Y-%m',
-				            year: '%Y'
-				        },
-				  //       units: [[
-						//     'year',
-						//     [1]
-						// ]],
-						// min: 1597363200000,
-						// max: 1786579200000,
-
-				        categories: [],
-		            },
-				    yAxis: {
-				    	type: 'logarithmic',
-				    	opposite: false,
-				        title: {
-				            text: 'CRV APY %'
-				        },
-				    },
-				    plotOptions: {
-				    	series: {
-				   //  		dataGrouping: {
-							//   //forced: true,
-							//   units: [
-							//   	// ['day', [1]],
-							//   	// ['hour', [1]],
-							//     ['week', [1,2,3,4,5,6,7,8,9,10]],
-							//   	['month', [1,2,3,4,5,6,7,8]],
-							//   	['year', [1,2,3]],
-							//   ]
-							// },
-				    	},
-				        line: {
-				            dataLabels: {
-				                enabled: false,
-				            },
-				        },
-				        area: {
-				        	stacking: 'normal',
-				        },
-				    },
-				    tooltip: {
-				    	pointFormatter() {
-				    		let value = helpers.formatNumber(this.y)
-
-				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}%</b><br/>`
-				    	},
-				    },
-				    series: [],
-				    legend: {
-				    	enabled: true
-				    },
-		            exporting: {
-		              buttons: {
-		                contextButton: {
-		                  menuItems: ["printChart",
-		                                  "separator",
-		                                  "downloadPNG",
-		                                  "downloadJPEG",
-		                                  "downloadPDF",
-		                                  "downloadSVG",
-		                                  "separator",
-		                                  "downloadCSV",
-		                                  "downloadXLS",
-		                                  //"viewData",
-		                                  "openInCloud"]
-		                }
-		              }
-		            },
-				},
-
 				chart: null,
 
 				linechart: null,
@@ -623,8 +310,8 @@
 		async created() {
 			this.address = daoabis.vesting_address
 
-			this.$watch(() => contract.default_account && contract.multicall, (val, oldval) => {
-				if(val != null && oldval != null)
+			this.$watch(() => contract.multicall, (val, oldval) => {
+				if(val)
 					this.mounted()
 			}, {
 				immediate: true
@@ -632,7 +319,8 @@
 		},
 
 		async mounted() {
-			if(contract.default_account && contract.multicall)
+			this.showInflation()
+			if(contract.multicall)
 				this.mounted()
 		},
 
@@ -662,57 +350,6 @@
 
 		methods: {
 			async mounted() {
-
-				let statsData = await fetch('https://pushservice.curve.fi/CRVAPY')
-				statsData = await statsData.json()
-				statsData = statsData.APYs.slice(3)
-
-				this.chart = this.$refs.highcharts.chart
-
-				this.linechart = this.$refs.linecharts.chart
-
-				this.wschart = this.$refs.wscharts.chart
-
-				this.gwchart = this.$refs.gwcharts.chart
-
-				this.CRVAPYchart = this.$refs.CRVAPYcharts.chart
-
-				let pools = ['compound', 'usdt', 'y', 'busd', 'pax', 'ren', 'susdv2', 'sbtc',]
-
-				for(let [i, pool] of pools.entries()) {
-					this.wschart.addSeries({
-						name: pool,
-						data: statsData.map((p, j) => [p[0] * 1000,  +p[1][i*4] / 1e18])
-					})
-
-					console.log(i*4 + 3)
-
-					this.gwchart.addSeries({
-						name: pool,
-						data: statsData.map((p, j) => [p[0] * 1000,  +p[1][i*4 + 2] / 1e18 * 100])
-					})
-
-					this.CRVAPYchart.addSeries({
-						name: pool,
-						data: statsData.map(p => {
-							let working_supply = +p[1][i*4] / 1e18
-							let inflation_rate = +p[1][i*4 + 1] / 1e18
-							let relative_weight = +p[1][i*4 + 2] / 1e18
-							let virtual_price = +p[1][i*4 + 3] / 1e18
-							let rate = (inflation_rate * relative_weight * 31536000 / working_supply * 0.4) / virtual_price
-							let apy = rate * 100
-							return [
-								p[0] * 1000,
-								apy,
-							]
-						})
-					})
-				}
-
-				this.linechart.showLoading()
-				
-				this.chart.showLoading()
-
 				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				let currentBlock = +(await web3.eth.getBlockNumber())
 				let veStartingBlock = 10647812
@@ -733,6 +370,12 @@
 
 				let results = await wrapper.performQuery(QUERY)
 				this.CRVLocked = +results.data.crvlockeds[0].CRV
+
+		        let CRVHistory = results.data.crvlockedHistories.sort((a, b) => a.timestamp - b.timestamp).map(v => [v.timestamp * 1000, v.CRV / 1e18])
+		        this.linechart.addSeries({
+		        	name: 'Total vote-locked CRV',
+		        	data: CRVHistory,
+		        })
 
 				const start_epoch_supply = 1303030303 * 10 ** 18
 
@@ -768,40 +411,26 @@
 
 				this.circ_supply = (this.supply - this.CRVLocked) / 1e18
 
-		        let jsons = ['founder', 'investors', 'employees', 'users', 'inflation', 'dates']
-		        let data = await Promise.all(jsons.map(json => fetch(`https://www.curve.fi/raw-stats/${json}.json`)))
-		        data = await Promise.all(data.map(r => r.json()))
-		        this.founder = data[0]
-		        this.investors = data[1]
-		        this.employees = data[2]
-		        this.earlyusers = data[3]
-		        this.inflation = data[4]
-		        this.dates = data[5]
+			},
 
-		        let totalsum = this.founder.map((v, i) => v + this.investors[i] + this.employees[i] + this.earlyusers[i] + this.inflation[i])
+			async showInflation() {
+				this.chart = this.$refs.highcharts.chart
 
-		        let start_epoch_time = 1597357048
-		        let now = Date.now() / 1000
+				this.linechart = this.$refs.linecharts.chart
 
-		        let launchDays = Math.ceil((now - start_epoch_time) / 86400)
-
-
-		        // this.linechart.xAxis[0].update({
-		        //   categories: this.dates.slice(0, launchDays),
-		        // })
-
-		        this.linechart.addSeries({
-		        	name: "Total CRV",
-		        	data: totalsum.slice(0, launchDays).map((v, i) => [this.dates.slice(0, launchDays)[i], v]),
-		        })
-
-		        let CRVHistory = results.data.crvlockedHistories.sort((a, b) => a.timestamp - b.timestamp).map(v => [v.timestamp * 1000, v.CRV / 1e18])
-		        this.linechart.addSeries({
-		        	name: 'Total vote-locked CRV',
-		        	data: CRVHistory,
-		        })
+				this.linechart.showLoading()
 				
-				this.linechart.hideLoading()		        
+				this.chart.showLoading()
+
+
+		        let data = await fetch(`https://www.curve.fi/raw-stats/allinflation.json`)
+		        data = await data.json()
+		        this.founder = data.founder
+		        this.investors = data.investors
+		        this.employees = data.employees
+		        this.earlyusers = data.earlyusers
+		        this.inflation = data.inflation
+		        this.dates = data.dates
 
 		        this.chart.xAxis[0].update({
 		          categories: this.dates,
@@ -838,6 +467,26 @@
 		        })
 
 				this.chart.hideLoading()
+
+		        let totalsum = this.founder.map((v, i) => v + this.investors[i] + this.employees[i] + this.earlyusers[i] + this.inflation[i])
+
+		        let start_epoch_time = 1597357048
+		        let now = Date.now() / 1000
+
+		        let launchDays = Math.ceil((now - start_epoch_time) / 86400) + 1
+
+
+		        // this.linechart.xAxis[0].update({
+		        //   categories: this.dates.slice(0, launchDays),
+		        // })
+
+		        this.linechart.addSeries({
+		        	name: "Total CRV",
+		        	data: totalsum.slice(0, launchDays).map((v, i) => [this.dates.slice(0, launchDays)[i], v]),
+		        })
+
+				
+				this.linechart.hideLoading()
 			},
 		},
 	}

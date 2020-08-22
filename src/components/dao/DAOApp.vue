@@ -28,13 +28,21 @@
         </div>
       </div>
 
+      <router-link to="/">Home</router-link>
       <a href='https://curve.fi'>Curve</a>
       <router-link to="/dao">DAO</router-link>
       <router-link to="/gaugeweight">Gauge weight vote</router-link>
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>
-      <router-link to="/inflation">Stats</router-link>
+      <div class='poolsdropdown right'>
+        <router-link to="/stats">Stats</router-link>
+        <div class='dropdown'>
+          <router-link to="/stats">Stats</router-link>
+          <router-link to="/inflation">Inflation</router-link>
+          <router-link to="/locks">User vote-locks</router-link>
+        </div>
+      </div>
       <router-link to="/daocontracts">Contracts</router-link>
       <router-link to="/audits">Audits</router-link>
       <div class='poolsdropdown right'>

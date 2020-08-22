@@ -497,8 +497,7 @@
 					this.inf_approval = false
 
 				this.loadBalances()
-				if(this.showvelock && this.showchart)
-					this.loadChart()
+				this.loadChart()
 
 			},
 
@@ -565,47 +564,49 @@
 				console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
 				this.CRVLocked = results.data.crvlockeds[0].CRV
-				if(events.length) {
-					this.myLockedCRV = results.data.votingEscrows[results.data.votingEscrows.length-1].value
-					this.events = events
-					events = events.map(event => {
-						event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
-						return event
-					})
-					let chartData = events.map((event, i) => [event.timestamp * 1000, event.votingPower])
-					let lastEvent = events[events.length - 1]
-					let lastData = [lastEvent.locktime * 1000, 0]
-					chartData.push(lastData)
-					this.events.push({...this.events[this.events.length - 1], value: 0, votingPower: 0})
-					this.chartData = chartData = this.interpolateVotingPower(chartData)
+				if(this.showvelock && this.showchart) {
+					if(events.length) {
+						this.myLockedCRV = results.data.votingEscrows[results.data.votingEscrows.length-1].value
+						this.events = events
+						events = events.map(event => {
+							event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
+							return event
+						})
+						let chartData = events.map((event, i) => [event.timestamp * 1000, event.votingPower])
+						let lastEvent = events[events.length - 1]
+						let lastData = [lastEvent.locktime * 1000, 0]
+						chartData.push(lastData)
+						this.events.push({...this.events[this.events.length - 1], value: 0, votingPower: 0})
+						this.chartData = chartData = this.interpolateVotingPower(chartData)
+						this.chart.addSeries({
+							name: 'My Voting Power',
+							data: chartData.slice(0, chartData.length - 11),
+						})
+					}
+
+					let daopower = results.data.daopowers
+
+
+					let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
+
+					let now = (Date.now() / 1000) | 0
+					let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
+					let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+					let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
+
+					daopowerdata.push(...decoded)
+					this.daopowerdata = daopowerdata
 					this.chart.addSeries({
-						name: 'My Voting Power',
-						data: chartData.slice(0, chartData.length - 11),
+						name: 'DAO Voting Power',
+						data: daopowerdata,
+						color: '#0b0a57',
 					})
+
+
+					this.chart.series[1].hide()
+
+					this.chart.hideLoading()
 				}
-
-				let daopower = results.data.daopowers
-
-
-				let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
-
-				let now = (Date.now() / 1000) | 0
-				let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
-				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-				let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
-
-				daopowerdata.push(...decoded)
-				this.daopowerdata = daopowerdata
-				this.chart.addSeries({
-					name: 'DAO Voting Power',
-					data: daopowerdata,
-					color: '#0b0a57',
-				})
-
-
-				this.chart.series[1].hide()
-
-				this.chart.hideLoading()
 			},
 
 			interpolateVotingPower(chartData) {

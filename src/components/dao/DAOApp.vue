@@ -32,6 +32,7 @@
       <a href='https://curve.fi'>Curve</a>
       <router-link to="/dao">DAO</router-link>
       <router-link to="/gaugeweight">Gauge weight vote</router-link>
+      <router-link to="/minter/calc">Calc</router-link>
       <router-link to="/locker">Locker</router-link>
       <router-link to="/minter/gauges">Minter</router-link>
       <router-link to="/minter/vesting">Vesting</router-link>

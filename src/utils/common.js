@@ -26,7 +26,7 @@ let requiresResetAllowance = [
   "0x075b1bb99792c9e1041ba13afef80c91a1e70fb3",
 
   //CRV token
-  "0xD533a949740bb3306d119CC777fa900bA034cd52",
+  "0xd533a949740bb3306d119cc777fa900ba034cd52",
 ]
 
 export function approve(contract, amount, account, toContract) {
@@ -146,7 +146,6 @@ export async function approveAmount(contract, amount, account, toContract, infin
     let current_allowance = cBN(await contract.methods.allowance(account, toContract).call())
     console.log(currentContract.max_allowance)
     console.log(current_allowance.toString(), amount.toString(), current_allowance.lt(amount))
-    console.log(requiresResetAllowance, contract._address)
     if(!infinite) {
         if(current_allowance.lt(amount) && amount.gt(0)) {
             if(current_allowance > 0 && requiresResetAllowance.includes(contract._address.toLowerCase())) {

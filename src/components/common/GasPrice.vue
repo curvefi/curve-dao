@@ -100,7 +100,7 @@
                 try {
                     let gasPriceInfo = await retry(fetch('https://gasprice.poa.network/'))
                     gasPriceInfo = await gasPriceInfo.json()
-                    state.gasPriceInfo.low = state.gasPriceInfo.slow
+                    gasPriceInfo.low = gasPriceInfo.slow
                     state.gasPriceInfo = gasPriceInfo
                     if(state.gasPriceInfo.fast > 1000) throw new Error('too high!')
                 }

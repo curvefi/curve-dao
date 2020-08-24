@@ -86,11 +86,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button @click='lockButton(604800, 0)'>1 week</button>
+							<!-- <button @click='lockButton(604800, 0)'>1 week</button>
 							<button @click='lockButton(2678400, 0)'>1 month</button>
 							<button @click='lockButton(16070400, 0)'>6 months</button>
 							<button @click='lockButton(31536000, 0)'>1 year</button>
-							<button @click='lockButton(126144000, 0)'>4 years</button>
+							<button @click='lockButton(126144000, 0)'>4 years</button> -->
 						</div>
 						<br>
 						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
@@ -112,14 +112,18 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<button @click='lockButton(604800, 1)'>1 week</button>
+							<!-- <button @click='lockButton(604800, 1)'>1 week</button>
 							<button @click='lockButton(2678400, 1)'>1 month</button>
 							<button @click='lockButton(16070400, 1)'>6 months</button>
 							<button @click='lockButton(31536000, 1)'>1 year</button>
-							<button @click='lockButton(126144000, 1)'>4 years</button>
+							<button @click='lockButton(126144000, 1)'>4 years</button> -->
 						</div>
 					</p>
 					<button @click="confirmModal('createLock')">Create lock</button>
+				</div>
+				<div v-show='hasEndedLock'>
+					Your lock ended, you can withdraw your <img class='icon small' :src="publicPath + 'logo.png'"> CRV
+					<button @click='withdraw'>Withdraw</button>
 				</div>
 				<p>
 					<input id="inf-approval" type="checkbox" name="inf-approval" v-model='inf_approval'>
@@ -234,7 +238,7 @@
 				        text: 'veCRV Voting Power'
 				    },
 				    rangeSelector: {
-				    	selected: 4,
+				    	selected: 6,
 				    },
 				    xAxis: {
 				    	//ordinal: false,
@@ -263,16 +267,16 @@
 				    },
 				    plotOptions: {
 				    	series: {
-				    		dataGrouping: {
-							  //forced: true,
-							  units: [
-							  	// ['day', [1]],
-							  	// ['hour', [1]],
-							    ['week', [1,2,3,4,5,6,7,8,9,10]],
-							  	['month', [1,2,3,4,5,6,7,8]],
-							  	['year', [1,2,3]],
-							  ]
-							},
+				   //  		dataGrouping: {
+							//   //forced: true,
+							//   units: [
+							//   	['week', null],
+							//   	// ['hour', [1]],
+							//    //  ['week', [1,2,3,4,5,6,7,8,9,10]],
+							//   	// ['month', [1,2,3,4,5,6,7,8]],
+							//   	// ['year', [1,2,3]],
+							//   ]
+							// },
 				    	},
 				        line: {
 				            dataLabels: {
@@ -370,6 +374,8 @@
 				CRVLocked: null,
 
 				myLockedCRV: null,
+
+				lockEnd: null,
 			}
 
 		},
@@ -404,6 +410,11 @@
 				if(val == false && !this.showmypower) return
 				let toggle = 'show'
 				if(!val) toggle = 'hide'
+				if(toggle == 'show') {
+					this.chart.xAxis[0].update({
+						ordinal: true,
+					})
+				}
 				this.chart.series[1][toggle]()
 			},
 		},
@@ -481,6 +492,9 @@
             myLockedCRVFormat() {
             	return helpers.formatNumber(this.myLockedCRV / 1e18)
             },
+            hasEndedLock() {
+            	return this.lockEnd > 0 && Date.now() / 1000 > this.lockEnd
+            },
 		},
 
 		methods: {
@@ -505,16 +519,22 @@
 				this.votingEscrow = new web3.eth.Contract(daoabis.votingescrow_abi, '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2')
 				this.CRV = new web3.eth.Contract(daoabis.CRV_abi, '0xD533a949740bb3306d119CC777fa900bA034cd52')
 
+				window.votingEscrow = this.votingEscrow
+				window.CRV = this.CRV
+
 
 				let calls = [
 					[this.votingEscrow._address, this.votingEscrow.methods.balanceOf(getters.default_account()).encodeABI()],
 					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(getters.default_account()).encodeABI()],
 					[this.CRV._address, this.CRV.methods.balanceOf(getters.default_account()).encodeABI()],
 				]
+				console.log(calls, "THE CALLS")
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				this.vecrvBalance = BN(decoded[0])
 				this.lockTime = +decoded[1]
+				this.lockEnd = +decoded[1]
+				console.log(this.lockEnd, "LOCK END")
 				this.increaseLock = new Date((this.lockTime + 604800)* 1000)
 				if(this.lockTime == 0) {
 					this.lockTime = Date.now() / 1000
@@ -557,16 +577,24 @@
 						crvlockeds {
 							CRV
 						}
+						votingPower(id: "${contract.default_account.toLowerCase()}") {
+							power
+						}
+						lastUnlockTime: userBalances(orderBy: unlock_time, orderDirection: desc, first: 1) {
+						    unlock_time
+					  	}
 					}
 				`
+
 
 				let results = await this.wrapper.performQuery(QUERY)
 				console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
 				this.CRVLocked = results.data.crvlockeds[0].CRV
+				let lastUnlockTime = results.data.lastUnlockTime[0].unlock_time
 				if(this.showvelock && this.showchart) {
 					if(events.length) {
-						this.myLockedCRV = results.data.votingEscrows[results.data.votingEscrows.length-1].value
+						this.myLockedCRV = results.data.votingPower.power
 						this.events = events
 						events = events.map(event => {
 							event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
@@ -590,9 +618,17 @@
 					let daopowerdata = daopower.map(e => [e.timestamp * 1000, e.totalPower / 1e18])
 
 					let now = (Date.now() / 1000) | 0
-					let calls = Array.from(Array(10), (_, i) => [this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now + i**4*86400).encodeABI()])
+					let lastUnlockTimeDiff = lastUnlockTime - now
+					let calls = []
+					let i = 0
+					while(now < lastUnlockTime) {
+						calls.push([this.votingEscrow._address, this.votingEscrow.methods.totalSupply(now).encodeABI()])
+						now += i ** 4 * 86400
+						i++
+					}
+					calls.push([this.votingEscrow._address, this.votingEscrow.methods.totalSupply(lastUnlockTime).encodeABI()])
 					let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-					let decoded = aggcalls[1].map((hex, i) => [(now + i*10*86400) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
+					let decoded = aggcalls[1].map((hex, i) => [+('0x'+calls[i][1].slice(10)) * 1000, web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
 					daopowerdata.push(...decoded)
 					this.daopowerdata = daopowerdata
@@ -656,13 +692,17 @@
 			},
 
 			showEnd() {
+				this.showdaopower = false
 				let chartData = this.chartData.slice()
 				if(!this.showend) {
 					chartData = chartData.slice(0, chartData.length - 11)
+					this.chart.xAxis[0].update({
+						ordinal: true,
+					})
 				}
 				this.chart.series[0].setData(chartData, true, false)
 				if(this.showend) {
-					this.chart.rangeSelector.clickButton(4, false, false)
+					this.chart.rangeSelector.clickButton(6, false, false)
 					this.chart.xAxis[0].update({
 						ordinal: false,
 					})
@@ -804,13 +844,11 @@
 
 			async createLock() {
 				this.showConfirmMessage = true;
-				console.log("INCREASE LOCK")
 
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
 				await this.checkpoint(true)
-				console.log(this.inf_approval, "INF APPROVAL")
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address, this.inf_approval)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				var { dismiss } = notifyNotification('Please confirm creating lock')
@@ -832,6 +870,14 @@
 				})
 				this.showConfirmMessage = false
 				this.showModal = false
+			},
+
+			async withdraw() {
+				await this.votingEscrow.methods.withdraw().send({
+					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
+					gas: 400000,
+				})
 			},
 
 			async confirmModal(method) {

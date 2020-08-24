@@ -6,6 +6,7 @@
 				<li>Start lock time: {{ startTimeFormat }}</li>
 				<li>End lock time: {{ endTimeFormat }}</li>
 				<br>
+				<li>Claimed tokens: {{ totalClaimedFormat }}</li>
 				<li>Claimed + available tokens: {{ vestedFormat }}</li>
 				<li>Available tokens: {{ balanceFormat }}</li>
 				<li>Locked tokens: {{ lockedFormat }}</li>
@@ -71,6 +72,7 @@
 			initial_locked: null,
 			start_time: null,
 			end_time: null,
+			total_claimed: null,
 
 			chartdata: {
 					chart: {
@@ -184,6 +186,9 @@
 			initialLockedFormat() {
 				return (this.initial_locked / 1e18).toFixed(2)
 			},
+			totalClaimedFormat() {
+				return (this.total_claimed / 1e18).toFixed(2)
+			},
 			startTimeFormat() {
 				return helpers.formatDateToHuman(this.start_time)
 			},
@@ -215,6 +220,7 @@
 					[this.vesting._address, this.vesting.methods.initial_locked(contract.default_account).encodeABI()],
 					[this.vesting._address, this.vesting.methods.start_time().encodeABI()],
 					[this.vesting._address, this.vesting.methods.end_time().encodeABI()],
+					[this.vesting._address, this.vesting.methods.total_claimed(contract.default_account).encodeABI()],
 				]
 
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
@@ -229,6 +235,7 @@
 				this.initial_locked = decoded[3]
 				this.start_time = decoded[4]
 				this.end_time = decoded[5]
+				this.total_claimed = decoded[6]
 
 				if(+this.initial_locked == 0) {
 					//this.notVested = true

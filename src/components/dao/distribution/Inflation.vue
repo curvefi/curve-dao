@@ -253,8 +253,7 @@
 				    		let value = helpers.formatNumber(this.y)
 				    		let total = helpers.formatNumber(this.total)
 
-				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b>
-				    				<br/>Total: ${total}`
+				    		return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${value}</b>`
 				    	},
 				    },
 				    series: [],
@@ -305,6 +304,10 @@
 
         showtype: 0,
 
+        CRVHistory: [],
+
+        totalCRVdata: [],
+
 		}),
 
 		async created() {
@@ -337,6 +340,9 @@
 		  CRVLockedPercent() {
 		  	return ((this.CRVLocked / this.supply) * 100).toFixed(2)
 		  },
+		  loadedChartData() {
+		  	return this.totalCRVdata.length, this.CRVHistory.length, Date.now()
+		  },
 	    },
 
 	    watch: {
@@ -345,6 +351,13 @@
 	    			this.chart.update({ plotOptions: { area: { stacking: 'normal' } } })
 	    		if(val == 1)
 	    			this.chart.update({ plotOptions: { area: { stacking: 'percent' } } })
+	    	},
+	    	loadedChartData(val) {
+	    		if(this.totalCRVdata.length && this.CRVHistory.length) {
+	    			console.log(this.totalCRVdata)
+					console.log(this.CRVHistory)
+					this.totalCRVdata.forEach(v => console.log(this.CRVHistory.find(vv => v[0] == vv[0])))
+				}
 	    	},
 	    },
 
@@ -371,10 +384,10 @@
 				let results = await wrapper.performQuery(QUERY)
 				this.CRVLocked = +results.data.crvlockeds[0].CRV
 
-		        let CRVHistory = results.data.crvlockedHistories.sort((a, b) => a.timestamp - b.timestamp).map(v => [v.timestamp * 1000, v.CRV / 1e18])
+		        this.CRVHistory = results.data.crvlockedHistories.sort((a, b) => a.timestamp - b.timestamp).map(v => [v.timestamp * 1000, v.CRV / 1e18])
 		        this.linechart.addSeries({
 		        	name: 'Total vote-locked CRV',
-		        	data: CRVHistory,
+		        	data: this.CRVHistory,
 		        })
 
 				const start_epoch_supply = 1303030303 * 10 ** 18
@@ -480,13 +493,16 @@
 		        //   categories: this.dates.slice(0, launchDays),
 		        // })
 
+		        this.totalCRVdata = totalsum.slice(0, launchDays).map((v, i) => [this.dates.slice(0, launchDays)[i], v])
+
 		        this.linechart.addSeries({
 		        	name: "Total CRV",
-		        	data: totalsum.slice(0, launchDays).map((v, i) => [this.dates.slice(0, launchDays)[i], v]),
+		        	data: this.totalCRVdata,
 		        })
 
 				
 				this.linechart.hideLoading()
+
 			},
 		},
 	}

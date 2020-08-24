@@ -56,6 +56,7 @@ const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
 const Gauges = () => import('../components/minter/Gauges.vue')
 const VestingView = () => import('../components/minter/VestingView.vue')
 const Locks = () => import('../components/minter/Locks.vue')
+const GaugeCalc = () => import('../components/minter/GaugeCalc.vue')
 
 const DAOApp = () => import('../components/dao/DAOApp.vue')
 
@@ -314,7 +315,7 @@ let routes = [
         component: GaugeWeight,
       },
       {
-        path: 'locks',
+        path: 'locks/:timestamp?',
         name: 'Locks',
         component: Locks,
       },
@@ -339,6 +340,11 @@ let routes = [
         path: 'vesting',
         name: 'VestingView',
         component: VestingView,
+      },
+      {
+        path: 'calc',
+        name: 'GaugeCalc',
+        component: GaugeCalc,
       },
     ],
   },

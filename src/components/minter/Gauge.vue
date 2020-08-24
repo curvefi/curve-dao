@@ -180,7 +180,7 @@
 			// 	return (Math.min(this.withdrawAmount / (this.gauge.gaugeBalance / 1e18), 1)).toFixed(2)
 			// },
 			claimableTokensFormat() {
-				return this.toFixed(this.claimableTokens / 1e18)
+				return (this.claimableTokens / 1e18).toFixed(2)
 			},
 			mintedFormat() {
 				return (this.minted / 1e18).toFixed(2)

@@ -91,6 +91,11 @@
 							<span v-show='!vote.contractName && vote.description'>
 								<span v-html='vote.description'></span>
 							</span>
+							<span v-show='vote.voteCountSeq == 3'>
+								<a href='https://gov.curve.fi/t/add-smartwalletwhitelist-with-dao-maintained-whitelist/25/2' rel='noopener noreferrer'>
+									Discuss on Discourse
+								</a>
+							</span>
 						</div>
 
 					</div>
@@ -109,7 +114,7 @@
 						</div>
 						<div>
 							{{ yeas }}
-							<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports == true'>
+							<span v-show='vote.mycasts && vote.mycasts.length && vote.mycasts[0].supports == true'>
 								({{voterStake}})
 							</span>
 						</div>
@@ -120,7 +125,7 @@
 						</div>
 						<div>
 							{{ nays }}
-							<span v-show='vote.casts && vote.casts.length && vote.casts[0].supports == false'>
+							<span v-show='vote.mycasts && vote.mycasts.length && vote.mycasts[0].supports == false'>
 								({{voterStake}})
 							</span>
 						</div>
@@ -128,16 +133,50 @@
 							Total votes: {{ vote.castCount }}
 						</div>
 
-						<div class='myvote' v-if='vote.casts && vote.casts.length'>
+						<button class='showVoters' @click='showVoters = !showVoters'>
+							{{ !showVoters ? 'Show' : 'Hide' }} voters
+						</button>
+
+						<table class='tui-table' v-if='vote.casts && vote.casts.length > 0 && showVoters'>
+							<thead>
+								<tr>
+									<th>Voter</th>
+									<th>veCRV voted with</th>
+									<th>Supports</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for='cast in vote.casts'>
+									<td>
+										<a :href="'https://etherscan.io/address/' + cast.voter" rel='noopener noreferrer'>
+											{{ shortenAddress(cast.voter) }}
+										</a>
+									</td>
+									<td>
+										{{ (cast.voterStake / 1e18).toFixed(2) }}
+									</td>
+									<td>
+										<span class='castsupports' v-show='cast.supports'>
+											<img class='icon small' :src="publicPath + 'vote-yea-solid.svg'">Yes
+										</span>
+										<span class='castrejects' v-show='!cast.supports'>
+											<img class='icon small' :src="publicPath + 'vote-nay-solid.svg'">No
+										</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+
+						<div class='myvote' v-if='vote.mycasts && vote.mycasts.length'>
 							You voted 
 							<b>
-								<a :href="'https://etherscan.io/tx/' + vote.casts[0].transactionHash"> {{ vote.casts[0].supports ? 'Yes' : 'No'}}</a> 
+								<a :href="'https://etherscan.io/tx/' + vote.mycasts[0].transactionHash"> {{ vote.mycasts[0].supports ? 'Yes' : 'No'}}</a> 
 							</b> with: <b> {{ voterStake }} </b> veCRV
 							at snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
 						</div>
 
-						<div class='myvote info-message gentle-message' v-if='canVote() && vote.casts && !vote.casts.length'>
+						<div class='myvote info-message gentle-message' v-if='canVote() && vote.mycasts && !vote.mycasts.length'>
 							Voting with {{ currentVotingPowerFormat() }} veCRV ({{ myVotingPowerPct }}% of total voting power), you had {{ balanceOfAtFormat }} veCRV
 							at vote creation on snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
@@ -256,6 +295,8 @@
 			votetype: null,
 
 			showMore: false,
+
+			showVoters: false,
 		}),
 
 		async created() {
@@ -280,8 +321,8 @@
 				return (this.vote.nay / 1e18).toFixed(2)
 			},
 			voterStake() {
-				if(!this.vote.casts || !this.vote.casts.length) return 0
-				return (this.vote.casts[0].voterStake / 1e18).toFixed(2)
+				if(!this.vote.mycasts || !this.vote.mycasts.length) return 0
+				return (this.vote.mycasts[0].voterStake / 1e18).toFixed(2)
 			},
 			isVoteOpen() {
 				return voteHelpers.isVoteOpen(this.vote) && !this.vote.executed
@@ -333,7 +374,7 @@
 				return ''
 			},
 			hadNoBalanceAt() {
-				return this.balanceOfAt && this.balanceOfAt.lt(BN(MIN_BALANCE))
+				return this.balanceOfAt && this.balanceOfAt.lte(0)
 			},
 			hasCRV() {
 				return this.CRVbalance && this.CRVbalance.gt(0)
@@ -397,7 +438,7 @@
 				return (this.currentVotingPower() / 1e18).toFixed(2,1)
 			},
 			canVote() {
-				return this.isVoteOpen && this.currentVotingPower() > 0
+				return this.isVoteOpen && this.balanceOfAt && this.balanceOfAt.gt(0)
 			},
 			async voteyes() {
 				this.loadingyes = true
@@ -532,5 +573,51 @@
 	}
 	.totalvotes {
 		margin-top: 0.4em;
+	}
+
+	table {
+		width: 100%;
+		margin-top: 1em;
+	}
+	tbody tr td a {
+		display: inline-block;
+		min-height: 100%;
+		width: 100%;
+		padding-top: 10px;
+		font-weight: normal;
+	}
+	thead tr {
+		border-bottom: 1px solid #a8a8a8;
+	}
+	thead tr th {
+		color: #202020;
+	}
+	tbody tr td {
+		padding-left: 1em;
+		color: black;
+	}
+	tbody tr td:nth-child(5) a, tbody tr td:nth-child(6) a {
+		font-weight: normal;
+	}
+
+	.pagination {
+		margin-top: 0.4em;
+		display: flex;
+	}
+	.castsupports {
+		color: green;
+	}
+	.castrejects {
+		color: darkred;
+	}
+	.castsupports img {
+		filter: invert(10%) sepia(68%) saturate(7256%) hue-rotate(119deg) brightness(101%) contrast(101%);
+	}
+	.castrejects img {
+		filter: invert(7%) sepia(98%) saturate(4182%) hue-rotate(8deg) brightness(113%) contrast(119%);
+	}
+	.showVoters {
+		margin-top: 1em;
+		box-shadow: none;
 	}
 </style>

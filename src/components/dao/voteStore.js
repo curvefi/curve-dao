@@ -19,7 +19,7 @@ const radspecFormat = {
 			if(!prefix) prefix = ''
 			return {
 				type: 'string',
-				value: '<br> ' + prefix + ' ' + shortenAddress(address),
+				value: '<br> ' + prefix + ' ' + "<a href='https://etherscan.io/address/" + address + "' rel='noopener noreferrer'>" + shortenAddress(address) + '</a>',
 			}
 		},
 		param: () => async (param, name) => {
@@ -251,7 +251,7 @@ export async function getVote(app, voteId) {
 
 	let getUserVotes = gql`
 		fragment vote_cast on Vote {
-			casts(where: { voter: "${account}"}) {
+			mycasts: casts(where: { voter: "${account}"}) {
 		      id
 		      voteId
 		      voteNum
@@ -301,6 +301,14 @@ export async function getVote(app, voteId) {
 	      	voteCountSeq
 	      	${getUserVotes !== null ? '...vote_cast' : ''}
 		  }
+		  casts(where: { voteId: "${voteId}"}, orderBy: voterStake, orderDirection: desc) {
+		    id
+		    voteId
+		    voteNum
+		    voter
+		    supports
+		    voterStake
+		  }
 		}
 		${getUserVotes !== null ? getUserVotes : ''}
 	`
@@ -313,18 +321,19 @@ export async function getVote(app, voteId) {
 	// 	queries.push(wrapper.performQuery(getLastUserVote))
 	const results = await Promise.all(queries)
 
-	let { votes } = results[0].data
+	console.log(results, "RESULTS")
+
+	let { votes, casts } = results[0].data
 
 
 	//let { lastUserVote } = results[1].data
-
-	console.log(votes, "THE VOTE")
 
 	let vote = state.votes.length && state.votes.find(vote => vote.id == votes[0].id)
 	if(vote === undefined || vote == 0) {
 		state.votes.push(vote)
 		vote = votes[0]
 	}
+	vote.casts = casts
 	
 	if(vote.metadata.startsWith('ipfs:')) {
 		let hash = vote.metadata.slice(5)

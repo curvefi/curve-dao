@@ -53,12 +53,12 @@
 							</legend>
 							<div>
 								<div class='input'>
-									<label for='param1'>new_fee:</label>
-									<input id='param1' type='text' v-model='new_fee'>
+									<label for='param1'>new_fee %:</label>
+									<input :class = "{'invalidFee': invalidFee}" id='param1' type='text' v-model='new_fee'>
 								</div>
 								<div class='input'>
-									<label for='param1'>new_admin_fee:</label>
-									<input id='param1' type='text' v-model='new_admin_fee'>
+									<label for='param1'>new_admin_fee %:</label>
+									<input :class = "{'invalidFee': invalidAdminFee}" id='param1' type='text' v-model='new_admin_fee'>
 								</div>
 								<button @click="propose('commit_new_fee', new_fee, new_admin_fee)" class='simplebutton'>
 									Submit
@@ -296,6 +296,11 @@
 
 	let parameter_actions = ['commit_new_parameters', 'revert_new_parameters', 'commit_new_fee', 'apply_new_fee', 'ramp_A', 'stop_ramp_A']
 
+	const max_admin_fee = 5 * 10 ** 9
+	const max_fee = 5 * 10 ** 9
+	const max_A = 10 ** 6
+	const max_A_change = 10
+
 	export default {
 		data: () => ({
 			poolProxy: null,
@@ -320,6 +325,22 @@
 			showDescriptionModal: false,
 			textdescription: '',
 
+			currentPoolConfig: {
+				A: '',
+				future_A: '',
+				fee: '',
+				future_fee: '',
+				admin_fee: '',
+				future_admin_fee: '',
+				admin_actions_deadline: '',
+				transfer_ownership_deadline: '',
+				future_owner: '',
+
+				initial_A: '',
+				initial_A_time: '',
+				future_A_time: '',
+			}
+
 		}),
 
 		async created() {
@@ -328,6 +349,44 @@
 			}, {
 				immediate: true,
 			})
+		},
+
+		watch: {
+			async selectedPool(val) {
+				let pool = new web3.eth.Contract(allabis[val.pool].swap_abi, val.address)
+				let calls = [
+					[pool._address, pool.methods.A().encodeABI()],
+					[pool._address, pool.methods.future_A().encodeABI()],
+					[pool._address, pool.methods.fee().encodeABI()],
+					[pool._address, pool.methods.future_fee().encodeABI()],
+					[pool._address, pool.methods.admin_fee().encodeABI()],
+					[pool._address, pool.methods.future_admin_fee().encodeABI()],
+					[pool._address, pool.methods.admin_actions_deadline().encodeABI()],
+					[pool._address, pool.methods.transfer_ownership_deadline().encodeABI()],
+					[pool._address, pool.methods.future_owner().encodeABI()],
+				]
+
+				if(['pax', 'ren', 'sbtc', 'hbtc'].includes(val.pool))
+					calls.push(...[
+						[pool._address, pool.methods.initial_A().encodeABI()],
+						[pool._address, pool.methods.initial_A_time().encodeABI()],
+						[pool._address, pool.methods.future_A_time().encodeABI()],
+					])
+
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+				let decoded = aggcalls[1].map((hex, i) => i == 8 ? web3.eth.abi.decodeParameter('address', hex) : web3.eth.abi.decodeParameter('uint256', hex))
+				this.currentPoolConfig.A = decoded[0]
+				this.currentPoolConfig.future_A = decoded[1]
+				this.currentPoolConfig.fee = decoded[2]
+				this.currentPoolConfig.future_fee = decoded[3]
+				this.currentPoolConfig.admin_fee = decoded[4]
+				this.currentPoolConfig.future_admin_fee = decoded[5]
+				this.currentPoolConfig.admin_actions_deadline = decoded[6]
+				this.currentPoolConfig.transfer_ownership_deadline = decoded[7]
+				this.currentPoolConfig.future_owner = decoded[8]
+
+
+			}
 		},
 
 		computed: {
@@ -347,6 +406,12 @@
 			proposeLoading() {
 				return state.proposeLoading
 			},
+			invalidFee() {
+				return this.new_fee * 1e8 > max_fee
+			},
+			invalidAdminFee() {
+				return this.new_admin_fee * 1e8 > max_admin_fee
+			},
 		},
 
 		methods: {
@@ -354,6 +419,8 @@
 				this.selectedPool = this.allPools[6]
 
 				this.poolProxy = new web3.eth.Contract(daoabis.poolproxy_abi, daoabis.poolproxy_address)
+
+				this.registry = new web3.eth.Contract(allabis.registry_abi, allabis.registry_address)
 			},
 
 			async propose(method, ...params) {
@@ -380,7 +447,13 @@
 					votingApp = PARAMETER_APP_ADDRESS
 				}
 
-				this.$emit('makeCall', 'poolproxy', method, ['0x47A63DDe77f6b1B0c529f39bF8C9D194D76E76c4', ...params], this.poolProxy._address, agent, votingApp)
+				if(method == 'commit_new_fee') {
+					params[0] *= 1e8
+					params[1] *= 1e8
+				}
+
+
+				this.$emit('makeCall', 'poolproxy', method, [this.selectedPool.address, ...params], this.poolProxy._address, agent, votingApp)
 			},
 
 			// async propose(method, ...params) {
@@ -459,5 +532,8 @@
 	.modal-content .content {
 		text-align: left;
 		color: black;
+	}
+	.invalidFee {
+		background: red;
 	}
 </style>

@@ -163,7 +163,7 @@
 				        text: 'veCRV distribution'
 				    },
 				    tooltip: {
-				        pointFormat: '{series.name}: <b>{point.y:.1f}%</b>'
+				        pointFormat: '{series.name}: <b>{point.y:.2f}%</b>'
 				    },
 				    accessibility: {
 				        point: {
@@ -293,9 +293,14 @@
 				piedata[highest].sliced = true;
 				piedata[highest].selected = true;
 
+ 				let others = piedata.filter(data => data.y < 1)
+
+ 				piedata = piedata.filter(data => data.y > 1)
+ 				piedata.push({name: 'Others', y: others.reduce((a, b) => +a + +b.y, 0)})
+
 				this.piechart.addSeries({
 					name: 'veCRV distribution',
-					data: piedata.filter(v => v.y > 1)
+					data: piedata
 				})
 
 				this.piechart.hideLoading()
@@ -331,6 +336,7 @@
 
 			shortenAddress(address) {
 				if(!address) return ''
+				if(address == 'Others') return 'Others'
 				return address.slice(0,6) + '...' + address.slice(-6)
 			},
 

@@ -100,11 +100,11 @@ export let votingescrow_natspec = {
       "notice": "Apply transfer ownership of VotingEscrow contract",
       "signature": "0x6a1c05ae"
     },
-    "commit_smart_wallet_cheker(address)": {
-      "notice": "Commit VotingEscrow smart wallet checker to be `@address(addr, 'to')`",
+    "commit_smart_wallet_checker(address)": {
+      "notice": "Commit VotingEscrow smart wallet checker to be `@address(addr, '')`",
       "signature": "0x57e55c32"
     },
-    "apply_smart_wallet_cheker()": {
+    "apply_smart_wallet_checker()": {
       "notice": "Apply VotingEscrow smart wallet checker",
       "signature": "0x8c2fa83b"
     },

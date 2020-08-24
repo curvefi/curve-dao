@@ -103,7 +103,7 @@
 						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
 					</p>
 					<p class='depositinputs'>
-						<label for='incraselock'>Lock time:</label>
+						<label for='incraselock'>Choose lock time:</label>
 						<datepicker 
 							id='increaselock' 
 							name='increaselock' 
@@ -246,7 +246,7 @@
 		            	labels: {	
 			            	style: {
 			            		color: 'black'
-			            	}
+			            	},
 		            	},
 		            	dateTimeLabelFormats: {
 				            second: '%Y-%m-%d<br/>%H:%M:%S',
@@ -267,16 +267,26 @@
 				    },
 				    plotOptions: {
 				    	series: {
-				   //  		dataGrouping: {
-							//   //forced: true,
-							//   units: [
-							//   	['week', null],
-							//   	// ['hour', [1]],
-							//    //  ['week', [1,2,3,4,5,6,7,8,9,10]],
-							//   	// ['month', [1,2,3,4,5,6,7,8]],
-							//   	// ['year', [1,2,3]],
-							//   ]
-							// },
+				     		dataGrouping: {
+							  forced: true,
+							  units: [
+							  	['day', null],
+							  	// ['hour', [1]],
+							   //  ['week', [1,2,3,4,5,6,7,8,9,10]],
+							  	// ['month', [1,2,3,4,5,6,7,8]],
+							  	// ['year', [1,2,3]],
+							  ]
+							},
+							events: {
+								legendItemClick: (function(self) {
+									return function() {
+										if(this.name == 'DAO Voting Power')
+											self.showdaopower = !this.visible
+										if(this.name == 'My Voting Power')
+											self.showmypower = !this.visible
+									}
+								})(this)
+							}
 				    	},
 				        line: {
 				            dataLabels: {
@@ -404,15 +414,43 @@
 				if(!val) {
 					toggle = 'hide'
 				}
+				this.chart.update({
+					plotOptions: {
+						series: {
+							dataGrouping: {
+								forced: false,
+							}
+						}
+					}
+				})
 				this.chart.series[0][toggle]()
 			},
 			showdaopower(val) {
-				if(val == false && !this.showmypower) return
 				let toggle = 'show'
 				if(!val) toggle = 'hide'
 				if(toggle == 'show') {
 					this.chart.xAxis[0].update({
 						ordinal: true,
+					})
+					this.chart.update({
+						plotOptions: {
+							series: {
+								dataGrouping: {
+									forced: true,
+								}
+							}
+						}
+					})
+				}
+				else {
+					this.chart.update({
+						plotOptions: {
+							series: {
+								dataGrouping: {
+									forced: false,
+								}
+							}
+						}
 					})
 				}
 				this.chart.series[1][toggle]()
@@ -559,7 +597,7 @@
 				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				let QUERY = gql`
 					{
-						votingEscrows(where: { provider: "${getters.default_account()}" }, orderBy: timestamp, orderDirection: asc) {
+						votingEscrows(where: { provider: "${getters.default_account().toLowerCase()}" }, orderBy: timestamp, orderDirection: asc) {
 							id
 							provider
 							value
@@ -592,9 +630,10 @@
 				let events = results.data.votingEscrows
 				this.CRVLocked = results.data.crvlockeds[0].CRV
 				let lastUnlockTime = results.data.lastUnlockTime[0].unlock_time
+				if(results.data.votingPower)
+					this.myLockedCRV = results.data.votingPower.power
 				if(this.showvelock && this.showchart) {
 					if(events.length) {
-						this.myLockedCRV = results.data.votingPower.power
 						this.events = events
 						events = events.map(event => {
 							event.votingPower = this.calcVotingPower(event.totalPower, event.timestamp, event.locktime) * 1000
@@ -638,8 +677,19 @@
 						color: '#0b0a57',
 					})
 
+					if(this.myLockedCRV > 0) {
+						this.chart.series[1].hide()
 
-					this.chart.series[1].hide()
+						this.chart.update({
+							plotOptions: {
+								series: {
+									dataGrouping: {
+										forced: false,
+									}
+								}
+							}
+						})
+					}
 
 					this.chart.hideLoading()
 				}

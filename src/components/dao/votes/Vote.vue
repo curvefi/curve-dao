@@ -43,7 +43,7 @@
 			<div class='enacted' v-show='vote.executed'>
 				√ Passed(enacted)
 			</div>
-			<div class='canexecute' >
+			<div class='canexecute' v-show='canExecute'>
 				√ Passed <enact-vote :vote='vote'></enact-vote>
 			</div>
 			<div class='rejected' v-show='isRejected'>

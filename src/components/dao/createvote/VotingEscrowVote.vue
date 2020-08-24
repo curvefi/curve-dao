@@ -41,9 +41,9 @@
 									<label for='param1'>addr:</label>
 									<input id='param1' type='text' v-model='checker_addr'>
 								</div>
-								<button @click="propose('commit_smart_wallet_cheker', checker_addr)" class='simplebutton'>
+								<button @click="propose('commit_smart_wallet_checker', checker_addr)" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'commit_smart_wallet_cheker'"></span>
+									<span class='loading line' v-show="proposeLoading == 'commit_smart_wallet_checker'"></span>
 								</button>
 							</div>
 						</fieldset>
@@ -77,9 +77,9 @@
 								</span>
 							</legend>
 							<div>
-								<button @click="propose('apply_smart_wallet_cheker')" class='simplebutton'>
+								<button @click="propose('apply_smart_wallet_checker')" class='simplebutton'>
 									Submit
-									<span class='loading line' v-show="proposeLoading == 'apply_smart_wallet_cheker'"></span>
+									<span class='loading line' v-show="proposeLoading == 'apply_smart_wallet_checker'"></span>
 								</button>
 							</div>
 						</fieldset>

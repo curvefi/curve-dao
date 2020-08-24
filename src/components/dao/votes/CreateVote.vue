@@ -191,7 +191,7 @@
 			},
 			async describeCall(method, params, calldata, abi, expression) {
 
-				console.log(abi, calldata, expression, "RADSPEC")
+				console.log(method, abi, calldata, expression, "RADSPEC")
 
 				let desc = await radspec.evaluate(expression, {
 					abi: [abi],
@@ -229,11 +229,15 @@
 				let { abiname, method, params, contractAddress, agent, voteApp } = this.call
 
 				let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
+				console.log(abiname, method)
 				let natspeckey = Object.keys(daoabis[abiname+'_natspec'].methods).find(key => key.includes(method))
+				console.log(natspeckey, "NATSPEC")
 				let expression = daoabis[abiname+'_natspec'].methods[natspeckey].notice
 				console.log(params, "PARAMS")
+				console.log(abi, "ABI CALL")
+				console.log(method)
 				let call = web3.eth.abi.encodeFunctionCall(abi, params)
-				console.log(abi, call, "ABI CALL")
+				console.log(call, "CALL")
 
 
 				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')

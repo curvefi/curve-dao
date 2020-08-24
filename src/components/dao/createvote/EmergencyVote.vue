@@ -74,12 +74,12 @@
 
 
 
-	let emergencyToken_address = '0x712635479fd7b5cfa5e7661109c3418bf2dbaa84'
-	let emergencyTokenManager_address = '0xc28190fd16fd20dd5f25e9eb20dd6e38f5c8d03b'
+	let emergencyToken_address = '0x4c0947b16fb1f755a2d32ec21a0c4181f711c500'
+	let emergencyTokenManager_address = '0xc96ca8785ba0eeb8ab56bc5d4855a5e871f82e5d'
 
 	const tokenManager = new TokenManager(
 	  emergencyTokenManager_address,
-	  'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-rinkeby'
+	  'https://api.thegraph.com/subgraphs/name/aragon/aragon-tokens-mainnet'
 	)
 
 	export default {

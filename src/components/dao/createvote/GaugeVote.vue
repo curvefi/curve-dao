@@ -3,13 +3,13 @@
 		<fieldset>
 			<legend>Vote on gauge</legend>
 			<div>
-				<div>
+				<!-- <div>
 					<select class='tvision' v-model='selectedPool'>
 						<option v-for='pool in allPools' :value='pool'>
 							{{ pool.pool }}
 						</option>
 					</select>
-				</div>
+				</div> -->
 				<div class='actions'>
 					<div>
 						<fieldset>
@@ -211,6 +211,7 @@
 			change_gauge_weight: '',
 
 			gaugesNames: {
+			  "0x0000000000000000000000000000000000000000": 'Select a gauge',
 			  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575": 'compound',
 			  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53": 'usdt',
 			  "0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1": 'y',
@@ -277,6 +278,7 @@
 
 				this.gauge_type_names = decoded.slice(0, this.n_gauge_types)
 				this.gauges = decoded.slice(this.n_gauge_types)
+				this.gauges.unshift("0x0000000000000000000000000000000000000000")
 				
 				this.selectedGaugeAddress = this.gauges[0]
 			},
@@ -288,6 +290,11 @@
 				// let expression = daoabis.gaugecontroller_natspec.methods[natspeckey].notice
 				// let call = web3.eth.abi.encodeFunctionCall(abi, [...params])
 				// console.log(abi, call, "ABI CALL")
+
+				let methodsWithParams = ['add_type', 'add_gauge', 'change_type_weight', 'change_gauge_weight']
+
+				if(methodsWithParams.includes(method))
+					params[params.length-1] *= 1e18
 
 				this.$emit('makeCall', 'gaugecontroller', method, params, this.gaugeController._address, OWNERSHIP_AGENT, OWNERSHIP_APP_ADDRESS)
 
@@ -326,6 +333,7 @@
 
 			shortenAddress(address) {
 				if(!address) return ''
+				if(address ==  '0x0000000000000000000000000000000000000000') return 'Select a gauge'
 				return this.gaugesNames[address] + ' ' + address.slice(0,6) + '...' + address.slice(-6)
 			},
 		},

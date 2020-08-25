@@ -63,6 +63,25 @@
 					<span v-show='!isNaN(boost)'>{{ boost.toFixed(2) }}x</span>
 					<span v-show='isNaN(boost)'>Please enter a deposit and veCRV amount</span>
 				</div>
+				<div class='minveCRVmax'>
+					max boost possible: {{ maxBoostPossible && maxBoostPossible.toFixed(2) }}x
+					<div>min veCRV for Max boost: 
+						<span v-show='gaugeBalance > 0'>
+							{{ minveCRV && minveCRV.toFixed(2) }} veCRV
+						</span>
+						<span v-show='gaugeBalance == 0'>
+							Please enter a deposit amount
+						</span>
+						<div v-show='gaugeBalance > 0'>
+							This is {{ CRVtoLock }} for a
+							<select class='tvision lockperiod' v-model='minveCRVperiod'>
+								<option v-for='(name, period) in lockPeriods' :value='name'>
+									{{ period }}
+								</option>
+							</select>
+						</div>
+					</div>
+				</div>
 			</div>
 		</fieldset>
 	</div>
@@ -117,6 +136,8 @@
 
 			lockPeriod: year,
 
+			minveCRVperiod: year,
+
 			selectedGauge: "0x0000000000000000000000000000000000000000",
 
 			gaugeBalance: 0,
@@ -135,14 +156,21 @@
 
 			boost: 1,
 
+			minveCRV: null,
+
+			maxBoostPossible: null,
+
 		}),
 
 		computed: {
 			calcTrigger() {
-				return this.gaugeBalance, this.poolLiquidity, this.myveCRV, this.totalveCRV, this.veCRV, Date.now()
+				return this.gaugeBalance, this.poolLiquidity, this.myveCRV, this.totalveCRV, this.veCRV, this.entertype, Date.now()
 			},
 			veCRV(lock) {
 		  		return ((this.myCRV * this.lockPeriod) / (86400 * 365) / 4).toFixed(2)
+		  	},
+		  	CRVtoLock() {
+		  		return (this.minveCRV / ((this.minveCRVperiod / year) / 4)).toFixed(2)
 		  	},
 		},
 
@@ -156,6 +184,7 @@
 			},
 			calcTrigger() {
 				this.calc()
+				this.maxBoost()
 			},
 		},
 
@@ -194,7 +223,17 @@
 				this.boost = boost
 			},
 
-			async update_liquidity_limit(new_l = null, new_voting_balance = null) {
+			async maxBoost() {
+				let l = this.gaugeBalance * 1e18
+				let L = +this.poolLiquidity*1e18 + l
+				let minveCRV = this.totalveCRV * l / L
+				this.minveCRV = minveCRV
+
+				let [_, maxBoostPossible] = await this.update_liquidity_limit(null, null, this.minveCRV)
+				this.maxBoostPossible = maxBoostPossible
+			},
+
+			async update_liquidity_limit(new_l = null, new_voting_balance = null, minveCRV = null) {
 				let l = this.gaugeBalance * 1e18
 
 				let calls = [
@@ -226,7 +265,9 @@
 
 				let lim = l * TOKENLESS_PRODUCTION / 100
 				let veCRV = this.myveCRV
-				if(this.entertype == 0)
+				if(minveCRV)
+					veCRV = minveCRV
+				else if(this.entertype == 0)
 					veCRV = this.veCRV
 				lim += L * veCRV / this.totalveCRV * (100 - TOKENLESS_PRODUCTION) / 100
 
@@ -236,6 +277,10 @@
 				let noboost_lim = TOKENLESS_PRODUCTION * l / 100
 				let noboost_supply = working_supply + noboost_lim - old_bal
 				let _working_supply = working_supply + lim - old_bal
+
+				// let limCalc = (l * TOKENLESS_PRODUCTION / 100 + (this.poolLiquidity + l) * veCRV / this.totalveCRV * (100 - TOKENLESS_PRODUCTION) / 100)
+				// boost = limCalc
+				// 		/ (working_supply + limCalc - old_bal)
 
 				return [_working_supply, (lim / _working_supply) / (noboost_lim / noboost_supply)]
 
@@ -284,10 +329,7 @@
 	.radio {
 		display: inline-block;
 	}
-	.lockperiod {
-		margin-top: 1em;
-	}
-	.calcveCRV {
+	.lockperiod, .calcveCRV, .minveCRVmax {
 		margin-top: 1em;
 	}
 </style>

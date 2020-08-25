@@ -111,6 +111,9 @@ const wallets = [
   { walletName: "operaTouch" },
   { walletName: "unilogin" },
   { walletName: "imToken", rpcUrl: "https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b" },
+  { walletName: "meetone" },
+  { walletName: "mykey", rpcUrl: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b' },
+  { walletName: "huobiwallet", rpcUrl: 'https://mainnet.infura.io/v3/c334bb4b45a444979057f0fb8a0c9d1b' },
 ]
 
 if(window.web3 && window.web3.currentProvider.isTrust) {
@@ -123,6 +126,10 @@ if(window.web3 && window.web3.currentProvider.isImToken) {
 
 if(window.web3 && window.web3.currentProvider.isStatus) {
   wallets.find(wallet => wallet.walletName == 'status').preferred = true
+}
+
+if(window.web3 && window.web3.currentProvider.wallet == "MEETONE") {
+  wallets.find(wallet => wallet.walletName == 'meetone').preferred = true
 }
 
 export const onboard = Onboard({
@@ -164,6 +171,7 @@ export const onboard = Onboard({
 });
 
 async function init(init = true, name, walletlink = false) {
+  state.contract.web3 = new Web3(infura_url)
   console.time('initswap')
 	//try catch for checking cancel dialog
 	//const provider = await web3Modal.connect();

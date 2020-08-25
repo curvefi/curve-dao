@@ -200,6 +200,10 @@ export async function getAllVotes() {
 
 	const wrapper = new GraphQLWrapper(VOTING_SUBGRAPH_URL)
 
+	let requests = [wrapper.performQuery(QUERY)]
+	if(contract.default_account !== undefined)
+		requests.push(wrapper.performQuery(lastCreatedVoteQuery))
+
 	// Invoke the custom query and receive data
 	const results = await Promise.all([wrapper.performQuery(QUERY), wrapper.performQuery(lastCreatedVoteQuery)])
 
@@ -494,7 +498,7 @@ export function getVotingAppName(address) {
 export function getSupportQuorum(appName) {
 	if(appName.toLowerCase().includes('ownership'))
 		return {
-			support: 51, quorum: 50,
+			support: 51, quorum: 30,
 		}
 	if(appName.toLowerCase().includes('parameter'))
 		return {

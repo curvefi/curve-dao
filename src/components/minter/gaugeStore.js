@@ -189,6 +189,7 @@ export async function getState() {
 		if(isNaN(apy))
 			apy = 0
 		state.mypools.find(v => v.name == pool).gauge_relative_weight = w[1]
+		Object.values(state.pools).find(v => v.name == pool).gauge_relative_weight = w[1]
 		Vue.set(state.APYs, pool, apy)
 	})
 

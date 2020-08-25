@@ -67,7 +67,8 @@
 				</p>
 				<highcharts v-show='showvelock' :constructor-type="'stockChart'" :options="chartdata" ref='highcharts'></highcharts>
 			</div>
-			<div class='velock' v-show='showvelock'>
+			<span class='loading matrix' v-show='!loaded'></span>
+			<div class='velock' v-show='showvelock && loaded'>
 				<div class='increaselock' v-show='hasvecrv'>
 					<p class='depositinputs'>
 						<label for='deposit'>Increase amount:</label>
@@ -86,11 +87,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<!-- <button @click='lockButton(604800, 0)'>1 week</button>
-							<button @click='lockButton(2678400, 0)'>1 month</button>
-							<button @click='lockButton(16070400, 0)'>6 months</button>
-							<button @click='lockButton(31536000, 0)'>1 year</button>
-							<button @click='lockButton(126144000, 0)'>4 years</button> -->
+							<button v-show='showIncreaseLockButton(604800)' @click='lockButton(604800, 0)'>1 week</button>
+							<button v-show='showIncreaseLockButton(2678400)' @click='lockButton(2678400, 0)'>1 month</button>
+							<button v-show='showIncreaseLockButton(16070400)' @click='lockButton(16070400, 0)'>6 months</button>
+							<button v-show='showIncreaseLockButton(31536000)' @click='lockButton(31536000, 0)'>1 year</button>
+							<button v-show='showIncreaseLockButton(126144000)' @click='lockButton(126144000, 0)'>4 years</button>
 						</div>
 						<br>
 						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
@@ -112,11 +113,11 @@
 							:open-date='openDate'
 						></datepicker>
 						<div class='increaseLockButtons'>
-							<!-- <button @click='lockButton(604800, 1)'>1 week</button>
+							<button @click='lockButton(604800, 1)'>1 week</button>
 							<button @click='lockButton(2678400, 1)'>1 month</button>
 							<button @click='lockButton(16070400, 1)'>6 months</button>
 							<button @click='lockButton(31536000, 1)'>1 year</button>
-							<button @click='lockButton(126144000, 1)'>4 years</button> -->
+							<button @click='lockButton(126144000, 1)'>4 years</button>
 						</div>
 					</p>
 					<button @click="confirmModal('createLock')">Create lock</button>
@@ -386,6 +387,7 @@
 				myLockedCRV: null,
 
 				lockEnd: null,
+
 			}
 
 		},
@@ -494,7 +496,7 @@
 				return this.deposit <= 0 || BN(this.deposit).gt(this.crvBalance.div(1e18))
 			},
 			increaseLockText() {
-				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000)
+				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000).split(' ')[0]
 			},
 			deposit: {
 				get() {
@@ -537,7 +539,6 @@
 
 		methods: {
 			async mounted() {
-				this.loaded = true
 				this.chart = this.$refs.highcharts.chart
 				this.chart.showLoading()
 
@@ -548,7 +549,7 @@
 				if(allowance.lte(contract.max_allowance.div(BN(2))))
 					this.inf_approval = false
 
-				this.loadBalances()
+				await this.loadBalances()
 				this.loadChart()
 
 			},
@@ -572,11 +573,15 @@
 				this.vecrvBalance = BN(decoded[0])
 				this.lockTime = +decoded[1]
 				this.lockEnd = +decoded[1]
+				this.loaded = true
 				console.log(this.lockEnd, "LOCK END")
 				this.increaseLock = new Date((this.lockTime + 604800)* 1000)
 				if(this.lockTime == 0) {
 					this.lockTime = Date.now() / 1000
 					this.increaseLock = new Date(Date.now() + 604800 * 1000)
+				}
+				if(Date.parse(this.increaseLock) > Date.now() + 126144000 * 1000) {
+					this.increaseLock = new Date()
 				}
 				this.crvBalance = BN(decoded[2])
 				this.deposit = this.crvBalance.div(1e18).toFixed(0,1)
@@ -715,11 +720,11 @@
 					let numPoints = 10
 					if(chartData.length > 1) {
 						for(let i = 0; i < numPoints; i++) {
-							console.log(origEvents[j-1].totalPower, i, "TOTAL POWER")
+							//console.log(origEvents[j-1].totalPower, i, "TOTAL POWER")
 							let currentTimestamp = startTimestamp + i * (diff / numPoints)
-							console.log(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000, "AMOUNTS")
+							//console.log(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000, "AMOUNTS")
 							let amount = this.calcVotingPower(amountLocked, currentTimestamp, this.events[j-1].locktime * 1000)
-							console.log(amount, "THE AMOUNT")
+							//console.log(amount, "THE AMOUNT")
 							if(this.events.find(e=>e.timestamp == currentTimestamp / 1000) === undefined) {
 								this.events.splice(j, 0, {
 									type: 'decrease',
@@ -967,7 +972,13 @@
 				let newtime = this.lockTime + period
 
 				this.increaseLock = new Date(newtime * 1000)
-			}
+			},
+
+			showIncreaseLockButton(time) {
+				let time1 = this.lockEnd + time
+				let time2 = (Date.now() / 1000) + 126144000
+				return time1 < time2
+			},
 
 		},
 
@@ -996,6 +1007,9 @@
 	}
 	button {
 		margin-top: 0.8em;
+	}
+	.increaseLockButtons ~ button {
+		margin-top: 0;
 	}
 	.depositinputs label {
 		margin-right: 0.4em;

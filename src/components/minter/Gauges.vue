@@ -3,6 +3,9 @@
 		<div class='window white' v-if='showChart'>
 			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
 		</div>
+		<div class='window white' v-if='showChart'>
+			<highcharts :options="piegaugechartdata" ref='piegaugecharts'></highcharts>
+		</div>
 		<div class='window white'>
 			<voting-escrow :showchart='false'></voting-escrow>
 		</div>
@@ -86,7 +89,44 @@
 			        text: 'Gauge allocation'
 			    },
 			    tooltip: {
-			        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+			        pointFormat: '{series.name}: <b>{point.percentage:.3f}%</b>'
+			    },
+			    accessibility: {
+			        point: {
+			            valueSuffix: '%'
+			        }
+			    },
+			    plotOptions: {
+			        pie: {
+			            allowPointSelect: true,
+			            cursor: 'pointer',
+			            dataLabels: {
+			                enabled: true,
+			                // formatter: (function(self) {
+			                // 	return function(point) { 
+			                // 		return `<b>${this.key}</b>: 
+			                // 		${helpers.formatNumber(self.allPools[this.key], 0)}$
+			                // 		(${this.percentage.toFixed(2)}%)`
+			                // 	}
+			                // })(this),
+			            }
+			        }
+			    },
+			    series: [],
+			},
+
+			piegaugechartdata: {
+				chart: {
+			        plotBackgroundColor: null,
+			        plotBorderWidth: null,
+			        plotShadow: false,
+			        type: 'pie'
+			    },
+			    title: {
+			        text: 'Gauge relative weight'
+			    },
+			    tooltip: {
+			        pointFormat: '{series.name}: <b>{point.percentage:.3f}%</b>'
 			    },
 			    accessibility: {
 			        point: {
@@ -113,6 +153,8 @@
 			},
 
 			piechart: null,
+
+			piegaugechart: null,
 
 			showChart: true,
 
@@ -164,7 +206,11 @@
 			async mounted() {
 				gaugeStore.state.totalClaimableCRV = null
 				this.piechart = this.$refs.piecharts.chart
+				this.piegaugechart = this.$refs.piegaugecharts.chart
+
 				this.piechart.showLoading()
+
+				this.piegaugechart.showLoading()
 
 				await gaugeStore.getState()
 				this.loading = false
@@ -205,6 +251,20 @@
 
 				this.piechart.hideLoading()
 
+				let gaugeSum = Object.values(gaugeStore.state.pools).reduce((a,b) => +a + +b.gauge_relative_weight, 0)
+				let piegauges = Object.values(gaugeStore.state.pools).map(v => ({ name: v.name, y: v.gauge_relative_weight / gaugeSum}))
+
+				let highest = piegauges.map(data=>data.y).indexOf(Math.max(...piegauges.map(data => data.y)))
+				piegauges[highest].sliced = true;
+				piegauges[highest].selected = true;
+
+				this.piegaugechart.addSeries({
+					name: 'Gauge relative weights',
+					data: piegauges,
+				})
+
+				this.piegaugechart.hideLoading()
+
 			},
 
 			async claim() {
@@ -213,11 +273,14 @@
 				let fillarray = new Array(8-gauges.length).fill('0x0000000000000000000000000000000000000000')
 				gauges.push(...fillarray)
 				console.log(gauges, "ALL GAUGES")
-				let gas = await gaugeStore.state.minter.methods.mint_many(gauges).estimateGas()
+				let mintMethod = gaugeStore.state.minter.methods.mint_many(gauges)
+				if(gauges.filter(address => +address > 0).length == 1)
+					mintMethod = gaugeStore.state.minter.methods.mint(gauges.find(address => +address > 0))
+				let gas = await mintMethod.estimateGas()
 
 				var { dismiss } = notifyNotification(`Please confirm claiming CRV from all gauges you've deposited to`)
 
-				await gaugeStore.state.minter.methods.mint_many(gauges).send({
+				await mintMethod.send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,

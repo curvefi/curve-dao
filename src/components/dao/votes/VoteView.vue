@@ -133,39 +133,81 @@
 							Total votes: {{ vote.castCount }}
 						</div>
 
-						<button class='showVoters' @click='showVoters = !showVoters'>
-							{{ !showVoters ? 'Show' : 'Hide' }} voters
-						</button>
+						<div class='voteDistributionLink'>
+							<router-link :to="'/locks/' + vote.startDate">
+								Vote distribution at snapshot chart
+							</router-link>
+						</div>
 
-						<table class='tui-table' v-if='vote.casts && vote.casts.length > 0 && showVoters'>
-							<thead>
-								<tr>
-									<th>Voter</th>
-									<th>veCRV voted with</th>
-									<th>Supports</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for='cast in vote.casts'>
-									<td>
-										<a :href="'https://etherscan.io/address/' + cast.voter" rel='noopener noreferrer'>
-											{{ shortenAddress(cast.voter) }}
-										</a>
-									</td>
-									<td>
-										{{ (cast.voterStake / 1e18).toFixed(2) }}
-									</td>
-									<td>
-										<span class='castsupports' v-show='cast.supports'>
-											<img class='icon small' :src="publicPath + 'vote-yea-solid.svg'">Yes
-										</span>
-										<span class='castrejects' v-show='!cast.supports'>
-											<img class='icon small' :src="publicPath + 'vote-nay-solid.svg'">No
-										</span>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+						<div>
+							<button class='showVoters' @click='showVoters = !showVoters'>
+								{{ !showVoters ? 'Show' : 'Hide' }} voters
+							</button>
+						</div>
+
+						<vote-casts-chart :showModal='showModal' :chartdata='chartdata' :name='chartname' @hide='showModal = false'></vote-casts-chart>
+
+						<div class='allCasts'>
+							
+							<div v-if='forCasts && forCasts.length > 0 && showVoters'>
+								<div class='castsForHeading castsupports'>
+									<div>
+										For <img class='icon' :src="publicPath + 'vote-yea-solid.svg'">
+									</div>
+									<button @click='showChart(1)'>Show chart</button>
+								</div>
+								<table class='tui-table'>
+									<thead>
+										<tr>
+											<th>Voter</th>
+											<th>veCRV</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for='cast in forCasts'>
+											<td>
+												<a :href="'https://etherscan.io/address/' + cast.voter" rel='noopener noreferrer'>
+													{{ shortenAddress(cast.voter) }}
+												</a>
+											</td>
+											<td>
+												{{ (cast.voterStake / 1e18).toFixed(2) }}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+							
+							<div v-if='againstCasts && againstCasts.length > 0 && showVoters'>
+								<div class='castsAgainstHeading castrejects'>
+									<div>
+										Against <img class='icon' :src="publicPath + 'vote-nay-solid.svg'">
+									</div> 
+									<button @click='showChart(0)'>Show chart</button>
+								</div>
+								<table class='tui-table'>
+									<thead>
+										<tr>
+											<th>Voter</th>
+											<th>veCRV</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr v-for='cast in againstCasts'>
+											<td>
+												<a :href="'https://etherscan.io/address/' + cast.voter" rel='noopener noreferrer'>
+													{{ shortenAddress(cast.voter) }}
+												</a>
+											</td>
+											<td>
+												{{ (cast.voterStake / 1e18).toFixed(2) }}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
 
 						<div class='myvote' v-if='vote.mycasts && vote.mycasts.length'>
 							You voted 
@@ -175,8 +217,7 @@
 							at snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
 						</div>
-
-						<div class='myvote info-message gentle-message' v-if='canVote() && vote.mycasts && !vote.mycasts.length'>
+						<div class='myvote info-message gentle-message' v-if='canVote() && (vote.mycasts && !vote.mycasts.length || !vote.mycasts)'>
 							Voting with {{ currentVotingPowerFormat() }} veCRV ({{ myVotingPowerPct }}% of total voting power), you had {{ balanceOfAtFormat }} veCRV
 							at vote creation on snapshot block 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
@@ -188,6 +229,7 @@
 						<div class='myvote info-message gentle-message' v-show='hadNoBalanceAt'>
 							You didn't have enough veCRV balance({{ balanceOfAtFormat}} / {{ MIN_BALANCE }} required) when vote was created on block snapshot 
 							<a :href="'https://etherscan.io/block/' + vote.snapshotBlock"> <b> {{ vote.snapshotBlock }} </b> </a>
+							at {{ startDateFormat }}
 							<p>
 								Lock CRV to be able to vote on next proposals in <router-link to='/locker'>Locker page</router-link>
 							</p>
@@ -273,31 +315,42 @@
 
 	import EnactVote from './EnactVote'
 
+	import VoteCastsChart from './VoteCastsChart'
+
 	export default {
 		components: {
 			Countdown,
 			EnactVote,
+			VoteCastsChart,
 		},
 
 		mixins: [RootModalMixin],
 
-		data: () => ({
-			vote: {
-				id: null,
-			},
-			balanceOfAt: null,
-			balanceOf: null,
-			CRVbalance: null,
+		data() {
+			return {
+				vote: {
+					id: null,
+				},
+				balanceOfAt: null,
+				balanceOf: null,
+				CRVbalance: null,
 
-			loadingyes: false,
-			loadingno: false,
+				loadingyes: false,
+				loadingno: false,
 
-			votetype: null,
+				votetype: null,
 
-			showMore: false,
+				showMore: false,
 
-			showVoters: false,
-		}),
+				showVoters: false,
+
+				showModal: false,
+
+				chartdata: [],
+				chartname: '',
+
+			}
+		},
 
 		async created() {
 			this.$watch(() => state.initialized && contract.multicall, val => {
@@ -397,6 +450,12 @@
 			myVotingPowerPct() {
 				return (this.currentVotingPower() * 100 / this.vote.votingPower).toFixed(2)
 			},
+			forCasts() {
+				return this.vote.casts && this.vote.casts.filter(v => v.supports == true)
+			},
+			againstCasts() {
+				return this.vote.casts && this.vote.casts.filter(v => v.supports == false)
+			},
 		},
 
 		methods: {
@@ -480,6 +539,22 @@
 
 				this.showRootModal = true
 			},
+			hideModal() {
+				this.showModal = false
+			},
+			showChart(type) {
+				console.log('show chart')
+				this.showModal = false
+				this.showModal = true
+				if(type == 1) {
+					this.chartdata = this.forCasts
+					this.chartname = 'For vote distribution'
+				}
+				if(type == 0) {
+					this.chartdata = this.againstCasts
+					this.chartname = 'Against vote distribution'
+				}
+			}
 		},
 	}
 </script>
@@ -576,8 +651,8 @@
 	}
 
 	table {
-		width: 100%;
-		margin-top: 1em;
+		/*width: 100%;*/
+		margin-top: 0.4em;
 	}
 	tbody tr td a {
 		display: inline-block;
@@ -612,12 +687,29 @@
 	}
 	.castsupports img {
 		filter: invert(10%) sepia(68%) saturate(7256%) hue-rotate(119deg) brightness(101%) contrast(101%);
+		vertical-align: middle;
 	}
 	.castrejects img {
 		filter: invert(7%) sepia(98%) saturate(4182%) hue-rotate(8deg) brightness(113%) contrast(119%);
+		vertical-align: middle;
 	}
 	.showVoters {
 		margin-top: 1em;
 		box-shadow: none;
+	}
+	.voteDistributionLink {
+		margin-top: 1em;
+	}
+	.allCasts {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+	}
+	.allCasts > div {
+		margin-top: 1em;
+	}
+	.castsForHeading, .castsAgainstHeading {
+		display: flex;
+		justify-content: space-between;
 	}
 </style>

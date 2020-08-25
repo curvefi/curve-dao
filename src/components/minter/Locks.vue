@@ -33,10 +33,12 @@
 						<th><img class='icon small' :src="publicPath + 'logo.png'"> CRV Locked</th>
 						<th>Unlock time</th>
 						<th>veCRV</th>
+						<th>%</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-show='locks.length == 0'>
+						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
@@ -84,6 +86,9 @@
 								<img class='icon small' :src="publicPath + 'hourglass-end-solid.svg'"> Expired
 							</span>
 						</td>
+						<td>
+							{{ (veCRV(lock) * 100 / veCRVtotal).toFixed(2) }}
+						</td>
 					</tr>
 				</tbody>
 			</table>
@@ -110,6 +115,8 @@
 </template>
 
 <script>
+	import { contract, getters } from '../../contract'
+
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
 
@@ -193,12 +200,24 @@
 				block: null,
 
 				charttimestamp: null,
+
+				veCRVtotal: 0,
 			}
 
 		},
 
+		async created() {
+			this.$watch(() => contract.web3, (val, oldval) => {
+				if(val)
+					this.mounted()
+			}, {
+				immediate: true
+			})
+		},
+
 		mounted() {
-			this.mounted()
+			if(contract.web3)
+				this.mounted()
 		},
 
 		watch: {
@@ -252,7 +271,7 @@
 
 				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				if(this.block === null)
-					this.block = await web3.eth.getBlockNumber() - 2
+					this.block = await contract.web3.eth.getBlockNumber() - 2
 				this.block = +this.block
 				let QUERY = gql`
 					query($block: Int!) {
@@ -280,13 +299,13 @@
 
 				console.log(results)
 
-				let veCRVtotal = this.locks.reduce((a, b) => {
+				this.veCRVtotal = this.locks.reduce((a, b) => {
 					return +a + +this.veCRV(b)
 				}, 0)
 
 				let piedata = this.locks.map(lock => ({
 					name: lock.user,
-					y: this.veCRV(lock) / veCRVtotal * 100
+					y: this.veCRV(lock) / this.veCRVtotal * 100
 				}))
 
 				let highest = piedata.map(data=>data.y).indexOf(Math.max(...piedata.map(data => data.y)))
@@ -309,6 +328,7 @@
 			async timeTravelChart() {
 				console.log(this.charttimestamp, "CHART TIME")
 				let timestamp = (Date.parse(this.charttimestamp) / 1000) | 0
+				history.pushState({}, null, '/locks/' + timestamp)
 				console.log(timestamp)
 
 				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks')

@@ -107,7 +107,7 @@
 							</a>
 						</td>
 						<td>
-							<a :href="'https://etherscan.io/address/' + vote.id" rel='noopener noreferrer'>
+							<a :href="'https://etherscan.io/tx/' + vote.id" rel='noopener noreferrer'>
 								{{ vote.weight / 100 }}%
 							</a>
 						</td>

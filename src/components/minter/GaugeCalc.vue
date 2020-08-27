@@ -56,7 +56,7 @@
 					<input id='totalvecrv' type='text' v-model='totalveCRV'>
 				</div>
 				<div class='submit'>
-					<button @click='calc'>Submit</button>
+					<button @click='calc'>Calculate</button>
 				</div>
 				<div class='boost'>
 					Boost: 

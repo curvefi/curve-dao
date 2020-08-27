@@ -15,7 +15,7 @@
 						Confirm creating lock with {{ deposit }} CRV until {{ increaseLockText }}
 					</div>
 					<div class='content' v-show='showModalType == 1'>
-						Confirm locking {{ deposit }} CRV until {{ increaseLockText }}
+						Confirm adding {{ deposit }} more CRV to your lock ending on {{ lockEndText }}
 					</div>
 					<div class='content' v-show='showModalType == 2'>
 						Confirm increasing lock time until {{ increaseLockText }}
@@ -71,30 +71,34 @@
 			<div class='velock' v-show='showvelock && loaded'>
 				<div class='increaselock' v-show='hasvecrv'>
 					<p class='depositinputs'>
-						<label for='deposit'>Increase amount:</label>
-						<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
-						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
-						<br>
-						<button @click="confirmModal('increaseAmount')">Add</button>
+						<fieldset>
+							<label for='deposit'>Increase amount:</label>
+							<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
+							<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
+							<br>
+							<button @click="confirmModal('increaseAmount')">Add</button>
+						</fieldset>
 					</p>
 					<p class='depositinputs'>
-						<label for='incraselock'>Increase lock:</label>
-						<datepicker 
-							id='increaselock' 
-							name='increaselock' 
-							v-model='increaseLock'
-							:disabled-dates='disabledDates'
-							:open-date='openDate'
-						></datepicker>
-						<div class='increaseLockButtons'>
-							<button v-show='showIncreaseLockButton(604800)' @click='lockButton(604800, 0)'>1 week</button>
-							<button v-show='showIncreaseLockButton(2678400)' @click='lockButton(2678400, 0)'>1 month</button>
-							<button v-show='showIncreaseLockButton(16070400)' @click='lockButton(16070400, 0)'>6 months</button>
-							<button v-show='showIncreaseLockButton(31536000)' @click='lockButton(31536000, 0)'>1 year</button>
-							<button v-show='showIncreaseLockButton(126144000)' @click='lockButton(126144000, 0)'>4 years</button>
-						</div>
-						<br>
-						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
+						<fieldset>
+							<label for='incraselock'>Increase lock:</label>
+							<datepicker 
+								id='increaselock' 
+								name='increaselock' 
+								v-model='increaseLock'
+								:disabled-dates='disabledDates'
+								:open-date='openDate'
+							></datepicker>
+							<div class='increaseLockButtons'>
+								<button v-show='showIncreaseLockButton(604800)' @click='lockButton(604800, 0)'>1 week</button>
+								<button v-show='showIncreaseLockButton(2678400)' @click='lockButton(2678400, 0)'>1 month</button>
+								<button v-show='showIncreaseLockButton(16070400)' @click='lockButton(16070400, 0)'>6 months</button>
+								<button v-show='showIncreaseLockButton(31536000)' @click='lockButton(31536000, 0)'>1 year</button>
+								<button v-show='showIncreaseLockButton(126144000)' @click='lockButton(126144000, 0)'>4 years</button>
+							</div>
+							<br>
+							<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
+						</fieldset>
 					</p>
 				</div>
 				<div class='increaselock' v-show='!hasvecrv'>
@@ -497,6 +501,9 @@
 			increaseLockText() {
 				return helpers.formatDateToHuman(Date.parse(this.increaseLock) / 1000).split(' ')[0]
 			},
+			lockEndText() {
+				return helpers.formatDateToHuman(this.lockEnd).split(' ')[0]
+			},
 			deposit: {
 				get() {
 					return veStore.state.deposit
@@ -842,7 +849,6 @@
 			},
 
 			async increaseAmount() {
-				await this.checkpoint(true)
 				this.showConfirmMessage = true;
 
 				let deposit = BN(this.deposit).times(1e18)
@@ -866,12 +872,12 @@
 							this.mounted()
 						})
 				})
+				await this.checkpoint(true)
 				this.showConfirmMessage = false
 				this.showModal = false
 			},
 
 			async submitIncreaseLock() {
-				await this.checkpoint(true)
 				this.showConfirmMessage = true;
 
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
@@ -892,6 +898,7 @@
 							this.mounted()
 						})
 				})
+				await this.checkpoint(true)
 				this.showConfirmMessage = false
 				this.showModal = false
 			},
@@ -902,7 +909,6 @@
 				let deposit = BN(this.deposit).times(1e18)
 				if(deposit.gt(this.crvBalance))
 					deposit = this.crvBalance
-				await this.checkpoint(true)
 				await common.approveAmount(this.CRV, deposit, getters.default_account(), this.votingEscrow._address, this.inf_approval)
 				let lockTime = BN(Date.parse(this.increaseLock) / 1000).toFixed(0,1)
 				var { dismiss } = notifyNotification('Please confirm creating lock')
@@ -922,6 +928,7 @@
 							this.mounted()
 						})
 				})
+				await this.checkpoint(true)
 				this.showConfirmMessage = false
 				this.showModal = false
 			},

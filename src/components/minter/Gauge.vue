@@ -6,7 +6,7 @@
 				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ CRVAPY.toFixed(2) }}%
 			</legend>
 			<div class='pool-info'>
-				<button @click='applyBoost' v-show='canApplyBoost' class='applyBoost'>Apply boost</button>
+				<button @click='applyBoost' class='applyBoost' v-show='canApplyBoost'>Apply boost</button>
 				<div class='gaugeRelativeWeight'>
 					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}%
 				</div>
@@ -24,9 +24,9 @@
 				<div class='boost' v-show='currentBoost !== null && !isNaN(currentBoost)'>
 					Current boost: {{ currentBoost && currentBoost.toFixed(4) }}
 				</div>
-				<div class='boost' v-show='maxGaugeBoost !== null'>
+				<!-- <div class='boost' v-show='maxGaugeBoost !== null'>
 					Max gauge boost: {{ maxGaugeBoost && maxGaugeBoost.toFixed(4) }}
-				</div>
+				</div> -->
 			</div>
 			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
 				<div class='flex-break'></div>
@@ -140,6 +140,7 @@
 
 			boost: null,
 			currentBoost: null,
+			currentBoostCheck: null,
 
 			loaded: false,
 
@@ -204,7 +205,8 @@
                 return process.env.BASE_URL
             },
             canApplyBoost() {
-            	return this.gaugeBalance > 0 && (Date.now() / 1000) > 1597271916
+            	console.log(this.gauge.name, this.gauge.currentWorkingBalance, this.gauge.previousWorkingBalance, this.gauge.currentWorkingBalance > +this.gauge.previousWorkingBalance, "WORKING BALANCES")
+            	return this.gauge.gaugeBalance > 0 && (Date.now() / 1000) > 1597271916 && this.currentBoost < this.currentBoostCheck
             },
             CRVAPY() {
             	let apy = this.apy
@@ -281,13 +283,11 @@
 					this.inf_approval = false
 
 				if(+this.gauge.gaugeBalance > 0) {
+					this.currentBoost = Math.max(1, gaugeStore.state.boosts[this.gauge.name])
 					this.checkLimit()
 				}
 
-				let totalSupply  = await this.gaugeContract.methods.totalSupply().call()
-				let working_supply = await this.gaugeContract.methods.working_supply().call()
-
-				this.maxGaugeBoost = totalSupply / working_supply
+				//this.maxGaugeBoost = this.gauge.original_supply / this.gauge.working_supply
 
 			},
 
@@ -549,7 +549,7 @@
 			async checkLimit() {
 				let currentLimit = await this.update_liquidity_limit()
 
-				this.currentBoost = currentLimit[1] 
+				this.currentBoostCheck = currentLimit[1] 
 			}
 		},
 	}

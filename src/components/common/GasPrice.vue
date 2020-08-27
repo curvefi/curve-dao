@@ -7,16 +7,16 @@
             <!-- <input id="gasslow" type="radio" name="gas" :value='gasPriceSlow' @click='gasPrice = gasPriceSlow'>
             <label for="gasslow">{{Math.round(gasPriceSlow)}} Slow</label> -->
 
-            <input id="gasstandard" type="radio" name="gas" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
-            <label for="gasstandard">{{Math.round(gasPriceMedium)}} Standard</label>
+            <input :id="'gasstandard' + i" type="radio" :name="'gas' + i" :value='gasPriceMedium' @click='customGasDisabled = true; gasPrice = gasPriceMedium'>
+            <label :for="'gasstandard' + i">{{Math.round(gasPriceMedium)}} Standard</label>
 
-            <input id="gasfast" type="radio" name="gas" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
-            <label for="gasfast">{{Math.round(gasPriceFast)}} Fast</label>
+            <input :id="'gasfast' + i" type="radio" :name="'gas' + i" checked :value='gasPriceFast' @click='customGasDisabled = true; gasPrice = gasPriceFast'>
+            <label :for="'gasfast' + i">{{Math.round(gasPriceFast)}} Fast</label>
 
-            <input id="gasinstant" type="radio" name="gas" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
-            <label for="gasinstant">{{Math.round(gasPriceFastest)}} Instant</label>
-            <input id="custom_gas" type="radio" name="gas" value='-' @click="customGasDisabled = false; gasPrice = gasPriceSlow">
-            <label for="custom_gas" @click="customGasDisabled = false; gasPrice = gasPriceSlow">
+            <input :id="'gasinstant' + i" type="radio" :name="'gas' + i" :value='gasPriceFastest' @click='customGasDisabled = true; gasPrice = gasPriceFastest'>
+            <label :for="'gasinstant' + i">{{Math.round(gasPriceFastest)}} Instant</label>
+            <input :id="'custom_gas' + i" type="radio" :name="'gas' + i" value='-' @click="customGasDisabled = false; gasPrice = gasPriceSlow">
+            <label :for="'custom_gas' + i" @click="customGasDisabled = false; gasPrice = gasPriceSlow">
                 <input type="text" id="custom_gas_input" 
                     :disabled='customGasDisabled'
                     name="custom_gas_input"
@@ -79,6 +79,9 @@
             errorMessage() {
                 setTimeout(() => errorState.txError = null, 2200)
                 return errorState.txError
+            },
+            i() {
+                return (Math.random() * 100) | 0
             },
 		},
 

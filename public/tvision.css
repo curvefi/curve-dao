@@ -381,13 +381,13 @@ fieldset:nth-child(1) .maxbalance:hover {
 #max_slippage label, #gas_price label {
   margin-left: 0.5em;
 }
-label[for='gasstandard'] {
+label[for*='gasstandard'] {
   color: grey;
 }
-label[for='gasfast'] {
+label[for*='gasfast'] {
   color: green;
 }
-label[for='gasinstant'] {
+label[for*='gasinstant'] {
   color: purple;
 }
 

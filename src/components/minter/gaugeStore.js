@@ -3,6 +3,9 @@ import { contract, getters } from '../../contract'
 import allabis, { ERC20_abi } from '../../allabis'
 import daoabis from '../dao/allabis'
 
+import gql from 'graphql-tag'
+import { GraphQLWrapper } from '@aragon/connect-thegraph'
+
 let swap_abi = allabis.susdv2.swap_abi
 
 import * as volumeStore from '../common/volumeStore'
@@ -25,6 +28,8 @@ export let state = Vue.observable({
 	totalGaugeBalance: null,
 
 	APYs: {},
+
+	boosts: {},
 })
 
 export async function getState() {
@@ -161,14 +166,18 @@ export async function getState() {
 	let ratesCalls = decodedGauges.map(gauge => [
 		[gauge, example_gauge.methods.inflation_rate().encodeABI()],
 		[gauge, example_gauge.methods.working_supply().encodeABI()],
+		[gauge, example_gauge.methods.totalSupply().encodeABI()],
+		[gauge, example_gauge.methods.working_balances(contract.default_account).encodeABI()],
 	])
 
-	//console.log(ratesCalls, "RATES CALLS")
+	console.log(ratesCalls, "RATES CALLS")
 
 	let aggRates = await contract.multicall.methods.aggregate(ratesCalls.flat()).call()
 	let decodedRate = aggRates[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-	let gaugeRates = decodedRate.filter((_, i) => i % 2 == 0).map(v => v / 1e18)
-	let workingSupplies = decodedRate.filter((_, i) => i % 2 == 1).map(v => v / 1e18)
+	let gaugeRates = decodedRate.filter((_, i) => i % 4 == 0).map(v => v / 1e18)
+	let workingSupplies = decodedRate.filter((_, i) => i % 4 == 1).map(v => v / 1e18)
+	let totalSupplies = decodedRate.filter((_, i) => i % 4 == 2).map(v => v / 1e18)
+	let workingBalances = decodedRate.filter((_, i) => i % 4 == 3).map(v => v)
 
 	let example_pool = new web3.eth.Contract(swap_abi, '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD')
 
@@ -182,8 +191,14 @@ export async function getState() {
 		let swap_address = state.pools[pool].swap
 		let virtual_price = decodedVirtualPrices.find(v => v[0].toLowerCase() == swap_address.toLowerCase())[1]
 		let _working_supply = workingSupplies[i]
-		if(['ren', 'sbtc'].includes(pool))
+		let totalSupply = totalSupplies[i]
+		if(['ren', 'sbtc'].includes(pool)) {
 			_working_supply *= btcPrice
+			totalSupply *= btcPrice
+		}
+		state.mypools.find(v => v.name == pool).working_supply = _working_supply
+		state.mypools.find(v => v.name == pool).original_supply = totalSupplies[i]
+		state.mypools.find(v => v.name == pool).currentWorkingBalance = workingBalances[i]
 		//console.log(pool, gaugeRates[i], w[1], 31536000, _working_supply, "RATE")
 		let rate = (gaugeRates[i] * w[1] * 31536000 / _working_supply * 0.4) / virtual_price
 		let apy = rate * CRVprice * 100
@@ -199,5 +214,32 @@ export async function getState() {
 	state.totalBalance = state.mypools.reduce((a, b) => +a + +b.balance, 0)
 	state.totalGaugeBalance = state.mypools.reduce((a, b) => +a + +b.gaugeBalance, 0)
 
+	console.log(state.mypools, "STATE MY POOLS")
+
+
+	let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gauges-mainnet')
+
+	let QUERY = gql`
+		{
+		  gauges(where: { user: "${contract.default_account.toLowerCase()}"}) {
+		    id
+		    user
+		    gauge
+		    originalBalance
+		    originalSupply
+		    workingBalance
+		    workingSupply
+		  }
+		}
+	`
+
+	let results = await wrapper.performQuery(QUERY)
+	results = results.data.gauges
+
+	for(let gaugeBoost of results) {
+		let pool = state.mypools.find(pool => pool.gauge.toLowerCase() == gaugeBoost.gauge.toLowerCase())
+		pool.previousWorkingBalance = gaugeBoost.workingBalance
+		state.boosts[pool.name] = gaugeBoost.workingBalance / (0.4 * gaugeBoost.originalBalance)
+	}
 
 }

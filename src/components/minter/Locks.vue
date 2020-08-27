@@ -312,9 +312,9 @@
 				piedata[highest].sliced = true;
 				piedata[highest].selected = true;
 
- 				let others = piedata.filter(data => data.y < 1)
+ 				let others = piedata.filter(data => data.y < 0.5)
 
- 				piedata = piedata.filter(data => data.y > 1)
+ 				piedata = piedata.filter(data => data.y > 0.5)
  				piedata.push({name: 'Others', y: others.reduce((a, b) => +a + +b.y, 0)})
 
 				this.piechart.addSeries({

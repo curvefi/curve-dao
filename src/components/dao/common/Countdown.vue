@@ -17,6 +17,7 @@
 		data: function() {
 			return {
 				interval: null,
+				timeLeft: 0,
 			}
 		},
 
@@ -29,21 +30,26 @@
 			}
 		},
 
+		mounted() {
+			this.timeLeft = this.vote.timeLeft
+			this.startTimer()
+		},
+
 		computed: {
 			voteNumber() {
 				return this.vote.voteNumber
 			},
 			days() {
-				return Math.floor(this.vote.timeLeft / (60 * 60 * 24))
+				return Math.floor(this.timeLeft / (60 * 60 * 24))
 			},
 			hours() {
-				return Math.floor((this.vote.timeLeft % ( 60 * 60 * 24)) / (60 * 60))
+				return Math.floor((this.timeLeft % ( 60 * 60 * 24)) / (60 * 60))
 			},
 			minutes() {
-				return Math.floor((this.vote.timeLeft % ( 60 * 60)) / (60))
+				return Math.floor((this.timeLeft % ( 60 * 60)) / (60))
 			},
 			seconds() {
-				return Math.floor((this.vote.timeLeft % (60)) )
+				return Math.floor((this.timeLeft % (60)) )
 			},
 			formatTime() {
 				let str = ''
@@ -64,10 +70,10 @@
 
 		methods: {
 			startTimer() {
-				if(this.vote.timeLeft > 0 && !this.vote.executed && this.interval === null) {
+				if(this.timeLeft > 0 && !this.vote.executed && this.interval === null) {
 					this.interval = setInterval(() => {
-						this.vote.timeLeft -= 1
-						if(this.vote.timeLeft < 0) clearInterval(this.interval)
+						this.timeLeft -= 1
+						if(this.timeLeft < 0) clearInterval(this.interval)
 					}, 1000)
 				}
 			},

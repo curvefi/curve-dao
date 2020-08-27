@@ -15,6 +15,7 @@
     "@aragon/connect-thegraph-voting": "0.4.2",
     "@biconomy/mexa": "^1.5.12",
     "@chenfengyuan/vue-qrcode": "^1.0.2",
+    "@ledgerhq/hw-transport-u2f": "^5.22.0",
     "@renproject/ren": "^1.0.5",
     "@sentry/browser": "https://github.com/pengiundev/sentry-browser",
     "@sentry/integrations": "^5.15.0",

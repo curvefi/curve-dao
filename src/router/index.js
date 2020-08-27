@@ -50,6 +50,7 @@ const DAOContracts = () => import('../components/dao/Contracts.vue')
 const Inflation = () => import('../components/dao/distribution/Inflation.vue')
 const GaugeWeight = () => import('../components/dao/gaugevote/Index.vue')
 const DAOStats = () => import('../components/dao/distribution/Stats.vue')
+const GaugeStats = () => import('../components/dao/gaugevote/GaugeStats.vue')
 
 //Minter
 const VotingEscrow = () => import('../components/minter/VotingEscrow.vue')
@@ -318,6 +319,11 @@ let routes = [
         path: 'locks/:timestamp?',
         name: 'Locks',
         component: Locks,
+      },
+      {
+        path: 'gaugestats',
+        name: 'GaugeStats',
+        component: GaugeStats,
       },
     ],
   },

@@ -3,9 +3,10 @@
 		<fieldset>
 			<legend>
 				{{ gauge.name }} {{ gauge.typeName }} gauge
-				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ apy.toFixed(2) }}%
+				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ CRVAPY.toFixed(2) }}%
 			</legend>
 			<div class='pool-info'>
+				<button @click='applyBoost' v-show='canApplyBoost' class='applyBoost'>Apply boost</button>
 				<div class='gaugeRelativeWeight'>
 					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}%
 				</div>
@@ -19,14 +20,12 @@
 				</div>
 				<div class='boost' v-show='boost !== null && !isNaN(boost)'>
 					Boost: {{ boost && boost.toFixed(4) }}
-					<input :id="'boost' + gauge.name" type='checkbox' v-model='WARMUP'>
-					<label :for="'boost' + gauge.name"></label>
-					<span class='tooltip'>[?]
-						<span class='tooltiptext long'>
-							<div>Enable/disable Boost warmup period</div>
-							<div>Boost starts in 2 weeks</div>
-						</span>
-					</span>
+				</div>
+				<div class='boost' v-show='currentBoost !== null && !isNaN(currentBoost)'>
+					Current boost: {{ currentBoost && currentBoost.toFixed(4) }}
+				</div>
+				<div class='boost' v-show='maxGaugeBoost !== null'>
+					Max gauge boost: {{ maxGaugeBoost && maxGaugeBoost.toFixed(4) }}
 				</div>
 			</div>
 			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
@@ -140,6 +139,7 @@
 			minted: null,
 
 			boost: null,
+			currentBoost: null,
 
 			loaded: false,
 
@@ -151,7 +151,7 @@
 
 			BOOST_WARMUP: 2 * 7 * 86400,
 
-			WARMUP: true,
+			maxGaugeBoost: null,
 		}),
 
 		computed: {
@@ -186,7 +186,7 @@
 				return (this.minted / 1e18).toFixed(2)
 			},
 			triggerUpdateLimit() {
-				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, this.WARMUP, Date.now()
+				return this.depositAmount, veStore.state.deposit, veStore.state.increaseLock, Date.now()
 			},
 			claimableRewardFormat() {
 				return this.toFixed(this.claimableReward / 1e18)
@@ -203,7 +203,15 @@
             publicPath() {
                 return process.env.BASE_URL
             },
-
+            canApplyBoost() {
+            	return this.gaugeBalance > 0 && (Date.now() / 1000) > 1597271916
+            },
+            CRVAPY() {
+            	let apy = this.apy
+            	if(this.currentBoost > 0)
+            		apy *= this.currentBoost
+            	return apy
+            },
 		},
 
 		watch: {
@@ -226,14 +234,7 @@
 				this.withdrawSlider = (Math.min(withdrawVal, 100)).toFixed(0)
 			},
 			async triggerUpdateLimit() {
-				if(!this.loaded) return;
-				this.promise.cancel()
-				this.promise = helpers.makeCancelable(this.update_liquidity_limit(this.depositAmount, veStore.newVotingPower()))
-				let newLimit = await this.promise
-				console.log(newLimit, "new limit")
-
-				this.boost = newLimit[1]
-
+				this.updateLimit()
 			},
 		},
 
@@ -250,7 +251,7 @@
 
 				this.swap_token = new contract.web3.eth.Contract(ERC20_abi, this.gauge.swap_token)
 
-				setTimeout(() => this.loaded = true, 1000)
+				this.loaded = true
 
 				//this.claimableTokens = await this.gaugeContract.methods.claimable_tokens(contract.default_account).call()
 				this.claimableTokens = this.gauge.claimable_tokens
@@ -278,6 +279,15 @@
 
 				if(allowance.lte(contract.max_allowance.div(BN(2))))
 					this.inf_approval = false
+
+				if(+this.gauge.gaugeBalance > 0) {
+					this.checkLimit()
+				}
+
+				let totalSupply  = await this.gaugeContract.methods.totalSupply().call()
+				let working_supply = await this.gaugeContract.methods.working_supply().call()
+
+				this.maxGaugeBoost = totalSupply / working_supply
 
 			},
 
@@ -421,7 +431,7 @@
 
 			async update_liquidity_limit(new_l = null, new_voting_balance = null) {
 				let l = +this.gauge.gaugeBalance
-				if(new_l)
+				if(new_l !== null)
 					l = new_l * 1e18
 				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, this.gauge.gauge)
 
@@ -443,7 +453,7 @@
 				let L = +decoded[5] + l
 
 
-				if(new_voting_balance) {
+				if(new_voting_balance !== null) {
 					voting_balance = new_voting_balance * 1e18
 				}
 
@@ -453,9 +463,7 @@
 				let TOKENLESS_PRODUCTION = 40
 
 				let BOOST_WARMUP = this.BOOST_WARMUP
-				if(!this.WARMUP)
-					BOOST_WARMUP = 0
-
+			
 				let lim = l * TOKENLESS_PRODUCTION / 100
 				if(voting_total > 0 && ((Date.now() / 1000) > period_timestamp + BOOST_WARMUP))
 					lim += L * voting_balance / voting_total * (100 - TOKENLESS_PRODUCTION) / 100
@@ -480,6 +488,7 @@
 
 				await gaugeStore.state.minter.methods.mint(this.gauge.gauge).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,
 				})
 				.once('transactionHash', hash => {
@@ -497,6 +506,7 @@
 
 				await this.gaugeContract.methods.claim_rewards(contract.default_account).send({
 					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
 					gas: 500000,
 				})
 				.once('transactionHash', hash => {
@@ -504,6 +514,43 @@
 					notifyHandler(hash)
 				})
 			},
+
+			async applyBoost() {
+				let gas = 600000
+				try {
+					gas = await this.gaugeContract.methods.user_checkpoint(contract.default_account).estimateGas()
+				}
+				catch(err) {
+					console.error(err)
+				}
+
+				var { dismiss } = notifyNotification(`Please confirm applying boost`)
+
+				await this.gaugeContract.methods.user_checkpoint(contract.default_account).send({
+					from: contract.default_account,
+					gasPrice: this.gasPriceWei,
+					gas: gas,
+				})
+				.once('transactionHash', hash => {
+					dismiss()
+					notifyHandler(hash)
+				})
+			},
+
+			async updateLimit() {
+				if(!this.loaded) return;
+				this.promise.cancel()
+				this.promise = helpers.makeCancelable(this.update_liquidity_limit(this.depositAmount, veStore.newVotingPower()))
+				let newLimit = await this.promise
+
+				this.boost = newLimit[1]
+			},
+
+			async checkLimit() {
+				let currentLimit = await this.update_liquidity_limit()
+
+				this.currentBoost = currentLimit[1] 
+			}
 		},
 	}
 </script>
@@ -578,6 +625,9 @@
 	}
 	.mintedCRVFrom, .gaugeRelativeWeight, .claimedRewards {
 		margin-top: 0.4em;
+	}
+	.gaugeRelativeWeight {
+		margin-top: 1em;
 	}
 	@media only screen and (max-device-width: 730px) {
 		.gauge .unstake {

@@ -1,7 +1,10 @@
 <template>
 	<div class='window white'>
 		<fieldset>
-			<legend>Gauge Weight Voting</legend>
+			<legend>
+				Gauge Weight Voting
+				<countdown :vote='vote'></countdown>
+			</legend>
 			<p class='info-message gentle-message'>
 				You can vote for gauge weight with your veCRV tokens(locked CRV tokens in <router-link to="/locker">Locker</router-link>). Gauge weights are used to determine how much CRV does each pool get
 			</p>
@@ -20,6 +23,7 @@
 			<p class='info-message gentle-message' v-show='tooMuchPower'>
 				You alrady used too much power for this gauge
 			</p>
+			<gauge-stats class='gaugeStats' :included='true'></gauge-stats>
 			<div class='gaugeweight'>
 				<div class='input'>
 					<select class='tvision' v-model='selectedGauge'>
@@ -44,12 +48,102 @@
 					<button :disabled='disabled' @click='submit'>Submit</button>
 				</div>
 			</div>
+
+		</fieldset>
+
+		<fieldset class='votehistory'>
+			<legend>Weight Voting History</legend>
+			<div class='veCRVvotestats'>
+				<p>
+					Voted this week: {{ totalveCRVvoteFormat }} veCRV
+				</p>
+				<p>
+					Total veCRV: {{ totalveCRVFormat }}
+				</p>
+				<p>
+					{{ (totalveCRVvote * 100 / totalveCRV).toFixed(2) }} % of veCRV supply voted
+				</p>
+			</div>
+
+
+			<button @click='showMyVotes' v-show='!showvotes'>Show my votes</button>
+			<button @click='getVotes()' v-show='showvotes'>Show all votes</button>
+
+			<table class='tui-table'>
+				<thead>
+					<tr>
+						<th>Voter</th>
+						<th>veCRV</th>
+						<th>Total veCRV</th>
+						<th>Gauge</th>
+						<th>Weight</th>
+						<th>Total weight</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-show='!filteredVotes.length'>
+						<td><span class='loading line'></span></td>
+						<td><span class='loading line'></span></td>
+						<td><span class='loading line'></span></td>
+						<td><span class='loading line'></span></td>
+						<td><span class='loading line'></span></td>
+						<td><span class='loading line'></span></td>
+					</tr>
+					<tr v-for='vote in filteredVotes'>
+						<td>
+							<a :href="'https://etherscan.io/address/' + vote.user" rel='noopener noreferrer'>
+								{{ shortenAddress(vote.user) }}
+							</a>
+						</td>
+						<td>
+							{{ (vote.veCRV / 1e18).toFixed(2) }}
+						</td>
+						<td>
+							{{ formatNumber(vote.totalveCRV / 1e18) }}
+						</td>
+						<td>
+							<a :href="'https://etherscan.io/address/' + vote.gauge" rel='noopener noreferrer'>
+								{{ getGaugeAddress(vote.gauge) }}
+							</a>
+						</td>
+						<td>
+							<a :href="'https://etherscan.io/address/' + vote.id" rel='noopener noreferrer'>
+								{{ vote.weight / 100 }}%
+							</a>
+						</td>
+						<td>
+							{{ (vote.total_weight / 1e36).toFixed(2) }}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div v-show='filteredVotes.length > 0' class='pagination'>
+				<div>
+					<button class='simplebutton' @click='prev' :disabled='page == 0'>Prev</button>
+					<span> {{ page }} (of {{ pages }}) </span>
+					<button class='simplebutton' @click='next' :disabled='page == this.pages'>Next</button>
+				</div>
+				<div class='perpage'>
+					Per page:
+					<select class='tvision' v-model='perPage'>
+						<option v-for='perPageNum in perPageOptions'>
+							{{ perPageNum }}
+						</option>
+					</select>
+				</div>
+
+			</div>
 		</fieldset>
 	</div>
 </template>
 
 <script>
 	import { contract, getters } from '../../../contract'
+
+	import gql from 'graphql-tag'
+	import { GraphQLWrapper } from '@aragon/connect-thegraph'
+
 	import { notify, notifyHandler, notifyNotification } from '../../../init'
 
 	import daoabis from '../../dao/allabis'
@@ -57,15 +151,22 @@
 	import * as gasPriceStore from '../../common/gasPriceStore'
     import GasPrice from '../../common/GasPrice.vue'
 
+	import * as helpers from '../../../utils/helpers'
 	import BN from 'bignumber.js'
 
 	const WEEK = 604800
 
 	const WEIGHT_VOTE_DELAY = 10 * 86400
 
+	import GaugeStats from './GaugeStats.vue'
+
+	import Countdown from '../common/Countdown.vue'
+
 	export default {
 		components: {
 			GasPrice,
+			GaugeStats,
+			Countdown,
 		},
 
 		data: () => ({
@@ -93,6 +194,18 @@
 			power_used: null,
 
 			message: '',
+
+			votes: [],
+			filteredVotes: [],
+
+			totalveCRVvote: 0,
+			totalveCRV: 0,
+
+			page: 0,
+			perPage: 10,
+			perPageOptions: [10, 20, 30, 50, 100],
+
+			showvotes: false,
 		}),
 
 		async created() {
@@ -112,6 +225,9 @@
 			async selectedGauge(val) {
 				this.last_user_vote = await this.gaugeController.methods.last_user_vote(contract.default_account, this.selectedGauge).call()
 				this.old_slope = await this.gaugeController.methods.vote_user_slopes(contract.default_account, this.selectedGauge).call()
+			},
+			changePaginationTrigger() {
+				this.changePagination()
 			},
 		},
 
@@ -146,6 +262,25 @@
             disabled() {
             	return this.selectedGauge == "0x0000000000000000000000000000000000000000"
             },
+            pages() {
+			  return this.votes.length && Math.ceil(this.votes.length / this.perPage) - 1
+		    },
+	  		changePaginationTrigger() {
+	  		  return this.page, this.perPage, Date.now()
+		    },
+		    totalveCRVvoteFormat() {
+		    	return helpers.formatNumber(this.totalveCRVvote / 1e18)
+		    },
+		    totalveCRVFormat() {
+		    	return helpers.formatNumber(this.totalveCRV / 1e18)
+		    },
+		    vote() {
+		    	return {
+		    		voteNumber: 1,
+		    		timeLeft: 1598486400 - (Date.now()) / 1000,
+		    		executed: false,
+		    	}
+		    },
 		},
 
 		methods: {
@@ -157,6 +292,7 @@
 					[this.votingEscrow._address, this.votingEscrow.methods.balanceOf(contract.default_account).encodeABI()],
 					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(contract.default_account).encodeABI()],
 					[this.gaugeController._address, this.gaugeController.methods.vote_user_power(contract.default_account).encodeABI()],
+					[this.votingEscrow._address, this.votingEscrow.methods.totalSupply().encodeABI()],
 				]
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
@@ -164,6 +300,29 @@
 				this.lock_end = +decoded[1]
 				this.power_used = +decoded[2]
 				this.next_time = ((Date.now() / 1000) + WEEK) / WEEK * WEEK
+				this.totalveCRV = +decoded[3]
+
+				this.getVotes()
+
+				// let totalSupply = 0
+
+				// let balances = []
+
+				// for(let gauge of Object.keys(this.gaugesNames).slice(1)) {
+				// 	console.log(gauge)
+				// 	let gaugeContract = new web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
+				// 	let supply = (await gaugeContract.methods.totalSupply().call()) / 1e18
+				// 	console.log(this.gaugesNames[gauge])
+				// 	if(['ren', 'sbtc'].includes(this.gaugesNames[gauge]))
+				// 		supply *= 11459
+				// 	console.log(supply)
+				// 	totalSupply += +supply
+				// 	balances.push(supply)
+				// }
+
+				// console.log(balances)
+				// console.log(balances.map((v, i) => [this.gaugesNames[Object.keys(this.gaugesNames).slice(1)[i]], v * 10000 / totalSupply]).filter(v => v[0] != 'usdt'))
+				// console.log(totalSupply)
 			},
 
 			shortenAddress(address) {
@@ -187,11 +346,91 @@
 						setTimeout(() => this.message = '', 4000)
 					})
 			},
+
+			async getVotes(address = null) {
+				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gaugecontroller-mainnet')
+
+				let QUERY = gql`
+					{
+					  gaugeVotes(where: { time_gt: 1597881600 }, orderBy: time, orderDirection: desc) {
+					    id
+					    time
+					    user
+					    gauge
+					    weight
+					    gauge_weights {
+					      gauge
+					      gauge_weight
+					    }
+					    total_weight
+					    veCRV
+					    totalveCRV
+					  }
+					}
+				`
+
+				if(address) {
+					QUERY = gql`
+						{
+						  gaugeVotes(where: { user: "${address.toLowerCase()}" }, orderBy: time, orderDirection: desc) {
+						    id
+						    time
+						    user
+						    gauge
+						    weight
+						    gauge_weights {
+						      gauge
+						      gauge_weight
+						    }
+						    total_weight
+						    veCRV
+						    totalveCRV
+						  }
+						}
+					`
+				}
+
+				let results = await wrapper.performQuery(QUERY)
+				this.votes = results.data.gaugeVotes
+				this.totalveCRVvote = this.votes.reduce((a, b) => +a + +b.veCRV, 0)
+				console.log(results, this.votes.length, "THE RESULTS")
+				this.changePagination()
+			},
+
+			showMyVotes() {
+				this.showvotes = true
+				this.getVotes(contract.default_account)
+			},
+
+			getGaugeAddress(gauge) {
+				return this.gaugesNames[web3.utils.toChecksumAddress(gauge)]
+			},
+
+			prev() {
+				if(this.page == 0) return;
+				this.page -= 1
+			},
+
+			next() {
+				if(this.page < this.pages)
+				this.page += 1
+			},
+
+			changePagination() {
+				this.filteredVotes = this.votes.slice(this.page*this.perPage, this.page*this.perPage + this.perPage)
+			},
+
+			formatNumber(num) {
+				return helpers.formatNumber(num)
+			},
 		},
 	}
 </script>
 
 <style scoped>
+	legend {
+		text-align: center;
+	}
 	select.tvision {
 		box-shadow: none
 	}
@@ -215,5 +454,55 @@
 	}
 	select option {
 		text-align: justify;
+	}
+	.gaugeStats {
+		margin-top: 1em;
+	}
+
+	table {
+		width: 100%;
+		margin-top: 0.4em;
+	}
+	tbody tr td a {
+		display: inline-block;
+		min-height: 100%;
+		width: 100%;
+		font-weight: normal;
+	}
+	thead tr {
+		border-bottom: 1px solid #a8a8a8;
+	}
+	thead tr th {
+		color: #202020;
+	}
+	tbody tr td {
+		padding-top: 10px;
+		padding-left: 1em;
+		color: black;
+	}
+	tbody tr td:nth-child(6) a {
+		font-weight: normal;
+	}
+
+	.pagination {
+		margin-top: 1em;
+		display: flex;
+	}
+	select.tvision {
+		box-shadow: none;
+	}
+	.perpage {
+		margin-left: 3em;
+	}
+	.pagination button {
+		margin-top: 0;
+	}
+
+	.veCRVvotestats p {
+		margin-block-start: 0.4em;
+		margin-block-end: 0;
+	}
+	.votehistory {
+		margin-top: 1em;
 	}
 </style>

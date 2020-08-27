@@ -394,7 +394,6 @@
 
 		async created() {
 			this.$watch(() => contract.initializedContracts, (val, oldval) => {
-				console.log(val, "THE VAL")
 			 	if(val) this.mounted()
 			})
 		},
@@ -567,14 +566,14 @@
 					[this.votingEscrow._address, this.votingEscrow.methods.locked__end(getters.default_account()).encodeABI()],
 					[this.CRV._address, this.CRV.methods.balanceOf(getters.default_account()).encodeABI()],
 				]
-				console.log(calls, "THE CALLS")
+				//console.log(calls, "THE CALLS")
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
 				this.vecrvBalance = BN(decoded[0])
 				this.lockTime = +decoded[1]
 				this.lockEnd = +decoded[1]
 				this.loaded = true
-				console.log(this.lockEnd, "LOCK END")
+				//console.log(this.lockEnd, "LOCK END")
 				this.increaseLock = new Date((this.lockTime + 604800)* 1000)
 				if(this.lockTime == 0) {
 					this.lockTime = Date.now() / 1000
@@ -597,7 +596,7 @@
 				while(this.chart.series[0])
 					this.chart.series[0].remove()
 
-				console.log("LOAD CHART")
+				//console.log("LOAD CHART")
 
 				this.wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				let QUERY = gql`
@@ -631,7 +630,7 @@
 
 
 				let results = await this.wrapper.performQuery(QUERY)
-				console.log(results, "THE RESULTS")
+				//console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
 				this.CRVLocked = results.data.crvlockeds[0].CRV
 				let lastUnlockTime = results.data.lastUnlockTime[0].unlock_time
@@ -702,9 +701,9 @@
 
 			interpolateVotingPower(chartData) {
 				let origEvents = this.events.slice()
-				console.log(origEvents, "ORIG EVENTS")
+				//console.log(origEvents, "ORIG EVENTS")
 				let newChartData = []
-				console.log(chartData.slice(), "CHARTDATA LENGTH")
+				//console.log(chartData.slice(), "CHARTDATA LENGTH")
 				for(let j = 1; j < chartData.length; j++) {
 					let v = chartData[j]
 					let prev = chartData[j-1]
@@ -806,14 +805,14 @@
 
 				if(lastCheckpointed.length) {
 					lastCheckpointed.forEach(v => {
-						console.log(v.gauge, gaugesNeedCheckpoint[v.gauge.toLowerCase()].toString(), v.originalBalance.toString(), "BALANCE NOW", "ORIGINAL BALANCE")
+						//console.log(v.gauge, gaugesNeedCheckpoint[v.gauge.toLowerCase()].toString(), v.originalBalance.toString(), "BALANCE NOW", "ORIGINAL BALANCE")
 						gaugesNeedCheckpoint[v.gauge.toLowerCase()] = gaugesNeedCheckpoint[v.gauge.toLowerCase()].minus(BN(v.originalBalance))
 					})
 				}
 
 				gaugesNeedCheckpoint = Object.keys(gaugesNeedCheckpoint).filter(k => gaugesNeedCheckpoint[k].gt(0))
 
-				console.log(gaugesNeedCheckpoint, "GAUGES NEED CHECKPOINT")
+				//console.log(gaugesNeedCheckpoint, "GAUGES NEED CHECKPOINT")
 
 				this.gaugesNeedCheckpoint = gaugesNeedCheckpoint
 
@@ -822,7 +821,7 @@
 				if(doCheckpoint) {
 
 					for(let gauge of gaugesNeedCheckpoint) {
-						console.log(gauge, this.gaugesNames)
+						//console.log(gauge, this.gaugesNames)
 						let gaugeContract = new web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
 						let gaugeAddress = Object.keys(this.gaugesNames).find(address => address.toLowerCase() == gauge.toLowerCase())
 						let { dismiss } = notifyNotification(`Please confirm checkpointing from ${this.gaugesNames[gaugeAddress]} gauge`)

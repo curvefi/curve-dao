@@ -141,7 +141,7 @@ export async function getState() {
 		}
 	})
 
-	console.log(decodedGauges, "THE GAUGES")
+	//console.log(decodedGauges, "THE GAUGES")
 
 	let pools = ['compound','usdt','iearn','busd','susdv2','pax','ren','sbtc']
 
@@ -151,19 +151,19 @@ export async function getState() {
 	let CRVprice = prices['curve-dao-token'].usd
 
 	let weightCalls = decodedGauges.map(gauge => [state.gaugeController._address, state.gaugeController.methods.gauge_relative_weight(gauge).encodeABI()])
-	console.log(weightCalls, "WEIGHT CALLS")
+	//console.log(weightCalls, "WEIGHT CALLS")
 
 	let aggCallsWeights = await contract.multicall.methods.aggregate(weightCalls).call()
 	let decodedWeights = aggCallsWeights[1].map((hex, i) => [weightCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
-	console.log(decodedWeights, "DECODED WEIGHTS")
+	//console.log(decodedWeights, "DECODED WEIGHTS")
 
 	let ratesCalls = decodedGauges.map(gauge => [
 		[gauge, example_gauge.methods.inflation_rate().encodeABI()],
 		[gauge, example_gauge.methods.working_supply().encodeABI()],
 	])
 
-	console.log(ratesCalls, "RATES CALLS")
+	//console.log(ratesCalls, "RATES CALLS")
 
 	let aggRates = await contract.multicall.methods.aggregate(ratesCalls.flat()).call()
 	let decodedRate = aggRates[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
@@ -173,7 +173,7 @@ export async function getState() {
 	let example_pool = new web3.eth.Contract(swap_abi, '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD')
 
 	let virtualPriceCalls = Object.values(state.pools).map(v => [v.swap, example_pool.methods.get_virtual_price().encodeABI()])
-	console.log(virtualPriceCalls, "VIRTUAL PRICE CALLS")
+	//console.log(virtualPriceCalls, "VIRTUAL PRICE CALLS")
 	let aggVirtualPrices = await contract.multicall.methods.aggregate(virtualPriceCalls).call()
 	let decodedVirtualPrices = aggVirtualPrices[1].map((hex, i) => [virtualPriceCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
@@ -184,6 +184,7 @@ export async function getState() {
 		let _working_supply = workingSupplies[i]
 		if(['ren', 'sbtc'].includes(pool))
 			_working_supply *= btcPrice
+		//console.log(pool, gaugeRates[i], w[1], 31536000, _working_supply, "RATE")
 		let rate = (gaugeRates[i] * w[1] * 31536000 / _working_supply * 0.4) / virtual_price
 		let apy = rate * CRVprice * 100
 		if(isNaN(apy))
@@ -193,7 +194,7 @@ export async function getState() {
 		Vue.set(state.APYs, pool, apy)
 	})
 
-	console.log(state.mypools, "STATE MY POOLS")
+	//console.log(state.mypools, "STATE MY POOLS")
 	
 	state.totalBalance = state.mypools.reduce((a, b) => +a + +b.balance, 0)
 	state.totalGaugeBalance = state.mypools.reduce((a, b) => +a + +b.gaugeBalance, 0)

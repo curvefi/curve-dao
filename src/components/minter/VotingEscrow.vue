@@ -9,7 +9,7 @@
 					</div>
 					<legend>Confirm lock</legend>
 					<div class='content' v-show='gaugesNeedCheckpoint && gaugesNeedCheckpoint.length > 0'>
-						You need to checkpoint into {{ gaugesNeedCheckpoint && gaugesNeedCheckpoint.length }} gauges: {{ gaugesNeedCheckpointText }} gauge before locking
+						You need to checkpoint into {{ gaugesNeedCheckpoint && gaugesNeedCheckpoint.length }} gauges: {{ gaugesNeedCheckpointText }} gauge after locking(after you confirm lock transaction, you'll need to confirm {{ gaugesNeedCheckpoint && gaugesNeedCheckpoint.length }} more)
 					</div>
 					<div class='content' v-show='showModalType == 0'>
 						Confirm creating lock with {{ deposit }} CRV until {{ increaseLockText }}
@@ -35,6 +35,9 @@
 			<div class='totalCRVlocked'>
 				Total <img class='icon small' :src="publicPath + 'logo.png'"> CRV vote-locked: 
 				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} </span>
+			</div>
+			<div class='DAOPower'>
+				Total veCRV: <span :class="{'loading line': DAOPower === null}"></span> <span v-show='DAOPower > 0'> {{ DAOPowerFormat }} </span>
 			</div>
 			<div class='myCRV'>
 				<img class='icon small' :src="publicPath + 'logo.png'"> CRV balance: {{ crvBalanceText }}
@@ -70,36 +73,32 @@
 			<span class='loading matrix' v-show='!loaded'></span>
 			<div class='velock' v-show='showvelock && loaded'>
 				<div class='increaselock' v-show='hasvecrv'>
-					<p class='depositinputs'>
-						<fieldset>
-							<label for='deposit'>Increase amount:</label>
-							<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
-							<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
-							<br>
-							<button @click="confirmModal('increaseAmount')">Add</button>
-						</fieldset>
-					</p>
-					<p class='depositinputs'>
-						<fieldset>
-							<label for='incraselock'>Increase lock:</label>
-							<datepicker 
-								id='increaselock' 
-								name='increaselock' 
-								v-model='increaseLock'
-								:disabled-dates='disabledDates'
-								:open-date='openDate'
-							></datepicker>
-							<div class='increaseLockButtons'>
-								<button v-show='showIncreaseLockButton(604800)' @click='lockButton(604800, 0)'>1 week</button>
-								<button v-show='showIncreaseLockButton(2678400)' @click='lockButton(2678400, 0)'>1 month</button>
-								<button v-show='showIncreaseLockButton(16070400)' @click='lockButton(16070400, 0)'>6 months</button>
-								<button v-show='showIncreaseLockButton(31536000)' @click='lockButton(31536000, 0)'>1 year</button>
-								<button v-show='showIncreaseLockButton(126144000)' @click='lockButton(126144000, 0)'>4 years</button>
-							</div>
-							<br>
-							<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
-						</fieldset>
-					</p>
+					<fieldset class='depositinputs'>
+						<label for='deposit'>Increase amount:</label>
+						<input id='deposit' type='text' :class = "{'invalid': isInvalidAmount}" v-model='deposit'>
+						<span class='maxbalance' @click='setMaxBalance'>Max: {{ crvBalanceText }}</span>
+						<br>
+						<button @click="confirmModal('increaseAmount')">Add</button>
+					</fieldset>
+					<fieldset class='depositinputs'>
+						<label for='incraselock'>Increase lock:</label>
+						<datepicker 
+							id='increaselock' 
+							name='increaselock' 
+							v-model='increaseLock'
+							:disabled-dates='disabledDates'
+							:open-date='openDate'
+						></datepicker>
+						<div class='increaseLockButtons'>
+							<button v-show='showIncreaseLockButton(604800)' @click='lockButton(604800, 0)'>1 week</button>
+							<button v-show='showIncreaseLockButton(2678400)' @click='lockButton(2678400, 0)'>1 month</button>
+							<button v-show='showIncreaseLockButton(16070400)' @click='lockButton(16070400, 0)'>6 months</button>
+							<button v-show='showIncreaseLockButton(31536000)' @click='lockButton(31536000, 0)'>1 year</button>
+							<button v-show='showIncreaseLockButton(126144000)' @click='lockButton(126144000, 0)'>4 years</button>
+						</div>
+						<br>
+						<button @click="confirmModal('submitIncreaseLock')">Increase lock</button>
+					</fieldset>
 				</div>
 				<div class='increaselock' v-show='!hasvecrv'>
 					<p class='depositinputs'>
@@ -147,7 +146,7 @@
 					You need at least 2500 veCRV to be able to create a vote
 				</p>
 			</div>
-			<gas-price></gas-price>
+			<gas-price v-show='showchart'></gas-price>
 			<div v-show='!showvelock'>
 				<slot></slot>
 			</div>
@@ -392,6 +391,8 @@
 
 				lockEnd: null,
 
+				DAOPower: null,
+
 			}
 
 		},
@@ -535,6 +536,9 @@
             CRVLockedFormat() {
             	return helpers.formatNumber(this.CRVLocked / 1e18)
             },
+            DAOPowerFormat() {
+            	return helpers.formatNumber(this.DAOPower / 1e18)
+            },
             myLockedCRVFormat() {
             	return helpers.formatNumber(this.myLockedCRV / 1e18)
             },
@@ -623,6 +627,9 @@
 						    timestamp
 						    totalPower
 						  }
+						lastDAOPower: daopowers(orderBy: timestamp, orderDirection: desc, first: 1) {
+							totalPower
+						}
 						crvlockeds {
 							CRV
 						}
@@ -640,6 +647,7 @@
 				//console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
 				this.CRVLocked = results.data.crvlockeds[0].CRV
+				this.DAOPower = results.data.lastDAOPower[0].totalPower
 				let lastUnlockTime = results.data.lastUnlockTime[0].unlock_time
 				if(results.data.votingPower)
 					this.myLockedCRV = results.data.votingPower.power
@@ -795,7 +803,7 @@
 				let gaugesNeedCheckpoint = {}
 				decodedBalances.forEach((balance, i) => gaugesNeedCheckpoint[gauges[i].toLowerCase()] = BN(balance))
 
-				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/id/QmbcwNZfcCC3XDRwJmc9s1d6cED8sBUh2UNDnEpSGLPnNM')
+				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gauges-mainnet')
 				let QUERY = gql`
 					{
 						gauges(where: { user: "${contract.default_account}" }) {
@@ -934,11 +942,21 @@
 			},
 
 			async withdraw() {
-				await this.votingEscrow.methods.withdraw().send({
-					from: contract.default_account,
-					gasPrice: this.gasPriceWei,
-					gas: 400000,
+				var { dismiss } = notifyNotification('Please confirm withdrawing expired lock tokens')
+				await new Promise((resolve, reject) => {
+					this.votingEscrow.methods.withdraw().send({
+						from: contract.default_account,
+						gasPrice: this.gasPriceWei,
+						gas: 400000,
+					})
+					.once('transactionHash', hash => {
+						dismiss()
+						notifyHandler(hash)
+						resolve()
+					})
+					.on('error', err => reject(err))
 				})
+				this.checkpoint(true)
 			},
 
 			async confirmModal(method) {
@@ -949,7 +967,12 @@
 					this.showModalType = 1
 				if(method == 'submitIncreaseLock')
 					this.showModalType = 2
-				await this.checkpoint()
+				try {
+					await this.checkpoint()
+				}
+				catch(err) {
+					console.error(err)
+				}
 				this.showModal = true
 			},
 
@@ -1033,6 +1056,9 @@
 		margin-right: 0.6em;
 	}
 	.myCRV, .veCRVBalance {
+		margin-top: 1em;
+	}
+	fieldset.depositinputs {
 		margin-top: 1em;
 	}
 </style>

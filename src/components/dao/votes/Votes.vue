@@ -1,7 +1,7 @@
 <template>
 	<div class='window white'>
 		<!-- <root-modal v-if='showRootModal'></root-modal> -->
-		
+		<router-link to="/emergencymembers">Emergency DAO members</router-link>
 		<fieldset>
 			<legend>Votes</legend>
 			<new-text-vote></new-text-vote>

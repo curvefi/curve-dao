@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import { contract, getters } from '../../contract'
+import { notify, notifyHandler, notifyNotification } from '../../init'
+
 import allabis, { ERC20_abi } from '../../allabis'
 import daoabis from '../dao/allabis'
 
@@ -11,6 +13,8 @@ let swap_abi = allabis.susdv2.swap_abi
 import * as volumeStore from '../common/volumeStore'
 
 import * as helpers from '../../utils/helpers'
+
+import * as gasPriceStore from '../common/gasPriceStore'
 
 export let state = Vue.observable({
 	gaugeController: null,
@@ -30,6 +34,8 @@ export let state = Vue.observable({
 	APYs: {},
 
 	boosts: {},
+
+	gaugesNeedApply: [],
 })
 
 export async function getState() {
@@ -217,7 +223,7 @@ export async function getState() {
 	console.log(state.mypools, "STATE MY POOLS")
 
 
-	let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gauges-mainnet')
+	/*let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gauges-mainnet')
 
 	let QUERY = gql`
 		{
@@ -235,11 +241,45 @@ export async function getState() {
 
 	let results = await wrapper.performQuery(QUERY)
 	results = results.data.gauges
+	*/
 
-	for(let gaugeBoost of results) {
-		let pool = state.mypools.find(pool => pool.gauge.toLowerCase() == gaugeBoost.gauge.toLowerCase())
-		pool.previousWorkingBalance = gaugeBoost.workingBalance
-		state.boosts[pool.name] = gaugeBoost.workingBalance / (0.4 * gaugeBoost.originalBalance)
+	for(let pool of state.mypools) {
+		if(+pool.gaugeBalanace == 0) continue
+		pool.previousWorkingBalance = pool.currentWorkingBalance
+		state.boosts[pool.name] = pool.currentWorkingBalance / (0.4 * pool.gaugeBalance)
 	}
 
+}
+
+export async function applyBoostAll() {
+	for(let gauge of state.gaugesNeedApply) {
+		let gaugeContract = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, gauge)
+		let gas = 600000
+		try {
+			gas = await gaugeContract.methods.user_checkpoint(contract.default_account).estimateGas()
+		}
+		catch(err) {
+			console.error(err)
+		}
+
+		let poolName = state.mypools.find(pool => pool.gauge == gauge).name
+		var { dismiss } = notifyNotification(`Please confirm applying boost for gauge ${poolName}`)
+
+		await new Promise((resolve, reject) => {
+			gaugeContract.methods.user_checkpoint(contract.default_account).send({
+				from: contract.default_account,
+				gasPrice: gasPriceStore.state.gasPriceWei,
+				gas: gas,
+			})
+			.once('transactionHash', hash => {
+				dismiss()
+				notifyHandler(hash)
+				resolve()
+			})
+			.on('error', err => {
+				console.error(err)
+				reject(err)
+			})
+		})
+	}
 }

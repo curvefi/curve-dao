@@ -47,7 +47,7 @@
 					</tr>
 					<tr v-for='lock in filteredLocks'>
 						<td>
-							<a :href="'https://etherscan.io/address/' + lock.startTx" rel='noopener noreferrer'>
+							<a :href="'https://etherscan.io/tx/' + lock.startTx" rel='noopener noreferrer'>
 								<span v-show='lock.lock_start > 0'>
 									{{ formatDateToHuman(lock.lock_start) }}
 								</span>
@@ -315,7 +315,7 @@
  				let others = piedata.filter(data => data.y < 0.5)
 
  				piedata = piedata.filter(data => data.y > 0.5)
- 				piedata.push({name: 'Others', y: others.reduce((a, b) => +a + +b.y, 0)})
+ 				piedata.push({name: 'Others(<0.5%)', y: others.reduce((a, b) => +a + +b.y, 0)})
 
 				this.piechart.addSeries({
 					name: 'veCRV distribution',
@@ -356,7 +356,7 @@
 
 			shortenAddress(address) {
 				if(!address) return ''
-				if(address == 'Others') return 'Others'
+				if(address == 'Others(<0.5%)') return 'Others(<0.5%)'
 				return address.slice(0,6) + '...' + address.slice(-6)
 			},
 

@@ -22,6 +22,11 @@
 
 				<button @click='claim'>Claim all</button>
 			</div>
+
+			<div class='applyBoostAll' v-show='showApplyBoostAll'>
+				Apply boost to {{ gaugesNeedApplyNames.join(', ') }} gauges
+				<button @click='applyBoostAll'>Apply all</button>
+			</div>
 		</div>
 		<div class='window white' v-show='totalBalance == 0 && totalGaugeBalance == 0'>
 			<div class='info-message gentle-message'>
@@ -200,6 +205,12 @@
             gasPriceWei() {
                 return gasPriceStore.state.gasPriceWei
             },
+            showApplyBoostAll() {
+            	return gaugeStore.state.gaugesNeedApply.length > 0
+            },
+            gaugesNeedApplyNames() {
+            	return gaugeStore.state.gaugesNeedApply.map(gauge => gaugeStore.state.mypools.find(v => v.gauge == gauge).name)
+            },
 		},
 
 		methods: {
@@ -290,6 +301,10 @@
 					notifyHandler(hash)
 				})
 			},
+
+			async applyBoostAll() {
+				gaugeStore.applyBoostAll()
+			},
 		},
 	}
 </script>
@@ -300,5 +315,8 @@
 	}
 	.info-message.gentle-message {
 		margin-top: 0;
+	}
+	.applyBoostAll {
+		margin-top: 1em;
 	}
 </style>

@@ -6,7 +6,8 @@
 				<b><img class='icon small' :src="publicPath + 'logo.png'" > CRV APY:</b> {{ CRVAPY.toFixed(2) }}%
 			</legend>
 			<div class='pool-info'>
-				<button @click='applyBoost' class='applyBoost' v-show='canApplyBoost'>Apply boost</button>
+				<button @click='applyBoost' class='applyBoost' v-show='canApplyBoost && claimableTokens == 0'>Apply boost</button>
+				<span class='greentext' v-show='canApplyBoost && claimableTokens > 0'>You can apply boost by claiming CRV</span>
 				<div class='gaugeRelativeWeight'>
 					Gauge relative weight: {{ gaugeRelativeWeight.toFixed(2) }}%
 				</div>
@@ -256,7 +257,7 @@
 				this.loaded = true
 
 				//this.claimableTokens = await this.gaugeContract.methods.claimable_tokens(contract.default_account).call()
-				this.claimableTokens = this.gauge.claimable_tokens
+				this.claimableTokens = +this.gauge.claimable_tokens
 				
 				gaugeStore.state.totalClaimableCRV += +this.claimableTokens
 				if(['susdv2', 'sbtc'].includes(this.gauge.name)) {
@@ -549,7 +550,9 @@
 			async checkLimit() {
 				let currentLimit = await this.update_liquidity_limit()
 
-				this.currentBoostCheck = currentLimit[1] 
+				this.currentBoostCheck = currentLimit[1]
+				if(this.currentBoost < this.currentBoostCheck && this.claimableTokens == 0)
+					gaugeStore.state.gaugesNeedApply.push(this.gauge.gauge)
 			}
 		},
 	}
@@ -628,6 +631,9 @@
 	}
 	.gaugeRelativeWeight {
 		margin-top: 1em;
+	}
+	.greentext {
+		color: green;
 	}
 	@media only screen and (max-device-width: 730px) {
 		.gauge .unstake {

@@ -61,6 +61,7 @@
           <p>____________</p>
           <a href="https://twitter.com/CurveFinance" rel='noopener noreferrer'>#Twitter</a>
           <a href="https://t.me/curvefi" rel='noopener noreferrer'>@Telegram</a>
+          <a href="https://t.me/curveficn" rel='noopener noreferrer'>@Telegram CN</a>
           <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" rel='noopener noreferrer'>Dune Analytics</a>
           <p>____________</p>
           <a href="https://github.com/curvefi/curve-contract">git@</a>
@@ -84,6 +85,7 @@
       <a href='https://resources.curve.fi' rel='noopener noreferrer' class='showmobile'>Resources</a>
       <a href="https://twitter.com/CurveFinance" class='showmobile' rel='noopener noreferrer'>#Twitter</a>
       <a href="https://t.me/curvefi" class='showmobile' rel='noopener noreferrer'>@Telegram</a>
+      <a href="https://t.me/curveficn" rel='noopener noreferrer'>@Telegram CN</a>      
       <a href="https://explore.duneanalytics.com/public/dashboards/RTH47mNjQcoLv5oG0HMDdI0iDq7BHxk1PzCRdwQB" class='showmobile' rel='noopener noreferrer'>Dune Analytics</a>
       <a href="https://github.com/curvefi/curve-contract" class='showmobile'>git@</a>
       <a href="https://github.com/pengiundev/curve-vue" class='showmobile'>git@UI</a>

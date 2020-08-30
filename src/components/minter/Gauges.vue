@@ -216,6 +216,7 @@
 		methods: {
 			async mounted() {
 				gaugeStore.state.totalClaimableCRV = null
+				gaugeStore.state.totalMintedCRV = null
 				this.piechart = this.$refs.piecharts.chart
 				this.piegaugechart = this.$refs.piegaugecharts.chart
 

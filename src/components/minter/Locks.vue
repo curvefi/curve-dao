@@ -4,7 +4,7 @@
 			<legend>CRV user vote-locks</legend>
 			<div class='totalCRVlocked'>
 				Total <img class='icon small' :src="publicPath + 'logo.png'"> CRV vote-locked: 
-				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} </span>
+				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} ({{ CRVLockedPercentage }}% of all circulating CRV) </span>
 			</div>
 
 			<datetime type='datetime' v-model='charttimestamp' class='datepicker'></datetime>
@@ -202,6 +202,8 @@
 				charttimestamp: null,
 
 				veCRVtotal: 0,
+
+				CRVLockedPercentage: null,
 			}
 
 		},
@@ -240,7 +242,7 @@
 		  	return this.page, this.perPage, Date.now()
 		  },
 		  CRVLockedFormat() {
-		  	return (this.CRVLocked / 1e18).toFixed(2)
+		  	return helpers.formatNumber(this.CRVLocked / 1e18)
 		  },
 		  canCreateVotes() {
 		  	return this.locks.filter(lock => this.veCRV(lock) >= 2500)
@@ -266,20 +268,13 @@
 				this.piechart = this.$refs.piecharts.chart;
 				this.piechart.showLoading()
 
-				while(this.piechart.series[0])
-					this.piechart.series[0].remove()
-
 				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-votingescrow-mainnet')
 				if(this.block === null)
 					this.block = await contract.web3.eth.getBlockNumber() - 2
 				this.block = +this.block
 				let QUERY = gql`
-					query($block: Int!) {
-						crvlockeds(block: { number: $block }) {
-							id
-							CRV
-						}
-						userBalances(orderBy: weight, orderDirection: desc, first: 1000, block: { number: $block}) {
+					query($block: Int!, $first: Int!, $skip: Int!) {
+						userBalances(orderBy: weight, orderDirection: desc, first: $first, skip: $skip, block: { number: $block}) {
 						    id
 						    startTx
 						    user
@@ -290,14 +285,25 @@
 						  }
 					}
 				`
-				let results = await wrapper.performQuery(QUERY, { block: this.block })
+				let first = 1000
+				let skip = 0
+				let results
+				let locks = []
+				while(true) {
+					results = await wrapper.performQuery(QUERY, { block: this.block, first: first, skip: skip })
+					if(!results.data.userBalances.length) break;
+					locks = [...locks, ...results.data.userBalances]
+					skip += 1000
+				}
 
-				this.locks = results.data.userBalances.sort((a, b) => this.veCRV(b) - this.veCRV(a))
-				this.CRVLocked = results.data.crvlockeds[0].CRV
+				let CRVstats = await fetch(`http://pushservice.curve.fi/crv/circulating_supply`)
+				CRVstats = await CRVstats.json()
+
+				this.locks = locks.sort((a, b) => this.veCRV(b) - this.veCRV(a))
+				this.CRVLocked = CRVstats.CRVLocked
+				this.CRVLockedPercentage = (CRVstats.CRVLocked * 100 / CRVstats.supply).toFixed(2)
 
 				this.changePagination()
-
-				console.log(results)
 
 				this.veCRVtotal = this.locks.reduce((a, b) => {
 					return +a + +this.veCRV(b)
@@ -317,6 +323,9 @@
  				piedata = piedata.filter(data => data.y > 0.5)
  				piedata.push({name: 'Others(<0.5%)', y: others.reduce((a, b) => +a + +b.y, 0)})
 
+ 				while(this.piechart.series[0])
+					this.piechart.series[0].remove()
+
 				this.piechart.addSeries({
 					name: 'veCRV distribution',
 					data: piedata
@@ -335,7 +344,7 @@
 
 				let QUERY = `
 					{
-					  blocks(first: 1, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${timestamp}"}) {
+					  blocks(first: 1, orderBy: timestamp, orderDirection: asc, where: {timestamp_gt: "${timestamp - 1000}"}) {
 					    id
 					    number
 					    timestamp
@@ -344,7 +353,7 @@
 				`
 
 				let results = await wrapper.performQuery(QUERY)
-				let block = results.data.blocks[0].number
+				let block = results.data.blocks[results.data.blocks.length - 1].number
 				this.block = block
 				this.initChart()
 
@@ -369,7 +378,8 @@
 				this.page += 1
 			},
 			changePagination() {
-				this.filteredLocks = this.locks.slice(this.page*this.perPage, this.page*this.perPage + this.perPage)
+				if(this.perPage > this.pages) this.page = 0
+				this.filteredLocks = this.locks.slice(this.page*(+this.perPage), this.page*(+this.perPage) + (+this.perPage))
 			},
 			veCRV(lock) {
 		  		return ((lock.CRVLocked * (lock.unlock_time - (Date.now() / 1000) | 0)) / (86400 * 365) / 4 / 1e18).toFixed(2)

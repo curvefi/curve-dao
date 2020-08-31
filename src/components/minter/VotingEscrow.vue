@@ -34,7 +34,7 @@
 			</legend>
 			<div class='totalCRVlocked'>
 				Total <img class='icon small' :src="publicPath + 'logo.png'"> CRV vote-locked: 
-				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} </span>
+				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} ({{ CRVLockedPercentage }}% of all circulating CRV) </span>
 			</div>
 			<div class='DAOPower'>
 				Total veCRV: <span :class="{'loading line': DAOPower === null}"></span> <span v-show='DAOPower > 0'> {{ DAOPowerFormat }} </span>
@@ -630,9 +630,6 @@
 						lastDAOPower: daopowers(orderBy: timestamp, orderDirection: desc, first: 1) {
 							totalPower
 						}
-						crvlockeds {
-							CRV
-						}
 						votingPower(id: "${contract.default_account.toLowerCase()}") {
 							power
 						}
@@ -646,7 +643,11 @@
 				let results = await this.wrapper.performQuery(QUERY)
 				//console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
-				this.CRVLocked = results.data.crvlockeds[0].CRV
+				let CRVstats = await fetch(`http://pushservice.curve.fi/crv/circulating_supply`)
+				CRVstats = await CRVstats.json()
+
+				this.CRVLocked = CRVstats.CRVLocked
+				this.CRVLockedPercentage = (CRVstats.CRVLocked * 100 / CRVstats.supply).toFixed(2)
 				this.DAOPower = results.data.lastDAOPower[0].totalPower
 				let lastUnlockTime = results.data.lastUnlockTime[0].unlock_time
 				if(results.data.votingPower)

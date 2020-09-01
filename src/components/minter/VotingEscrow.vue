@@ -39,6 +39,10 @@
 			<div class='DAOPower'>
 				Total veCRV: <span :class="{'loading line': DAOPower === null}"></span> <span v-show='DAOPower > 0'> {{ DAOPowerFormat }} </span>
 			</div>
+			<div class='averageLock'>
+				Average lock time: <span v-show='CRVLocked !== null'>{{ averageLock }} years</span>
+				<span :class="{'loading line': CRVLocked === null}"></span>
+			</div>
 			<div class='myCRV'>
 				<img class='icon small' :src="publicPath + 'logo.png'"> CRV balance: {{ crvBalanceText }}
 			</div>
@@ -393,6 +397,8 @@
 
 				DAOPower: null,
 
+				CRVLockedPercentage: null,
+
 			}
 
 		},
@@ -545,6 +551,9 @@
             hasEndedLock() {
             	return this.lockEnd > 0 && Date.now() / 1000 > this.lockEnd
             },
+            averageLock() {
+            	return (4 * this.DAOPower / this.CRVLocked).toFixed(2)
+            },
 		},
 
 		methods: {
@@ -643,7 +652,7 @@
 				let results = await this.wrapper.performQuery(QUERY)
 				//console.log(results, "THE RESULTS")
 				let events = results.data.votingEscrows
-				let CRVstats = await fetch(`http://pushservice.curve.fi/crv/circulating_supply`)
+				let CRVstats = await fetch(`https://pushservice.curve.fi/crv/circulating_supply`)
 				CRVstats = await CRVstats.json()
 
 				this.CRVLocked = CRVstats.CRVLocked

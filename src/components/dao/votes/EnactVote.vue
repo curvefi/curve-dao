@@ -55,6 +55,12 @@
 			loading: false,
 		}),
 
+		computed: {
+			canExecute() {
+				return voteHelpers.canExecute(this.vote)
+			},
+		},
+
 		methods: {
 			async enact() {
 				console.log("ENACT")

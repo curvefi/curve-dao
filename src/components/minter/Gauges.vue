@@ -20,7 +20,20 @@
 			<div v-show='totalClaimableCRV > 0' class='totalClaimableCRV'>
 				All claimable CRV from gauges: {{ totalClaimableCRVFormat }}
 
-				<button @click='claim'>Claim all</button>
+				<p>
+					Choose gauges to claim from: <span v-for='gauge in myGauges' class='claimGaugeSelect'>
+						<input :id="'gauge' + gauge.name" type='checkbox' v-model='claimFromGauges' :value='gauge'>
+						<label :for="'gauge' + gauge.name">{{ gauge.name }}</label>
+					</span>
+
+					<p class='info-message gentle-message claimAllWarning'>
+						Claiming from a gauge will update your boost
+					</p>
+
+					<p>
+						<button @click='claim'>Claim {{ claimFromGauges.length == myGauges.length ? 'all' : '' }}</button>
+					</p>
+				</p>
 			</div>
 
 			<div class='applyBoostAll' v-show='showApplyBoostAll'>
@@ -164,6 +177,8 @@
 			showChart: true,
 
 			loading: true,
+
+			claimFromGauges: [],
 		}),
 
 		async created() {
@@ -210,6 +225,9 @@
             },
             gaugesNeedApplyNames() {
             	return gaugeStore.state.gaugesNeedApply.map(gauge => gaugeStore.state.mypools.find(v => v.gauge == gauge).name)
+            },
+            myGauges() {
+            	return gaugeStore.state.mypools.filter(pool => pool.gaugeBalance > 0)
             },
 		},
 
@@ -275,13 +293,15 @@
 					data: piegauges,
 				})
 
+				this.claimFromGauges = this.myGauges
+
 				this.piegaugechart.hideLoading()
 
 			},
 
 			async claim() {
 				console.log(gaugeStore.state.mypools, "MY POOLS")
-				let gauges = gaugeStore.state.mypools.filter(gauge=>+gauge.claimable_tokens > 0).map(gauge => gauge.gauge)
+				let gauges = this.claimFromGauges.map(gauge => gauge.gauge)
 				let fillarray = new Array(8-gauges.length).fill('0x0000000000000000000000000000000000000000')
 				gauges.push(...fillarray)
 				console.log(gauges, "ALL GAUGES")
@@ -319,5 +339,20 @@
 	}
 	.applyBoostAll {
 		margin-top: 1em;
+	}
+	.claimGaugeSelect {
+		display: inline;
+	}
+	.claimGaugeSelect:nth-of-type(1) label {
+		margin-left: 0;
+	}
+	.claimGaugeSelect label {
+		margin-left: 0.4em;
+	}
+	.claimAllWarning.claimAllWarning {
+		margin-top: 1em;
+	}
+	input[type='checkbox'] + label {
+		cursor: pointer;
 	}
 </style>

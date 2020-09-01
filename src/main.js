@@ -14,8 +14,8 @@ Vue.use(VueMeta, {
   refreshOnceOnNavigation: true
 })
 
-window.domain = ''
-if(window.location.href.includes('localhost') || !window.location.href.includes('curve.fi')) window.domain = 'https://www.curve.fi'
+window.domain = 'https://www.curve.fi'
+//if(window.location.href.includes('localhost') || !window.location.href.includes('curve.fi')) window.domain = 'https://www.curve.fi'
 
 import '../public/tvisionbase.css'
 import '../public/tvision.css'

@@ -262,6 +262,7 @@ export async function getVote(app, voteId) {
 		      voter
 		      supports
 		      voterStake
+		      transactionHash
 		    }
 		}
 	`
@@ -335,8 +336,8 @@ export async function getVote(app, voteId) {
 	let vote = state.votes.length && state.votes.find(vote => vote.id == votes[0].id)
 	if(vote === undefined || vote == 0) {
 		state.votes.push(vote)
-		vote = votes[0]
 	}
+	vote = votes[0]
 	vote.casts = casts
 	
 	if(vote.metadata.startsWith('ipfs:')) {
@@ -552,7 +553,7 @@ export function hasQuorum(vote) {
 
 export function canExecute(vote) {
 
-	if(!isVoteOpen(vote))
+	if(isVoteOpen(vote))
 		return false
 
 	if(vote.executed)

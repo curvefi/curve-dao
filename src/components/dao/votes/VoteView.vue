@@ -63,7 +63,7 @@
 							<span v-show='vote.contractName'>
 								{{ vote.contractName }}: <span v-html='vote.description'></span>
 								<div>
-									<div v-show='formattedMetadata && formattedMetadata.length'>
+									<div v-show='formattedMetadata && formattedMetadata.length' class='descriptionText'>
 										<b> Description text: </b>
 									</div>
 									<p v-show='!showMore'>
@@ -631,6 +631,9 @@
 		margin-right: 0.4em;
 	}
 	.description .content {
+		margin-top: 1em;
+	}
+	.descriptionText {
 		margin-top: 1em;
 	}
 	.castvote {

@@ -6,6 +6,14 @@
 				Total <img class='icon small' :src="publicPath + 'logo.png'"> CRV vote-locked: 
 				<span :class="{'loading line': CRVLocked === null}"></span> <span v-show='CRVLocked > 0'> {{ CRVLockedFormat }} ({{ CRVLockedPercentage }}% of all circulating CRV) </span>
 			</div>
+			<div>
+				Total veCRV: <span v-show='DAOPower !== null'> {{ DAOPowerFormat }}</span>
+				<span :class="{'loading line': DAOPower === null}"></span>
+			</div>
+			<div>
+				Average lock time: <span v-show='DAOPower !== null'> {{ averageLock }} years</span>
+				<span :class="{'loading line': DAOPower === null}"></span>
+			</div>
 
 			<datetime type='datetime' v-model='charttimestamp' class='datepicker'></datetime>
 			<button @click='timeTravelChart'>Submit</button>
@@ -116,6 +124,7 @@
 
 <script>
 	import { contract, getters } from '../../contract'
+	import daoabis from '../dao/allabis'
 
 	import gql from 'graphql-tag'
 	import { GraphQLWrapper } from '@aragon/connect-thegraph'
@@ -204,6 +213,8 @@
 				veCRVtotal: 0,
 
 				CRVLockedPercentage: null,
+
+				DAOPower: null,
 			}
 
 		},
@@ -246,6 +257,12 @@
 		  },
 		  canCreateVotes() {
 		  	return this.locks.filter(lock => this.veCRV(lock) >= 2500)
+		  },
+		  DAOPowerFormat() {
+		  	return helpers.formatNumber(this.DAOPower / 1e18)
+		  },
+		  averageLock() {
+		  	return (4 * this.DAOPower / this.CRVLocked).toFixed(2)
 		  },
 	  	},
 
@@ -296,12 +313,15 @@
 					skip += 1000
 				}
 
-				let CRVstats = await fetch(`http://pushservice.curve.fi/crv/circulating_supply`)
+				let CRVstats = await fetch(`https://pushservice.curve.fi/crv/circulating_supply`)
 				CRVstats = await CRVstats.json()
 
 				this.locks = locks.sort((a, b) => this.veCRV(b) - this.veCRV(a))
 				this.CRVLocked = CRVstats.CRVLocked
 				this.CRVLockedPercentage = (CRVstats.CRVLocked * 100 / CRVstats.supply).toFixed(2)
+
+				let veCRV = new web3.eth.Contract(daoabis.votingescrow_abi, daoabis.votingescrow_address)
+				this.DAOPower = await veCRV.methods.totalSupply().call()
 
 				this.changePagination()
 

@@ -36,6 +36,8 @@ export let state = Vue.observable({
 	boosts: {},
 
 	gaugesNeedApply: [],
+
+	synthsUnavailable: false
 })
 
 export async function getState() {
@@ -108,7 +110,21 @@ export async function getState() {
 		[state.minter._address, state.minter.methods.minted(contract.default_account, gauge).encodeABI()],
 
 	])
-	let aggcalls1 = await contract.multicall.methods.aggregate(calls1).call()
+	let aggcalls1
+	try {
+		aggcalls1 = await contract.multicall.methods.aggregate(calls1).call()
+	}
+	catch(err) {
+		console.error(err)
+		state.synthsUnavailable = true
+
+		calls1[33] = calls[3]
+		calls1[38] = calls[3]
+		aggcalls1 = await contract.multicall.methods.aggregate(calls1).call()
+		aggcalls[1][33] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+		aggcalls[1][38] = "0x0000000000000000000000000000000000000000000000000000000000000000"
+
+	}
 
 	let gaugeTypes = aggcalls1[1].filter((_, i) => i % 5 == 1).map(hex => +web3.eth.abi.decodeParameter('uint256', hex))
 	gaugeTypes = [...new Set(gaugeTypes)]
@@ -192,6 +208,7 @@ export async function getState() {
 	let aggVirtualPrices = await contract.multicall.methods.aggregate(virtualPriceCalls).call()
 	let decodedVirtualPrices = aggVirtualPrices[1].map((hex, i) => [virtualPriceCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
+	window.gauges = {}
 	let weightData = decodedWeights.map((w, i) => {
 		let pool = state.mypools.find(v => v.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase()).name
 		let swap_address = state.pools[pool].swap
@@ -213,6 +230,7 @@ export async function getState() {
 		state.mypools.find(v => v.name == pool).gauge_relative_weight = w[1]
 		Object.values(state.pools).find(v => v.name == pool).gauge_relative_weight = w[1]
 		Vue.set(state.APYs, pool, apy)
+		window.gauges[pool] = new web3.eth.Contract(daoabis.liquiditygauge_abi, '0x' + weightCalls[i][1].slice(34).toLowerCase())
 	})
 
 	//console.log(state.mypools, "STATE MY POOLS")

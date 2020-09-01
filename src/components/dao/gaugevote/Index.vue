@@ -236,7 +236,7 @@
 				return this.lock_end <= this.next_time
 			},
 			voteIsOften() {
-				return (Date.now() / 1000) < this.last_user_vote + WEIGHT_VOTE_DELAY
+				return +this.last_user_vote > 0 && +this.last_user_vote + WEIGHT_VOTE_DELAY < Date.now() / 1000
 			},
 			balanceFormat() {
 				return (this.balance / 1e18).toFixed(2)
@@ -277,7 +277,7 @@
 		    vote() {
 		    	return {
 		    		voteNumber: 1,
-		    		timeLeft: 1598486400 - (Date.now()) / 1000,
+		    		timeLeft: 1599091200 - (Date.now()) / 1000,
 		    		executed: false,
 		    	}
 		    },
@@ -352,7 +352,7 @@
 
 				let QUERY = gql`
 					{
-					  gaugeVotes(where: { time_gt: 1597881600 }, orderBy: time, orderDirection: desc) {
+					  gaugeVotes(where: { time_gt: 1598486400 }, orderBy: time, orderDirection: desc) {
 					    id
 					    time
 					    user

@@ -31,6 +31,10 @@
 			</div>
 			<div :class="{'pools': true, 'justifySpaceAround': gaugeBalance > 0}">
 				<div class='flex-break'></div>
+				<div class='simple-error' v-show="['susdv2', 'sbtc'].includes(gauge.name) && synthsUnavailable">
+					Synthetix are upgrading their contract now and claiming SNX is not available
+					{{ synthsUnavailable }}
+				</div>
 				<div class='pool'>
 					<p v-show="['susdv2','sbtc'].includes(gauge.name) && stakedBalance > 0" class='info-message gentle-message'>
 						<a :href="'https://curve.fi/'+gauge.name+'/withdraw'">Unstake rewards</a>
@@ -215,6 +219,9 @@
             		apy *= this.currentBoost
             	return apy
             },
+            synthsUnavailable() {
+            	return gaugeStore.state.synthsUnavailable
+            },
 		},
 
 		watch: {
@@ -347,9 +354,14 @@
 				let balance = BN(await this.gaugeContract.methods.balanceOf(contract.default_account).call())
 				if(withdraw.gt(balance))
 					withdraw = balance
+				let withdrawMethod = this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1))
+				if(['susdv2', 'sbtc'].includes(this.gauge.name) && this.synthsUnavailable) {
+					let gaugeContract = new web3.eth.Contract(daoabis.liquiditygaugerewards_abi, this.gauge.gauge)
+					withdrawMethod = gaugeContract.methods.withdraw(withdraw.toFixed(0,1), !this.synthsUnavailable)
+				}
 				let gas = 1000000
 				try {
-					gas = await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).estimateGas()
+					gas = await withdrawMethod.estimateGas()
 				}
 				catch(err) {
 					console.error(err)
@@ -357,7 +369,7 @@
 
 				var { dismiss } = notifyNotification(`Please confirm withdrawing from ${this.gauge.name} gauge`)
 
-				await this.gaugeContract.methods.withdraw(withdraw.toFixed(0,1)).send({
+				await withdrawMethod.send({
 					from: contract.default_account,
 					gasPrice: this.gasPriceWei,
 					gas: gas * 1.5 | 0,

@@ -208,77 +208,77 @@
 				this.textdescription = ''
 			},
 			async submitVote() {
-				// this.loadingVote = true
+				this.loadingVote = true
 
-				// state.proposeLoading = method
-
-
-				// let ipfshash = await fetch('https://pushservice.curve.fi/pinipfs', {
-				// 	method: 'POST',
-				// 	headers: {
-				// 		'Content-type': 'application/json',
-				// 	},
-				// 	body: JSON.stringify({
-				// 		text: this.textdescription,
-				// 	})
-				// })
-
-				// ipfshash = await ipfshash.json()
-				// ipfshash = 'ipfs:' + ipfshash.ipfsHash
-
-				// let { abiname, method, params, contractAddress, agent, voteApp } = this.call
-
-				// let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
-				// console.log(abiname, method)
-				// let natspeckey = Object.keys(daoabis[abiname+'_natspec'].methods).find(key => key.includes(method))
-				// console.log(natspeckey, "NATSPEC")
-				// let expression = daoabis[abiname+'_natspec'].methods[natspeckey].notice
-				// console.log(params, "PARAMS")
-				// console.log(abi, "ABI CALL")
-				// console.log(method)
-				// let call = web3.eth.abi.encodeFunctionCall(abi, params)
-				// console.log(call, "CALL")
+				state.proposeLoading = method
 
 
-				// let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
-				// let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [contractAddress, 0, call])
+				let ipfshash = await fetch('https://pushservice.curve.fi/pinipfs', {
+					method: 'POST',
+					headers: {
+						'Content-type': 'application/json',
+					},
+					body: JSON.stringify({
+						text: this.textdescription,
+					})
+				})
+
+				ipfshash = await ipfshash.json()
+				ipfshash = 'ipfs:' + ipfshash.ipfsHash
+
+				let { abiname, method, params, contractAddress, agent, voteApp } = this.call
+
+				let abi = daoabis[abiname+'_abi'].find(abi => abi.name == method)
+				console.log(abiname, method)
+				let natspeckey = Object.keys(daoabis[abiname+'_natspec'].methods).find(key => key.includes(method))
+				console.log(natspeckey, "NATSPEC")
+				let expression = daoabis[abiname+'_natspec'].methods[natspeckey].notice
+				console.log(params, "PARAMS")
+				console.log(abi, "ABI CALL")
+				console.log(method)
+				let call = web3.eth.abi.encodeFunctionCall(abi, params)
+				console.log(call, "CALL")
 
 
-				// agent = agent.toLowerCase()
-				// voteApp = voteApp.toLowerCase()
-
-				// console.log(agent, "THE AGENT")
-				// console.log(contractAddress, call, "CONTRACT ADDRESS CALL DATA")
-
-				// let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
-
-				// let intent
-				// try {
-				// 	intent = await state.org.appIntent(voteApp, 'newVote(bytes,string,bool,bool)', [calldata, ipfshash, false, false])
-				// }
-				// catch(err) {
-				// 	console.error(err)
-				// }
-				// let paths = await intent.paths(contract.default_account)
-
-				// this.loadingVote = false
-				// this.showDescriptionModal = false
-				// state.transactionIntent = paths
-
-				// let desc = await radspec.evaluate(expression, {
-				// 	abi: [abi],
-				// 	transaction: {
-				// 		data: call,
-				// 	},
-				// }, radspecFormat)
-
-				// this.description = desc
-				// this.showRootModal = true
-
-				// state.proposeLoading = null
+				let agent_abi = daoabis.agent_abi.find(abi => abi.name == 'execute')
+				let agentcall = web3.eth.abi.encodeFunctionCall(agent_abi, [contractAddress, 0, call])
 
 
-				// console.log(paths, "THE PATHS")
+				agent = agent.toLowerCase()
+				voteApp = voteApp.toLowerCase()
+
+				console.log(agent, "THE AGENT")
+				console.log(contractAddress, call, "CONTRACT ADDRESS CALL DATA")
+
+				let calldata = voteHelpers.encodeCallsScript([{ to: agent, data: agentcall}])
+
+				let intent
+				try {
+					intent = await state.org.appIntent(voteApp, 'newVote(bytes,string,bool,bool)', [calldata, ipfshash, false, false])
+				}
+				catch(err) {
+					console.error(err)
+				}
+				let paths = await intent.paths(contract.default_account)
+
+				this.loadingVote = false
+				this.showDescriptionModal = false
+				state.transactionIntent = paths
+
+				let desc = await radspec.evaluate(expression, {
+					abi: [abi],
+					transaction: {
+						data: call,
+					},
+				}, radspecFormat)
+
+				this.description = desc
+				this.showRootModal = true
+
+				state.proposeLoading = null
+
+
+				console.log(paths, "THE PATHS")
 			},
 			async makeCall(abiname, method, params, contractAddress, agent, voteApp, ipfshash = '') {
 				this.call = {

@@ -227,7 +227,7 @@
             	return gaugeStore.state.gaugesNeedApply.map(gauge => gaugeStore.state.mypools.find(v => v.gauge == gauge).name)
             },
             myGauges() {
-            	return gaugeStore.state.mypools.filter(pool => pool.gaugeBalance > 0)
+            	return gaugeStore.state.mypools.filter(pool => +pool.claimable_tokens > 0)
             },
 		},
 
@@ -247,6 +247,8 @@
 
 				this.pools = gaugeStore.state.pools
 				this.mypools = gaugeStore.state.mypools
+
+				this.claimFromGauges = this.myGauges
 
 				let btcPrice = await getBTCPrice()
 
@@ -293,7 +295,6 @@
 					data: piegauges,
 				})
 
-				this.claimFromGauges = this.myGauges
 
 				this.piegaugechart.hideLoading()
 

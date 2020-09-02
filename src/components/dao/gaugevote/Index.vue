@@ -92,14 +92,14 @@
 				<p>
 					Total veCRV: {{ totalveCRVFormat }}
 				</p>
-				<p>
+				<p v-show='!showvotes'>
 					{{ (totalveCRVvote * 100 / totalveCRV).toFixed(2) }} % of veCRV supply voted
 				</p>
 			</div>
 
 
 			<button @click='showMyVotes' v-show='!showvotes'>Show my votes</button>
-			<button @click='getVotes()' v-show='showvotes'>Show all votes</button>
+			<button @click='showvotes=false;getVotes()' v-show='showvotes'>Show all votes</button>
 
 			<table class='tui-table'>
 				<thead>
@@ -464,7 +464,7 @@
 					.once('transactionHash', hash => {
 						dismiss()
 						notifyHandler(hash)
-						this.message = `You voted for ${this.gaugesNames[this.selectedGauge]} with ${this.weight * 100}%, you can continue and vote for other gauges`
+						this.message = `You voted for ${this.gaugesNames[this.selectedGauge]} with ${this.weight}%, you can continue and vote for other gauges`
 						setTimeout(() => this.message = '', 4000)
 					})
 			},
@@ -551,8 +551,11 @@
 
 				let results = await wrapper.performQuery(QUERY)
 				this.votes = results.data.gaugeVotes
-				this.totalveCRVvote = this.votes.reduce((a, b) => +a + +b.veCRV, 0)
-				this.myVoteWeightUsed = results.data.myVotes.reduce((a, b) => +a + +b.weight, 0) / 100
+				this.totalveCRVvote = this.votes.filter((v,i,a)=>a.findIndex(t=>(t.user === v.user))===i).reduce((a, b) => +a + +b.veCRV, 0)
+				if(results.data.myVotes)
+					this.myVoteWeightUsed = results.data.myVotes.reduce((a, b) => +a + +b.weight, 0) / 100
+				else
+					this.myVoteWeightUsed = results.data.gaugeVotes.reduce((a, b) => +a + +b.weight, 0) / 100
 				console.log(results, this.votes.length, "THE RESULTS")
 				this.changePagination()
 			},
@@ -595,18 +598,14 @@
 
 				let future_weights = vote.gauge_weights.map((v, i) => ({ id: this.gaugesNames[web3.utils.toChecksumAddress(v.gauge)], name: this.gaugesNames[web3.utils.toChecksumAddress(v.gauge)], y: +v.gauge_weight * 1e18 * 100 / total_weight}))
 
-				console.log(future_weights, "HISTORIC WEIGHTS")
 
 				this.historic_gauge_weights = future_weights
 
 			},
 
 			async _get_weight(gauge) {
-				console.log(this.selectedGauge, "SELECTED GAUGE")
 				let t = await this.gaugeController.methods.time_weight(this.selectedGauge).call()
-				console.log(t, "THE T")
 				let pt = await this.gaugeController.methods.points_weight(this.selectedGauge, t).call()
-				console.log(pt, "THE PT")
 				//loop is not entered for now
 		        for(let i = 0; i < 500; i++) {
 		            if(t > Date.now() / 1000)
@@ -632,12 +631,9 @@
 			async calculate() {
 				this.isCalculating = true
 
-				console.log(await this.gaugeController.methods.get_gauge_weight(this.selectedGauge).call(), "CURRENT GAUGE WEIGHT")
 				let slope = +(await this.votingEscrow.methods.get_last_user_slope(contract.default_account).call())
 				let old_weight_bias = +(await this._get_weight(this.selectedGauge))
 				let old_slope = await this.gaugeController.methods.vote_user_slopes(contract.default_account, this.selectedGauge).call()
-				console.log(old_slope, "THE OLD SLOPE")
-				console.log(slope, old_weight_bias, old_slope)
 				let old_dt = 0
 				if(+old_slope.end > this.next_time)
 					old_dt = +old_slope.end - this.next_time
@@ -645,8 +641,6 @@
 				let new_slope = slope * this.weight * 100 / 10000
 				let new_dt = this.lock_end - this.next_time
 				let new_bias = new_slope * new_dt
-
-				console.log(old_weight_bias, new_bias, old_bias)
 
 				let point_bias = Math.max(old_weight_bias + new_bias, old_bias) - old_bias
 

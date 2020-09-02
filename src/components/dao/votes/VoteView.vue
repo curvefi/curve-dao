@@ -91,11 +91,16 @@
 							<span v-show='!vote.contractName && vote.description'>
 								<span v-html='vote.description'></span>
 							</span>
-							<span v-show='vote.voteCountSeq == 3'>
-								<a href='https://gov.curve.fi/t/add-smartwalletwhitelist-with-dao-maintained-whitelist/25/2' rel='noopener noreferrer'>
-									Discuss on Discourse
+							<div v-show='vote.voteCountSeq == 3' class='discusson'>
+								<a href='https://gov.curve.fi/t/add-smartwalletwhitelist-with-dao-maintained-whitelist/25' rel='noopener noreferrer'>
+									Discuss on gov.curve.fi
 								</a>
-							</span>
+							</div>
+							<div v-show='vote.voteCountSeq == 5' class='discusson'>
+								<a href='https://gov.curve.fi/t/cip-5-add-hbtc-wbtc-pool-and-a-liquidity-gauge-for-that-pool/162' rel='noopener noreferrer'>
+									Discuss on gov.curve.fi
+								</a>
+							</div>
 						</div>
 
 					</div>
@@ -714,5 +719,8 @@
 	.castsForHeading, .castsAgainstHeading {
 		display: flex;
 		justify-content: space-between;
+	}
+	.discusson {
+		margin-top: 1em;
 	}
 </style>

@@ -186,78 +186,8 @@
 				futureCRVAPYs: {},
 
 				future_weights: [],
-		}),
 
-		async created() {
-			this.$watch(() => contract.multicall, (val, oldval) => {
-			 	if(val) this.mounted()
-			})
-		},
-
-		async mounted() {
-			if(contract.multicall) {
-				this.mounted()
-			}
-		},
-
-		watch: {
-			
-		},
-
-		computed: {
-			publicPath() {
-                return process.env.BASE_URL
-            },
-            nextTime() {
-            	return 1599091200
-            },
-		},
-
-		methods: {
-			async mounted() {
-
-				this.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB')
-				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, '0x7ca5b0a2910B33e9759DC7dDB0413949071D7575')
-
-				let calls = [
-					[this.gaugeController._address, this.gaugeController.methods.get_total_weight().encodeABI()],
-				]
-				calls.push(...Object.keys(this.gaugesNames).map(gauge => [this.gaugeController._address, this.gaugeController.methods.get_gauge_weight(gauge).encodeABI()]))
-
-				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
-
-				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
-				console.log(decoded, "DECODED")
-				let total_weight = +decoded[0]
-
-				decoded.slice(1).map((v, i) => statsStore.state.gaugesWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
-				decoded.slice(1).map((v, i) => statsStore.state.calculatedWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
-				console.log(statsStore.state, "STATS STORE STATE")
-
-				let future_weights = decoded.slice(1).map((v, i) => ({name: this.gaugesNames[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))], y: v * 1e18 * 100 / total_weight}))
-				console.log(future_weights, "FUTURE WEIGHTS")
-
-				decoded.slice(1).map((v, i) => {
-					statsStore.state.pieGaugeWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v * 1e18 * 100 / total_weight
-				})
-
-				Object.values(future_weights.map(v => this.futureWeights[v.name] = v.y))
-
-				this.future_weights = future_weights
-
-				await this.getCRVAPY()
-				console.log(this.currentCRVAPYs)
-				for(let pool of Object.keys(this.currentCRVAPYs)) {
-					let change = this.futureWeights[pool] / this.currentWeights[pool]
-					if(!isFinite(change)) change = 0
-					console.log(pool, change, "CHANGE")
-					Vue.set(this.futureCRVAPYs, pool, this.currentCRVAPYs[pool] * change)
-				}
-				console.log(this.futureCRVAPYs)				
-			},
-
-			async getCRVAPY() {
-				let poolInfo = {
+				poolInfo: {
 					compound: {
 						swap: '0xA2B47E3D5c44877cca798226B7B8118F9BFb7A56',
 						swap_token: '0x845838DF265Dcd2c412A1Dc9e959c7d08537f8a2',
@@ -307,6 +237,74 @@
 						gauge: '0x705350c4BcD35c9441419DdD5d2f097d7a55410F',
 					},
 				}
+		}),
+
+		async created() {
+			this.$watch(() => contract.multicall, (val, oldval) => {
+			 	if(val) this.mounted()
+			})
+		},
+
+		async mounted() {
+			if(contract.multicall) {
+				this.mounted()
+			}
+		},
+
+		watch: {
+			
+		},
+
+		computed: {
+			publicPath() {
+                return process.env.BASE_URL
+            },
+            nextTime() {
+            	return 1599091200
+            },
+		},
+
+		methods: {
+			async mounted() {
+
+				this.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB')
+				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, '0x7ca5b0a2910B33e9759DC7dDB0413949071D7575')
+
+				let calls = [
+					[this.gaugeController._address, this.gaugeController.methods.get_total_weight().encodeABI()],
+				]
+				calls.push(...Object.keys(this.gaugesNames).map(gauge => [this.gaugeController._address, this.gaugeController.methods.get_gauge_weight(gauge).encodeABI()]))
+
+				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
+
+				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				let total_weight = +decoded[0]
+
+				decoded.slice(1).map((v, i) => statsStore.state.gaugesWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
+				decoded.slice(1).map((v, i) => statsStore.state.calculatedWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
+
+				let future_weights = decoded.slice(1).map((v, i) => ({name: this.gaugesNames[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))], y: v * 1e18 * 100 / total_weight}))
+
+				decoded.slice(1).map((v, i) => {
+					statsStore.state.pieGaugeWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v * 1e18 * 100 / total_weight
+				})
+
+				Object.values(future_weights.map(v => this.futureWeights[v.name] = v.y))
+
+				this.future_weights = future_weights
+
+				await this.getCRVAPY()
+				console.log(this.currentCRVAPYs)
+				for(let pool of Object.keys(this.currentCRVAPYs)) {
+					let change = this.futureWeights[pool] / this.currentWeights[pool]
+					if(!isFinite(change)) change = 0
+					Vue.set(this.futureCRVAPYs, pool, this.currentCRVAPYs[pool] * change)
+					statsStore.state.currentCRVAPYs[Object.values(this.poolInfo).find(v => v.name == pool).gauge] = this.currentCRVAPYs[pool] * change
+				}
+				console.log(this.futureCRVAPYs)				
+			},
+
+			async getCRVAPY() {
 
 				let decodedGauges = [
 				  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575",
@@ -344,13 +342,13 @@
 				let gaugeRates = decodedRate.filter((_, i) => i % 2 == 0).map(v => v / 1e18)
 				let workingSupplies = decodedRate.filter((_, i) => i % 2 == 1).map(v => v / 1e18)
 
-				let virtualPriceCalls = Object.values(poolInfo).map(v => [v.swap, "0xbb7b8b80"])
+				let virtualPriceCalls = Object.values(this.poolInfo).map(v => [v.swap, "0xbb7b8b80"])
 				let aggVirtualPrices = await contract.multicall.methods.aggregate(virtualPriceCalls).call()
 				let decodedVirtualPrices = aggVirtualPrices[1].map((hex, i) => [virtualPriceCalls[i][0], web3.eth.abi.decodeParameter('uint256', hex) / 1e18])
 
 				let weightData = decodedWeights.map((w, i) => {
-					let pool = Object.values(poolInfo).find(v => v.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase()).name
-					let swap_address = poolInfo[pool].swap
+					let pool = Object.values(this.poolInfo).find(v => v.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase()).name
+					let swap_address = this.poolInfo[pool].swap
 					let virtual_price = decodedVirtualPrices.find(v => v[0].toLowerCase() == swap_address.toLowerCase())[1]
 					let _working_supply = workingSupplies[i]
 					if(['ren', 'sbtc'].includes(pool))
@@ -359,10 +357,9 @@
 					let apy = rate * CRVprice * 100
 					if(isNaN(apy))
 						apy = 0
-					Object.values(poolInfo).find(v => v.name == pool).gauge_relative_weight = w[1]
+					Object.values(this.poolInfo).find(v => v.name == pool).gauge_relative_weight = w[1]
 					Vue.set(this.currentWeights, pool, w[1] * 100)
 					Vue.set(this.currentCRVAPYs, pool, apy)
-					statsStore.state.currentCRVAPYs[Object.values(poolInfo).find(v => v.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase()).gauge] = apy
 					//Vue.set(this.CRVAPYs, pool, apy)
 				})
 			},

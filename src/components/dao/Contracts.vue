@@ -67,6 +67,9 @@
 		                	<a href = "https://etherscan.io/address/0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2">
 		                		<span class='text'>Voting Escrow</span>
 		                	</a>
+		                	<a href = "https://etherscan.io/address/0x575ccd8e2d300e2377b43478339e364000318e2c">
+		                		<span class='text'>Vesting Escrow</span>
+		                	</a>
 		                	<a href = "https://etherscan.io/address/0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB">
 		                		<span class='text'>Gauge Controller</span>
 		                	</a>
@@ -143,6 +146,7 @@
 				return {
 					susdv2: '0xdcb6a51ea3ca5d3fd898fd6564757c7aaec3ca92',
 					sbtc: '0x13C1542A468319688B89E323fe9A3Be3A90EBb27',
+					y: '0x0001FB050Fe7312791bF6475b96569D83F695C9f',
 				}
 			},
 

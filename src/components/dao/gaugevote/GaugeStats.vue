@@ -1,9 +1,68 @@
 <template>
-	<div :class="{'window white': !included}">
-		<fieldset>
-			<legend>Proposed Gauge Weight changes</legend>
-			<highcharts :options="piechartdata" ref='piecharts'></highcharts>
-		</fieldset>
+	<div>
+		
+		<div :class="{'window white': !included}">
+			<proposed-gauge-weight :future_weights='future_weights'></proposed-gauge-weight>
+		</div>
+		<div :class="{'window white': !included, 'futureCRVAPYs': true}">
+			<fieldset class='poolsdialog'>
+				<legend>
+					Proposed future <img class='icon small' :src="publicPath + 'logo.png'"> CRV APYs
+					<br> taking effect on {{ formatDate(nextTime).split(' ')[0] }} UTC
+				</legend>
+				<table class='tui-table'>
+					<thead>
+						<tr>
+							<th></th>
+							<th>Pool</th>
+							<th>Current <img class='icon small' :src="publicPath + 'logo.png'"> CRV APY</th>
+							<th>Future <img class='icon small' :src="publicPath + 'logo.png'"> CRV APY</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-show='!futureCRVAPYs.sbtc'>
+							<td><span class='loading line'></span></td>
+							<td><span class='loading line'></span></td>
+							<td><span class='loading line'></span></td>
+							<td><span class='loading line'></span></td>
+						</tr>
+						<tr v-show='futureCRVAPYs.sbtc' v-for='(pool, i) in Object.values(gaugesNames)'>
+							<td>
+								<a :href="'https://curve.fi/' + pool">
+									{{ i }}.
+								</a>
+							</td>
+							<td>
+								<a :href="'https://curve.fi/' + pool">
+									{{ pool }}
+								</a>
+							</td>
+							<td>
+								<a :href="'https://curve.fi/' + pool">
+									<span>
+										{{ currentCRVAPYs[pool] && currentCRVAPYs[pool].toFixed(2) }}% 
+										<span v-show="currentCRVAPYs[pool] > 0">
+											to {{ currentCRVAPYs[pool] && (currentCRVAPYs[pool] * 2.5).toFixed(2) }}%
+										</span>
+									</span>
+								</a>
+							</td>
+							<td>
+								<a :href="'https://curve.fi/' + pool">
+									<span>
+										{{ futureCRVAPYs[pool] && futureCRVAPYs[pool].toFixed(2) }}% 
+										<span v-show="futureCRVAPYs[pool] > 0">
+											to {{ futureCRVAPYs[pool] && (futureCRVAPYs[pool] * 2.5).toFixed(2) }}%
+										</span>
+									</span>
+								</a>
+							</td>
+
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+		</div>
 	</div>
 </template>
 
@@ -39,10 +98,17 @@
 		}
 	})
 
+	import ProposedGaugeWeight from './ProposedGaugeWeight.vue'
+
+	import * as statsStore from './statsStore'
+
+	import * as helpers from '../../../utils/helpers'
+
 	export default {
 		components: {
 			GasPrice,
 			Highcharts: Chart,
+			ProposedGaugeWeight: ProposedGaugeWeight,
 		},
 
 		props: {
@@ -59,11 +125,11 @@
 			gaugesNames: {
 			  "0x7ca5b0a2910B33e9759DC7dDB0413949071D7575": 'compound',
 			  "0xBC89cd85491d81C6AD2954E6d0362Ee29fCa8F53": 'usdt',
+			  "0x64E3C23bfc40722d3B649844055F1D51c1ac041d": 'pax',
 			  "0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1": 'y',
 			  "0x69Fb7c45726cfE2baDeE8317005d3F94bE838840": 'busd',
-			  "0x64E3C23bfc40722d3B649844055F1D51c1ac041d": 'pax',
-			  "0xB1F2cdeC61db658F091671F5f199635aEF202CAC": 'ren',
 			  "0xA90996896660DEcC6E997655E065b23788857849": 'susdv2',
+			  "0xB1F2cdeC61db658F091671F5f199635aEF202CAC": 'ren',
 			  "0x705350c4BcD35c9441419DdD5d2f097d7a55410F": 'sbtc',
 			},
 			selectedGauge: "0x0000000000000000000000000000000000000000",
@@ -118,6 +184,8 @@
 
 				currentCRVAPYs: {},
 				futureCRVAPYs: {},
+
+				future_weights: [],
 		}),
 
 		async created() {
@@ -137,13 +205,16 @@
 		},
 
 		computed: {
-			
+			publicPath() {
+                return process.env.BASE_URL
+            },
+            nextTime() {
+            	return 1599091200
+            },
 		},
 
 		methods: {
 			async mounted() {
-				this.piechart = this.$refs.piecharts.chart
-				this.piechart.showLoading()
 
 				this.gaugeController = new contract.web3.eth.Contract(daoabis.gaugecontroller_abi, '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB')
 				let example_gauge = new contract.web3.eth.Contract(daoabis.liquiditygauge_abi, '0x7ca5b0a2910B33e9759DC7dDB0413949071D7575')
@@ -156,33 +227,33 @@
 				let aggcalls = await contract.multicall.methods.aggregate(calls).call()
 
 				let decoded = aggcalls[1].map(hex => web3.eth.abi.decodeParameter('uint256', hex))
+				console.log(decoded, "DECODED")
 				let total_weight = +decoded[0]
+
+				decoded.slice(1).map((v, i) => statsStore.state.gaugesWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
+				decoded.slice(1).map((v, i) => statsStore.state.calculatedWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v)
+				console.log(statsStore.state, "STATS STORE STATE")
 
 				let future_weights = decoded.slice(1).map((v, i) => ({name: this.gaugesNames[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))], y: v * 1e18 * 100 / total_weight}))
 				console.log(future_weights, "FUTURE WEIGHTS")
 
-				Object.values(future_weights.map(v => this.futureWeights[v.name] = v.y))
-
-				this.piechart.addSeries({
-					name: 'Proposed gauge weights',
-					data: future_weights,
+				decoded.slice(1).map((v, i) => {
+					statsStore.state.pieGaugeWeights[web3.utils.toChecksumAddress('0x' + calls[i+1][1].slice(34))] = v * 1e18 * 100 / total_weight
 				})
 
-				this.piechart.hideLoading()
+				Object.values(future_weights.map(v => this.futureWeights[v.name] = v.y))
+
+				this.future_weights = future_weights
 
 				await this.getCRVAPY()
 				console.log(this.currentCRVAPYs)
 				for(let pool of Object.keys(this.currentCRVAPYs)) {
-					if(pool == 'usdt') continue
 					let change = this.futureWeights[pool] / this.currentWeights[pool]
+					if(!isFinite(change)) change = 0
 					console.log(pool, change, "CHANGE")
-					Vue.set(this.futureCRVAPYs, pool, (this.currentCRVAPYs[pool] * change).toFixed(2))
+					Vue.set(this.futureCRVAPYs, pool, this.currentCRVAPYs[pool] * change)
 				}
-				console.log(this.futureCRVAPYs)
-
-				console.log(Object.values(this.currentCRVAPYs).reduce((a, b) => +a + +b, 0))
-				console.log(Object.values(this.futureCRVAPYs).reduce((a, b) => +a + +b, 0))
-				
+				console.log(this.futureCRVAPYs)				
 			},
 
 			async getCRVAPY() {
@@ -289,12 +360,14 @@
 					if(isNaN(apy))
 						apy = 0
 					Object.values(poolInfo).find(v => v.name == pool).gauge_relative_weight = w[1]
-					console.log(pool, apy, "POOL CRV APY")
-					console.log(w[1])
 					Vue.set(this.currentWeights, pool, w[1] * 100)
 					Vue.set(this.currentCRVAPYs, pool, apy)
+					statsStore.state.currentCRVAPYs[Object.values(poolInfo).find(v => v.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase()).gauge] = apy
 					//Vue.set(this.CRVAPYs, pool, apy)
 				})
+			},
+			formatDate(timestamp) {
+				return helpers.formatDateToHuman(timestamp)
 			},
 
 		},
@@ -302,6 +375,9 @@
 </script>
 
 <style scoped>
+	legend {
+		text-align: center;
+	}
 	select.tvision {
 		box-shadow: none
 	}
@@ -325,5 +401,44 @@
 	}
 	select option {
 		text-align: justify;
+	}
+
+	table {
+		width: 100%;
+		margin-top: 0.4em;
+	}
+	tbody tr td a {
+		display: inline-block;
+		min-height: 100%;
+		width: 100%;
+		font-weight: normal;
+	}
+	tbody tr td {
+		cursor: pointer;
+	}
+	tbody tr:hover {
+		background: blue;
+		color: white;
+	}
+	tbody tr:hover td {
+		color: white;
+	}
+	thead tr {
+		border-bottom: 1px solid #a8a8a8;
+	}
+	thead tr th {
+		color: #202020;
+	}
+	tbody tr td {
+		padding-top: 10px;
+		padding-left: 1em;
+		color: black;
+	}
+	tbody tr td:nth-child(6) a {
+		font-weight: normal;
+	}
+
+	.futureCRVAPYs {
+		margin-top: 3em;
 	}
 </style>

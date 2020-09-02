@@ -1,5 +1,24 @@
 <template>
 	<div class='window white'>
+
+		<div id='modal' class='modal rootmodal' v-if='showModal' @click.self='hideModal'>
+
+			<div class='modal-content window white'>
+				<fieldset>
+					<div class='legend2 hoverpointer' @click='hideModal'>
+						[<span class='greentext'>■</span>]
+					</div>
+					<legend>Vote history</legend>
+					<div class='content'>
+						<div>
+							<proposed-gauge-weight :future_weights='historic_gauge_weights' :ismodal='true'></proposed-gauge-weight>
+						</div>
+					</div>
+					<button @click='hideModal'>Hide</button>
+				</fieldset>
+			</div>
+		</div>
+
 		<fieldset>
 			<legend>
 				Gauge Weight Voting
@@ -11,9 +30,6 @@
 			<p class='info-message gentle-message' v-show='+balance == 0'>
 				You need to have CRV locked in <router-link to="/locker">Locker</router-link> in order to vote for gauge weights
 			</p>
-			<p class='info-message gentle-message' v-show='+balance > 0'>
-				You're voting with {{ balanceFormat }} veCRV
-			</p>
 			<p class='info-message gentle-message' v-show='lockExpiresSoon'>
 				Your lock expires soon. You need to lock at least for a week in <router-link to="/locker">Locker</router-link>
 			</p>
@@ -24,6 +40,9 @@
 				You alrady used too much power for this gauge
 			</p>
 			<gauge-stats class='gaugeStats' :included='true'></gauge-stats>
+			<p class='info-message gentle-message' v-show='+balance > 0'>
+				You're voting with {{ balanceFormat }} veCRV
+			</p>
 			<div class='gaugeweight'>
 				<div class='input'>
 					<select class='tvision' v-model='selectedGauge'>
@@ -32,9 +51,13 @@
 						</option>
 					</select>
 					<div class='weight'>
-						<label for='weight'>Weight of your voting(in BPS):</label>
+						<p v-show='myVoteWeightUsed !== null'>
+							Vote weight % used: {{ myVoteWeightUsed && myVoteWeightUsed.toFixed(2) }}%
+						</p>
+						<label for='weight'>Vote weight: </label>
 						<input id='weight' type='text' :class="{'invalid': isInvalidWeight}" v-model='weight'>
-						<div class='allocationInfo'> {{ weightAllocated }} ({{ weight / 100 }} %) of your voting power will be allocated to this gauge</div>
+						<span> %(of your voting power)</span>
+						<div class='allocationInfo'> {{ weightAllocated }} ({{ weight }} %) of your voting power will be allocated to this gauge</div>
 					</div>
 				</div>
 
@@ -45,7 +68,16 @@
 				</p>
 
 				<div>
-					<button :disabled='disabled' @click='submit'>Submit</button>
+					<button :disabled='disabled' @click='calculate'>Calculate <span :class="{'loading line': isCalculating}"></span></button>
+					<button :disabled='disabled' @click='submit' class='submitVote'>Submit</button>
+				</div>
+
+				<div v-show='outcomeWeights.length'>
+					<p>
+						<img class='icon small' :src="publicPath + 'logo.png'"> CRV APY change: 
+						<span class='greentext'> {{ oldAPY && oldAPY.toFixed(2) }}% → {{ newAPY && newAPY.toFixed(2) }}% </span>
+					</p>
+					<highcharts class='outcomeCharts' :options='piechartdata' ref='piecharts'></highcharts>
 				</div>
 			</div>
 
@@ -78,10 +110,12 @@
 						<th>Gauge</th>
 						<th>Weight</th>
 						<th>Total weight</th>
+						<th><img class='icon small' :src="publicPath + 'chart-pie-solid.svg'"></th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-show='!filteredVotes.length'>
+						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
 						<td><span class='loading line'></span></td>
@@ -113,6 +147,9 @@
 						</td>
 						<td>
 							{{ (vote.total_weight / 1e36).toFixed(2) }}
+						</td>
+						<td>
+							<img class='icon small piecharticon' @click='showHistoricWeights(vote)' :src="publicPath + 'chart-pie-solid.svg'">
 						</td>
 					</tr>
 				</tbody>
@@ -162,11 +199,32 @@
 
 	import Countdown from '../common/Countdown.vue'
 
+	import * as statsStore from './statsStore'
+
+	import Highcharts from 'highcharts'
+	import HC_exporting from 'highcharts/modules/exporting';
+	import HC_exporting_data from 'highcharts/modules/export-data';
+	HC_exporting(Highcharts);
+	HC_exporting_data(Highcharts)
+	import {Chart} from 'highcharts-vue'
+	import stockInit from 'highcharts/modules/stock'
+	stockInit(Highcharts)
+
+	Highcharts.setOptions({
+		lang: {
+			loading: '',
+		}
+	})
+
+	import ProposedGaugeWeight from './ProposedGaugeWeight.vue'
+
 	export default {
 		components: {
 			GasPrice,
 			GaugeStats,
 			Countdown,
+			ProposedGaugeWeight,
+			Highcharts: Chart,
 		},
 
 		data: () => ({
@@ -206,6 +264,60 @@
 			perPageOptions: [10, 20, 30, 50, 100],
 
 			showvotes: false,
+
+			historic_gauge_weights: [],
+
+			showModal: false,
+
+			myVoteWeightUsed: null,
+
+			points_sum: [[]],
+
+			piechartdata: {
+				chart: {
+			        plotBackgroundColor: null,
+			        plotBorderWidth: null,
+			        plotShadow: false,
+			        type: 'pie'
+			    },
+			    title: {
+			        text: 'Calculated outcome of your vote'
+			    },
+			    tooltip: {
+			        pointFormat: '{series.name}: <b>{point.y:.2f}%</b>'
+			    },
+			    accessibility: {
+			        point: {
+			            valueSuffix: '%'
+			        }
+			    },
+			    plotOptions: {
+			        pie: {
+			            allowPointSelect: true,
+			            cursor: 'pointer',
+			            dataLabels: {
+			                enabled: true,
+			                formatter: (function(self) {
+			                	return function(point) { 
+			                		return `<b>${this.key}</b>: 
+			                		(${this.y.toFixed(2)}%)`
+			                	}
+			                })(this),
+			            }
+			        }
+			    },
+			    series: [],
+			},
+
+			piechart: null,
+
+			outcomeWeights: [],
+
+			oldAPY: null,
+
+			newAPY: null,
+
+			isCalculating: false,
 		}),
 
 		async created() {
@@ -222,7 +334,14 @@
 		},
 
 		watch: {
-			async selectedGauge(val) {
+			async selectedGauge(val, oldval) {
+				if(oldval != '0x0000000000000000000000000000000000000000') {
+					statsStore.state.calculatedWeights[oldval] = statsStore.state.gaugesWeights[oldval]
+				}
+				this.outcomeWeights = []
+				this.oldAPY = null
+				this.newAPY = null
+
 				this.last_user_vote = await this.gaugeController.methods.last_user_vote(contract.default_account, this.selectedGauge).call()
 				this.old_slope = await this.gaugeController.methods.vote_user_slopes(contract.default_account, this.selectedGauge).call()
 			},
@@ -242,15 +361,15 @@
 				return (this.balance / 1e18).toFixed(2)
 			},
 			isInvalidWeight() {
-				return this.weight <= 0 || this.weight > 10000 || isNaN(+this.weight)
+				return this.weight <= 0 || this.weight > 100 || isNaN(+this.weight)
 			},
 			weightAllocated() {
-				return (this.weight / 10000 * this.balance / 1e18).toFixed(8)
+				return (this.weight / 100 * this.balance / 1e18).toFixed(8)
 			},
 			tooMuchPower() {
 				if(this.old_slope === null) return false
 				let power_used = this.power_used
-				power_used = power_used + this.weight - +this.old_slope.power
+				power_used = power_used + this.weight * 100 - +this.old_slope.power
 				return !(power_used >= 0 || power_used <= 10000)
 			},
 			gasPrice() {
@@ -281,6 +400,9 @@
 		    		executed: false,
 		    	}
 		    },
+		    publicPath() {
+                return process.env.BASE_URL
+            },
 		},
 
 		methods: {
@@ -332,8 +454,8 @@
 			},
 
 			async submit() {
-				var { dismiss } = notifyNotification(`Please confirm voting for ${this.gaugesNames[this.selectedGauge]} gauge with ${this.weight}`)
-				await this.gaugeController.methods.vote_for_gauge_weights(this.selectedGauge, BN(this.weight).toFixed(0,1))
+				var { dismiss } = notifyNotification(`Please confirm voting for ${this.gaugesNames[this.selectedGauge]} gauge with ${this.weight * 100}`)
+				await this.gaugeController.methods.vote_for_gauge_weights(this.selectedGauge, BN(this.weight * 100).toFixed(0,1))
 					.send({
 						from: contract.default_account,
 						gasPrice: this.gasPriceWei,
@@ -342,7 +464,7 @@
 					.once('transactionHash', hash => {
 						dismiss()
 						notifyHandler(hash)
-						this.message = `You voted for ${this.gaugesNames[this.selectedGauge]} with ${this.weight}, you can continue and vote for other gauges`
+						this.message = `You voted for ${this.gaugesNames[this.selectedGauge]} with ${this.weight * 100}%, you can continue and vote for other gauges`
 						setTimeout(() => this.message = '', 4000)
 					})
 			},
@@ -350,7 +472,7 @@
 			async getVotes(address = null) {
 				let wrapper = new GraphQLWrapper('https://api.thegraph.com/subgraphs/name/pengiundev/curve-gaugecontroller-mainnet')
 
-				let QUERY = gql`
+				let QUERY = `
 					{
 					  gaugeVotes(where: { time_gt: 1598486400 }, orderBy: time, orderDirection: desc) {
 					    id
@@ -368,6 +490,43 @@
 					  }
 					}
 				`
+
+				if(contract.default_account) {
+					QUERY = `
+
+						{
+						  gaugeVotes(where: { time_gt: 1598486400 }, orderBy: time, orderDirection: desc) {
+						    id
+						    time
+						    user
+						    gauge
+						    weight
+						    gauge_weights {
+						      gauge
+						      gauge_weight
+						    }
+						    total_weight
+						    veCRV
+						    totalveCRV
+						  }
+						  myVotes: gaugeVotes(where: { user: "${contract.default_account.toLowerCase()}" }, orderBy: time, orderDirection: desc) {
+							id
+							time
+							user
+							gauge
+							weight
+							gauge_weights {
+							  gauge
+							  gauge_weight
+							}
+							total_weight
+							veCRV
+							totalveCRV
+						  }
+						}
+
+					`
+				}
 
 				if(address) {
 					QUERY = gql`
@@ -393,6 +552,7 @@
 				let results = await wrapper.performQuery(QUERY)
 				this.votes = results.data.gaugeVotes
 				this.totalveCRVvote = this.votes.reduce((a, b) => +a + +b.veCRV, 0)
+				this.myVoteWeightUsed = results.data.myVotes.reduce((a, b) => +a + +b.weight, 0) / 100
 				console.log(results, this.votes.length, "THE RESULTS")
 				this.changePagination()
 			},
@@ -422,6 +582,105 @@
 
 			formatNumber(num) {
 				return helpers.formatNumber(num)
+			},
+
+			hideModal() {
+				this.showModal = false
+			},
+
+			showHistoricWeights(vote) {
+				this.showModal = true
+
+				let total_weight = vote.total_weight
+
+				let future_weights = vote.gauge_weights.map((v, i) => ({ id: this.gaugesNames[web3.utils.toChecksumAddress(v.gauge)], name: this.gaugesNames[web3.utils.toChecksumAddress(v.gauge)], y: +v.gauge_weight * 1e18 * 100 / total_weight}))
+
+				console.log(future_weights, "HISTORIC WEIGHTS")
+
+				this.historic_gauge_weights = future_weights
+
+			},
+
+			async _get_weight(gauge) {
+				console.log(this.selectedGauge, "SELECTED GAUGE")
+				let t = await this.gaugeController.methods.time_weight(this.selectedGauge).call()
+				console.log(t, "THE T")
+				let pt = await this.gaugeController.methods.points_weight(this.selectedGauge, t).call()
+				console.log(pt, "THE PT")
+				//loop is not entered for now
+		        for(let i = 0; i < 500; i++) {
+		            if(t > Date.now() / 1000)
+		                break
+		            t += WEEK
+		            let d_bias = pt.slope * WEEK
+		            if(pt.bias > d_bias) {
+		                pt.bias -= d_bias
+		                d_slope = await this.gaugeController.methods.changes_sum(0, t).call()
+		                pt.slope -= d_slope
+		            }
+		            else {
+		                pt.bias = 0
+		                pt.slope = 0
+		            }
+		            this.points_sum[0][t] = pt
+		            // if(t > Date.now() / 1000)
+		            //     self.time_sum[gauge_type] = t
+		    	}
+		        return pt.bias
+			},
+
+			async calculate() {
+				this.isCalculating = true
+
+				console.log(await this.gaugeController.methods.get_gauge_weight(this.selectedGauge).call(), "CURRENT GAUGE WEIGHT")
+				let slope = +(await this.votingEscrow.methods.get_last_user_slope(contract.default_account).call())
+				let old_weight_bias = +(await this._get_weight(this.selectedGauge))
+				let old_slope = await this.gaugeController.methods.vote_user_slopes(contract.default_account, this.selectedGauge).call()
+				console.log(old_slope, "THE OLD SLOPE")
+				console.log(slope, old_weight_bias, old_slope)
+				let old_dt = 0
+				if(+old_slope.end > this.next_time)
+					old_dt = +old_slope.end - this.next_time
+				let old_bias = +old_slope.slope * old_dt
+				let new_slope = slope * this.weight * 100 / 10000
+				let new_dt = this.lock_end - this.next_time
+				let new_bias = new_slope * new_dt
+
+				console.log(old_weight_bias, new_bias, old_bias)
+
+				let point_bias = Math.max(old_weight_bias + new_bias, old_bias) - old_bias
+
+				statsStore.state.calculatedWeights[web3.utils.toChecksumAddress(this.selectedGauge)] = point_bias
+
+				this.piechart = this.$refs.piecharts.chart
+				this.piechart.showLoading()
+
+				let total_outcome_weight = Object.values(statsStore.state.calculatedWeights).reduce((a, b) => +a + +b, 0)
+
+				let outcome_weights = Object.entries(statsStore.state.calculatedWeights).map(([k, v]) => ({id: k, name: statsStore.state.gaugesNames[k], y: v * 100 / total_outcome_weight}))
+
+				this.outcomeWeights = outcome_weights
+
+				while(this.piechart.series[0])
+					this.piechart.series[0].remove(false, false)
+
+				this.piechart.addSeries({
+					name: 'Calculated outcome weights',
+					data: outcome_weights,
+				})
+
+				this.piechart.hideLoading()
+
+				let currentWeight = statsStore.state.gaugesWeights[web3.utils.toChecksumAddress(this.selectedGauge)]
+				let calculatedWeight = point_bias
+
+				let change = outcome_weights.find(v => v.id.toLowerCase() == this.selectedGauge.toLowerCase()).y / statsStore.state.pieGaugeWeights[web3.utils.toChecksumAddress(this.selectedGauge)]
+
+				this.oldAPY = statsStore.state.currentCRVAPYs[web3.utils.toChecksumAddress(this.selectedGauge)]
+
+				this.newAPY =  this.oldAPY * change
+
+				this.isCalculating = false
 			},
 		},
 	}
@@ -480,6 +739,10 @@
 		padding-left: 1em;
 		color: black;
 	}
+	tbody tr td {
+		padding-left: 0;
+		text-align: center;
+	}
 	tbody tr td:nth-child(6) a {
 		font-weight: normal;
 	}
@@ -504,5 +767,22 @@
 	}
 	.votehistory {
 		margin-top: 1em;
+	}
+	.piecharticon {
+		cursor: pointer;
+		filter: invert(44%) sepia(98%) saturate(468%) hue-rotate(6deg) brightness(109%) contrast(102%);
+	}
+
+	.modal-content {
+		width: 800px;
+	}
+	.greentext {
+		color: green;
+	}
+	.outcomeCharts {
+		margin-top: 1em;
+	}
+	.submitVote {
+		margin-left: 1em;
 	}
 </style>

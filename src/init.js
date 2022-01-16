@@ -70,6 +70,7 @@ export function notifyNotification(message) {
 
 const wallets = [
   { walletName: "metamask" },
+  { walletName: "tally" },
   {
     walletName: "trezor",
     appUrl: "https://curve.fi",

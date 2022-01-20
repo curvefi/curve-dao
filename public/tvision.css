@@ -211,7 +211,7 @@ div.info table td {
   transform: translateX(-50%);
   background: #c0c0c0;
   z-index: 1;
-  box-shadow: 0 0 0 3px silver, 1em 1em 3px 0 rgba(0,0,0,.5);
+  box-shadow: 0 0 0 3px silver, 1em 1em 0 0 rgba(0,0,0,.5);
 }
 
 .poolsdropdown > a {

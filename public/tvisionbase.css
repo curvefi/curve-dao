@@ -39,7 +39,7 @@ fieldset {
   padding: 1em;
   box-shadow:
     0   0   0   3px #3465a4,
-    1em 1em 3px 0 rgba(0,0,0,.5);
+    1em 1em 0 0 rgba(0,0,0,.5);
   max-width: 640px;
 }
 
@@ -47,7 +47,7 @@ fieldset {
     background: red;
     box-shadow:
         0   0   0   3px red,
-        1em 1em 3px 0 rgba(0,0,0,.5);
+        1em 1em 0 0 rgba(0,0,0,.5);
 }
 
 .window.white {
@@ -56,7 +56,7 @@ fieldset {
   border-color: white;
   box-shadow:
     0   0   0   3px silver,
-    1em 1em 3px 0 rgba(0,0,0,.5);
+    1em 1em 0 0 rgba(0,0,0,.5);
 }
 
 .window.half-width {
@@ -98,7 +98,7 @@ select.tvision {
   font-size: inherit;
   background: green;
   padding: 0 1em;
-  box-shadow: .5em .5em 3px rgba(0,0,0,.5);
+  box-shadow: .5em .5em 0 rgba(0,0,0,.5);
   position: relative;
   transition: .2s all ease-in;
   border: 1px outset green;
